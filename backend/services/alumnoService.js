@@ -1,0 +1,210 @@
+const db = require('../config/database');
+
+/**
+ * Servicio para gestionar alumnos en la base de datos
+ */
+const alumnoService = {
+/**
+ * Obtiene los datos de un alumno por su ID
+ * @param {number} alumnoInfoId - ID del alumno (de AlumnosInfo)
+ * @returns {Promise<Object|null>} - Datos del alumno o null si no existe
+ */
+async obtenerAlumnoPorId(alumnoInfoId) {
+try {
+    const [alumnos] = await db.query(
+    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual, 
+            u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
+            u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.ID = ? AND u.EstaActivo = TRUE`,
+    [alumnoInfoId]
+    );
+    
+    if (alumnos.length === 0) {
+    return null;
+    }
+    
+    return alumnos[0];
+} catch (error) {
+    console.error('Error al obtener alumno por ID:', error);
+    throw error;
+}
+},
+
+/**
+ * Obtiene los datos de un alumno por su número de boleta
+ * @param {string} boleta - Número de boleta del alumno
+ * @returns {Promise<Object|null>} - Datos del alumno o null si no existe
+ */
+async obtenerAlumnoPorBoleta(boleta) {
+try {
+    const [alumnos] = await db.query(
+    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual, 
+            u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
+            u.EstaActivo, u.TelefonoCelular
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ? AND u.EstaActivo = TRUE`,
+    [boleta]
+    );
+    
+    if (alumnos.length === 0) {
+    return null;
+    }
+    
+    return alumnos[0];
+} catch (error) {
+    console.error('Error al obtener alumno por boleta:', error);
+    throw error;
+}
+},
+
+/**
+ * Obtiene los profesores asignados a un alumno
+ * @param {number} alumnoInfoId - ID del alumno (de AlumnosInfo)
+ * @returns {Promise<Array>} - Lista de profesores asignados
+ */
+async obtenerProfesoresAsignados(alumnoInfoId) {
+try {
+    const [profesores] = await db.query(
+    `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
+            u.NombreUsuario, u.CorreoElectronico, u.TelefonoCelular,
+            vap.FechaInicio
+        FROM VinculacionAlumnoProfesor vap
+        JOIN ProfesoresInfo p ON vap.ProfesorInfoID = p.ID
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE vap.AlumnoInfoID = ? AND vap.Activo = TRUE
+        ORDER BY vap.FechaInicio DESC`,
+    [alumnoInfoId]
+    );
+    
+    return profesores;
+} catch (error) {
+    console.error('Error al obtener profesores asignados:', error);
+    throw error;
+}
+},
+
+/**
+ * Obtiene el semestre actual
+ * @returns {Promise<Object|null>} - Datos del semestre actual o null si no hay ninguno
+ */
+async obtenerSemestreActual() {
+try {
+    const [semestres] = await db.query(
+    'SELECT ID, Nombre, FechaInicio, FechaFin FROM Semestres WHERE EsActual = TRUE'
+    );
+    
+    if (semestres.length === 0) {
+    return null;
+    }
+    
+    return semestres[0];
+} catch (error) {
+    console.error('Error al obtener semestre actual:', error);
+    throw error;
+}
+},
+
+/**
+ * Obtiene todos los consultorios disponibles
+ * @returns {Promise<Array>} - Lista de consultorios
+ */
+async obtenerConsultorios() {
+try {
+    const [consultorios] = await db.query(
+    'SELECT ID, Nombre, Descripcion FROM Consultorios ORDER BY Nombre'
+    );
+    
+    return consultorios;
+} catch (error) {
+    console.error('Error al obtener consultorios:', error);
+    throw error;
+}
+},
+
+/**
+ * Obtiene catálogos generales por tipo
+ * @param {string} tipoCatalogo - Tipo de catálogo (GENERO, ESTADO_CIVIL, etc.)
+ * @returns {Promise<Array>} - Lista de valores del catálogo
+ */
+async obtenerCatalogo(tipoCatalogo) {
+try {
+    const [catalogo] = await db.query(
+    'SELECT ID, Valor, Descripcion, Orden FROM CatalogosGenerales WHERE TipoCatalogo = ? ORDER BY Orden',
+    [tipoCatalogo]
+    );
+    
+    return catalogo;
+} catch (error) {
+    console.error(`Error al obtener catálogo ${tipoCatalogo}:`, error);
+    throw error;
+}
+},
+
+/**
+ * Busca pacientes por nombre o correo electrónico
+ * @param {string} termino - Término de búsqueda
+ * @returns {Promise<Array>} - Lista de pacientes encontrados
+ */
+async buscarPacientes(termino) {
+try {
+    const [pacientes] = await db.query(
+    `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno, 
+            CorreoElectronico, TelefonoCelular, Edad
+        FROM Pacientes
+        WHERE Nombre LIKE ? OR ApellidoPaterno LIKE ? OR 
+            ApellidoMaterno LIKE ? OR CorreoElectronico LIKE ?
+        LIMIT 10`,
+    [`%${termino}%`, `%${termino}%`, `%${termino}%`, `%${termino}%`]
+    );
+    
+    return pacientes;
+} catch (error) {
+    console.error('Error al buscar pacientes:', error);
+    throw error;
+}
+},
+
+/**
+ * Actualiza los datos de perfil de un alumno
+ * @param {number} alumnoInfoId - ID del alumno (de AlumnosInfo)
+ * @param {number} usuarioId - ID del usuario
+ * @param {Object} datos - Datos a actualizar
+ * @returns {Promise<boolean>} - true si la actualización fue exitosa
+ */
+async actualizarPerfil(alumnoInfoId, usuarioId, datos) {
+const connection = await db.pool.getConnection();
+
+try {
+    await connection.beginTransaction();
+    
+    // Actualizar datos de usuario
+    if (datos.nombreUsuario || datos.telefonoCelular) {
+    await connection.query(
+        `UPDATE Usuarios SET
+        NombreUsuario = COALESCE(?, NombreUsuario),
+        TelefonoCelular = COALESCE(?, TelefonoCelular)
+        WHERE ID = ?`,
+        [datos.nombreUsuario, datos.telefonoCelular, usuarioId]
+    );
+    }
+    
+    // Actualizar datos específicos de alumno si es necesario
+    // (en este caso no hay campos adicionales, pero se deja como ejemplo)
+    
+    await connection.commit();
+    
+    return true;
+} catch (error) {
+    await connection.rollback();
+    console.error('Error al actualizar perfil de alumno:', error);
+    throw error;
+} finally {
+    connection.release();
+}
+}
+};
+
+module.exports = alumnoService;
