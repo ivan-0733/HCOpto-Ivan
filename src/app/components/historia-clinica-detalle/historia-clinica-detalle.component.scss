@@ -37,13 +37,13 @@
         white-space: nowrap;
 
         &.estado-proceso {
-          background-color: rgba($info, 0.15);
-          color: darken($info, 15%);
+          background-color: rgba($warning, 0.15);
+          color: darken($warning, 15%);
         }
 
         &.estado-revision {
-          background-color: rgba($warning, 0.15);
-          color: darken($warning, 25%);
+          background-color: rgba($info, 0.15);
+          color: darken($info, 25%);
         }
 
         &.estado-correccion {
