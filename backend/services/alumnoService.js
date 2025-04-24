@@ -12,7 +12,7 @@ const alumnoService = {
 async obtenerAlumnoPorId(alumnoInfoId) {
 try {
     const [alumnos] = await db.query(
-    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual, 
+    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
             u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
             u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
         FROM AlumnosInfo a
@@ -20,11 +20,11 @@ try {
         WHERE a.ID = ? AND u.EstaActivo = TRUE`,
     [alumnoInfoId]
     );
-    
+
     if (alumnos.length === 0) {
     return null;
     }
-    
+
     return alumnos[0];
 } catch (error) {
     console.error('Error al obtener alumno por ID:', error);
@@ -40,7 +40,7 @@ try {
 async obtenerAlumnoPorBoleta(boleta) {
 try {
     const [alumnos] = await db.query(
-    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual, 
+    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
             u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
             u.EstaActivo, u.TelefonoCelular
         FROM AlumnosInfo a
@@ -48,11 +48,11 @@ try {
         WHERE a.NumeroBoleta = ? AND u.EstaActivo = TRUE`,
     [boleta]
     );
-    
+
     if (alumnos.length === 0) {
     return null;
     }
-    
+
     return alumnos[0];
 } catch (error) {
     console.error('Error al obtener alumno por boleta:', error);
@@ -78,7 +78,7 @@ try {
         ORDER BY vap.FechaInicio DESC`,
     [alumnoInfoId]
     );
-    
+
     return profesores;
 } catch (error) {
     console.error('Error al obtener profesores asignados:', error);
@@ -95,11 +95,11 @@ try {
     const [semestres] = await db.query(
     'SELECT ID, Nombre, FechaInicio, FechaFin FROM Semestres WHERE EsActual = TRUE'
     );
-    
+
     if (semestres.length === 0) {
     return null;
     }
-    
+
     return semestres[0];
 } catch (error) {
     console.error('Error al obtener semestre actual:', error);
@@ -116,7 +116,7 @@ try {
     const [consultorios] = await db.query(
     'SELECT ID, Nombre, Descripcion FROM Consultorios ORDER BY Nombre'
     );
-    
+
     return consultorios;
 } catch (error) {
     console.error('Error al obtener consultorios:', error);
@@ -135,7 +135,7 @@ try {
     'SELECT ID, Valor, Descripcion, Orden FROM CatalogosGenerales WHERE TipoCatalogo = ? ORDER BY Orden',
     [tipoCatalogo]
     );
-    
+
     return catalogo;
 } catch (error) {
     console.error(`Error al obtener catálogo ${tipoCatalogo}:`, error);
@@ -151,15 +151,15 @@ try {
 async buscarPacientes(termino) {
 try {
     const [pacientes] = await db.query(
-    `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno, 
+    `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno,
             CorreoElectronico, TelefonoCelular, Edad
         FROM Pacientes
-        WHERE Nombre LIKE ? OR ApellidoPaterno LIKE ? OR 
+        WHERE Nombre LIKE ? OR ApellidoPaterno LIKE ? OR
             ApellidoMaterno LIKE ? OR CorreoElectronico LIKE ?
         LIMIT 10`,
     [`%${termino}%`, `%${termino}%`, `%${termino}%`, `%${termino}%`]
     );
-    
+
     return pacientes;
 } catch (error) {
     console.error('Error al buscar pacientes:', error);
@@ -179,7 +179,7 @@ const connection = await db.pool.getConnection();
 
 try {
     await connection.beginTransaction();
-    
+
     // Actualizar datos de usuario
     if (datos.nombreUsuario || datos.telefonoCelular) {
     await connection.query(
@@ -190,12 +190,12 @@ try {
         [datos.nombreUsuario, datos.telefonoCelular, usuarioId]
     );
     }
-    
+
     // Actualizar datos específicos de alumno si es necesario
     // (en este caso no hay campos adicionales, pero se deja como ejemplo)
-    
+
     await connection.commit();
-    
+
     return true;
 } catch (error) {
     await connection.rollback();
