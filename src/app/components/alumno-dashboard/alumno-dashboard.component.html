@@ -8,13 +8,6 @@
       </h1>
       <p *ngIf="perfil">Bienvenido, <strong>{{ perfil.NombreUsuario }}</strong></p>
     </div>
-
-    <div class="header-actions">
-      <button class="btn-primary" (click)="crearNuevaHistoria()">
-        <i class="fas fa-plus"></i>
-        Nueva Historia Clínica
-      </button>
-    </div>
   </header>
 
   <!-- Tarjetas de estadísticas -->
@@ -103,10 +96,6 @@
       <i class="fas fa-folder-open"></i>
       <p *ngIf="historiasClinicas.length === 0">No tienes historias clínicas registradas.</p>
       <p *ngIf="historiasClinicas.length > 0">No se encontraron historias clínicas con los filtros seleccionados.</p>
-      <button class="btn-primary" (click)="crearNuevaHistoria()">
-        <i class="fas fa-plus"></i>
-        Crear Nueva Historia
-      </button>
     </div>
 
     <table class="tabla-historias" *ngIf="!loading && !error && filtrarHistorias().length > 0">
@@ -140,7 +129,8 @@
             </div>
           </td>
           <td class="edad-cell">
-            <span class="no-data">No disponible</span>
+            <span *ngIf="historia.Edad !== undefined && historia.Edad !== null">{{ historia.Edad }}</span>
+            <span *ngIf="historia.Edad === undefined || historia.Edad === null" class="no-data">No disponible</span>
           </td>
           <td>
             <span class="estado-badge" [ngClass]="obtenerClaseEstado(historia.Estado)">
@@ -154,12 +144,12 @@
           <td>{{ historia.Semestre }}</td>
           <td class="acciones">
             <button class="btn-icon btn-view" (click)="verHistoria(historia.ID)" title="Ver Historia Clínica Completa">
-              <i class="fas fa-file-medical-alt"></i>
+              <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">visibility</i>
             </button>
             <button class="btn-icon btn-edit" (click)="editarHistoria(historia.ID)"
                     [disabled]="historia.Archivado || historia.Estado === 'Finalizado'"
-                    title="Editar Historia">
-              <i class="fas fa-edit"></i>
+                    title="Editar Historia Clínica">
+              <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">edit</i>
             </button>
           </td>
         </tr>
@@ -167,3 +157,6 @@
     </table>
   </div>
 </div>
+
+<!-- Link de Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
