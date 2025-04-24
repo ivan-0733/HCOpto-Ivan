@@ -49,6 +49,7 @@ export class AlumnoDashboardComponent implements OnInit {
     // Cargar perfil del alumno
     this.alumnoService.obtenerPerfil().subscribe({
       next: (perfil) => {
+        console.log('Perfil cargado:', perfil);
         this.perfil = perfil;
       },
       error: (error) => {
@@ -65,16 +66,13 @@ export class AlumnoDashboardComponent implements OnInit {
       )
       .subscribe({
         next: (historias) => {
-          // Log para diagnosticar los valores de edad
-          console.log('Edades:', historias.map(h => ({ id: h.ID, edad: h.Edad, tipo: typeof h.Edad })));
-
           // Asegurarse de que todos los objetos de historia tienen
           // las propiedades esperadas, incluso si son undefined
           this.historiasClinicas = historias.map(historia => ({
             ...historia,
             CorreoElectronico: historia.CorreoElectronico || undefined,
             TelefonoCelular: historia.TelefonoCelular || undefined,
-            Edad: historia.Edad ? Number(historia.Edad) : undefined
+            Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
           }));
           console.log('Historias cargadas:', this.historiasClinicas);
         },

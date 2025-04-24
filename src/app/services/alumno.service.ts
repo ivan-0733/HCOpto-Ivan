@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Perfil {
@@ -55,6 +56,12 @@ export interface Paciente {
   Edad: number;
 }
 
+export interface ApiResponse<T> {
+  status: string;
+  data: T;
+  message?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -65,7 +72,10 @@ export class AlumnoService {
 
   // Obtener perfil del alumno
   obtenerPerfil(): Observable<Perfil> {
-    return this.http.get<Perfil>(`${this.apiUrl}/perfil`);
+    return this.http.get<ApiResponse<Perfil>>(`${this.apiUrl}/perfil`)
+      .pipe(
+        map(response => response.data)
+      );
   }
 
   // Actualizar perfil del alumno
@@ -75,28 +85,42 @@ export class AlumnoService {
 
   // Obtener profesores asignados
   obtenerProfesoresAsignados(): Observable<Profesor[]> {
-    return this.http.get<Profesor[]>(`${this.apiUrl}/profesores`);
+    return this.http.get<ApiResponse<Profesor[]>>(`${this.apiUrl}/profesores`)
+      .pipe(
+        map(response => response.data || [])
+      );
   }
 
   // Obtener semestre actual
   obtenerSemestreActual(): Observable<Semestre> {
-    return this.http.get<Semestre>(`${this.apiUrl}/semestre-actual`);
+    return this.http.get<ApiResponse<Semestre>>(`${this.apiUrl}/semestre-actual`)
+      .pipe(
+        map(response => response.data)
+      );
   }
 
   // Obtener consultorios disponibles
   obtenerConsultorios(): Observable<Consultorio[]> {
-    return this.http.get<Consultorio[]>(`${this.apiUrl}/consultorios`);
+    return this.http.get<ApiResponse<Consultorio[]>>(`${this.apiUrl}/consultorios`)
+      .pipe(
+        map(response => response.data || [])
+      );
   }
 
   // Obtener catálogos
   obtenerCatalogo(tipo: string): Observable<CatalogoItem[]> {
-    return this.http.get<CatalogoItem[]>(`${this.apiUrl}/catalogos/${tipo}`);
+    return this.http.get<ApiResponse<CatalogoItem[]>>(`${this.apiUrl}/catalogos/${tipo}`)
+      .pipe(
+        map(response => response.data || [])
+      );
   }
 
   // Buscar pacientes
   buscarPacientes(termino: string): Observable<Paciente[]> {
-    return this.http.get<Paciente[]>(`${this.apiUrl}/pacientes/buscar`, {
+    return this.http.get<ApiResponse<Paciente[]>>(`${this.apiUrl}/pacientes/buscar`, {
       params: { termino }
-    });
+    }).pipe(
+      map(response => response.data || [])
+    );
   }
 }
