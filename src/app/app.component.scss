@@ -1,0 +1,143 @@
+@import './styles/variables';
+
+// Estilos globales
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  color: #333;
+  background-color: $ipn-gray;
+  min-height: 100vh;
+}
+
+// Contenedor principal
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+// Contenido principal
+.main-content {
+  flex: 1;
+  padding: $spacing-md 0;
+}
+
+// Footer
+.app-footer {
+  background-color: $ipn-guinda;
+  color: $ipn-white;
+  padding-top: $spacing-xl;
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xl;
+    padding: 0 $spacing-md $spacing-xl;
+
+    .footer-logo {
+      flex: 1;
+      min-width: 250px;
+      display: flex;
+      align-items: center;
+
+      img {
+        height: 60px;
+        margin-right: $spacing-md;
+      }
+
+      .footer-text {
+        h3 {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: $font-weight-bold;
+        }
+
+        p {
+          margin: $spacing-xs 0 0;
+          font-size: 0.9rem;
+          opacity: 0.9;
+        }
+      }
+    }
+
+    .footer-links, .footer-info {
+      flex: 1;
+      min-width: 250px;
+
+      h4 {
+        margin: 0 0 $spacing-md;
+        font-size: 1.1rem;
+        font-weight: $font-weight-bold;
+        position: relative;
+        padding-bottom: $spacing-sm;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 50px;
+          height: 3px;
+          background-color: rgba($ipn-white, 0.3);
+        }
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          margin-bottom: $spacing-sm;
+
+          a {
+            color: rgba($ipn-white, 0.9);
+            text-decoration: none;
+            transition: $transition-base;
+
+            &:hover {
+              color: $ipn-white;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+
+      p {
+        margin: 0 0 $spacing-sm;
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  .footer-bottom {
+    background-color: $ipn-guinda-dark;
+    padding: $spacing-md;
+    text-align: center;
+
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+  }
+}
+
+// Media queries para responsive
+@media (max-width: $breakpoint-md) {
+  .app-footer {
+    .footer-content {
+      flex-direction: column;
+      gap: $spacing-lg;
+
+      .footer-logo, .footer-links, .footer-info {
+        width: 100%;
+      }
+    }
+  }
+}

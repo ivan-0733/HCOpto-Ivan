@@ -8,7 +8,7 @@ console.log('Iniciando carga de datos de prueba...');
 // Crear roles si no existen
 console.log('Creando roles...');
 await db.query(`
-    INSERT IGNORE INTO Roles (NombreRol, Descripcion) VALUES 
+    INSERT IGNORE INTO Roles (NombreRol, Descripcion) VALUES
     ('Alumno', 'Rol para estudiantes'),
     ('Profesor', 'Rol para profesores'),
     ('Investigador', 'Rol para investigadores')
@@ -28,7 +28,7 @@ const hashedPassword = await bcrypt.hash('password123', 12);
 
 // Verificar si el usuario ya existe
 const [usuariosExistentes] = await db.query(
-    'SELECT ID FROM Usuarios WHERE CorreoElectronico = ?', 
+    'SELECT ID FROM Usuarios WHERE CorreoElectronico = ?',
     ['alumno@mail.com']
 );
 
@@ -44,16 +44,16 @@ if (usuariosExistentes.length > 0) {
 } else {
     console.log('Creando nuevo usuario...');
     const [result] = await db.query(`
-    INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, RolID, EstaActivo) 
+    INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, RolID, EstaActivo)
     VALUES (?, ?, ?, ?, TRUE)
     `, ['AlumnoPrueba', 'alumno@mail.com', hashedPassword, rolAlumnoId]);
-    
+
     usuarioId = result.insertId;
 }
 
 // Verificar si el alumno ya existe
 const [alumnosExistentes] = await db.query(
-    'SELECT ID FROM AlumnosInfo WHERE UsuarioID = ?', 
+    'SELECT ID FROM AlumnosInfo WHERE UsuarioID = ?',
     [usuarioId]
 );
 
@@ -67,27 +67,12 @@ if (alumnosExistentes.length > 0) {
 } else {
     console.log('Creando información de alumno...');
     await db.query(`
-    INSERT INTO AlumnosInfo (UsuarioID, NumeroBoleta, SemestreActual) 
+    INSERT INTO AlumnosInfo (UsuarioID, NumeroBoleta, SemestreActual)
     VALUES (?, ?, ?)
     `, [usuarioId, '2020630001', 1]);
 }
 
-// Crear un semestre actual
-console.log('Creando semestre actual...');
-await db.query(`
-    INSERT IGNORE INTO Semestres (Nombre, FechaInicio, FechaFin, EsActual) 
-    VALUES ('2025-1', '2024-08-01', '2025-01-31', TRUE)
-`);
-
-// Crear un consultorio de ejemplo
-console.log('Creando consultorio de ejemplo...');
-await db.query(`
-    INSERT IGNORE INTO Consultorios (Nombre, Descripcion) 
-    VALUES ('Consultorio 1', 'Consultorio principal')
-`);
-
-// Crear un profesor de prueba
-console.log('Creando profesor de prueba...');
+// Obtener el ID del rol de profesor
 const [rolesProfesor] = await db.query('SELECT ID FROM Roles WHERE NombreRol = ?', ['Profesor']);
 const rolProfesorId = rolesProfesor[0]?.ID;
 
@@ -95,9 +80,13 @@ if (!rolProfesorId) {
     throw new Error('No se pudo obtener el ID del rol de profesor');
 }
 
+// Crear un profesor de prueba
+console.log('Creando profesor de prueba...');
+const profesorHashedPassword = await bcrypt.hash('password123', 12);
+
 // Verificar si el profesor ya existe
 const [profesoresExistentes] = await db.query(
-    'SELECT ID FROM Usuarios WHERE CorreoElectronico = ?', 
+    'SELECT ID FROM Usuarios WHERE CorreoElectronico = ?',
     ['profesor@mail.com']
 );
 
@@ -107,20 +96,20 @@ if (profesoresExistentes.length > 0) {
     profesorUsuarioId = profesoresExistentes[0].ID;
     await db.query(
     'UPDATE Usuarios SET ContraseñaHash = ?, NombreUsuario = ?, RolID = ?, EstaActivo = TRUE WHERE ID = ?',
-    [hashedPassword, 'ProfesorPrueba', rolProfesorId, profesorUsuarioId]
+    [profesorHashedPassword, 'ProfesorPrueba', rolProfesorId, profesorUsuarioId]
     );
 } else {
     const [result] = await db.query(`
-    INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, RolID, EstaActivo) 
+    INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, RolID, EstaActivo)
     VALUES (?, ?, ?, ?, TRUE)
-    `, ['ProfesorPrueba', 'profesor@mail.com', hashedPassword, rolProfesorId]);
-    
+    `, ['ProfesorPrueba', 'profesor@mail.com', profesorHashedPassword, rolProfesorId]);
+
     profesorUsuarioId = result.insertId;
 }
 
 // Verificar si la información del profesor ya existe
 const [infoProfesorExistente] = await db.query(
-    'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?', 
+    'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?',
     [profesorUsuarioId]
 );
 
@@ -134,12 +123,26 @@ if (infoProfesorExistente.length > 0) {
     );
 } else {
     const [result] = await db.query(`
-    INSERT INTO ProfesoresInfo (UsuarioID, NumeroEmpleado) 
+    INSERT INTO ProfesoresInfo (UsuarioID, NumeroEmpleado)
     VALUES (?, ?)
     `, [profesorUsuarioId, 'PROF001']);
-    
+
     profesorInfoId = result.insertId;
 }
+
+// Crear un semestre actual
+console.log('Creando semestre actual...');
+await db.query(`
+    INSERT IGNORE INTO Semestres (Nombre, FechaInicio, FechaFin, EsActual)
+    VALUES ('2025-1', '2024-08-01', '2025-01-31', TRUE)
+`);
+
+// Crear un consultorio de ejemplo
+console.log('Creando consultorio de ejemplo...');
+await db.query(`
+    INSERT IGNORE INTO Consultorios (Nombre, Descripcion)
+    VALUES ('Consultorio 1', 'Consultorio principal')
+`);
 
 // Crear vinculación entre alumno y profesor
 console.log('Vinculando alumno con profesor...');
@@ -163,7 +166,7 @@ if (vinculacionExistente.length > 0) {
     );
 } else {
     await db.query(`
-    INSERT INTO VinculacionAlumnoProfesor (AlumnoInfoID, ProfesorInfoID, FechaInicio, Activo) 
+    INSERT INTO VinculacionAlumnoProfesor (AlumnoInfoID, ProfesorInfoID, FechaInicio, Activo)
     VALUES (?, ?, NOW(), TRUE)
     `, [alumnoInfoId, profesorInfoId]);
 }
@@ -171,7 +174,7 @@ if (vinculacionExistente.length > 0) {
 // Crear catálogos necesarios
 console.log('Creando catálogos necesarios...');
 await db.query(`
-    INSERT IGNORE INTO CatalogosGenerales (TipoCatalogo, Valor, Descripcion, Orden) VALUES 
+    INSERT IGNORE INTO CatalogosGenerales (TipoCatalogo, Valor, Descripcion, Orden) VALUES
     ('GENERO', 'Hombre', 'Género masculino', 1),
     ('GENERO', 'Mujer', 'Género femenino', 2),
     ('ESTADO_CIVIL', 'Soltero (a)', 'Persona no casada ni en unión civil', 1),

@@ -24,22 +24,24 @@ res.status(200).json({
  * Obtener una historia clínica específica por ID
  */
 obtenerHistoriaClinica: catchAsync(async (req, res) => {
-const { id } = req.params;
-const alumnoId = req.usuario.AlumnoInfoID;
+  const { id } = req.params;
+  const alumnoId = req.usuario.AlumnoInfoID;
 
-const historia = await historiaClinicaService.obtenerHistoriaClinicaPorId(id, alumnoId);
+  console.log(`Controller: Obteniendo historia clínica ID=${id} para alumnoId=${alumnoId}`);
 
-if (!historia) {
+  const historia = await historiaClinicaService.obtenerHistoriaClinicaPorId(id, alumnoId);
+
+  if (!historia) {
     return res.status(404).json({
-    status: 'error',
-    message: 'Historia clínica no encontrada'
+      status: 'error',
+      message: 'Historia clínica no encontrada o no tienes permiso para acceder a ella'
     });
-}
+  }
 
-res.status(200).json({
+  res.status(200).json({
     status: 'success',
     data: historia
-});
+  });
 }),
 
 /**

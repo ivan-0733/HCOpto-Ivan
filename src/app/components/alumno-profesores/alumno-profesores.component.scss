@@ -1,0 +1,234 @@
+/* Variables importadas globalmente desde styles.scss */
+@import '../../styles/variables';
+
+// Contenedor principal
+.profesores-container {
+  padding: $spacing-xl;
+  background-color: $ipn-guinda;
+  min-height: calc(100vh - $nav-height);
+  display: flex;
+  flex-direction: column;
+}
+
+// Header del contenido
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+
+  .header-title {
+    h1 {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 700;
+      color: $text-primary;
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+
+      i {
+        color: $primary;
+      }
+    }
+  }
+}
+
+// Estados de carga, error y vacío
+.loading-container,
+.error-container,
+.empty-container {
+  padding: $spacing-xxl;
+  margin: $spacing-xl auto;
+  max-width: 640px;
+  text-align: center;
+  background-color: $bg-white;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-md;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 5px solid rgba($primary, 0.1);
+    border-left-color: $primary;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: $spacing-lg;
+  }
+
+  i {
+    font-size: 2.75rem;
+    margin-bottom: $spacing-lg;
+    color: $text-tertiary;
+  }
+
+  p {
+    margin: 0 0 $spacing-sm;
+    font-size: 1.1rem;
+    color: $text-secondary;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    color: $text-tertiary;
+  }
+
+  button {
+    margin-top: $spacing-xl;
+  }
+}
+
+.error-container {
+  color: $danger;
+
+  i {
+    color: $danger;
+  }
+}
+
+.empty-container {
+  color: $text-tertiary;
+
+  i {
+    color: $text-tertiary;
+  }
+}
+
+// Lista de profesores
+.profesores-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $spacing-xl;
+  margin-top: $spacing-xl;
+}
+
+// Tarjeta de profesor
+.profesor-card {
+  background-color: $bg-white;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: $spacing-xl;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left: 4px solid $primary;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-lg;
+  }
+
+  .profesor-avatar {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    border-radius: 50%;
+    background-color: rgba($primary, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: $spacing-xl;
+
+    i {
+      font-size: 1.75rem;
+      color: $primary;
+    }
+  }
+
+  .profesor-info {
+    flex: 1;
+
+    h3 {
+      margin: 0 0 $spacing-sm;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: $text-primary;
+    }
+
+    p {
+      margin: 0 0 $spacing-sm;
+      color: $text-secondary;
+      font-size: 0.95rem;
+
+      &.profesor-id {
+        font-weight: 600;
+        color: $primary;
+        margin-bottom: $spacing-md;
+      }
+
+      &.profesor-contact {
+        display: flex;
+        align-items: center;
+
+        i {
+          margin-right: $spacing-sm;
+          color: $text-tertiary;
+          width: 1rem;
+          text-align: center;
+        }
+      }
+
+      &.profesor-since {
+        margin-top: $spacing-md;
+        font-size: 0.85rem;
+        color: $text-tertiary;
+        display: flex;
+        align-items: center;
+
+        i {
+          margin-right: $spacing-sm;
+        }
+      }
+    }
+  }
+}
+
+// Animación de carga
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Botón de reintentar
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-xl;
+  border-radius: $border-radius-lg;
+  border: 1px solid $danger;
+  background-color: $bg-white;
+  color: $danger;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s;
+
+  i {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.08);
+  }
+}
+
+// Media queries para responsive
+@media (max-width: 992px) {
+  .profesores-list {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .profesores-list {
+    grid-template-columns: 1fr;
+  }
+}

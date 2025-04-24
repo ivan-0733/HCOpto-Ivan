@@ -1,0 +1,404 @@
+<div class="historia-form-container">
+  <!-- Header -->
+  <header class="form-header">
+    <div class="header-title">
+      <h1 *ngIf="!isEditing">
+        <i class="fas fa-file-medical"></i>
+        Nueva Historia Clínica
+      </h1>
+      <h1 *ngIf="isEditing">
+        <i class="fas fa-edit"></i>
+        Editar Historia Clínica #{{ historiaId }}
+      </h1>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="cancelar()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button class="btn-primary" (click)="onSubmit()" [disabled]="submitting || loading">
+        <i class="fas fa-save"></i>
+        Guardar
+      </button>
+    </div>
+  </header>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Formulario -->
+  <div *ngIf="!loading" class="form-content">
+    <form [formGroup]="historiaForm" (ngSubmit)="onSubmit()">
+      <!-- Pestañas para navegar entre secciones -->
+      <div class="form-tabs" *ngIf="isEditing">
+        <button type="button" [ngClass]="getButtonClass('datos-generales')" (click)="changeTab('datos-generales')">
+          <i class="fas fa-info-circle"></i>
+          Datos Generales
+        </button>
+        <button type="button" [ngClass]="getButtonClass('interrogatorio')" (click)="changeTab('interrogatorio')">
+          <i class="fas fa-clipboard-list"></i>
+          Interrogatorio
+        </button>
+        <button type="button" [ngClass]="getButtonClass('agudeza-visual')" (click)="changeTab('agudeza-visual')">
+          <i class="fas fa-eye"></i>
+          Agudeza Visual
+        </button>
+        <button type="button" [ngClass]="getButtonClass('lensometria')" (click)="changeTab('lensometria')">
+          <i class="fas fa-glasses"></i>
+          Lensometría
+        </button>
+        <button type="button" [ngClass]="getButtonClass('diagnostico')" (click)="changeTab('diagnostico')">
+          <i class="fas fa-stethoscope"></i>
+          Diagnóstico
+        </button>
+        <button type="button" [ngClass]="getButtonClass('receta')" (click)="changeTab('receta')">
+          <i class="fas fa-prescription"></i>
+          Receta Final
+        </button>
+      </div>
+
+      <!-- Sección de datos generales -->
+      <div class="form-section" *ngIf="currentTab === 'datos-generales'">
+        <h2>Información General</h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="profesorID">Profesor Asignado *</label>
+            <select id="profesorID" formControlName="profesorID" [ngClass]="{'is-invalid': historiaForm.get('profesorID')?.invalid && historiaForm.get('profesorID')?.touched}">
+              <option value="">Selecciona un profesor</option>
+              <option *ngFor="let profesor of profesores" [value]="profesor.ProfesorInfoID">
+                {{ profesor.NombreUsuario }} ({{ profesor.NumeroEmpleado }})
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="historiaForm.get('profesorID')?.invalid && historiaForm.get('profesorID')?.touched">
+              Por favor, selecciona un profesor.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="consultorioID">Consultorio *</label>
+            <select id="consultorioID" formControlName="consultorioID" [ngClass]="{'is-invalid': historiaForm.get('consultorioID')?.invalid && historiaForm.get('consultorioID')?.touched}">
+              <option value="">Selecciona un consultorio</option>
+              <option *ngFor="let consultorio of consultorios" [value]="consultorio.ID">
+                {{ consultorio.Nombre }} - {{ consultorio.Descripcion }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="historiaForm.get('consultorioID')?.invalid && historiaForm.get('consultorioID')?.touched">
+              Por favor, selecciona un consultorio.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="semestreID">Semestre *</label>
+            <select id="semestreID" formControlName="semestreID" [ngClass]="{'is-invalid': historiaForm.get('semestreID')?.invalid && historiaForm.get('semestreID')?.touched}">
+              <option value="">Selecciona un semestre</option>
+              <option *ngIf="semestreActual" [value]="semestreActual.ID">
+                {{ semestreActual.Nombre }} ({{ semestreActual.FechaInicio | date:'dd/MM/yyyy' }} - {{ semestreActual.FechaFin | date:'dd/MM/yyyy' }})
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="historiaForm.get('semestreID')?.invalid && historiaForm.get('semestreID')?.touched">
+              Por favor, selecciona un semestre.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fecha">Fecha de Consulta *</label>
+            <input type="date" id="fecha" formControlName="fecha" [ngClass]="{'is-invalid': historiaForm.get('fecha')?.invalid && historiaForm.get('fecha')?.touched}">
+            <div class="invalid-feedback" *ngIf="historiaForm.get('fecha')?.invalid && historiaForm.get('fecha')?.touched">
+              Por favor, selecciona una fecha válida.
+            </div>
+          </div>
+        </div>
+
+        <h2>Paciente</h2>
+
+        <!-- Búsqueda de paciente existente -->
+        <div class="paciente-search" *ngIf="!pacienteSeleccionado && !isEditing">
+          <div class="form-group">
+            <label for="busquedaPaciente">Buscar paciente existente</label>
+            <div class="search-input-group">
+              <div class="input-with-icon">
+                <i class="fas fa-search"></i>
+                <input
+                type="text"
+                id="busquedaPaciente"
+                [formControl]="busquedaControl"
+                placeholder="Nombre, apellido o correo (mínimo 3 caracteres)"
+              >
+              </div>
+              <button type="button" class="btn-outline" (click)="limpiarPacienteSeleccionado()" *ngIf="pacienteSeleccionado">
+                <i class="fas fa-times"></i>
+                Limpiar
+              </button>
+            </div>
+
+            <!-- Resultados de búsqueda -->
+            <div class="search-results" *ngIf="mostrarResultadosBusqueda">
+              <div class="search-loading" *ngIf="buscandoPacientes">
+                <div class="spinner-small"></div>
+                <span>Buscando pacientes...</span>
+              </div>
+
+              <div class="no-results" *ngIf="!buscandoPacientes && pacientesBusqueda.length === 0">
+                <i class="fas fa-info-circle"></i>
+                <span>No se encontraron pacientes. Ingresa los datos manualmente.</span>
+              </div>
+
+              <ul *ngIf="!buscandoPacientes && pacientesBusqueda.length > 0">
+                <li *ngFor="let paciente of pacientesBusqueda" (click)="seleccionarPaciente(paciente)">
+                  <div class="paciente-item">
+                    <div class="paciente-info">
+                      <strong>{{ paciente.Nombre }} {{ paciente.ApellidoPaterno }} {{ paciente.ApellidoMaterno }}</strong>
+                      <small>{{ paciente.CorreoElectronico }} | {{ paciente.TelefonoCelular }}</small>
+                    </div>
+                    <div class="paciente-edad">
+                      <span>{{ paciente.Edad }} años</span>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paciente seleccionado -->
+        <div class="paciente-selected" *ngIf="pacienteSeleccionado && !isEditing">
+          <div class="paciente-selected-header">
+            <h3>Paciente Seleccionado</h3>
+            <button type="button" class="btn-outline" (click)="limpiarPacienteSeleccionado()">
+              <i class="fas fa-times"></i>
+              Cambiar paciente
+            </button>
+          </div>
+
+          <div class="paciente-selected-info">
+            <div class="info-row">
+              <div class="info-col">
+                <strong>Nombre:</strong> {{ pacienteSeleccionado.Nombre }} {{ pacienteSeleccionado.ApellidoPaterno }} {{ pacienteSeleccionado.ApellidoMaterno }}
+              </div>
+              <div class="info-col">
+                <strong>Edad:</strong> {{ pacienteSeleccionado.Edad }} años
+              </div>
+            </div>
+            <div class="info-row">
+              <div class="info-col">
+                <strong>Correo:</strong> {{ pacienteSeleccionado.CorreoElectronico }}
+              </div>
+              <div class="info-col">
+                <strong>Teléfono:</strong> {{ pacienteSeleccionado.TelefonoCelular }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario de paciente -->
+        <div formGroupName="paciente">
+          <!-- Campo oculto para el ID del paciente -->
+          <input type="hidden" formControlName="id">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nombre">Nombre(s) *</label>
+              <input type="text" id="nombre" formControlName="nombre" [ngClass]="{'is-invalid': historiaForm.get('paciente.nombre')?.invalid && historiaForm.get('paciente.nombre')?.touched}">
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.nombre')?.invalid && historiaForm.get('paciente.nombre')?.touched">
+                Por favor, ingresa el nombre del paciente.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="apellidoPaterno">Apellido Paterno *</label>
+              <input type="text" id="apellidoPaterno" formControlName="apellidoPaterno" [ngClass]="{'is-invalid': historiaForm.get('paciente.apellidoPaterno')?.invalid && historiaForm.get('paciente.apellidoPaterno')?.touched}">
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.apellidoPaterno')?.invalid && historiaForm.get('paciente.apellidoPaterno')?.touched">
+                Por favor, ingresa el apellido paterno del paciente.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="apellidoMaterno">Apellido Materno</label>
+              <input type="text" id="apellidoMaterno" formControlName="apellidoMaterno">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="generoID">Género *</label>
+              <select id="generoID" formControlName="generoID" [ngClass]="{'is-invalid': historiaForm.get('paciente.generoID')?.invalid && historiaForm.get('paciente.generoID')?.touched}">
+                <option value="">Selecciona un género</option>
+                <option *ngFor="let genero of generos" [value]="genero.ID">{{ genero.Valor }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.generoID')?.invalid && historiaForm.get('paciente.generoID')?.touched">
+                Por favor, selecciona el género del paciente.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="edad">Edad *</label>
+              <input type="number" id="edad" formControlName="edad" min="1" max="130" [ngClass]="{'is-invalid': historiaForm.get('paciente.edad')?.invalid && historiaForm.get('paciente.edad')?.touched}">
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.edad')?.invalid && historiaForm.get('paciente.edad')?.touched">
+                Por favor, ingresa una edad válida (entre 1 y 130 años).
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="estadoCivilID">Estado Civil</label>
+              <select id="estadoCivilID" formControlName="estadoCivilID">
+                <option value="">Selecciona un estado civil</option>
+                <option *ngFor="let estadoCivil of estadosCiviles" [value]="estadoCivil.ID">{{ estadoCivil.Valor }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="escolaridadID">Escolaridad</label>
+              <select id="escolaridadID" formControlName="escolaridadID">
+                <option value="">Selecciona nivel de escolaridad</option>
+                <option *ngFor="let escolaridad of escolaridades" [value]="escolaridad.ID">{{ escolaridad.Valor }}</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="ocupacion">Ocupación</label>
+              <input type="text" id="ocupacion" formControlName="ocupacion">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="correoElectronico">Correo Electrónico *</label>
+              <input type="email" id="correoElectronico" formControlName="correoElectronico" [ngClass]="{'is-invalid': historiaForm.get('paciente.correoElectronico')?.invalid && historiaForm.get('paciente.correoElectronico')?.touched}">
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.correoElectronico')?.invalid && historiaForm.get('paciente.correoElectronico')?.touched">
+                <span *ngIf="historiaForm.get('paciente.correoElectronico')?.errors?.['required']">Por favor, ingresa el correo electrónico del paciente.</span>
+                <span *ngIf="historiaForm.get('paciente.correoElectronico')?.errors?.['email']">Por favor, ingresa un correo electrónico válido.</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="telefonoCelular">Teléfono Celular *</label>
+              <input type="tel" id="telefonoCelular" formControlName="telefonoCelular" [ngClass]="{'is-invalid': historiaForm.get('paciente.telefonoCelular')?.invalid && historiaForm.get('paciente.telefonoCelular')?.touched}">
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.telefonoCelular')?.invalid && historiaForm.get('paciente.telefonoCelular')?.touched">
+                Por favor, ingresa el teléfono celular del paciente.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">Teléfono Fijo</label>
+              <input type="tel" id="telefono" formControlName="telefono">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="direccionLinea1">Dirección Línea 1</label>
+              <input type="text" id="direccionLinea1" formControlName="direccionLinea1" placeholder="Calle, número, colonia">
+            </div>
+
+            <div class="form-group">
+              <label for="direccionLinea2">Dirección Línea 2</label>
+              <input type="text" id="direccionLinea2" formControlName="direccionLinea2" placeholder="Interior, edificio, etc.">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ciudad">Ciudad</label>
+              <input type="text" id="ciudad" formControlName="ciudad">
+            </div>
+
+            <div class="form-group">
+              <label for="codigoPostal">Código Postal</label>
+              <input type="text" id="codigoPostal" formControlName="codigoPostal">
+            </div>
+
+            <div class="form-group">
+              <label for="pais">País</label>
+              <input type="text" id="pais" formControlName="pais">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secciones adicionales para cuando estamos en modo edición -->
+      <div class="form-section" *ngIf="currentTab === 'interrogatorio' && isEditing">
+        <h2>Interrogatorio</h2>
+        <p class="info-text">Esta sección permite registrar el interrogatorio al paciente.</p>
+
+        <!-- Aquí iría el formulario para interrogatorio -->
+        <div class="coming-soon">
+          <i class="fas fa-clipboard-list"></i>
+          <p>El formulario para esta sección estará disponible próximamente.</p>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="currentTab === 'agudeza-visual' && isEditing">
+        <h2>Agudeza Visual</h2>
+        <p class="info-text">Esta sección permite registrar la agudeza visual del paciente.</p>
+
+        <!-- Aquí iría el formulario para agudeza visual -->
+        <div class="coming-soon">
+          <i class="fas fa-eye"></i>
+          <p>El formulario para esta sección estará disponible próximamente.</p>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="currentTab === 'lensometria' && isEditing">
+        <h2>Lensometría</h2>
+        <p class="info-text">Esta sección permite registrar la lensometría del paciente.</p>
+
+        <!-- Aquí iría el formulario para lensometría -->
+        <div class="coming-soon">
+          <i class="fas fa-glasses"></i>
+          <p>El formulario para esta sección estará disponible próximamente.</p>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="currentTab === 'diagnostico' && isEditing">
+        <h2>Diagnóstico</h2>
+        <p class="info-text">Esta sección permite registrar el diagnóstico del paciente.</p>
+
+        <!-- Aquí iría el formulario para diagnóstico -->
+        <div class="coming-soon">
+          <i class="fas fa-stethoscope"></i>
+          <p>El formulario para esta sección estará disponible próximamente.</p>
+        </div>
+      </div>
+
+      <div class="form-section" *ngIf="currentTab === 'receta' && isEditing">
+        <h2>Receta Final</h2>
+        <p class="info-text">Esta sección permite registrar la receta final para el paciente.</p>
+
+        <!-- Aquí iría el formulario para receta final -->
+        <div class="coming-soon">
+          <i class="fas fa-prescription"></i>
+          <p>El formulario para esta sección estará disponible próximamente.</p>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="submitting">
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+          {{ isEditing ? 'Actualizar Historia Clínica' : 'Crear Historia Clínica' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

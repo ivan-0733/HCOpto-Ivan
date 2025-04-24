@@ -1,0 +1,91 @@
+// Colores institucionales del IPN
+$ipn-guinda: #731635;
+$ipn-guinda-light: #922041;
+$ipn-guinda-dark: #5a112a;
+$ipn-white: #ffffff;
+$ipn-gray: #f0f0f0;
+$ipn-gray-dark: #c0c0c0;
+
+// Colores para estados
+$success: #28a745;
+$info: #17a2b8;
+$warning: #ffc107;
+$danger: #dc3545;
+$danger-light: #fff5f5;
+
+// Estilo de fuentes
+$font-family-base: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+$font-size-base: 1rem;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+// Breakpoints para responsive
+$breakpoint-xs: 0;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Espaciado
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-xxl: 48px;
+
+// Bordes
+$border-radius-sm: 4px;
+$border-radius: 6px;
+$border-radius-lg: 8px;
+$border-radius-xl: 12px;
+$border-radius-xxl: 16px;
+
+// Sombras
+$box-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+$box-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+$box-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+
+// Transiciones
+$transition-base: all 0.3s ease;
+$transition-fast: all 0.2s ease;
+$transition-slow: all 0.5s ease;
+
+// Z-index
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// Altura del navbar
+$nav-height: 64px;
+
+// Colores base adicionales
+$primary: $ipn-guinda;
+$primary-light: $ipn-guinda-light;
+$primary-dark: $ipn-guinda-dark;
+
+// Texto
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-tertiary: #999999;
+
+// Fondo
+$bg-white: $ipn-white;
+$bg-gray: $ipn-gray;
+
+// Sombras personalizadas
+$shadow-sm: $box-shadow-sm;
+$shadow-md: $box-shadow;
+$shadow-lg: $box-shadow-lg;
+
+// Bordes adicionales
+$border-color: #dcdcdc;
+
+// Fondos adicionales
+$bg-light: #f8f9fa;

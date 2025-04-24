@@ -1,0 +1,611 @@
+@import '../../styles/variables';
+
+.historia-form-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $spacing-md;
+}
+
+// Header
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+
+  .header-title {
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: $font-weight-bold;
+      color: $ipn-guinda;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: $spacing-md;
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: $spacing-md;
+
+    .btn-primary {
+      background-color: $ipn-guinda;
+      color: $ipn-white;
+      border: none;
+      border-radius: $border-radius;
+      padding: $spacing-md $spacing-lg;
+      font-size: 0.9rem;
+      font-weight: $font-weight-medium;
+      cursor: pointer;
+      transition: $transition-base;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: $spacing-sm;
+      }
+
+      &:hover {
+        background-color: $ipn-guinda-light;
+      }
+
+      &:disabled {
+        background-color: $ipn-gray-dark;
+        cursor: not-allowed;
+      }
+
+      .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba($ipn-white, 0.2);
+        border-left-color: $ipn-white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: $spacing-sm;
+      }
+    }
+
+    .btn-secondary {
+      background-color: $ipn-white;
+      color: $ipn-guinda;
+      border: 1px solid $ipn-guinda;
+      border-radius: $border-radius;
+      padding: $spacing-md $spacing-lg;
+      font-size: 0.9rem;
+      font-weight: $font-weight-medium;
+      cursor: pointer;
+      transition: $transition-base;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: $spacing-sm;
+      }
+
+      &:hover {
+        background-color: rgba($ipn-guinda, 0.1);
+      }
+    }
+  }
+}
+
+// Mensajes de error y éxito
+.error-message,
+.success-message {
+  padding: $spacing-md;
+  border-radius: $border-radius;
+  margin-bottom: $spacing-lg;
+  display: flex;
+  align-items: center;
+
+  i {
+    margin-right: $spacing-md;
+    font-size: 1.2rem;
+  }
+}
+
+.error-message {
+  background-color: $danger-light;
+  color: $danger;
+  border-left: 4px solid $danger;
+}
+
+.success-message {
+  background-color: rgba($success, 0.1);
+  color: darken($success, 10%);
+  border-left: 4px solid $success;
+}
+
+// Indicador de carga
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xxl;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-left-color: $ipn-guinda;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: $spacing-md;
+  }
+
+  p {
+    color: #666;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+}
+
+// Contenido del formulario
+.form-content {
+  background-color: $ipn-white;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow;
+  overflow: hidden;
+
+  // Pestañas de navegación
+  .form-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid $ipn-gray-dark;
+    background-color: $ipn-gray;
+
+    button {
+      padding: $spacing-md $spacing-lg;
+      background: none;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: $font-weight-medium;
+      color: #555;
+      cursor: pointer;
+      transition: $transition-base;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: $spacing-sm;
+      }
+
+      &:hover {
+        background-color: rgba($ipn-white, 0.7);
+      }
+
+      &.active {
+        background-color: $ipn-white;
+        color: $ipn-guinda;
+        font-weight: $font-weight-bold;
+        border-bottom: 3px solid $ipn-guinda;
+
+        i {
+          color: $ipn-guinda;
+        }
+      }
+    }
+  }
+
+  // Secciones del formulario
+  .form-section {
+    padding: $spacing-xl;
+
+    h2 {
+      color: $ipn-guinda;
+      font-size: 1.4rem;
+      margin-top: 0;
+      margin-bottom: $spacing-lg;
+      padding-bottom: $spacing-sm;
+      border-bottom: 1px solid $ipn-gray;
+    }
+
+    .info-text {
+      color: #666;
+      margin-bottom: $spacing-lg;
+    }
+
+    .coming-soon {
+      text-align: center;
+      padding: $spacing-xxl $spacing-xl;
+      color: #888;
+
+      i {
+        font-size: 3rem;
+        margin-bottom: $spacing-md;
+        color: $ipn-gray-dark;
+      }
+
+      p {
+        font-size: 1.1rem;
+      }
+    }
+  }
+
+  // Estilos para las filas de formulario
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    .form-group {
+      flex: 1;
+      min-width: 200px;
+    }
+  }
+
+  // Grupos de formulario
+  .form-group {
+    margin-bottom: $spacing-lg;
+
+    label {
+      display: block;
+      margin-bottom: $spacing-sm;
+      font-weight: $font-weight-medium;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: $spacing-md;
+      border: 1px solid $ipn-gray-dark;
+      border-radius: $border-radius;
+      font-size: 1rem;
+      transition: $transition-base;
+
+      &:focus {
+        outline: none;
+        border-color: $ipn-guinda;
+        box-shadow: 0 0 0 3px rgba($ipn-guinda, 0.1);
+      }
+
+      &.is-invalid {
+        border-color: $danger;
+      }
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .invalid-feedback {
+      color: $danger;
+      font-size: 0.85rem;
+      margin-top: $spacing-sm;
+    }
+  }
+
+  // Búsqueda de paciente
+  .paciente-search {
+    margin-bottom: $spacing-xl;
+
+    .search-input-group {
+      display: flex;
+      gap: $spacing-md;
+
+      .input-with-icon {
+        position: relative;
+        flex: 1;
+
+        i {
+          position: absolute;
+          left: $spacing-md;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #888;
+        }
+
+        input {
+          padding-left: 35px;
+        }
+      }
+
+      .btn-outline {
+        background: none;
+        border: 1px solid $ipn-gray-dark;
+        color: #666;
+        padding: 0 $spacing-md;
+        border-radius: $border-radius;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+
+        &:hover {
+          background-color: $ipn-gray;
+        }
+      }
+    }
+
+    .search-results {
+      margin-top: $spacing-md;
+      background-color: $ipn-white;
+      border: 1px solid $ipn-gray-dark;
+      border-radius: $border-radius;
+      max-height: 300px;
+      overflow-y: auto;
+      box-shadow: $box-shadow;
+
+      .search-loading, .no-results {
+        padding: $spacing-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+
+        i {
+          margin-right: $spacing-sm;
+        }
+
+        .spinner-small {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba($ipn-guinda, 0.1);
+          border-left-color: $ipn-guinda;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-right: $spacing-sm;
+        }
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          padding: $spacing-md;
+          border-bottom: 1px solid $ipn-gray;
+          cursor: pointer;
+          transition: $transition-base;
+
+          &:hover {
+            background-color: rgba($ipn-guinda, 0.05);
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .paciente-item {
+            display: flex;
+            justify-content: space-between;
+
+            .paciente-info {
+              display: flex;
+              flex-direction: column;
+
+              strong {
+                color: #333;
+                font-weight: $font-weight-medium;
+              }
+
+              small {
+                color: #666;
+                font-size: 0.85rem;
+                margin-top: $spacing-xs;
+              }
+            }
+
+            .paciente-edad {
+              color: #666;
+              align-self: center;
+              font-weight: $font-weight-medium;
+              padding: $spacing-sm $spacing-md;
+              background-color: $ipn-gray;
+              border-radius: 20px;
+              font-size: 0.85rem;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Paciente seleccionado
+  .paciente-selected {
+    background-color: rgba($ipn-guinda, 0.05);
+    border-radius: $border-radius;
+    padding: $spacing-lg;
+    margin-bottom: $spacing-xl;
+    border-left: 4px solid $ipn-guinda;
+
+    &-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-md;
+
+      h3 {
+        margin: 0;
+        color: $ipn-guinda;
+        font-size: 1.1rem;
+      }
+
+      .btn-outline {
+        background: none;
+        border: 1px solid $ipn-guinda;
+        color: $ipn-guinda;
+        padding: $spacing-sm $spacing-md;
+        border-radius: $border-radius;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: $spacing-sm;
+        font-size: 0.9rem;
+
+        &:hover {
+          background-color: rgba($ipn-guinda, 0.1);
+        }
+      }
+    }
+
+    &-info {
+      .info-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-lg;
+        margin-bottom: $spacing-sm;
+
+        .info-col {
+          flex: 1;
+          min-width: 200px;
+          color: #333;
+
+          strong {
+            color: #555;
+            font-weight: $font-weight-medium;
+          }
+        }
+      }
+    }
+  }
+
+  // Botones de acción
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+    border-top: 1px solid $ipn-gray;
+    background-color: $ipn-gray;
+
+    .btn-primary {
+      background-color: $ipn-guinda;
+      color: $ipn-white;
+      border: none;
+      border-radius: $border-radius;
+      padding: $spacing-md $spacing-xl;
+      font-size: 0.95rem;
+      font-weight: $font-weight-medium;
+      cursor: pointer;
+      transition: $transition-base;
+
+      &:hover {
+        background-color: $ipn-guinda-light;
+      }
+
+      &:disabled {
+        background-color: $ipn-gray-dark;
+        cursor: not-allowed;
+      }
+
+      .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid rgba($ipn-white, 0.2);
+        border-left-color: $ipn-white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: $spacing-sm;
+      }
+    }
+
+    .btn-secondary {
+      background-color: $ipn-white;
+      color: #666;
+      border: 1px solid $ipn-gray-dark;
+      border-radius: $border-radius;
+      padding: $spacing-md $spacing-xl;
+      font-size: 0.95rem;
+      font-weight: $font-weight-medium;
+      cursor: pointer;
+      transition: $transition-base;
+
+      &:hover {
+        background-color: $ipn-gray;
+      }
+    }
+  }
+}
+
+// Media queries para responsive
+@media (max-width: $breakpoint-lg) {
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-md;
+
+    .header-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+
+  .form-content {
+    .form-tabs {
+      padding-bottom: $spacing-sm;
+
+      button {
+        padding: $spacing-sm $spacing-md;
+        font-size: 0.9rem;
+
+        &.active {
+          border-bottom: 2px solid $ipn-guinda;
+        }
+      }
+    }
+
+    .form-section {
+      padding: $spacing-lg;
+    }
+
+    .form-row {
+      flex-direction: column;
+      gap: $spacing-md;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .paciente-selected-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-md;
+
+    .btn-outline {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .search-input-group {
+    flex-direction: column;
+
+    .btn-outline {
+      width: 100%;
+      justify-content: center;
+      padding: $spacing-sm 0;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .historia-form-container {
+    padding: $spacing-sm;
+  }
+
+  .form-section {
+    padding: $spacing-md !important;
+  }
+}

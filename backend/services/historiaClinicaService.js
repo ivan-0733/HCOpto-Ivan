@@ -9,167 +9,141 @@ const historiaClinicaService = {
  * @param {number} alumnoId - ID del alumno (de AlumnosInfo)
  * @returns {Promise<Array>} - Lista de historias clínicas
  */
+// En historiaClinicaService.js
 async obtenerHistoriasClinicasPorAlumno(alumnoId) {
-try {
-const [historias] = await db.query(
-`SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-        p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-        cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre
-FROM HistorialesClinicos hc
-    JOIN Pacientes p ON hc.PacienteID = p.ID
-    JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-    JOIN Consultorios c ON hc.ConsultorioID = c.ID
-    JOIN Semestres s ON hc.SemestreID = s.ID
-    WHERE hc.AlumnoID = ?
-    ORDER BY hc.Fecha DESC`,
-[alumnoId]
-);
+  try {
+    const [historias] = await db.query(
+      `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
+              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
+              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
+              cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre
+      FROM HistorialesClinicos hc
+          JOIN Pacientes p ON hc.PacienteID = p.ID
+          JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+          JOIN Consultorios c ON hc.ConsultorioID = c.ID
+          JOIN Semestres s ON hc.SemestreID = s.ID
+          WHERE hc.AlumnoID = ?
+          ORDER BY hc.Fecha DESC`,
+      [alumnoId]
+    );
 
-return historias;
-} catch (error) {
-console.error('Error al obtener historias clínicas:', error);
-throw error;
-}
+    return historias;
+  } catch (error) {
+    console.error('Error al obtener historias clínicas:', error);
+    throw error;
+  }
 },
 
 /**
  * Obtiene una historia clínica por su ID
- * @param {number} historiaId - ID de la historia clínica
+ * @param {number} id - ID de la historia clínica
  * @param {number} alumnoId - ID del alumno para verificar permisos
  * @returns {Promise<Object|null>} - Datos de la historia clínica o null si no existe
  */
-async obtenerHistoriaClinicaPorId(historiaId, alumnoId) {
-try {
-    // Consulta principal para datos básicos de la historia clínica
+async obtenerHistoriaClinicaPorId(id, alumnoId) {
+  try {
+    console.log(`Obteniendo historia ID=${id} para alumnoId=${alumnoId}`);
+
+    // Consulta única optimizada con todos los joins necesarios
     const [historias] = await db.query(
-    `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-            p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-            p.GeneroID, p.Edad, p.EstadoCivilID, p.EscolaridadID, p.Ocupacion,
-            p.DireccionLinea1, p.DireccionLinea2, p.Ciudad, p.EstadoID AS PacienteEstadoID,
-            p.CodigoPostal, p.Pais, p.CorreoElectronico, p.TelefonoCelular, p.Telefono,
-            cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre,
-            a.ID AS AlumnoID, a.NumeroBoleta, ua.NombreUsuario AS AlumnoNombre,
-            pr.ID AS ProfesorID, pr.NumeroEmpleado, up.NombreUsuario AS ProfesorNombre
-        FROM HistorialesClinicos hc
-        JOIN Pacientes p ON hc.PacienteID = p.ID
-        JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-        JOIN Consultorios c ON hc.ConsultorioID = c.ID
-        JOIN Semestres s ON hc.SemestreID = s.ID
-        JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
-        JOIN Usuarios ua ON a.UsuarioID = ua.ID
-        JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
-        JOIN Usuarios up ON pr.UsuarioID = up.ID
-        WHERE hc.ID = ? AND hc.AlumnoID = ?`,
-    [historiaId, alumnoId]
+      `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
+              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
+              p.GeneroID, p.Edad, p.EstadoCivilID, p.EscolaridadID, p.Ocupacion,
+              p.DireccionLinea1, p.DireccionLinea2, p.Ciudad, p.EstadoID AS PacienteEstadoID,
+              p.CodigoPostal, p.Pais, p.CorreoElectronico, p.TelefonoCelular, p.Telefono,
+              cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre,
+              a.ID AS AlumnoID, a.NumeroBoleta, ua.NombreUsuario AS AlumnoNombre,
+              pr.ID AS ProfesorID, pr.NumeroEmpleado, up.NombreUsuario AS ProfesorNombre
+       FROM HistorialesClinicos hc
+       JOIN Pacientes p ON hc.PacienteID = p.ID
+       JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+       JOIN Consultorios c ON hc.ConsultorioID = c.ID
+       JOIN Semestres s ON hc.SemestreID = s.ID
+       JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+       JOIN Usuarios ua ON a.UsuarioID = ua.ID
+       JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
+       JOIN Usuarios up ON pr.UsuarioID = up.ID
+       WHERE hc.ID = ? AND hc.AlumnoID = ?`,
+      [id, alumnoId]
     );
-    
+
     if (historias.length === 0) {
-    return null;
+      console.log(`Historia no encontrada ID=${id} para alumnoId=${alumnoId}`);
+      return null;
     }
-    
+
     const historia = historias[0];
-    
-    // Obtener datos del interrogatorio
-    const [interrogatorio] = await db.query(
-    `SELECT * FROM Interrogatorio WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    if (interrogatorio.length > 0) {
-    historia.interrogatorio = interrogatorio[0];
+    console.log('Datos básicos obtenidos:', historia.ID);
+
+    // Función auxiliar para ejecutar consultas relacionadas con manejo de errores
+    const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') => {
+      try {
+        const [results] = await db.query(
+          `SELECT * FROM ${table} WHERE ${whereColumn} = ?`,
+          [id]
+        );
+        historia[fieldName] = results.length > 0 ? results : [];
+        if (results.length > 0 && table !== 'AgudezaVisual') {
+          historia[fieldName] = results[0];
+        }
+      } catch (err) {
+        console.error(`Error en ${table}:`, err.message);
+        historia[fieldName] = table === 'AgudezaVisual' ? [] : null;
+      }
+    };
+
+    // Obtener datos relacionados
+    await Promise.all([
+      fetchRelatedData('Interrogatorio', 'interrogatorio'),
+      fetchRelatedData('AgudezaVisual', 'agudezaVisual'),
+      fetchRelatedData('Lensometria', 'lensometria'),
+      fetchRelatedData('Diagnostico', 'diagnostico'),
+      fetchRelatedData('PlanTratamiento', 'planTratamiento'),
+      fetchRelatedData('Pronostico', 'pronostico'),
+      fetchRelatedData('RecetaFinal', 'recetaFinal'),
+    ]);
+
+    // Obtener comentarios y respuestas con manejo de errores
+    try {
+      const [comentarios] = await db.query(
+        `SELECT cp.*, u.NombreUsuario AS ProfesorNombre
+         FROM ComentariosProfesor cp
+         JOIN ProfesoresInfo p ON cp.ProfesorID = p.ID
+         JOIN Usuarios u ON p.UsuarioID = u.ID
+         WHERE cp.HistorialID = ?
+         ORDER BY cp.FechaComentario`,
+        [id]
+      );
+
+      historia.comentarios = await Promise.all(
+        comentarios.map(async (comentario) => {
+          try {
+            const [respuestas] = await db.query(
+              `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
+               FROM RespuestasComentarios rc
+               JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
+               JOIN Usuarios u ON a.UsuarioID = u.ID
+               WHERE rc.ComentarioID = ?
+               ORDER BY rc.FechaRespuesta`,
+              [comentario.ID]
+            );
+            return { ...comentario, respuestas };
+          } catch (err) {
+            console.error('Error obteniendo respuestas:', err.message);
+            return { ...comentario, respuestas: [] };
+          }
+        })
+      );
+    } catch (err) {
+      console.error('Error obteniendo comentarios:', err.message);
+      historia.comentarios = [];
     }
-    
-    // Obtener datos de agudeza visual
-    const [agudezaVisual] = await db.query(
-    `SELECT * FROM AgudezaVisual WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    historia.agudezaVisual = agudezaVisual;
-    
-    // Obtener datos de lensometría
-    const [lensometria] = await db.query(
-    `SELECT * FROM Lensometria WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    if (lensometria.length > 0) {
-    historia.lensometria = lensometria[0];
-    }
-    
-    // Obtener diagnóstico
-    const [diagnostico] = await db.query(
-    `SELECT * FROM Diagnostico WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    if (diagnostico.length > 0) {
-    historia.diagnostico = diagnostico[0];
-    }
-    
-    // Obtener plan de tratamiento
-    const [planTratamiento] = await db.query(
-    `SELECT * FROM PlanTratamiento WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    if (planTratamiento.length > 0) {
-    historia.planTratamiento = planTratamiento[0];
-    }
-    
-    // Obtener pronóstico
-    const [pronostico] = await db.query(
-    `SELECT * FROM Pronostico WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    if (pronostico.length > 0) {
-    historia.pronostico = pronostico[0];
-    }
-    
-    // Obtener receta final
-    const [recetaFinal] = await db.query(
-    `SELECT * FROM RecetaFinal WHERE HistorialID = ?`,
-    [historiaId]
-    );
-    
-    if (recetaFinal.length > 0) {
-    historia.recetaFinal = recetaFinal[0];
-    }
-    
-    // Obtener comentarios del profesor
-    const [comentarios] = await db.query(
-    `SELECT cp.*, u.NombreUsuario AS ProfesorNombre
-        FROM ComentariosProfesor cp
-        JOIN ProfesoresInfo p ON cp.ProfesorID = p.ID
-        JOIN Usuarios u ON p.UsuarioID = u.ID
-        WHERE cp.HistorialID = ?
-        ORDER BY cp.FechaComentario`,
-    [historiaId]
-    );
-    
-    historia.comentarios = comentarios;
-    
-    // Para cada comentario, obtener sus respuestas
-    for (const comentario of historia.comentarios) {
-    const [respuestas] = await db.query(
-        `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-        FROM RespuestasComentarios rc
-        JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-        JOIN Usuarios u ON a.UsuarioID = u.ID
-        WHERE rc.ComentarioID = ?
-        ORDER BY rc.FechaRespuesta`,
-        [comentario.ID]
-    );
-    
-    comentario.respuestas = respuestas;
-    }
-    
+
     return historia;
-} catch (error) {
-    console.error('Error al obtener historia clínica por ID:', error);
-    throw error;
-}
+  } catch (error) {
+    console.error('Error general:', error.message);
+    throw new AppError('Error al obtener la historia clínica', 500);
+  }
 },
 
 /**
@@ -182,21 +156,21 @@ const connection = await db.pool.getConnection();
 
 try {
     await connection.beginTransaction();
-    
+
     // 1. Crear el paciente si no existe
     let pacienteId;
-    
+
     if (datosHistoria.paciente.id) {
     // Si se proporciona un ID de paciente, verificar que exista
     const [pacientes] = await connection.query(
         'SELECT ID FROM Pacientes WHERE ID = ?',
         [datosHistoria.paciente.id]
     );
-    
+
     if (pacientes.length === 0) {
         throw new Error('El paciente no existe');
     }
-    
+
     pacienteId = datosHistoria.paciente.id;
     } else {
     // Verificar si el paciente ya existe por correo o teléfono
@@ -204,7 +178,7 @@ try {
         'SELECT ID FROM Pacientes WHERE CorreoElectronico = ? OR TelefonoCelular = ?',
         [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
     );
-    
+
     if (pacientesExistentes.length > 0) {
         pacienteId = pacientesExistentes[0].ID;
     } else {
@@ -235,15 +209,15 @@ try {
             datosHistoria.paciente.telefono
         ]
         );
-        
+
         pacienteId = resultPaciente.insertId;
     }
     }
-    
+
     // 2. Crear la historia clínica
     const [resultHistoria] = await connection.query(
     `INSERT INTO HistorialesClinicos (
-        PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID, 
+        PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
         Archivado, ConsultorioID, SemestreID
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     [
@@ -257,9 +231,9 @@ try {
         datosHistoria.semestreID
     ]
     );
-    
+
     const historiaId = resultHistoria.insertId;
-    
+
     // 3. Crear el interrogatorio (si se proporciona)
     if (datosHistoria.interrogatorio) {
     await connection.query(
@@ -279,12 +253,12 @@ try {
         ]
     );
     }
-    
+
     await connection.commit();
-    
+
     // Obtener la historia clínica creada
     const historiaCreada = await this.obtenerHistoriaClinicaPorId(historiaId, datosHistoria.alumnoID);
-    
+
     return historiaCreada;
 } catch (error) {
     await connection.rollback();
@@ -307,21 +281,21 @@ const connection = await db.pool.getConnection();
 
 try {
     await connection.beginTransaction();
-    
+
     // Verificar que la historia clínica exista y no esté archivada
     const [historias] = await connection.query(
     'SELECT Archivado FROM HistorialesClinicos WHERE ID = ?',
     [historiaId]
     );
-    
+
     if (historias.length === 0) {
     throw new Error('La historia clínica no existe');
     }
-    
+
     if (historias[0].Archivado) {
     throw new Error('No se puede modificar una historia clínica archivada');
     }
-    
+
     // Actualizar la sección correspondiente
     switch (seccion) {
     case 'interrogatorio':
@@ -330,7 +304,7 @@ try {
         'SELECT ID FROM Interrogatorio WHERE HistorialID = ?',
         [historiaId]
         );
-        
+
         if (interrogatorios.length === 0) {
         // Crear nuevo interrogatorio
         await connection.query(
@@ -374,14 +348,14 @@ try {
         );
         }
         break;
-        
+
     case 'agudezaVisual':
         // Eliminar registros existentes para esta historia
         await connection.query(
         'DELETE FROM AgudezaVisual WHERE HistorialID = ?',
         [historiaId]
         );
-        
+
         // Insertar nuevos registros de agudeza visual
         for (const agudeza of datos) {
         await connection.query(
@@ -423,14 +397,14 @@ try {
         );
         }
         break;
-        
+
     case 'lensometria':
         // Verificar si ya existe un registro de lensometría para esta historia
         const [lensometrias] = await connection.query(
         'SELECT ID FROM Lensometria WHERE HistorialID = ?',
         [historiaId]
         );
-        
+
         if (lensometrias.length === 0) {
         // Crear nuevo registro de lensometría
         await connection.query(
@@ -484,14 +458,14 @@ try {
         );
         }
         break;
-        
+
     case 'diagnostico':
         // Verificar si ya existe un diagnóstico para esta historia
         const [diagnosticos] = await connection.query(
         'SELECT ID FROM Diagnostico WHERE HistorialID = ?',
         [historiaId]
         );
-        
+
         if (diagnosticos.length === 0) {
         // Crear nuevo diagnóstico
         await connection.query(
@@ -532,14 +506,14 @@ try {
         );
         }
         break;
-        
+
     case 'planTratamiento':
         // Verificar si ya existe un plan de tratamiento para esta historia
         const [planes] = await connection.query(
         'SELECT ID FROM PlanTratamiento WHERE HistorialID = ?',
         [historiaId]
         );
-        
+
         if (planes.length === 0) {
         // Crear nuevo plan de tratamiento
         await connection.query(
@@ -555,22 +529,22 @@ try {
         );
         }
         break;
-        
+
     case 'recetaFinal':
         // Verificar si ya existe una receta final para esta historia
         const [recetas] = await connection.query(
         'SELECT ID FROM RecetaFinal WHERE HistorialID = ?',
         [historiaId]
         );
-        
+
         if (recetas.length === 0) {
         // Crear nueva receta final
         await connection.query(
             `INSERT INTO RecetaFinal (
-            HistorialID, OjoDerechoEsfera, OjoDerechoCilindro, OjoDerechoEje, 
-            OjoDerechoPrisma, OjoDerechoEjePrisma, OjoIzquierdoEsfera, 
-            OjoIzquierdoCilindro, OjoIzquierdoEje, OjoIzquierdoPrisma, 
-            OjoIzquierdoEjePrisma, Tratamiento, TipoID, DIP, 
+            HistorialID, OjoDerechoEsfera, OjoDerechoCilindro, OjoDerechoEje,
+            OjoDerechoPrisma, OjoDerechoEjePrisma, OjoIzquierdoEsfera,
+            OjoIzquierdoCilindro, OjoIzquierdoEje, OjoIzquierdoPrisma,
+            OjoIzquierdoEjePrisma, Tratamiento, TipoID, DIP,
             ADD, Material, Observaciones
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -636,21 +610,21 @@ try {
         );
         }
         break;
-        
+
     // Otras secciones pueden ser implementadas de manera similar
-        
+
     default:
         throw new Error(`Sección no válida: ${seccion}`);
     }
-    
+
     // Actualizar la última modificación de la historia clínica
     await connection.query(
     'UPDATE HistorialesClinicos SET ActualizadoEn = NOW() WHERE ID = ?',
     [historiaId]
     );
-    
+
     await connection.commit();
-    
+
     return true;
 } catch (error) {
     await connection.rollback();
@@ -672,36 +646,36 @@ async responderComentario(comentarioId, alumnoId, respuesta) {
 try {
     // Verificar que el comentario exista
     const [comentarios] = await db.query(
-    `SELECT cp.*, hc.Archivado, hc.AlumnoID 
+    `SELECT cp.*, hc.Archivado, hc.AlumnoID
         FROM ComentariosProfesor cp
         JOIN HistorialesClinicos hc ON cp.HistorialID = hc.ID
         WHERE cp.ID = ?`,
     [comentarioId]
     );
-    
+
     if (comentarios.length === 0) {
     throw new Error('El comentario no existe');
     }
-    
+
     const comentario = comentarios[0];
-    
+
     // Verificar que la historia no esté archivada
     if (comentario.Archivado) {
     throw new Error('No se puede responder a un comentario en una historia archivada');
     }
-    
+
     // Verificar que el alumno sea el propietario de la historia
     if (comentario.AlumnoID !== alumnoId) {
     throw new Error('No tienes permiso para responder a este comentario');
     }
-    
+
     // Crear la respuesta
     const [resultado] = await db.query(
     `INSERT INTO RespuestasComentarios (ComentarioID, AlumnoID, Respuesta)
         VALUES (?, ?, ?)`,
     [comentarioId, alumnoId, respuesta]
     );
-    
+
     // Obtener la respuesta creada
     const [respuestas] = await db.query(
     `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
@@ -711,7 +685,7 @@ try {
         WHERE rc.ID = ?`,
     [resultado.insertId]
     );
-    
+
     return respuestas[0];
 } catch (error) {
     console.error('Error al responder comentario:', error);
@@ -728,7 +702,7 @@ async obtenerEstadisticas(alumnoId) {
 try {
     // Obtener total de historias y conteo por estado
     const [estadisticas] = await db.query(
-    `SELECT 
+    `SELECT
         (SELECT COUNT(*) FROM HistorialesClinicos WHERE AlumnoID = ?) AS total,
         (SELECT COUNT(*) FROM HistorialesClinicos WHERE AlumnoID = ? AND Archivado = TRUE) AS archivadas,
         cg.Valor AS estado,
@@ -739,16 +713,16 @@ try {
         GROUP BY hc.EstadoID, cg.Valor`,
     [alumnoId, alumnoId, alumnoId]
     );
-    
+
     // Formatear respuesta
     const total = estadisticas.length > 0 ? estadisticas[0].total : 0;
     const archivadas = estadisticas.length > 0 ? estadisticas[0].archivadas : 0;
-    
+
     const porEstado = estadisticas.map(item => ({
     estado: item.estado,
     cantidad: item.cantidad
     }));
-    
+
     return {
     total,
     archivadas,
@@ -774,22 +748,22 @@ try {
     'SELECT Archivado FROM HistorialesClinicos WHERE ID = ? AND AlumnoID = ?',
     [historiaId, alumnoId]
     );
-    
+
     if (historias.length === 0) {
     throw new Error('La historia clínica no existe o no tienes permiso para modificarla');
     }
-    
+
     // Verificar que la historia no esté archivada
     if (historias[0].Archivado) {
     throw new Error('No se puede modificar una historia clínica archivada');
     }
-    
+
     // Actualizar el estado
     await db.query(
     'UPDATE HistorialesClinicos SET EstadoID = ?, ActualizadoEn = NOW() WHERE ID = ?',
     [estadoId, historiaId]
     );
-    
+
     return true;
 } catch (error) {
     console.error('Error al cambiar estado de historia clínica:', error);

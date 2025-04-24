@@ -13,14 +13,14 @@ const authService = {
    * @param {string} password - Contraseña del alumno
    * @returns {Promise<Object|null>} - Datos del alumno o null si las credenciales son incorrectas
    */
-  async verificarCredencialesAlumno(boleta, correo) {
+  async verificarCredencialesAlumno(boleta, correo, password) {
     try {
       const [alumnos] = await db.query(
-        `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual, 
-                u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico, u.ContraseñaHash 
-        FROM AlumnosInfo a 
-        JOIN Usuarios u ON a.UsuarioID = u.ID 
-        WHERE a.NumeroBoleta = ? AND u.CorreoElectronico = ? 
+        `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+                u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico, u.ContraseñaHash
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ? AND u.CorreoElectronico = ?
         AND u.EstaActivo = TRUE`,
         [boleta, correo]
       );
@@ -28,8 +28,15 @@ const authService = {
       if (alumnos.length === 0) {
         return null;
       }
-      
-      return alumnos[0];
+
+      const alumno = alumnos[0];
+
+      // Verificar la contraseña antes de devolver los datos
+      if (!alumno.ContraseñaHash || !(await this.verificarPassword(password, alumno.ContraseñaHash))) {
+        return null;
+      }
+
+      return alumno;
     } catch (error) {
       console.error('Error al verificar credenciales:', error);
       throw error;
@@ -43,7 +50,17 @@ const authService = {
    * @returns {Promise<boolean>} - true si la contraseña es correcta
    */
   async verificarPassword(password, hashedPassword) {
-    return await bcrypt.compare(password, hashedPassword);
+    // Verificar que ambos argumentos existan
+    if (!password || !hashedPassword) {
+      return false;
+    }
+
+    try {
+      return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+      console.error('Error al comparar contraseñas:', error);
+      return false;
+    }
   },
 
   /**
@@ -55,8 +72,8 @@ const authService = {
   generarToken(usuarioId, role) {
     return jwt.sign(
       { id: usuarioId, role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      process.env.JWT_SECRET || 'hcopto_secret_key',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
   },
 
@@ -84,7 +101,7 @@ const authService = {
    */
   async verificarToken(token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'hcopto_secret_key');
       return decoded;
     } catch (error) {
       return null;
@@ -101,52 +118,52 @@ const authService = {
     try {
       let query;
       let params = [usuarioId];
-      
+
       switch (role) {
         case 'alumno':
           query = `
-            SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual, 
-                  u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico, 
+            SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+                  u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
                   u.EstaActivo, u.TelefonoCelular
-            FROM AlumnosInfo a 
-            JOIN Usuarios u ON a.UsuarioID = u.ID 
+            FROM AlumnosInfo a
+            JOIN Usuarios u ON a.UsuarioID = u.ID
             WHERE u.ID = ? AND u.EstaActivo = TRUE`;
           break;
-        
+
         case 'profesor':
           query = `
-            SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado, 
-                  u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico, 
+            SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
+                  u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
                   u.EstaActivo, u.TelefonoCelular
-            FROM ProfesoresInfo p 
-            JOIN Usuarios u ON p.UsuarioID = u.ID 
+            FROM ProfesoresInfo p
+            JOIN Usuarios u ON p.UsuarioID = u.ID
             WHERE u.ID = ? AND u.EstaActivo = TRUE`;
           break;
-        
+
         case 'investigador':
           query = `
             SELECT i.ID AS InvestigadorInfoID, i.Institucion, i.AreaEspecialidad,
-                  u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico, 
+                  u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
                   u.EstaActivo, u.TelefonoCelular
-            FROM InvestigadoresInfo i 
-            JOIN Usuarios u ON i.UsuarioID = u.ID 
+            FROM InvestigadoresInfo i
+            JOIN Usuarios u ON i.UsuarioID = u.ID
             WHERE u.ID = ? AND u.EstaActivo = TRUE`;
           break;
-        
+
         default:
           query = `
-            SELECT ID AS UsuarioID, NombreUsuario, CorreoElectronico, 
-                  EstaActivo, TelefonoCelular 
-            FROM Usuarios 
+            SELECT ID AS UsuarioID, NombreUsuario, CorreoElectronico,
+                  EstaActivo, TelefonoCelular
+            FROM Usuarios
             WHERE ID = ? AND EstaActivo = TRUE`;
       }
-      
+
       const [usuarios] = await db.query(query, params);
-      
+
       if (usuarios.length === 0) {
         return null;
       }
-      
+
       return usuarios[0];
     } catch (error) {
       console.error('Error al obtener usuario por ID:', error);

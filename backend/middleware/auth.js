@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 const authService = require('../services/authService');
 const { AppError } = require('../utils/errorHandler');
+const db = require('../config/database');
+console.log('db:', db);
 
 /**
  * Middleware para verificar si un usuario está autenticado

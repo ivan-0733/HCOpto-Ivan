@@ -1,0 +1,169 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <header class="content-header">
+    <div class="header-title">
+      <h1>
+        <i class="fas fa-tachometer-alt"></i>
+        Dashboard
+      </h1>
+      <p *ngIf="perfil">Bienvenido, <strong>{{ perfil.NombreUsuario }}</strong></p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-primary" (click)="crearNuevaHistoria()">
+        <i class="fas fa-plus"></i>
+        Nueva Historia Clínica
+      </button>
+    </div>
+  </header>
+
+  <!-- Tarjetas de estadísticas -->
+  <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
+    <div class="stat-card total">
+      <div class="stat-card-icon">
+        <i class="fas fa-file-medical"></i>
+      </div>
+      <div class="stat-card-content">
+        <h3>Total de Historias</h3>
+        <p class="stat-value">{{ estadisticas.total || 0 }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card archivadas">
+      <div class="stat-card-icon">
+        <i class="fas fa-archive"></i>
+      </div>
+      <div class="stat-card-content">
+        <h3>Archivadas</h3>
+        <p class="stat-value">{{ estadisticas.archivadas || 0 }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card por-estado" *ngFor="let estado of estadisticas.porEstado">
+      <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="stat-card-content">
+        <h3>{{ estado.estado }}</h3>
+        <p class="stat-value">{{ estado.cantidad }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje de ayuda -->
+  <div class="help-message" *ngIf="!loading && !error && historiasClinicas && historiasClinicas.length > 0">
+    <i class="fas fa-info-circle"></i>
+    <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas.</p>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filtros-container">
+    <div class="filtro">
+      <label for="filtroEstado">Filtrar por estado:</label>
+      <select id="filtroEstado" [(ngModel)]="filtroEstado">
+        <option value="todos">Todos los estados</option>
+        <option value="En proceso">En proceso</option>
+        <option value="Revisión">Revisión</option>
+        <option value="Corrección">Corrección</option>
+        <option value="Finalizado">Finalizado</option>
+      </select>
+    </div>
+
+    <div class="filtro">
+      <label for="filtroPaciente">Buscar paciente:</label>
+      <div class="input-with-icon">
+        <i class="fas fa-search"></i>
+        <input
+          type="text"
+          id="filtroPaciente"
+          [(ngModel)]="filtroPaciente"
+          placeholder="Nombre del paciente..."
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de historias clínicas -->
+  <div class="tabla-container">
+    <div class="loading-container" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Cargando historias clínicas...</p>
+    </div>
+
+    <div class="error-container" *ngIf="error">
+      <i class="fas fa-exclamation-triangle"></i>
+      <p>{{ error }}</p>
+      <button class="btn-retry" (click)="cargarDatos()">
+        <i class="fas fa-sync-alt"></i>
+        Reintentar
+      </button>
+    </div>
+
+    <div class="empty-container" *ngIf="!loading && !error && filtrarHistorias().length === 0">
+      <i class="fas fa-folder-open"></i>
+      <p *ngIf="historiasClinicas.length === 0">No tienes historias clínicas registradas.</p>
+      <p *ngIf="historiasClinicas.length > 0">No se encontraron historias clínicas con los filtros seleccionados.</p>
+      <button class="btn-primary" (click)="crearNuevaHistoria()">
+        <i class="fas fa-plus"></i>
+        Crear Nueva Historia
+      </button>
+    </div>
+
+    <table class="tabla-historias" *ngIf="!loading && !error && filtrarHistorias().length > 0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Paciente</th>
+          <th>Edad</th>
+          <th>Estado</th>
+          <th>Consultorio</th>
+          <th>Semestre</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let historia of filtrarHistorias()">
+          <td>{{ historia.ID }}</td>
+          <td>{{ historia.Fecha | date:'dd/MM/yyyy' }}</td>
+          <td>
+            <div class="paciente-info">
+              <span class="nombre-completo">{{ historia.Nombre }} {{ historia.ApellidoPaterno }}
+                <span *ngIf="historia.ApellidoMaterno">{{ historia.ApellidoMaterno }}</span>
+              </span>
+              <span *ngIf="historia.CorreoElectronico" class="contacto-paciente">
+                <i class="fas fa-envelope"></i> {{ historia.CorreoElectronico }}
+              </span>
+              <span *ngIf="historia.TelefonoCelular" class="contacto-paciente">
+                <i class="fas fa-phone"></i> {{ historia.TelefonoCelular }}
+              </span>
+            </div>
+          </td>
+          <td class="edad-cell">
+            <span class="no-data">No disponible</span>
+          </td>
+          <td>
+            <span class="estado-badge" [ngClass]="obtenerClaseEstado(historia.Estado)">
+              {{ historia.Estado }}
+            </span>
+            <span *ngIf="historia.Archivado" class="badge archivado">
+              <i class="fas fa-archive"></i>
+            </span>
+          </td>
+          <td>{{ historia.Consultorio }}</td>
+          <td>{{ historia.Semestre }}</td>
+          <td class="acciones">
+            <button class="btn-icon btn-view" (click)="verHistoria(historia.ID)" title="Ver Historia Clínica Completa">
+              <i class="fas fa-file-medical-alt"></i>
+            </button>
+            <button class="btn-icon btn-edit" (click)="editarHistoria(historia.ID)"
+                    [disabled]="historia.Archivado || historia.Estado === 'Finalizado'"
+                    title="Editar Historia">
+              <i class="fas fa-edit"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

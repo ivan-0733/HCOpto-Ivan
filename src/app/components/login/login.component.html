@@ -1,0 +1,108 @@
+<div class="login-container">
+  <div class="login-box">
+    <div class="login-header">
+      <h1>HCOpto</h1>
+      <p>Sistema de Historias Clínicas Optométricas</p>
+    </div>
+
+    <div class="role-selector">
+      <button [class.active]="selectedRole === 'alumno'" (click)="changeRole('alumno')">
+        <i class="fas fa-user-graduate"></i> Alumno
+      </button>
+      <button [class.active]="selectedRole === 'profesor'" (click)="changeRole('profesor')">
+        <i class="fas fa-chalkboard-teacher"></i> Profesor
+      </button>
+      <button [class.active]="selectedRole === 'admin'" (click)="changeRole('admin')">
+        <i class="fas fa-user-shield"></i> Admin
+      </button>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Campos para Alumno -->
+      <div class="form-group" *ngIf="selectedRole === 'alumno'">
+        <label for="boleta">
+          <i class="fas fa-id-card"></i> Número de Boleta
+        </label>
+        <input
+          type="text"
+          formControlName="boleta"
+          class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['boleta'].errors }"
+          placeholder="Ej. 2019630123"
+        />
+        <div *ngIf="submitted && f['boleta'].errors" class="invalid-feedback">
+          <div *ngIf="f['boleta'].errors['required']">El número de boleta es obligatorio</div>
+        </div>
+      </div>
+
+      <!-- Campos para Profesor -->
+      <div class="form-group" *ngIf="selectedRole === 'profesor'">
+        <label for="numeroEmpleado">
+          <i class="fas fa-id-badge"></i> Número de Empleado
+        </label>
+        <input
+          type="text"
+          formControlName="numeroEmpleado"
+          class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['numeroEmpleado'].errors }"
+          placeholder="Ej. PROF-12345"
+        />
+        <div *ngIf="submitted && f['numeroEmpleado'].errors" class="invalid-feedback">
+          <div *ngIf="f['numeroEmpleado'].errors['required']">El número de empleado es obligatorio</div>
+        </div>
+      </div>
+
+      <!-- Campos comunes para todos los roles -->
+      <div class="form-group">
+        <label for="correo">
+          <i class="fas fa-envelope"></i> Correo Electrónico
+        </label>
+        <input
+          type="email"
+          formControlName="correo"
+          class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['correo'].errors }"
+          placeholder="correo@ejemplo.com"
+        />
+        <div *ngIf="submitted && f['correo'].errors" class="invalid-feedback">
+          <div *ngIf="f['correo'].errors['required']">El correo electrónico es obligatorio</div>
+          <div *ngIf="f['correo'].errors['email']">Debe ser un correo electrónico válido</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">
+          <i class="fas fa-lock"></i> Contraseña
+        </label>
+        <input
+          type="password"
+          formControlName="password"
+          class="form-control"
+          [ngClass]="{ 'is-invalid': submitted && f['password'].errors }"
+          placeholder="Contraseña"
+        />
+        <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+          <div *ngIf="f['password'].errors['required']">La contraseña es obligatoria</div>
+        </div>
+      </div>
+
+      <!-- Mensaje de error -->
+      <div *ngIf="error" class="error-message">
+        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+      </div>
+
+      <!-- Botón de inicio de sesión -->
+      <div class="form-group">
+        <button [disabled]="loading" class="login-button">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm mr-1"></span>
+          Iniciar Sesión
+        </button>
+      </div>
+    </form>
+
+    <div class="login-footer">
+      <p>© {{ currentYear }} Instituto Politécnico Nacional</p>
+      <p>Centro Interdiciplinario de Ciencias de la Salud - CICS Santo Tomás</p>
+    </div>
+  </div>
+</div>

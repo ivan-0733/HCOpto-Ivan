@@ -1,0 +1,213 @@
+@import '../../styles/variables';
+
+.main-nav {
+  background-color: $ipn-guinda;
+  color: $ipn-white;
+  position: sticky;
+  top: 0;
+  z-index: $z-index-fixed;
+  box-shadow: $box-shadow;
+
+  .nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 $spacing-md;
+  }
+
+  .nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-md 0;
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      color: $ipn-white;
+      font-size: 1.5rem;
+      font-weight: $font-weight-bold;
+
+      img {
+        height: 40px;
+        margin-right: $spacing-md;
+      }
+    }
+
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: $ipn-white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: $spacing-sm;
+      border-radius: $border-radius;
+      transition: $transition-base;
+
+      &:hover {
+        background-color: rgba($ipn-white, 0.1);
+      }
+    }
+  }
+
+  .nav-collapse {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+
+    .nav-item {
+      position: relative;
+
+      a {
+        display: flex;
+        align-items: center;
+        padding: $spacing-md $spacing-lg;
+        color: rgba($ipn-white, 0.9);
+        text-decoration: none;
+        transition: $transition-base;
+
+        i {
+          margin-right: $spacing-sm;
+        }
+
+        &:hover, &:focus {
+          color: $ipn-white;
+          background-color: rgba($ipn-white, 0.1);
+        }
+
+        &.active {
+          color: $ipn-white;
+          background-color: rgba($ipn-white, 0.2);
+          border-bottom: 3px solid $ipn-white;
+          font-weight: $font-weight-medium;
+        }
+      }
+    }
+  }
+
+  .nav-user {
+    display: flex;
+    align-items: center;
+    padding: 0 $spacing-lg;
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      margin-right: $spacing-lg;
+
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background-color: rgba($ipn-white, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: $spacing-md;
+
+        i {
+          font-size: 1.2rem;
+        }
+      }
+
+      .user-name {
+        p {
+          margin: 0;
+          font-weight: $font-weight-medium;
+          line-height: 1.2;
+        }
+
+        small {
+          color: rgba($ipn-white, 0.7);
+          font-size: 0.85rem;
+        }
+      }
+    }
+
+    .btn-logout {
+      background-color: rgba($ipn-white, 0.1);
+      border: none;
+      color: $ipn-white;
+      padding: $spacing-sm $spacing-md;
+      border-radius: $border-radius;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      transition: $transition-base;
+
+      i {
+        margin-right: $spacing-sm;
+      }
+
+      &:hover {
+        background-color: rgba($ipn-white, 0.2);
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-lg) {
+    .nav-header {
+      .nav-toggle {
+        display: block;
+      }
+    }
+
+    .nav-collapse {
+      max-height: 0;
+      overflow: hidden;
+      flex-direction: column;
+      align-items: stretch;
+      transition: max-height 0.3s ease-in-out;
+
+      &.show {
+        max-height: 1000px;
+      }
+    }
+
+    .nav-menu {
+      flex-direction: column;
+      width: 100%;
+
+      .nav-item {
+        a {
+          padding: $spacing-md;
+          border-bottom: 1px solid rgba($ipn-white, 0.1);
+
+          &.active {
+            border-bottom: 1px solid rgba($ipn-white, 0.1);
+            border-left: 4px solid $ipn-white;
+          }
+        }
+      }
+    }
+
+    .nav-user {
+      padding: $spacing-md;
+      flex-direction: column;
+
+      .user-info {
+        margin-right: 0;
+        margin-bottom: $spacing-md;
+        width: 100%;
+
+        .user-name {
+          flex: 1;
+        }
+      }
+
+      .btn-logout {
+        width: 100%;
+        justify-content: center;
+        padding: $spacing-md;
+      }
+    }
+  }
+}

@@ -1,23 +1,21 @@
-const mysql = require('mysql2');
+// config/database.js
+const mysql = require('mysql2/promise'); // ¡Usa la versión promisificada directamente!
 const dotenv = require('dotenv');
 
 dotenv.config();
 
 // Crear conexión pool
 const pool = mysql.createPool({
-host: process.env.DB_HOST || 'localhost',
-user: process.env.DB_USER || 'root',
-password: process.env.DB_PASSWORD || '',
-database: process.env.DB_NAME || 'hcopto',
-waitForConnections: true,
-connectionLimit: 10,
-queueLimit: 0
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'Saulivan1$',
+  database: process.env.DB_NAME || 'HCOpto',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// Promisify pool para usar async/await
-const promisePool = pool.promise();
-
 module.exports = {
-query: (sql, params) => promisePool.query(sql, params),
-pool: promisePool
+  query: (sql, params) => pool.query(sql, params),
+  pool
 };

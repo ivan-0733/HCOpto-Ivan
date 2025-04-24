@@ -1,0 +1,122 @@
+<nav class="main-nav" [class.collapsed]="isCollapsed">
+  <div class="nav-container">
+    <div class="nav-header">
+      <a routerLink="/" class="nav-logo">
+        <span>HCOpto</span>
+      </a>
+
+      <button class="nav-toggle" (click)="toggleMenu()">
+        <i class="fas" [ngClass]="isCollapsed ? 'fa-bars' : 'fa-times'"></i>
+      </button>
+    </div>
+
+    <div class="nav-collapse" [class.show]="!isCollapsed">
+      <!-- Menú para Alumno -->
+      <ul class="nav-menu" *ngIf="isAlumno">
+        <li class="nav-item">
+          <a routerLink="/alumno/dashboard" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/alumno/historias/nueva" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-plus-circle"></i>
+            <span>Nueva Historia</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/alumno/profesores" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>Mis Profesores</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/alumno/perfil" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-user-cog"></i>
+            <span>Mi Perfil</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Menú para Profesor -->
+      <ul class="nav-menu" *ngIf="isProfesor">
+        <li class="nav-item">
+          <a routerLink="/profesor/dashboard" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/profesor/historias" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-file-medical"></i>
+            <span>Historias Clínicas</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/profesor/alumnos" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-user-graduate"></i>
+            <span>Mis Alumnos</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/profesor/perfil" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-user-cog"></i>
+            <span>Mi Perfil</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Menú para Admin -->
+      <ul class="nav-menu" *ngIf="isAdmin">
+        <li class="nav-item">
+          <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/admin/usuarios" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-users"></i>
+            <span>Usuarios</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a routerLink="/admin/configuracion" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-cogs"></i>
+            <span>Configuración</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Menú para usuario no autenticado -->
+      <ul class="nav-menu" *ngIf="!authService.isAuthenticated()">
+        <li class="nav-item">
+          <a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>Iniciar Sesión</span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Menú de usuario -->
+      <div class="nav-user" *ngIf="authService.isAuthenticated()">
+        <div class="user-info">
+          <div class="user-avatar">
+            <i class="fas" [ngClass]="{'fa-user-graduate': isAlumno, 'fa-chalkboard-teacher': isProfesor, 'fa-user-shield': isAdmin}"></i>
+          </div>
+          <div class="user-name">
+            <p>{{ userName }}</p>
+            <small *ngIf="isAlumno">Alumno <span class="semestre-badge">{{ userSemestre }}</span></small>
+            <small *ngIf="isProfesor">Profesor</small>
+            <small *ngIf="isAdmin">Administrador</small>
+          </div>
+        </div>
+        <button class="btn-logout" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,608 @@
+<div class="historia-detalle-container">
+  <!-- Header -->
+  <header class="detalle-header">
+    <div class="header-title">
+      <h1 *ngIf="historia">
+        <i class="fas fa-file-medical"></i>
+        Historia Clínica #{{ historiaId }}
+        <span class="estado-badge" [ngClass]="obtenerClaseEstado(historia.Estado)">
+          {{ historia.Estado }}
+        </span>
+      </h1>
+      <p *ngIf="historia">
+        Paciente: {{ historia.Nombre }} {{ historia.ApellidoPaterno }} {{ historia.ApellidoMaterno }} |
+        Fecha: {{ historia.Fecha | date:'dd/MM/yyyy' }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="volverAlDashboard()">
+        <i class="fas fa-arrow-left"></i>
+        Volver
+      </button>
+      <button class="btn-outline" (click)="imprimirHistoria()">
+        <i class="fas fa-print"></i>
+        Imprimir
+      </button>
+      <button class="btn-primary" *ngIf="historia && !historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+        <i class="fas fa-edit"></i>
+        Editar
+      </button>
+    </div>
+  </header>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="error" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando historia clínica...</p>
+  </div>
+
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && historia" class="detalle-content">
+    <!-- Pestañas de navegación -->
+    <div class="detalle-tabs">
+      <button type="button" [ngClass]="getButtonClass('datos-generales')" (click)="changeTab('datos-generales')">
+        <i class="fas fa-info-circle"></i>
+        Datos Generales
+      </button>
+      <button type="button" [ngClass]="getButtonClass('interrogatorio')" (click)="changeTab('interrogatorio')">
+        <i class="fas fa-clipboard-list"></i>
+        Interrogatorio
+      </button>
+      <button type="button" [ngClass]="getButtonClass('agudeza-visual')" (click)="changeTab('agudeza-visual')">
+        <i class="fas fa-eye"></i>
+        Agudeza Visual
+      </button>
+      <button type="button" [ngClass]="getButtonClass('lensometria')" (click)="changeTab('lensometria')">
+        <i class="fas fa-glasses"></i>
+        Lensometría
+      </button>
+      <button type="button" [ngClass]="getButtonClass('diagnostico')" (click)="changeTab('diagnostico')">
+        <i class="fas fa-stethoscope"></i>
+        Diagnóstico
+      </button>
+      <button type="button" [ngClass]="getButtonClass('receta')" (click)="changeTab('receta')">
+        <i class="fas fa-prescription"></i>
+        Receta Final
+      </button>
+      <button type="button" [ngClass]="getButtonClass('comentarios')" (click)="changeTab('comentarios')">
+        <i class="fas fa-comments"></i>
+        Comentarios
+        <span class="badge" *ngIf="historia.comentarios && historia.comentarios.length > 0">
+          {{ historia.comentarios.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Contenido de pestañas -->
+    <div class="tab-content">
+      <!-- Datos generales -->
+      <div *ngIf="currentTab === 'datos-generales'" class="tab-pane">
+        <section class="info-section">
+          <h2>Información General</h2>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Fecha de Consulta</h3>
+              <p>{{ historia.Fecha | date:'dd/MM/yyyy' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Consultorio</h3>
+              <p>{{ historia.Consultorio }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Semestre</h3>
+              <p>{{ historia.Semestre }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Estado</h3>
+              <p>
+                <span class="estado-badge" [ngClass]="obtenerClaseEstado(historia.Estado)">
+                  {{ historia.Estado }}
+                </span>
+
+                <span *ngIf="historia.Archivado" class="badge archivado">
+                  <i class="fas fa-archive"></i>
+                  Archivado
+                </span>
+              </p>
+            </div>
+
+            <div class="info-item">
+              <h3>Profesor</h3>
+              <p>{{ nombreCompletoProfesor }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Alumno</h3>
+              <p>{{ nombreCompleto }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section">
+          <h2>Información del Paciente</h2>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Nombre Completo</h3>
+              <p>{{ historia.Nombre }} {{ historia.ApellidoPaterno }} {{ historia.ApellidoMaterno }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Edad</h3>
+              <p>{{ historia.Edad }} años</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Género</h3>
+              <p>{{ historia.GeneroID ? 'Masculino' : 'Femenino' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Correo Electrónico</h3>
+              <p>{{ historia.CorreoElectronico }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Teléfono Celular</h3>
+              <p>{{ historia.TelefonoCelular }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Teléfono Fijo</h3>
+              <p>{{ historia.Telefono || 'No proporcionado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Ocupación</h3>
+              <p>{{ historia.Ocupacion || 'No proporcionado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Dirección</h3>
+              <p>
+                {{ historia.DireccionLinea1 || 'No proporcionado' }}
+                <span *ngIf="historia.DireccionLinea2">, {{ historia.DireccionLinea2 }}</span>
+              </p>
+            </div>
+
+            <div class="info-item">
+              <h3>Ciudad</h3>
+              <p>{{ historia.Ciudad || 'No proporcionado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Código Postal</h3>
+              <p>{{ historia.CodigoPostal || 'No proporcionado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Estado</h3>
+              <p>{{ historia.PacienteEstadoID }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>País</h3>
+              <p>{{ historia.Pais || 'México' }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Interrogatorio -->
+      <div *ngIf="currentTab === 'interrogatorio'" class="tab-pane">
+        <section class="info-section" *ngIf="historia.interrogatorio">
+          <h2>Interrogatorio</h2>
+
+          <div class="info-grid-full">
+            <div class="info-item">
+              <h3>Motivo de Consulta</h3>
+              <p>{{ historia.interrogatorio.MotivoConsulta }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Heredo Familiares</h3>
+              <p>{{ historia.interrogatorio.HeredoFamiliares }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>No Patológicos</h3>
+              <p>{{ historia.interrogatorio.NoPatologicos }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Patológicos</h3>
+              <p>{{ historia.interrogatorio.Patologicos }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Visuales/Oculares</h3>
+              <p>{{ historia.interrogatorio.VisualesOculares }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Padecimiento Actual</h3>
+              <p>{{ historia.interrogatorio.PadecimientoActual }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Prediagnóstico</h3>
+              <p>{{ historia.interrogatorio.Prediagnostico }}</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="no-data" *ngIf="!historia.interrogatorio">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No se ha registrado información de interrogatorio para esta historia clínica.</p>
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+            <i class="fas fa-edit"></i>
+            Agregar Interrogatorio
+          </button>
+        </div>
+      </div>
+
+      <!-- Agudeza Visual -->
+      <div *ngIf="currentTab === 'agudeza-visual'" class="tab-pane">
+        <section class="info-section" *ngIf="historia.agudezaVisual && historia.agudezaVisual.length > 0">
+          <h2>Agudeza Visual</h2>
+
+          <div *ngFor="let agudeza of historia.agudezaVisual" class="agudeza-section">
+            <h3>{{ agudeza.TipoMedicion | titlecase }}</h3>
+
+            <div class="table-responsive">
+              <table class="table-agudeza">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>OD</th>
+                    <th>OI</th>
+                    <th>AO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Para mediciones de lejos -->
+                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_LEJOS' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_LEJOS'">
+                    <td>Snellen</td>
+                    <td>{{ agudeza.OjoDerechoSnellen || '-' }}</td>
+                    <td>{{ agudeza.OjoIzquierdoSnellen || '-' }}</td>
+                    <td>{{ agudeza.AmbosOjosSnellen || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_LEJOS' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_LEJOS'">
+                    <td>Metros</td>
+                    <td>{{ agudeza.OjoDerechoMetros || '-' }}</td>
+                    <td>{{ agudeza.OjoIzquierdoMetros || '-' }}</td>
+                    <td>{{ agudeza.AmbosOjosMetros || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_LEJOS' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_LEJOS'">
+                    <td>MAR</td>
+                    <td>{{ agudeza.OjoDerechoMAR || '-' }}</td>
+                    <td>{{ agudeza.OjoIzquierdoMAR || '-' }}</td>
+                    <td>{{ agudeza.AmbosOjosMAR || '-' }}</td>
+                  </tr>
+
+                  <!-- Para mediciones de cerca -->
+                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_CERCA' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_CERCA'">
+                    <td>M</td>
+                    <td>{{ agudeza.OjoDerechoM || '-' }}</td>
+                    <td>{{ agudeza.OjoIzquierdoM || '-' }}</td>
+                    <td>{{ agudeza.AmbosOjosM || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_CERCA' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_CERCA'">
+                    <td>Jeager</td>
+                    <td>{{ agudeza.OjoDerechoJeager || '-' }}</td>
+                    <td>{{ agudeza.OjoIzquierdoJeager || '-' }}</td>
+                    <td>{{ agudeza.AmbosOjosJeager || '-' }}</td>
+                  </tr>
+                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_CERCA' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_CERCA'">
+                    <td>Puntos</td>
+                    <td>{{ agudeza.OjoDerechoPuntos || '-' }}</td>
+                    <td>{{ agudeza.OjoIzquierdoPuntos || '-' }}</td>
+                    <td>{{ agudeza.AmbosOjosPuntos || '-' }}</td>
+                  </tr>
+
+                  <!-- Para capacidad visual -->
+                  <tr *ngIf="agudeza.TipoMedicion === 'CAP_VISUAL'">
+                    <td>Capacidad Visual</td>
+                    <td>{{ agudeza.CapacidadVisualOD || '-' }}</td>
+                    <td>{{ agudeza.CapacidadVisualOI || '-' }}</td>
+                    <td>{{ agudeza.CapacidadVisualAO || '-' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div *ngIf="agudeza.TipoMedicion === 'CAP_VISUAL'" class="agudeza-adicional">
+              <p><strong>Diámetro (mm):</strong> {{ agudeza.DiametroMM || 'No registrado' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="no-data" *ngIf="!historia.agudezaVisual || historia.agudezaVisual.length === 0">
+          <i class="fas fa-eye"></i>
+          <p>No se ha registrado información de agudeza visual para esta historia clínica.</p>
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+            <i class="fas fa-edit"></i>
+            Agregar Agudeza Visual
+          </button>
+        </div>
+      </div>
+
+      <!-- Lensometría -->
+      <div *ngIf="currentTab === 'lensometria'" class="tab-pane">
+        <section class="info-section" *ngIf="historia.lensometria">
+          <h2>Lensometría</h2>
+
+          <div class="table-responsive">
+            <table class="table-lensometria">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Esfera</th>
+                  <th>Cilindro</th>
+                  <th>Eje</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>OD</strong></td>
+                  <td>{{ historia.lensometria.OjoDerechoEsfera || '-' }}</td>
+                  <td>{{ historia.lensometria.OjoDerechoCilindro || '-' }}</td>
+                  <td>{{ historia.lensometria.OjoDerechoEje || '-' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>OI</strong></td>
+                  <td>{{ historia.lensometria.OjoIzquierdoEsfera || '-' }}</td>
+                  <td>{{ historia.lensometria.OjoIzquierdoCilindro || '-' }}</td>
+                  <td>{{ historia.lensometria.OjoIzquierdoEje || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Tipo de Lente</h3>
+              <p>{{ historia.lensometria.TipoBifocalMultifocalID || 'Monocal' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>ADD</h3>
+              <p>{{ historia.lensometria.ValorADD || 'No aplicable' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Distancia/Rango</h3>
+              <p>{{ historia.lensometria.DistanciaRango || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Centro Óptico</h3>
+              <p>{{ historia.lensometria.CentroOptico || 'No registrado' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="no-data" *ngIf="!historia.lensometria">
+          <i class="fas fa-glasses"></i>
+          <p>No se ha registrado información de lensometría para esta historia clínica.</p>
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+            <i class="fas fa-edit"></i>
+            Agregar Lensometría
+          </button>
+        </div>
+      </div>
+
+      <!-- Diagnóstico -->
+      <div *ngIf="currentTab === 'diagnostico'" class="tab-pane">
+        <section class="info-section" *ngIf="historia.diagnostico">
+          <h2>Diagnóstico</h2>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>OD Refractivo</h3>
+              <p>{{ historia.diagnostico.OjoDerechoRefractivo || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>OI Refractivo</h3>
+              <p>{{ historia.diagnostico.OjoIzquierdoRefractivo || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>OD Patológico</h3>
+              <p>{{ historia.diagnostico.OjoDerechoPatologico || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>OI Patológico</h3>
+              <p>{{ historia.diagnostico.OjoIzquierdoPatologico || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Binocular</h3>
+              <p>{{ historia.diagnostico.Binocular || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Sensorial</h3>
+              <p>{{ historia.diagnostico.Sensorial || 'No registrado' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="historia.planTratamiento">
+          <h2>Plan de Tratamiento</h2>
+          <div class="info-text">
+            {{ historia.planTratamiento.Descripcion || 'No se ha registrado un plan de tratamiento.' }}
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="historia.pronostico">
+          <h2>Pronóstico</h2>
+          <div class="info-text">
+            {{ historia.pronostico.Descripcion || 'No se ha registrado un pronóstico.' }}
+          </div>
+        </section>
+
+        <div class="no-data" *ngIf="!historia.diagnostico && !historia.planTratamiento && !historia.pronostico">
+          <i class="fas fa-stethoscope"></i>
+          <p>No se ha registrado información de diagnóstico para esta historia clínica.</p>
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+            <i class="fas fa-edit"></i>
+            Agregar Diagnóstico
+          </button>
+        </div>
+      </div>
+
+      <!-- Receta Final -->
+      <div *ngIf="currentTab === 'receta'" class="tab-pane">
+        <section class="info-section" *ngIf="historia.recetaFinal">
+          <h2>Receta Final</h2>
+
+          <div class="table-responsive">
+            <table class="table-receta">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Esfera</th>
+                  <th>Cilindro</th>
+                  <th>Eje</th>
+                  <th>Prisma</th>
+                  <th>Eje Prisma</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>OD</strong></td>
+                  <td>{{ historia.recetaFinal.OjoDerechoEsfera || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoDerechoCilindro || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoDerechoEje || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoDerechoPrisma || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoDerechoEjePrisma || '-' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>OI</strong></td>
+                  <td>{{ historia.recetaFinal.OjoIzquierdoEsfera || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoIzquierdoCilindro || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoIzquierdoEje || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoIzquierdoPrisma || '-' }}</td>
+                  <td>{{ historia.recetaFinal.OjoIzquierdoEjePrisma || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Tratamiento</h3>
+              <p>{{ historia.recetaFinal.Tratamiento || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Tipo de Lente</h3>
+              <p>{{ historia.recetaFinal.TipoID || 'Monocal' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>DIP</h3>
+              <p>{{ historia.recetaFinal.DIP || 'No registrado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>ADD</h3>
+              <p>{{ historia.recetaFinal.ValorADD || 'No aplicable' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>Material</h3>
+              <p>{{ historia.recetaFinal.Material || 'No registrado' }}</p>
+            </div>
+          </div>
+
+          <div *ngIf="historia.recetaFinal.Observaciones" class="info-text">
+            <h3>Observaciones</h3>
+            <p>{{ historia.recetaFinal.Observaciones }}</p>
+          </div>
+        </section>
+
+        <div class="no-data" *ngIf="!historia.recetaFinal">
+          <i class="fas fa-prescription"></i>
+          <p>No se ha registrado una receta final para esta historia clínica.</p>
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+            <i class="fas fa-edit"></i>
+            Agregar Receta Final
+          </button>
+        </div>
+      </div>
+
+      <!-- Comentarios del Profesor -->
+      <div *ngIf="currentTab === 'comentarios'" class="tab-pane">
+        <section class="info-section">
+          <h2>Comentarios del Profesor</h2>
+
+          <div *ngIf="!historia.comentarios || historia.comentarios.length === 0" class="no-comments">
+            <i class="fas fa-comments"></i>
+            <p>No hay comentarios del profesor para esta historia clínica.</p>
+          </div>
+
+          <div *ngIf="historia.comentarios && historia.comentarios.length > 0" class="comments-list">
+            <div *ngFor="let comentario of historia.comentarios" class="comment-item">
+              <div class="comment-header">
+                <div class="comment-author">
+                  <i class="fas fa-chalkboard-teacher"></i>
+                  <span>{{ comentario.ProfesorNombre }}</span>
+                </div>
+                <div class="comment-date">
+                  {{ comentario.FechaComentario | date:'dd/MM/yyyy HH:mm' }}
+                </div>
+              </div>
+
+              <div class="comment-body">
+                <p>{{ comentario.Comentario }}</p>
+              </div>
+
+              <!-- Respuestas -->
+              <div *ngIf="comentario.respuestas && comentario.respuestas.length > 0" class="comment-replies">
+                <div *ngFor="let respuesta of comentario.respuestas" class="reply-item">
+                  <div class="reply-header">
+                    <div class="reply-author">
+                      <i class="fas fa-user-graduate"></i>
+                      <span>{{ respuesta.AlumnoNombre }}</span>
+                    </div>
+                    <div class="reply-date">
+                      {{ respuesta.FechaRespuesta | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  </div>
+
+                  <div class="reply-body">
+                    <p>{{ respuesta.Respuesta }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Formulario de respuesta -->
+              <div *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && (!comentario.respuestas || comentario.respuestas.length === 0)" class="reply-form">
+                <textarea placeholder="Escribe tu respuesta al comentario..." #respuesta></textarea>
+                <button class="btn-primary" (click)="responderComentario(comentario.ID, respuesta.value)">
+                  <i class="fas fa-reply"></i>
+                  Responder
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
