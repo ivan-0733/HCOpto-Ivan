@@ -4,6 +4,8 @@
   padding: 1.5rem;
   background-color: $ipn-white;
   min-height: calc(100vh - $nav-height);
+  max-width: 1200px; // límite de ancho
+  margin: 0 auto;     // centra el contenedor
 }
 
 .content-header {
@@ -95,6 +97,7 @@
 }
 
 .perfil-content {
+  width: 100%;
   background-color: $ipn-white;
   border-radius: $border-radius;
   box-shadow: $box-shadow-sm;
