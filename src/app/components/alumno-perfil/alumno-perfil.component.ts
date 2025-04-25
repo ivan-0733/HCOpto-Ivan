@@ -35,8 +35,20 @@ export class AlumnoPerfilComponent implements OnInit {
   initForm(): void {
     this.perfilForm = this.formBuilder.group({
       nombreUsuario: ['', Validators.required],
-      telefonoCelular: ['', Validators.pattern('[0-9]{10}')]
+      telefonoCelular: ['', Validators.pattern('[0-9]{10}')],
+
+      passwordActual: [''],  // Campo para la contraseña actual
+      nuevaPassword: ['', [Validators.minLength(6)]],  // Campo para la nueva contraseña
+      confirmarPassword: ['']  // Campo para confirmar la nueva contraseña
+    }, {
+      validators: this.passwordsIguales  // Validación de contraseñas iguales
     });
+  }
+
+  passwordsIguales(group: FormGroup) {
+    const nueva = group.get('nuevaPassword')?.value;
+    const confirmar = group.get('confirmarPassword')?.value;
+    return nueva && confirmar && nueva !== confirmar ? { passwordMismatch: true } : null;
   }
 
   cargarPerfil(): void {
@@ -83,22 +95,39 @@ export class AlumnoPerfilComponent implements OnInit {
     this.error = '';
     this.success = '';
 
-    const datos = {
-      nombreUsuario: this.perfilForm.get('nombreUsuario')?.value,
-      telefonoCelular: this.perfilForm.get('telefonoCelular')?.value
-    };
+    const { nombreUsuario, telefonoCelular, passwordActual, nuevaPassword } = this.perfilForm.value;
 
+    // Actualización de datos básicos
+    const datos = { nombreUsuario, telefonoCelular };
+
+    // Si se ingresaron las contraseñas
+    if (passwordActual && nuevaPassword) {
+      // Aquí deberías pasar la contraseña actual y la nueva al servicio para que sea hasheada y actualizada.
+      this.alumnoService.actualizarPassword({ passwordActual, nuevaPassword }).subscribe({
+        next: () => {
+          this.success = 'Contraseña actualizada correctamente';
+          this.updating = false;
+          this.isEditing = false;
+          this.cargarPerfil(); // Recargar perfil
+        },
+        error: (error) => {
+          this.error = 'Error al actualizar contraseña. ' + (error?.error?.message || 'Por favor, intenta nuevamente.');
+          this.updating = false;
+          console.error('Error al actualizar contraseña:', error);
+        }
+      });
+    }
+
+    // Si no se modificó la contraseña, solo actualizar el perfil
     this.alumnoService.actualizarPerfil(datos).subscribe({
       next: () => {
         this.success = 'Perfil actualizado correctamente';
         this.updating = false;
         this.isEditing = false;
-
-        // Recargar perfil para obtener datos actualizados
-        this.cargarPerfil();
+        this.cargarPerfil();  // Recargar perfil
       },
       error: (error) => {
-        this.error = 'Error al actualizar perfil. Por favor, intenta nuevamente.';
+        this.error = 'Error al actualizar perfil. ' + (error?.error?.message || 'Por favor, intenta nuevamente.');
         this.updating = false;
         console.error('Error al actualizar perfil:', error);
       }

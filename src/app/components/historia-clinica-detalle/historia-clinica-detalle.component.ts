@@ -137,10 +137,8 @@ export class HistoriaClinicaDetalleComponent implements OnInit {
   get nombreCompletoProfesor(): string {
     if (!this.historia) return '';
     const {
-      ProfesorNombre,
-      ProfesorApellidoPaterno,
-      ProfesorApellidoMaterno
+      ProfesorNombre
     } = this.historia as any;
-    return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`;
+    return `${ProfesorNombre}`;
   }
 }

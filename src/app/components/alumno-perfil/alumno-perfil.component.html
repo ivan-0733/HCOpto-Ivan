@@ -67,6 +67,36 @@
           </div>
         </div>
 
+        <!-- Cambio de contraseña -->
+        <div class="form-group">
+          <label for="passwordActual">Contraseña Actual</label>
+          <input type="password" id="passwordActual" formControlName="passwordActual"
+                [ngClass]="{'is-invalid': perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched}">
+          <div class="invalid-feedback" *ngIf="perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched">
+            <span *ngIf="perfilForm.get('passwordActual')?.errors?.['required']">La contraseña actual es obligatoria</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="nuevaPassword">Nueva Contraseña</label>
+          <input type="password" id="nuevaPassword" formControlName="nuevaPassword"
+                [ngClass]="{'is-invalid': perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched}">
+          <div class="invalid-feedback" *ngIf="perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched">
+            <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['required']">La nueva contraseña es obligatoria</span>
+            <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['minlength']">Debe tener al menos 6 caracteres</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmarPassword">Confirmar Nueva Contraseña</label>
+          <input type="password" id="confirmarPassword" formControlName="confirmarPassword"
+                [ngClass]="{'is-invalid': perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched}">
+          <div class="invalid-feedback" *ngIf="perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched">
+            <span *ngIf="perfilForm.get('confirmarPassword')?.errors?.['required']">Debes confirmar la nueva contraseña</span>
+            <span *ngIf="perfilForm.hasError('passwordMismatch')">Las contraseñas no coinciden</span>
+          </div>
+        </div>
+
         <div class="form-actions">
           <button type="button" class="btn-secondary" (click)="toggleEditing()">
             <i class="fas fa-times"></i>
