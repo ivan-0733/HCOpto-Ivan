@@ -35,8 +35,8 @@
   <!-- Professors list -->
   <div class="profesores-list" *ngIf="!loading && !error && profesores.length > 0">
     <div class="profesor-card" *ngFor="let profesor of profesores">
-      <div class="profesor-avatar">
-        <i class="fas fa-chalkboard-teacher"></i>
+      <div class="perfil-avatar">
+        <i class="material-icons" style="font-size: 60px;">person</i>
       </div>
       <div class="profesor-info">
         <h3>{{ profesor.NombreUsuario }}</h3>
