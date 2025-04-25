@@ -697,3 +697,95 @@
     }
   }
 }
+
+// Estilos para las listas dentro de la sección de examen preliminar
+.reflejo-list, .caracteristicas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  
+  li {
+    padding: 2px 0;
+    position: relative;
+    
+    &:before {
+      content: "•";
+      color: $ipn-guinda;
+      font-weight: bold;
+      display: inline-block;
+      width: 1em;
+      margin-left: -1em;
+    }
+  }
+}
+
+// Ajuste para la sección de vía pupilar
+.section-via-pupilar {
+  .info-grid {
+    margin-bottom: 1.5rem;
+  }
+}
+
+// Estilos adicionales para la sección de examen preliminar
+.tab-content {
+  .tab-pane {
+    .info-section {
+      &:not(:last-child) {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid $border-color;
+      }
+    }
+  }
+}
+
+// Estilos para la sección de antecedente visual
+.agudeza-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $border-color;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  h3 {
+    color: $ipn-guinda;
+    margin-bottom: 1rem;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.agudeza-adicional {
+  margin-top: 0.5rem;
+  
+  strong {
+    font-weight: $font-weight-medium;
+  }
+}
+
+// Mejoras en las tablas
+.table-agudeza, .table-lensometria, .table-receta {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  th {
+    background-color: $bg-gray;
+    font-weight: $font-weight-medium;
+    color: $text-primary;
+  }
+  
+  tr:last-child td {
+    border-bottom: none;
+  }
+  
+  tr:nth-child(even) {
+    background-color: rgba($bg-gray, 0.4);
+  }
+}

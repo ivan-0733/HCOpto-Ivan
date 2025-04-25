@@ -1,0 +1,261 @@
+<div class="examen-preliminar-container">
+  <h2>Examen Preliminar del Sistema Visual</h2>
+  <p class="info-text">Registre los datos de alineación ocular, motilidad, exploración física y vía pupilar del paciente.</p>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error && !hideButtons" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success && !hideButtons" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!loading" class="form-content">
+    <!-- Sección de Alineación Ocular -->
+    <div class="form-section">
+      <h3>Alineación Ocular</h3>
+      <form [formGroup]="alineacionForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="lejosHorizontal">Lejos Horizontal</label>
+            <input type="text" id="lejosHorizontal" formControlName="lejosHorizontal" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="lejosVertical">Lejos Vertical</label>
+            <input type="text" id="lejosVertical" formControlName="lejosVertical" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="cercaHorizontal">Cerca Horizontal</label>
+            <input type="text" id="cercaHorizontal" formControlName="cercaHorizontal" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="cercaVertical">Cerca Vertical</label>
+            <input type="text" id="cercaVertical" formControlName="cercaVertical" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="metodoID">Método de Medición</label>
+            <select id="metodoID" formControlName="metodoID" class="form-control">
+              <option value="">Seleccionar método</option>
+              <option value="1">Pantalleo</option>
+              <option value="2">Thorrigton</option>
+              <option value="3">Maddox</option>
+              <option value="4">Von Graeffe</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Motilidad -->
+    <div class="form-section">
+      <h3>Motilidad</h3>
+      <form [formGroup]="motilidadForm">
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="versiones">Versiones</label>
+            <input type="text" id="versiones" formControlName="versiones" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="ducciones">Ducciones</label>
+            <input type="text" id="ducciones" formControlName="ducciones" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="sacadicos">Sacádicos</label>
+            <input type="text" id="sacadicos" formControlName="sacadicos" class="form-control">
+          </div>
+          <div class="form-group col-md-4">
+            <label for="persecucion">Persecución</label>
+            <input type="text" id="persecucion" formControlName="persecucion" class="form-control">
+          </div>
+          <div class="form-group col-md-4">
+            <label for="fijacion">Fijación</label>
+            <input type="text" id="fijacion" formControlName="fijacion" class="form-control">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Exploración Física -->
+    <div class="form-section">
+      <h3>Exploración Física</h3>
+      <form [formGroup]="exploracionForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoAnexos">OD Anexos</label>
+            <textarea id="ojoDerechoAnexos" formControlName="ojoDerechoAnexos" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoAnexos">OI Anexos</label>
+            <textarea id="ojoIzquierdoAnexos" formControlName="ojoIzquierdoAnexos" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoSegmentoAnterior">OD Segmento Anterior</label>
+            <textarea id="ojoDerechoSegmentoAnterior" formControlName="ojoDerechoSegmentoAnterior" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoSegmentoAnterior">OI Segmento Anterior</label>
+            <textarea id="ojoIzquierdoSegmentoAnterior" formControlName="ojoIzquierdoSegmentoAnterior" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Vía Pupilar -->
+    <div class="form-section">
+      <h3>Vía Pupilar</h3>
+      <form [formGroup]="viaPupilarForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoDiametro">Diámetro OD (mm)</label>
+            <input type="number" id="ojoDerechoDiametro" formControlName="ojoDerechoDiametro" class="form-control" step="0.1" min="0" max="10">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoDiametro">Diámetro OI (mm)</label>
+            <input type="number" id="ojoIzquierdoDiametro" formControlName="ojoIzquierdoDiametro" class="form-control" step="0.1" min="0" max="10">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <h4>Reflejos Pupilares OD</h4>
+            <div class="checkbox-group">
+              <div class="form-check">
+                <input type="checkbox" id="ojoDerechoFotomotorPresente" formControlName="ojoDerechoFotomotorPresente" class="form-check-input">
+                <label for="ojoDerechoFotomotorPresente" class="form-check-label">Fotomotor Presente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoDerechoConsensualPresente" formControlName="ojoDerechoConsensualPresente" class="form-check-input">
+                <label for="ojoDerechoConsensualPresente" class="form-check-label">Consensual Presente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoDerechoAcomodativoPresente" formControlName="ojoDerechoAcomodativoPresente" class="form-check-input">
+                <label for="ojoDerechoAcomodativoPresente" class="form-check-label">Acomodativo Presente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoDerechoFotomotorAusente" formControlName="ojoDerechoFotomotorAusente" class="form-check-input">
+                <label for="ojoDerechoFotomotorAusente" class="form-check-label">Fotomotor Ausente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoDerechoConsensualAusente" formControlName="ojoDerechoConsensualAusente" class="form-check-input">
+                <label for="ojoDerechoConsensualAusente" class="form-check-label">Consensual Ausente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoDerechoAcomodativoAusente" formControlName="ojoDerechoAcomodativoAusente" class="form-check-input">
+                <label for="ojoDerechoAcomodativoAusente" class="form-check-label">Acomodativo Ausente</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group col-md-6">
+            <h4>Reflejos Pupilares OI</h4>
+            <div class="checkbox-group">
+              <div class="form-check">
+                <input type="checkbox" id="ojoIzquierdoFotomotorPresente" formControlName="ojoIzquierdoFotomotorPresente" class="form-check-input">
+                <label for="ojoIzquierdoFotomotorPresente" class="form-check-label">Fotomotor Presente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoIzquierdoConsensualPresente" formControlName="ojoIzquierdoConsensualPresente" class="form-check-input">
+                <label for="ojoIzquierdoConsensualPresente" class="form-check-label">Consensual Presente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoIzquierdoAcomodativoPresente" formControlName="ojoIzquierdoAcomodativoPresente" class="form-check-input">
+                <label for="ojoIzquierdoAcomodativoPresente" class="form-check-label">Acomodativo Presente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoIzquierdoFotomotorAusente" formControlName="ojoIzquierdoFotomotorAusente" class="form-check-input">
+                <label for="ojoIzquierdoFotomotorAusente" class="form-check-label">Fotomotor Ausente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoIzquierdoConsensualAusente" formControlName="ojoIzquierdoConsensualAusente" class="form-check-input">
+                <label for="ojoIzquierdoConsensualAusente" class="form-check-label">Consensual Ausente</label>
+              </div>
+              <div class="form-check">
+                <input type="checkbox" id="ojoIzquierdoAcomodativoAusente" formControlName="ojoIzquierdoAcomodativoAusente" class="form-check-input">
+                <label for="ojoIzquierdoAcomodativoAusente" class="form-check-label">Acomodativo Ausente</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <h4>Características de las Pupilas</h4>
+            <div class="checkbox-group-horizontal">
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="esIsocoria" formControlName="esIsocoria" class="form-check-input">
+                <label for="esIsocoria" class="form-check-label">Isocoria</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="esAnisocoria" formControlName="esAnisocoria" class="form-check-input">
+                <label for="esAnisocoria" class="form-check-label">Anisocoria</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="respuestaAcomodacion" formControlName="respuestaAcomodacion" class="form-check-input">
+                <label for="respuestaAcomodacion" class="form-check-label">Respuesta a Acomodación</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="pupilasIguales" formControlName="pupilasIguales" class="form-check-input">
+                <label for="pupilasIguales" class="form-check-label">Pupilas Iguales</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="pupilasRedondas" formControlName="pupilasRedondas" class="form-check-input">
+                <label for="pupilasRedondas" class="form-check-label">Pupilas Redondas</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input type="checkbox" id="respuestaLuz" formControlName="respuestaLuz" class="form-check-input">
+                <label for="respuestaLuz" class="form-check-label">Respuesta a Luz</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="dip">DIP (mm)</label>
+            <input type="text" id="dip" formControlName="dip" class="form-control" placeholder="Ej: 62/60">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="dominanciaOcularID">Dominancia Ocular</label>
+            <select id="dominanciaOcularID" formControlName="dominanciaOcularID" class="form-control">
+              <option value="">Seleccionar dominancia</option>
+              <option value="29">OD</option>
+              <option value="30">OI</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Botones de acción - Solo se muestran si hideButtons es false -->
+    <div class="form-actions" *ngIf="!hideButtons">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="btn-primary" [disabled]="submitting" (click)="guardarExamenPreliminar()">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+        Guardar Examen Preliminar
+      </button>
+    </div>
+  </div>
+</div>

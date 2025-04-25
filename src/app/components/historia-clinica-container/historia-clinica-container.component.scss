@@ -62,7 +62,7 @@
   .success-message {
     padding: $spacing-md $spacing-lg;
     margin: $spacing-md $spacing-xl;
-    background-color: $success;
+    background-color: $ipn-gray;
     color: $success;
     border-radius: $border-radius;
     border-left: 4px solid $success;
@@ -103,8 +103,8 @@
     }
   }
 
-  // Pestañas de sección mejoradas
-  .section-tabs {
+  // Nuevo estilo para pestañas tipo detalle
+  .detalle-tabs {
     display: flex;
     overflow-x: auto;
     background-color: $ipn-gray;
@@ -148,21 +148,22 @@
           color: $ipn-guinda;
         }
       }
-      
-      &.completed:not(.active) {
-        color: $success;
-      }
     }
   }
 
   // Contenido de sección
-  .section-content {
+  .tab-content {
     flex: 1;
     padding: $spacing-xl;
     position: relative;
     min-height: 400px;
+    background-color: $ipn-white;
     
-    .placeholder-message {
+    .tab-pane {
+      height: 100%;
+    }
+    
+    .placeholder-section {
       padding: $spacing-xxl;
       background-color: $ipn-gray;
       border-radius: $border-radius;
@@ -178,6 +179,18 @@
         font-size: 2.5rem;
         color: $ipn-guinda;
         opacity: 0.7;
+        margin-bottom: $spacing-md;
+      }
+      
+      h3 {
+        font-size: 1.3rem;
+        font-weight: $font-weight-bold;
+        margin-bottom: $spacing-sm;
+      }
+      
+      p {
+        font-size: 1rem;
+        color: #888;
       }
     }
   }
@@ -186,7 +199,7 @@
   .progress-bar {
     height: 6px;
     background-color: $ipn-gray;
-    margin: 0 $spacing-xl;
+    margin: 0;
     
     .progress-indicator {
       height: 100%;
@@ -330,16 +343,19 @@
       }
     }
 
-    .section-tabs {
-      padding-bottom: $spacing-sm;
-      flex-wrap: wrap;
+    .detalle-tabs {
+      overflow-x: auto;
+      flex-wrap: nowrap;
 
       button {
         padding: $spacing-sm $spacing-md;
         font-size: 0.9rem;
         
-        &.active {
-          border-bottom-width: 2px;
+        span {
+          max-width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
     }

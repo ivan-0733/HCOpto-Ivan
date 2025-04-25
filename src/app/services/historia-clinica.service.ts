@@ -40,6 +40,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   TelefonoCelular: string;
   Telefono: string;
 
+  // Propiedades existentes
   interrogatorio?: any;
   agudezaVisual?: any[];
   lensometria?: any;
@@ -48,6 +49,55 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   pronostico?: any;
   recetaFinal?: any;
   comentarios?: any[];
+  
+  // Nuevas propiedades para examen preliminar
+  alineacionOcular?: {
+    LejosHorizontal?: string;
+    LejosVertical?: string;
+    CercaHorizontal?: string;
+    CercaVertical?: string;
+    MetodoID?: number;
+  };
+  
+  motilidad?: {
+    Versiones?: string;
+    Ducciones?: string;
+    Sacadicos?: string;
+    Persecucion?: string;
+    Fijacion?: string;
+  };
+  
+  exploracionFisica?: {
+    OjoDerechoAnexos?: string;
+    OjoIzquierdoAnexos?: string;
+    OjoDerechoSegmentoAnterior?: string;
+    OjoIzquierdoSegmentoAnterior?: string;
+  };
+  
+  viaPupilar?: {
+    OjoDerechoDiametro?: number;
+    OjoIzquierdoDiametro?: number;
+    OjoDerechoFotomotorPresente?: boolean;
+    OjoDerechoConsensualPresente?: boolean;
+    OjoDerechoAcomodativoPresente?: boolean;
+    OjoIzquierdoFotomotorPresente?: boolean;
+    OjoIzquierdoConsensualPresente?: boolean;
+    OjoIzquierdoAcomodativoPresente?: boolean;
+    OjoDerechoFotomotorAusente?: boolean;
+    OjoDerechoConsensualAusente?: boolean;
+    OjoDerechoAcomodativoAusente?: boolean;
+    OjoIzquierdoFotomotorAusente?: boolean;
+    OjoIzquierdoConsensualAusente?: boolean;
+    OjoIzquierdoAcomodativoAusente?: boolean;
+    EsIsocoria?: boolean;
+    EsAnisocoria?: boolean;
+    RespuestaAcomodacion?: boolean;
+    PupilasIguales?: boolean;
+    PupilasRedondas?: boolean;
+    RespuestaLuz?: boolean;
+    DIP?: string;
+    DominanciaOcularID?: number;
+  };
 }
 
 export interface EstadisticasHistorias {
@@ -127,3 +177,4 @@ export class HistoriaClinicaService {
       );
   }
 }
+

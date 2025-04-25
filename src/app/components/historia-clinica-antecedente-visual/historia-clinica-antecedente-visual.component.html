@@ -1,0 +1,349 @@
+<div class="antecedente-visual-container">
+  <h2>Antecedente Visual</h2>
+  <p class="info-text">Registre la agudeza visual y lensometría del paciente.</p>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!loading" class="form-content">
+    <!-- Sección de Agudeza Visual -->
+    <div class="form-section">
+      <h3>Agudeza Visual</h3>
+      <form [formGroup]="visualForm">
+        <!-- Medición Sin RX Lejos -->
+        <div class="agudeza-section">
+          <h4>Sin RX Lejos</h4>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>OD</th>
+                  <th>OI</th>
+                  <th>AO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Snellen</strong></td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosODSnellen" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosOISnellen" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosAOSnellen" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Metros</strong></td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosODMetros" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosOIMetros" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosAOMetros" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>MAR</strong></td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosODMAR" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosOIMAR" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxLejosAOMAR" class="form-control">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Medición Con RX Anterior Lejos -->
+        <div class="agudeza-section">
+          <h4>Con RX Anterior Lejos</h4>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>OD</th>
+                  <th>OI</th>
+                  <th>AO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Snellen</strong></td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosODSnellen" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosOISnellen" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosAOSnellen" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Metros</strong></td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosODMetros" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosOIMetros" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosAOMetros" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>MAR</strong></td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosODMAR" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosOIMAR" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxLejosAOMAR" class="form-control">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Medición Sin RX Cerca -->
+        <div class="agudeza-section">
+          <h4>Sin RX Cerca</h4>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>OD</th>
+                  <th>OI</th>
+                  <th>AO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>M</strong></td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaODM" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaOIM" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaAOM" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Jeager</strong></td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaODJeager" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaOIJeager" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaAOJeager" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Puntos</strong></td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaODPuntos" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaOIPuntos" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="sinRxCercaAOPuntos" class="form-control">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Medición Con RX Anterior Cerca -->
+        <div class="agudeza-section">
+          <h4>Con RX Anterior Cerca</h4>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>OD</th>
+                  <th>OI</th>
+                  <th>AO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>M</strong></td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaODM" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaOIM" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaAOM" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Jeager</strong></td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaODJeager" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaOIJeager" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaAOJeager" class="form-control">
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Puntos</strong></td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaODPuntos" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaOIPuntos" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="conRxCercaAOPuntos" class="form-control">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Capacidad Visual -->
+        <div class="agudeza-section">
+          <h4>Capacidad Visual</h4>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>OD</th>
+                  <th>OI</th>
+                  <th>AO</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Capacidad Visual</strong></td>
+                  <td>
+                    <input type="text" formControlName="capacidadVisualOD" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="capacidadVisualOI" class="form-control">
+                  </td>
+                  <td>
+                    <input type="text" formControlName="capacidadVisualAO" class="form-control">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="form-group diametro-group">
+            <label for="diametroMM">Diámetro (mm)</label>
+            <input type="number" id="diametroMM" formControlName="diametroMM" class="form-control form-control-xs">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Lensometría -->
+    <div class="form-section">
+      <h3>Lensometría</h3>
+      <form [formGroup]="lensometriaForm">
+        <div class="table-responsive">
+          <table class="table-lensometria">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Esfera</th>
+                <th>Cilindro</th>
+                <th>Eje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OD</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoEsfera" class="form-control form-control-xs">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoCilindro" class="form-control form-control-xs">
+                </td>
+                <td>
+                  <input type="number" formControlName="ojoDerechoEje" class="form-control form-control-xs" min="0" max="180">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>OI</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoEsfera" class="form-control form-control-xs">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoCilindro" class="form-control form-control-xs">
+                </td>
+                <td>
+                  <input type="number" formControlName="ojoIzquierdoEje" class="form-control form-control-xs" min="0" max="180">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="lensometria-datos-adicionales">
+          <div class="form-row">
+            <div class="form-group col-md-3">
+              <label for="tipoBifocalMultifocalID">Tipo de Lente</label>
+              <select id="tipoBifocalMultifocalID" formControlName="tipoBifocalMultifocalID" class="form-control form-control-xs">
+                <option value="">Seleccionar tipo</option>
+                <option value="MONOCAL">Monocal</option>
+                <option value="BIFOCAL">Bifocal</option>
+                <option value="MULTIFOCAL">Multifocal</option>
+              </select>
+            </div>
+
+            <div class="form-group col-md-3">
+              <label for="valorADD">ADD</label>
+              <input type="text" id="valorADD" formControlName="valorADD" class="form-control form-control-xs">
+            </div>
+          
+            <div class="form-group col-md-3">
+              <label for="distanciaRango">Distancia/Rango</label>
+              <input type="text" id="distanciaRango" formControlName="distanciaRango" class="form-control form-control-xs">
+            </div>
+
+            <div class="form-group col-md-3">
+              <label for="centroOptico">Centro Óptico</label>
+              <input type="number" id="centroOptico" formControlName="centroOptico" class="form-control form-control-xs">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    
+
+  </div>
+</div>

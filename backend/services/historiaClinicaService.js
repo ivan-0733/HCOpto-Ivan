@@ -201,7 +201,7 @@ try {
             datosHistoria.paciente.direccionLinea1,
             datosHistoria.paciente.direccionLinea2,
             datosHistoria.paciente.ciudad,
-            datosHistoria.paciente.estadoID,
+            datosHistoria.paciente.estadoID ? parseInt(datosHistoria.paciente.estadoID) : null, // Conversión y manejo de nulos
             datosHistoria.paciente.codigoPostal,
             datosHistoria.paciente.pais || 'México',
             datosHistoria.paciente.correoElectronico,

@@ -6,141 +6,235 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  selector: 'app-historia-clinica-detalle',
-  templateUrl: './historia-clinica-detalle.component.html',
-  styleUrls: ['./historia-clinica-detalle.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule
-  ]
+selector: 'app-historia-clinica-detalle',
+templateUrl: './historia-clinica-detalle.component.html',
+styleUrls: ['./historia-clinica-detalle.component.scss'],
+standalone: true,
+imports: [
+  CommonModule,
+  RouterModule,
+  FormsModule
+]
 })
 export class HistoriaClinicaDetalleComponent implements OnInit {
-  historiaId: number | null = null;
-  historia: HistoriaClinicaDetalle | null = null;
-  currentTab = 'datos-generales';
+historiaId: number | null = null;
+historia: HistoriaClinicaDetalle | null = null;
+currentTab = 'datos-generales';
 
-  loading = true;
-  error = '';
+loading = true;
+error = '';
 
-  constructor(
-    private historiaClinicaService: HistoriaClinicaService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) { }
+constructor(
+  private historiaClinicaService: HistoriaClinicaService,
+  private route: ActivatedRoute,
+  private router: Router
+) { }
 
-  ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.historiaId = +params['id'];
-        this.loadHistoriaClinica();
-      }
-    });
-  }
-
-  loadHistoriaClinica(): void {
-    if (!this.historiaId) return;
-
-    this.loading = true;
-    this.error = '';
-
-    this.historiaClinicaService.obtenerHistoriaClinica(this.historiaId)
-      .pipe(
-        finalize(() => {
-          this.loading = false;
-        })
-      )
-      .subscribe({
-        next: (historia) => {
-          this.historia = historia;
-          console.log('Historia cargada correctamente:', historia);
-        },
-        error: (error) => {
-          this.error = 'No se pudo cargar la historia clínica. ' + error.message;
-          console.error('Error al cargar historia clínica:', error);
-        }
-      });
-  }
-
-  changeTab(tab: string): void {
-    this.currentTab = tab;
-  }
-
-  getButtonClass(tab: string): string {
-    return this.currentTab === tab ? 'active' : '';
-  }
-
-  obtenerClaseEstado(estado: string): string {
-    switch (estado) {
-      case 'En proceso':
-        return 'estado-proceso';
-      case 'Revisión':
-        return 'estado-revision';
-      case 'Corrección':
-        return 'estado-correccion';
-      case 'Finalizado':
-        return 'estado-finalizado';
-      default:
-        return '';
+ngOnInit(): void {
+  this.route.params.subscribe(params => {
+    if (params['id']) {
+      this.historiaId = +params['id'];
+      this.loadHistoriaClinica();
     }
-  }
+  });
+}
 
-  editarHistoria(): void {
-    this.router.navigate(['/alumno/historias', this.historiaId, 'editar']);
-  }
+loadHistoriaClinica(): void {
+  if (!this.historiaId) return;
 
-  volverAlDashboard(): void {
-    this.router.navigate(['/alumno/dashboard']);
-  }
+  this.loading = true;
+  this.error = '';
 
-  responderComentario(comentarioId: number, respuesta: string): void {
-    if (!this.historiaId) return;
-
-    this.historiaClinicaService.responderComentario(this.historiaId, comentarioId, respuesta).subscribe({
-      next: () => {
-        // Recargar historia para mostrar la respuesta
-        this.loadHistoriaClinica();
+  this.historiaClinicaService.obtenerHistoriaClinica(this.historiaId)
+    .pipe(
+      finalize(() => {
+        this.loading = false;
+      })
+    )
+    .subscribe({
+      next: (historia) => {
+        this.historia = historia;
+        console.log('Historia cargada correctamente:', historia);
       },
       error: (error) => {
-        this.error = 'Error al responder el comentario. Por favor, intenta nuevamente.';
-        console.error('Error respondiendo comentario:', error);
+        this.error = 'No se pudo cargar la historia clínica. ' + error.message;
+        console.error('Error al cargar historia clínica:', error);
       }
     });
-  }
+}
 
-  cambiarEstado(nuevoEstadoId: number): void {
-    if (!this.historiaId) return;
+changeTab(tab: string): void {
+  this.currentTab = tab;
+}
 
-    this.historiaClinicaService.cambiarEstado(this.historiaId, nuevoEstadoId).subscribe({
-      next: () => {
-        // Recargar historia para mostrar el nuevo estado
-        this.loadHistoriaClinica();
-      },
-      error: (error) => {
-        this.error = 'Error al cambiar el estado de la historia clínica. Por favor, intenta nuevamente.';
-        console.error('Error cambiando estado:', error);
-      }
-    });
-  }
+getButtonClass(tab: string): string {
+  return this.currentTab === tab ? 'active' : '';
+}
 
-  imprimirHistoria(): void {
-    window.print();
+obtenerClaseEstado(estado: string): string {
+  switch (estado) {
+    case 'En proceso':
+      return 'estado-proceso';
+    case 'Revisión':
+      return 'estado-revision';
+    case 'Corrección':
+      return 'estado-correccion';
+    case 'Finalizado':
+      return 'estado-finalizado';
+    default:
+      return '';
   }
+}
 
-  get nombreCompleto(): string {
-    if (!this.historia) return '';
-    const { Nombre, ApellidoPaterno, ApellidoMaterno } = this.historia;
-    return `${Nombre} ${ApellidoPaterno} ${ApellidoMaterno ?? ''}`;
-  }
+editarHistoria(): void {
+  this.router.navigate(['/alumno/historias', this.historiaId, 'editar']);
+}
 
-  get nombreCompletoProfesor(): string {
-    if (!this.historia) return '';
-    const {
-      ProfesorNombre,
-      ProfesorApellidoPaterno,
-      ProfesorApellidoMaterno
-    } = this.historia as any;
-    return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`;
-  }
+volverAlDashboard(): void {
+  this.router.navigate(['/alumno/dashboard']);
+}
+
+responderComentario(comentarioId: number, respuesta: string): void {
+  if (!this.historiaId) return;
+
+  this.historiaClinicaService.responderComentario(this.historiaId, comentarioId, respuesta).subscribe({
+    next: () => {
+      // Recargar historia para mostrar la respuesta
+      this.loadHistoriaClinica();
+    },
+    error: (error) => {
+      this.error = 'Error al responder el comentario. Por favor, intenta nuevamente.';
+      console.error('Error respondiendo comentario:', error);
+    }
+  });
+}
+
+cambiarEstado(nuevoEstadoId: number): void {
+  if (!this.historiaId) return;
+
+  this.historiaClinicaService.cambiarEstado(this.historiaId, nuevoEstadoId).subscribe({
+    next: () => {
+      // Recargar historia para mostrar el nuevo estado
+      this.loadHistoriaClinica();
+    },
+    error: (error) => {
+      this.error = 'Error al cambiar el estado de la historia clínica. Por favor, intenta nuevamente.';
+      console.error('Error cambiando estado:', error);
+    }
+  });
+}
+
+imprimirHistoria(): void {
+  window.print();
+}
+
+get nombreCompleto(): string {
+  if (!this.historia) return '';
+  const { Nombre, ApellidoPaterno, ApellidoMaterno } = this.historia;
+  return `${Nombre} ${ApellidoPaterno} ${ApellidoMaterno ?? ''}`;
+}
+
+get nombreCompletoProfesor(): string {
+  if (!this.historia) return '';
+  const {
+    ProfesorNombre,
+    ProfesorApellidoPaterno,
+    ProfesorApellidoMaterno
+  } = this.historia as any;
+  return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`;
+}
+
+// Métodos para trabajar con la sección de Antecedente Visual
+obtenerNombreTipoMedicion(tipoMedicion: string): string {
+  const tipos: {[key: string]: string} = {
+    'SIN_RX_LEJOS': 'Sin RX Lejos',
+    'CON_RX_ANTERIOR_LEJOS': 'Con RX Anterior Lejos',
+    'SIN_RX_CERCA': 'Sin RX Cerca',
+    'CON_RX_ANTERIOR_CERCA': 'Con RX Anterior Cerca',
+    'CAP_VISUAL': 'Capacidad Visual'
+  };
+  
+  return tipos[tipoMedicion] || tipoMedicion;
+}
+
+esMedicionLejos(tipoMedicion: string): boolean {
+  return tipoMedicion === 'SIN_RX_LEJOS' || tipoMedicion === 'CON_RX_ANTERIOR_LEJOS';
+}
+
+esMedicionCerca(tipoMedicion: string): boolean {
+  return tipoMedicion === 'SIN_RX_CERCA' || tipoMedicion === 'CON_RX_ANTERIOR_CERCA';
+}
+
+obtenerTipoLente(tipoID: number | string | null | undefined): string {
+  if (!tipoID) return 'Monocal';
+  
+  const tipos: {[key: string]: string} = {
+    'MONOCAL': 'Monocal',
+    'BIFOCAL': 'Bifocal',
+    'MULTIFOCAL': 'Multifocal',
+    '17': 'Bifocal',
+    '18': 'Multifocal',
+    '19': 'Monocal'
+  };
+  
+  return tipos[tipoID.toString()] || 'Tipo desconocido';
+}
+
+// Métodos para trabajar con la sección de Examen Preliminar
+obtenerNombreMetodo(metodoID: number | null | undefined): string {
+  if (!metodoID) return 'No especificado';
+  
+  const metodos: {[key: number]: string} = {
+    1: 'Pantalleo',
+    2: 'Thorrigton',
+    3: 'Maddox',
+    4: 'Von Graeffe'
+  };
+  
+  return metodos[metodoID] || 'Desconocido';
+}
+
+tieneReflejosOD(viaPupilar: any): boolean {
+  if (!viaPupilar) return false;
+  
+  return viaPupilar.OjoDerechoFotomotorPresente || 
+          viaPupilar.OjoDerechoConsensualPresente || 
+          viaPupilar.OjoDerechoAcomodativoPresente ||
+          viaPupilar.OjoDerechoFotomotorAusente || 
+          viaPupilar.OjoDerechoConsensualAusente || 
+          viaPupilar.OjoDerechoAcomodativoAusente;
+}
+
+tieneReflejosOI(viaPupilar: any): boolean {
+  if (!viaPupilar) return false;
+  
+  return viaPupilar.OjoIzquierdoFotomotorPresente || 
+          viaPupilar.OjoIzquierdoConsensualPresente || 
+          viaPupilar.OjoIzquierdoAcomodativoPresente ||
+          viaPupilar.OjoIzquierdoFotomotorAusente || 
+          viaPupilar.OjoIzquierdoConsensualAusente || 
+          viaPupilar.OjoIzquierdoAcomodativoAusente;
+}
+
+tieneCaracteristicasPupilares(viaPupilar: any): boolean {
+  if (!viaPupilar) return false;
+  
+  return viaPupilar.EsIsocoria || 
+          viaPupilar.EsAnisocoria || 
+          viaPupilar.RespuestaAcomodacion ||
+          viaPupilar.PupilasIguales || 
+          viaPupilar.PupilasRedondas || 
+          viaPupilar.RespuestaLuz;
+}
+
+obtenerDominanciaOcular(dominanciaID: number | null | undefined): string {
+  if (!dominanciaID) return 'No especificada';
+  
+  const dominancias: {[key: number]: string} = {
+    29: 'Ojo Derecho (OD)',
+    30: 'Ojo Izquierdo (OI)'
+  };
+  
+  return dominancias[dominanciaID] || 'Desconocida';
+}
 }

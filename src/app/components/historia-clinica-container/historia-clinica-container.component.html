@@ -1,5 +1,5 @@
 <div class="historia-container">
-  <!-- Header - Mantener solo aquí y quitar del form -->
+  <!-- Header - Con botones reposicionados a la derecha -->
   <header class="historia-header">
     <div class="header-title">
       <h1>
@@ -42,8 +42,8 @@
     <p>Cargando datos...</p>
   </div>
 
-  <!-- Navegación entre secciones -->
-  <div class="section-tabs">
+  <!-- Navegación entre secciones (estilo similar a detalle) -->
+  <div class="detalle-tabs">
     <button 
       type="button" 
       [ngClass]="getButtonClass('datos-generales')" 
@@ -66,22 +66,52 @@
 
     <button 
       type="button" 
-      [ngClass]="getButtonClass('agudeza-visual')" 
-      (click)="changeSection('agudeza-visual')"
+      [ngClass]="getButtonClass('antecedente-visual')" 
+      (click)="changeSection('antecedente-visual')"
     >
       <i class="fas fa-eye"></i>
-      <span>Agudeza Visual</span>
-      <i class="fas fa-check" *ngIf="sectionStatus['agudeza-visual']"></i>
+      <span>Antecedente Visual</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['antecedente-visual']"></i>
     </button>
 
     <button 
       type="button" 
-      [ngClass]="getButtonClass('lensometria')" 
-      (click)="changeSection('lensometria')"
+      [ngClass]="getButtonClass('examen-preliminar')" 
+      (click)="changeSection('examen-preliminar')"
+    >
+      <i class="fas fa-search"></i>
+      <span>Examen Preliminar</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['examen-preliminar']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('estado-refractivo')" 
+      (click)="changeSection('estado-refractivo')"
     >
       <i class="fas fa-glasses"></i>
-      <span>Lensometría</span>
-      <i class="fas fa-check" *ngIf="sectionStatus['lensometria']"></i>
+      <span>Estado Refractivo</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['estado-refractivo']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('binocularidad')" 
+      (click)="changeSection('binocularidad')"
+    >
+      <i class="fas fa-binoculars"></i>
+      <span>Binocularidad</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['binocularidad']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('deteccion-alteraciones')" 
+      (click)="changeSection('deteccion-alteraciones')"
+    >
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>Detección Alteraciones</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['deteccion-alteraciones']"></i>
     </button>
 
     <button 
@@ -96,26 +126,6 @@
 
     <button 
       type="button" 
-      [ngClass]="getButtonClass('plan-tratamiento')" 
-      (click)="changeSection('plan-tratamiento')"
-    >
-      <i class="fas fa-clipboard-check"></i>
-      <span>Plan Tratamiento</span>
-      <i class="fas fa-check" *ngIf="sectionStatus['plan-tratamiento']"></i>
-    </button>
-
-    <button 
-      type="button" 
-      [ngClass]="getButtonClass('pronostico')" 
-      (click)="changeSection('pronostico')"
-    >
-      <i class="fas fa-chart-line"></i>
-      <span>Pronóstico</span>
-      <i class="fas fa-check" *ngIf="sectionStatus['pronostico']"></i>
-    </button>
-
-    <button 
-      type="button" 
       [ngClass]="getButtonClass('receta')" 
       (click)="changeSection('receta')"
     >
@@ -126,12 +136,12 @@
   </div>
 
   <!-- Contenido de la sección actual -->
-  <div class="section-content">
+  <div class="tab-content">
     <!-- Sección de Datos Generales -->
-    <div *ngIf="currentSection === 'datos-generales'">
+    <div *ngIf="currentSection === 'datos-generales'" class="tab-pane">
       <app-historia-clinica-form
         [isEditing]="!isNewHistoria"
-        [historiaId]="historiaId"
+        [historiaId]="historiaId!"
         [hideHeaderAndButtons]="true"
         (formReady)="onFormReady($event)"
         (completed)="onSectionCompleted('datos-generales', $event)"
@@ -143,65 +153,78 @@
     <!-- Sección de Interrogatorio -->
     <app-interrogatorio 
       *ngIf="currentSection === 'interrogatorio'"
-      [historiaId]="historiaId"
+      [historiaId]="historiaId!"
       [hideButtons]="true"
       (formReady)="onInterrogatorioFormReady($event)"
       (completed)="onSectionCompleted('interrogatorio', $event)"
       (nextSection)="onNextSection()"
     ></app-interrogatorio>
 
-    <!-- Sección de Agudeza Visual -->
-    <div *ngIf="currentSection === 'agudeza-visual'">
-      <!-- Aquí iría el componente de agudeza visual -->
-      <p class="placeholder-message">
-        <i class="fas fa-eye"></i>
-        Componente de Agudeza Visual (pendiente de implementar)
-      </p>
+    <!-- Sección de Antecedente Visual (Agudeza Visual y Lensometría) -->
+    <div *ngIf="currentSection === 'antecedente-visual'" class="tab-pane">
+      <app-antecedente-visual
+        [historiaId]="historiaId!"
+        (datosGuardados)="onSectionCompleted('antecedente-visual', $event)"
+        (agudezaVisualFormReady)="onAgudezaVisualFormReady($event)"
+        (lensometriaFormReady)="onLensometriaFormReady($event)"
+        id="antecedenteVisualComponent"
+      ></app-antecedente-visual>
     </div>
 
-    <!-- Sección de Lensometría -->
-    <div *ngIf="currentSection === 'lensometria'">
-      <!-- Aquí iría el componente de lensometría -->
-      <p class="placeholder-message">
+    <!-- Sección de Examen Preliminar -->
+    <div *ngIf="currentSection === 'examen-preliminar'" class="tab-pane">
+      <app-examen-preliminar
+        [historiaId]="historiaId!"
+        [hideButtons]="true"
+        (completed)="onSectionCompleted('examen-preliminar', $event)"
+        (formReady)="onExamenPreliminarFormReady($event)"
+        (nextSection)="onNextSection()"
+      ></app-examen-preliminar>
+    </div>
+
+    <!-- Sección de Estado Refractivo -->
+    <div *ngIf="currentSection === 'estado-refractivo'" class="tab-pane">
+      <div class="placeholder-section">
         <i class="fas fa-glasses"></i>
-        Componente de Lensometría (pendiente de implementar)
-      </p>
+        <h3>Estado Refractivo</h3>
+        <p>Estado refractivo y subjetivo de cerca</p>
+      </div>
+    </div>
+
+    <!-- Sección de Binocularidad -->
+    <div *ngIf="currentSection === 'binocularidad'" class="tab-pane">
+      <div class="placeholder-section">
+        <i class="fas fa-binoculars"></i>
+        <h3>Binocularidad</h3>
+        <p>Forias con Ex, vergencias, integración binocular y visión estereoscópica</p>
+      </div>
+    </div>
+
+    <!-- Sección de Detección de Alteraciones -->
+    <div *ngIf="currentSection === 'deteccion-alteraciones'" class="tab-pane">
+      <div class="placeholder-section">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Detección de Alteraciones Oculares</h3>
+        <p>Grid de Amsler, tonometría, paquimetría, campimetría, biomicroscopía y oftalmoscopía</p>
+      </div>
     </div>
 
     <!-- Sección de Diagnóstico -->
-    <div *ngIf="currentSection === 'diagnostico'">
-      <!-- Aquí iría el componente de diagnóstico -->
-      <p class="placeholder-message">
+    <div *ngIf="currentSection === 'diagnostico'" class="tab-pane">
+      <div class="placeholder-section">
         <i class="fas fa-stethoscope"></i>
-        Componente de Diagnóstico (pendiente de implementar)
-      </p>
-    </div>
-
-    <!-- Sección de Plan de Tratamiento -->
-    <div *ngIf="currentSection === 'plan-tratamiento'">
-      <!-- Aquí iría el componente de plan de tratamiento -->
-      <p class="placeholder-message">
-        <i class="fas fa-clipboard-check"></i>
-        Componente de Plan de Tratamiento (pendiente de implementar)
-      </p>
-    </div>
-
-    <!-- Sección de Pronóstico -->
-    <div *ngIf="currentSection === 'pronostico'">
-      <!-- Aquí iría el componente de pronóstico -->
-      <p class="placeholder-message">
-        <i class="fas fa-chart-line"></i>
-        Componente de Pronóstico (pendiente de implementar)
-      </p>
+        <h3>Diagnóstico</h3>
+        <p>Diagnóstico, plan de tratamiento, pronóstico, recomendaciones y próxima cita</p>
+      </div>
     </div>
 
     <!-- Sección de Receta Final -->
-    <div *ngIf="currentSection === 'receta'">
-      <!-- Aquí iría el componente de receta final -->
-      <p class="placeholder-message">
+    <div *ngIf="currentSection === 'receta'" class="tab-pane">
+      <div class="placeholder-section">
         <i class="fas fa-prescription"></i>
-        Componente de Receta Final (pendiente de implementar)
-      </p>
+        <h3>Receta Final</h3>
+        <p>Receta final y observaciones</p>
+      </div>
     </div>
   </div>
 
@@ -213,7 +236,7 @@
   <!-- Navegación inferior -->
   <div class="bottom-navigation">
     <div class="nav-section">
-      <span>{{ currentSection | titlecase }} ({{ getCurrentSectionIndex() + 1 }}/8)</span>
+      <span>{{ currentSection | titlecase }} ({{ getCurrentSectionIndex() + 1 }}/{{ sections.length }})</span>
     </div>
     <div class="nav-buttons">
       <button class="btn-navigation" (click)="goToPreviousSection()" [disabled]="getCurrentSectionIndex() === 0">
