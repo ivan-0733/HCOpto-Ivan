@@ -1,13 +1,14 @@
-/* Variables importadas globalmente desde styles.scss */
 @import '../../styles/variables';
 
 // Contenedor principal
 .profesores-container {
-  padding: $spacing-xl;
-  background-color: $ipn-guinda;
+  padding: 1.5rem;
+  background-color: $ipn-white;
   min-height: calc(100vh - $nav-height);
   display: flex;
   flex-direction: column;
+  max-width: 1200px; // límite de ancho
+  margin: 0 auto;    // centrado
 }
 
 // Header del contenido
@@ -15,20 +16,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $spacing-xl;
+  margin-bottom: 0rem;
 
   .header-title {
     h1 {
       margin: 0;
-      font-size: 2rem;
-      font-weight: 700;
-      color: $text-primary;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: $ipn-guinda-dark;
       display: flex;
       align-items: center;
-      gap: $spacing-md;
 
       i {
-        color: $primary;
+        color: $ipn-guinda;
+        margin-right: 0rem;
       }
     }
   }
@@ -38,46 +39,43 @@
 .loading-container,
 .error-container,
 .empty-container {
-  padding: $spacing-xxl;
-  margin: $spacing-xl auto;
-  max-width: 640px;
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 600px;
   text-align: center;
-  background-color: $bg-white;
-  border-radius: $border-radius-xl;
-  box-shadow: $shadow-md;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background-color: $ipn-white;
+  color: $ipn-guinda-dark;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
 
   .spinner {
-    width: 48px;
-    height: 48px;
-    border: 5px solid rgba($primary, 0.1);
-    border-left-color: $primary;
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
     border-radius: 50%;
+    margin: 0 auto 1.5rem;
     animation: spin 1s linear infinite;
-    margin-bottom: $spacing-lg;
   }
 
   i {
-    font-size: 2.75rem;
-    margin-bottom: $spacing-lg;
-    color: $text-tertiary;
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
   }
 
   p {
-    margin: 0 0 $spacing-sm;
+    margin: 0 0 0.5rem;
     font-size: 1.1rem;
-    color: $text-secondary;
   }
 
   .secondary-text {
     font-size: 0.95rem;
-    color: $text-tertiary;
+    color: $ipn-gray-dark;
   }
 
   button {
-    margin-top: $spacing-xl;
+    margin-top: 1.5rem;
   }
 }
 
@@ -90,98 +88,113 @@
 }
 
 .empty-container {
-  color: $text-tertiary;
+  color: $ipn-gray-dark;
 
   i {
-    color: $text-tertiary;
+    color: $ipn-gray-dark;
   }
 }
 
 // Lista de profesores
 .profesores-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: $spacing-xl;
-  margin-top: $spacing-xl;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 // Tarjeta de profesor
 .profesor-card {
-  background-color: $bg-white;
-  border-radius: $border-radius-xl;
-  box-shadow: $shadow-md;
+  position: relative;
+  background-color: $ipn-white;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
   overflow: hidden;
   display: flex;
   align-items: center;
-  padding: $spacing-xl;
+  padding: 1.5rem;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-left: 4px solid $primary;
+  border-left: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1rem;
+    background-color: $ipn-guinda;
+    border-top-left-radius: $border-radius;
+    border-bottom-left-radius: $border-radius;
+  }
 
   &:hover {
     transform: translateY(-6px);
-    box-shadow: $shadow-lg;
+    box-shadow: $shadow-md;
   }
 
-  .profesor-avatar {
-    width: 64px;
-    height: 64px;
-    min-width: 64px;
+  .perfil-avatar {
+    width: 4.6rem;
+    height: 4.6rem;
+    min-width: 4.6rem;
     border-radius: 50%;
-    background-color: rgba($primary, 0.1);
+    background-color: rgba($ipn-guinda, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: $spacing-xl;
+    margin-right: 1.5rem;
 
     i {
-      font-size: 1.75rem;
-      color: $primary;
+      font-size: 2.90rem;
+      color: $ipn-guinda;
     }
   }
 
   .profesor-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
     h3 {
-      margin: 0 0 $spacing-sm;
-      font-size: 1.3rem;
+      margin: 0 0 0.5rem;
+      font-size: 1.5rem;
       font-weight: 700;
-      color: $text-primary;
+      color: $ipn-guinda-dark;
     }
 
     p {
-      margin: 0 0 $spacing-sm;
-      color: $text-secondary;
-      font-size: 0.95rem;
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: black;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 0.5rem;
+        width: 1rem;
+        text-align: center;
+        color: $ipn-gray-dark;
+      }
 
       &.profesor-id {
         font-weight: 600;
-        color: $primary;
-        margin-bottom: $spacing-md;
+        color: black;
+        margin-bottom: 0.75rem;
+
+        i {
+          color: $ipn-guinda;
+        }
       }
 
       &.profesor-contact {
-        display: flex;
-        align-items: center;
-
-        i {
-          margin-right: $spacing-sm;
-          color: $text-tertiary;
-          width: 1rem;
-          text-align: center;
-        }
+        color: black;
       }
 
       &.profesor-since {
-        margin-top: $spacing-md;
-        font-size: 0.85rem;
-        color: $text-tertiary;
-        display: flex;
-        align-items: center;
-
-        i {
-          margin-right: $spacing-sm;
-        }
+        margin-top: 0.25rem;
+        font-size: 1rem;
+        color: $ipn-gray-dark;
       }
     }
   }
@@ -199,28 +212,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: $spacing-sm;
-  padding: $spacing-md $spacing-xl;
-  border-radius: $border-radius-lg;
-  border: 1px solid $danger;
-  background-color: $bg-white;
-  color: $danger;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.2s;
 
   i {
-    font-size: 1.1rem;
-    margin: 0;
+    font-size: 1rem;
   }
 
   &:hover {
-    background-color: rgba($danger, 0.08);
+    background-color: rgba($danger, 0.1);
   }
 }
 
-// Media queries para responsive
+// Media queries responsivas
 @media (max-width: 992px) {
   .profesores-list {
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

@@ -17,7 +17,7 @@
         <i class="fas fa-file-medical"></i>
       </div>
       <div class="stat-card-content">
-        <h3>Total de Historias</h3>
+        <h3>N° Historias</h3>
         <p class="stat-value">{{ estadisticas.total || 0 }}</p>
       </div>
     </div>
@@ -27,7 +27,7 @@
         <i class="fas fa-archive"></i>
       </div>
       <div class="stat-card-content">
-        <h3>Archivadas</h3>
+        <h3>Archivados</h3>
         <p class="stat-value">{{ estadisticas.archivadas || 0 }}</p>
       </div>
     </div>
@@ -38,7 +38,9 @@
       </div>
       <div class="stat-card-content">
         <h3>{{ estado.estado }}</h3>
-        <p class="stat-value">{{ estado.cantidad }}</p>
+        <!-- Usar el método personalizado solo para estado "Finalizado" -->
+        <p class="stat-value" *ngIf="estado.estado !== 'Finalizado'">{{ estado.cantidad }}</p>
+        <p class="stat-value" *ngIf="estado.estado === 'Finalizado'">{{ obtenerFinalizadasNoArchivadas() }}</p>
       </div>
     </div>
   </div>
@@ -49,56 +51,80 @@
     <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas.</p>
   </div>
 
-  <!-- Filtros -->
-  <div class="filtros-container">
-    <div class="filtro">
-      <label for="filtroEstado">Filtrar por estado:</label>
-      <select id="filtroEstado" [(ngModel)]="filtroEstado">
-        <option value="todos">Todos los estados</option>
-        <option value="En proceso">En proceso</option>
-        <option value="Revisión">Revisión</option>
-        <option value="Corrección">Corrección</option>
-        <option value="Finalizado">Finalizado</option>
-      </select>
-    </div>
+<!-- Filtros -->
+<div class="filtros-container">
 
-    <div class="filtro">
-      <label for="filtroPaciente">Buscar paciente:</label>
-      <div class="input-with-icon">
-        <i class="fas fa-search"></i>
-        <input
-          type="text"
-          id="filtroPaciente"
-          [(ngModel)]="filtroPaciente"
-          placeholder="Nombre del paciente..."
-        >
-      </div>
+  <div class="filtro">
+    <label for="filtroPaciente">Buscar paciente:</label>
+    <div class="input-with-icon">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        id="filtroPaciente"
+        [(ngModel)]="filtroPaciente"
+        placeholder="Nombre del paciente"
+        (ngModelChange)="resetearPaginacion()"
+      >
     </div>
   </div>
 
-  <!-- Tabla de historias clínicas -->
-  <div class="tabla-container">
-    <div class="loading-container" *ngIf="loading">
-      <div class="spinner"></div>
-      <p>Cargando historias clínicas...</p>
-    </div>
+  <div class="filtro">
+    <label for="filtroEstado">Filtrar por estado:</label>
+    <select
+      id="filtroEstado"
+      [(ngModel)]="filtroEstado"
+      (ngModelChange)="resetearPaginacion()">
+      <option value="todos">Todos los estados</option>
+      <option value="En proceso">En proceso</option>
+      <option value="Revisión">Revisión</option>
+      <option value="Corrección">Corrección</option>
+      <option value="Finalizado">Finalizado</option>
+      <option value="Archivado">Archivados</option>
+    </select>
+  </div>
 
-    <div class="error-container" *ngIf="error">
-      <i class="fas fa-exclamation-triangle"></i>
-      <p>{{ error }}</p>
-      <button class="btn-retry" (click)="cargarDatos()">
-        <i class="fas fa-sync-alt"></i>
-        Reintentar
-      </button>
-    </div>
+  <div class="filtro">
+    <label for="ordenamiento">Ordenar por:</label>
+    <select
+      id="ordenamiento"
+      [(ngModel)]="ordenamiento"
+      (change)="aplicarOrdenamiento()">
+      <option value="recientes">Fecha (más recientes primero)</option>
+      <option value="antiguas">Fecha (más antiguas primero)</option>
+      <option value="alfabetico-asc">Nombre (A-Z)</option>
+      <option value="alfabetico-desc">Nombre (Z-A)</option>
+      <option value="edad-asc">Edad (menor a mayor)</option>
+      <option value="edad-desc">Edad (mayor a menor)</option>
+      <option value="semestre-reciente">Semestre (más reciente primero)</option>
+      <option value="semestre-antiguo">Semestre (más antiguo primero)</option>
+    </select>
+  </div>
+</div>
 
-    <div class="empty-container" *ngIf="!loading && !error && filtrarHistorias().length === 0">
-      <i class="fas fa-folder-open"></i>
-      <p *ngIf="historiasClinicas.length === 0">No tienes historias clínicas registradas.</p>
-      <p *ngIf="historiasClinicas.length > 0">No se encontraron historias clínicas con los filtros seleccionados.</p>
-    </div>
+<!-- Tabla de historias clínicas -->
+<div class="tabla-container">
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando historias clínicas...</p>
+  </div>
 
-    <table class="tabla-historias" *ngIf="!loading && !error && filtrarHistorias().length > 0">
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
+
+  <div class="empty-container" *ngIf="!loading && !error && filtrarHistorias().length === 0">
+    <i class="fas fa-folder-open"></i>
+    <p *ngIf="historiasClinicas.length === 0">No tienes historias clínicas registradas.</p>
+    <p *ngIf="historiasClinicas.length > 0">No se encontraron historias clínicas con los filtros seleccionados.</p>
+  </div>
+
+  <div *ngIf="!loading && !error && filtrarHistorias().length > 0">
+    <table class="tabla-historias">
       <thead>
         <tr>
           <th>ID</th>
@@ -112,7 +138,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let historia of filtrarHistorias()">
+        <tr *ngFor="let historia of obtenerHistoriasPaginaActual()">
           <td>{{ historia.ID }}</td>
           <td>{{ historia.Fecha | date:'dd/MM/yyyy' }}</td>
           <td>
@@ -155,6 +181,43 @@
         </tr>
       </tbody>
     </table>
+
+    <!-- Controles de paginación -->
+    <div class="paginacion-container">
+      <div class="paginacion-info">
+        Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -
+        {{ Math.min(paginaActual * registrosPorPagina, filtrarHistorias().length) }}
+        de {{ filtrarHistorias().length }} registros
+      </div>
+
+      <div class="paginacion-selector">
+        <label for="registrosPorPagina">Registros por página:</label>
+        <select id="registrosPorPagina" [(ngModel)]="registrosPorPagina" (change)="cambiarRegistrosPorPagina()">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
+
+      <div class="paginacion-botones">
+        <button class="btn-pagina" (click)="irAPagina(1)" [disabled]="paginaActual === 1" title="Primera página">
+          <i class="material-icons">first_page</i>
+        </button>
+        <button class="btn-pagina" (click)="irAPagina(paginaActual - 1)" [disabled]="paginaActual === 1" title="Página anterior">
+          <i class="material-icons">navigate_before</i>
+        </button>
+
+        <span class="pagina-actual">{{ paginaActual }} de {{ totalPaginas }}</span>
+
+        <button class="btn-pagina" (click)="irAPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas" title="Página siguiente">
+          <i class="material-icons">navigate_next</i>
+        </button>
+        <button class="btn-pagina" (click)="irAPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas" title="Última página">
+          <i class="material-icons">last_page</i>
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 

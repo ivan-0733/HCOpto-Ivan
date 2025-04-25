@@ -293,11 +293,11 @@
           margin-left: $spacing-sm;
 
           &.archivado {
-            background-color: #888;
+            background-color: #808080;
           }
 
           i {
-            margin-right: 4px;
+            margin-right: 0px;
           }
         }
       }
@@ -371,7 +371,7 @@
       }
 
       tr:hover td {
-        background-color: rgba($ipn-gray, 0.3);
+        background-color: rgba($ipn-gray, 0.75);
       }
     }
 

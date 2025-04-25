@@ -123,4 +123,8 @@ export class AlumnoService {
       map(response => response.data || [])
     );
   }
+
+  actualizarPassword(datos: { passwordActual: string, nuevaPassword: string }) {
+    return this.http.put('/api/alumno/password', datos);
+  }
 }

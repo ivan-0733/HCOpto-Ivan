@@ -102,8 +102,8 @@
       <!-- Menú de usuario -->
       <div class="nav-user" *ngIf="authService.isAuthenticated()">
         <div class="user-info">
-          <div class="user-avatar">
-            <i class="fas" [ngClass]="{'fa-user-graduate': isAlumno, 'fa-chalkboard-teacher': isProfesor, 'fa-user-shield': isAdmin}"></i>
+          <div class="user-avatar material-icons" [title]="isAlumno ? 'Alumno' : (isProfesor ? 'Profesor' : 'Administrador')">
+            {{ isAlumno ? 'person_outline' : (isProfesor ? 'person' : 'supervisor_account') }}
           </div>
           <div class="user-name">
             <p>{{ userName }}</p>
@@ -120,3 +120,5 @@
     </div>
   </div>
 </nav>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

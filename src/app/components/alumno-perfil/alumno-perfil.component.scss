@@ -2,8 +2,10 @@
 
 .perfil-container {
   padding: 1.5rem;
-  background-color: $ipn-guinda;
+  background-color: $ipn-white;
   min-height: calc(100vh - $nav-height);
+  max-width: 1200px; // límite de ancho
+  margin: 0 auto;     // centra el contenedor
 }
 
 .content-header {
@@ -18,11 +20,11 @@
       align-items: center;
       font-size: 1.8rem;
       font-weight: 600;
-      color: $primary-dark;
+      color: $ipn-guinda-dark;
       margin: 0;
 
       i {
-        color: $primary;
+        color: $ipn-guinda;
         margin-right: 0.75rem;
       }
     }
@@ -35,16 +37,16 @@
   margin: 2rem auto;
   max-width: 600px;
   text-align: center;
-  background-color: white;
-  color: $text-secondary;
+  background-color: $ipn-white;
+  color: $ipn-guinda-dark;
   border-radius: $border-radius;
-  box-shadow: $shadow-sm;
+  box-shadow: $box-shadow-sm;
 
   .spinner {
     width: 3rem;
     height: 3rem;
-    border: 4px solid rgba($primary, 0.1);
-    border-top-color: $primary;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
     border-radius: 50%;
     margin: 0 auto 1.5rem;
     animation: spin 1s linear infinite;
@@ -95,9 +97,10 @@
 }
 
 .perfil-content {
-  background-color: white;
+  width: 100%;
+  background-color: $ipn-white;
   border-radius: $border-radius;
-  box-shadow: $shadow-sm;
+  box-shadow: $box-shadow-sm;
   overflow: hidden;
 }
 
@@ -105,8 +108,8 @@
   display: flex;
   align-items: center;
   padding: 1.5rem;
-  background-color: $primary-light;
-  border-bottom: 1px solid $border-color;
+  background-color: $ipn-guinda;
+  border-bottom: 1px solid $ipn-gray-dark;
 
   .perfil-avatar {
     width: 5rem;
@@ -114,14 +117,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: white;
+    background-color: $ipn-white;
     border-radius: 50%;
-    box-shadow: $shadow-sm;
+    box-shadow: $box-shadow-sm;
     margin-right: 1.5rem;
 
     i {
       font-size: 2.5rem;
-      color: $primary;
+      color: $ipn-guinda;
     }
   }
 
@@ -132,31 +135,28 @@
       margin: 0 0 0.25rem;
       font-size: 1.5rem;
       font-weight: 700;
-      color: $primary-dark;
+      color: $ipn-white;
     }
 
     p {
       margin: 0.25rem 0;
       display: flex;
       align-items: center;
-      color: $text-secondary;
+      color: $ipn-gray-dark;
 
       &.boleta {
         font-weight: 600;
-        color: $text-primary;
+        color: $ipn-white;
       }
 
       .semestre-badge {
         margin-left: 0.5rem;
         padding: 0.2rem 0.5rem;
-        background-color: rgba($primary, 0.2);
-        color: $primary;
+        background-color: rgba($ipn-white, 0.2);
+        color: $ipn-white;
         font-weight: 600;
         font-size: 0.8rem;
         border-radius: 0.6rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
       }
     }
   }
@@ -166,7 +166,7 @@
       display: inline-flex;
       align-items: center;
       padding: 0.75rem 1.25rem;
-      background-color: $primary;
+      background-color: $ipn-guinda-light;
       color: white;
       font-weight: 600;
       border: none;
@@ -175,11 +175,11 @@
       transition: background-color 0.2s;
 
       i {
-        margin-right: 0.5rem;
+        margin-right: 0rem;
       }
 
       &:hover {
-        background-color: darken($primary, 5%);
+        background-color: darken($ipn-guinda, 5%);
       }
     }
   }
@@ -187,7 +187,7 @@
 
 .perfil-form {
   padding: 1.5rem;
-  border-bottom: 1px solid $border-color;
+  border-bottom: 1px solid $ipn-gray-dark;
 
   .form-group {
     margin-bottom: 1.25rem;
@@ -197,20 +197,20 @@
       font-size: 0.9rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
-      color: $text-secondary;
+      color: $ipn-guinda-dark;
     }
 
     input {
       width: 100%;
       padding: 0.75rem;
       font-size: 1rem;
-      border: 1px solid $border-color;
+      border: 1px solid $ipn-gray-dark;
       border-radius: $border-radius;
 
       &:focus {
         outline: none;
-        border-color: $primary;
-        box-shadow: 0 0 0 2px rgba($primary, 0.25);
+        border-color: $ipn-guinda;
+        box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
       }
 
       &.is-invalid {
@@ -245,12 +245,12 @@
       }
 
       &.btn-primary {
-        background-color: $primary;
+        background-color: $ipn-guinda;
         color: white;
         border: none;
 
         &:hover:not(:disabled) {
-          background-color: darken($primary, 5%);
+          background-color: darken($ipn-guinda, 5%);
         }
 
         &:disabled {
@@ -261,11 +261,11 @@
 
       &.btn-secondary {
         background-color: transparent;
-        color: $text-secondary;
-        border: 1px solid $border-color;
+        color: $ipn-guinda-dark;
+        border: 1px solid $ipn-gray-dark;
 
         &:hover {
-          background-color: $bg-light;
+          background-color: $ipn-gray;
         }
       }
     }
@@ -285,10 +285,10 @@
     h3 {
       font-size: 1.1rem;
       font-weight: 600;
-      color: $primary;
+      color: $ipn-guinda-dark;
       margin: 0 0 1rem;
       padding-bottom: 0.5rem;
-      border-bottom: 1px solid $border-color;
+      border-bottom: 1px solid $ipn-gray-dark;
     }
 
     .info-grid {
@@ -301,14 +301,14 @@
           display: block;
           font-size: 0.85rem;
           font-weight: 600;
-          color: $text-tertiary;
+          color: black; // ← CAMBIADO A NEGRO
           margin-bottom: 0.25rem;
         }
 
         p {
           margin: 0;
           font-weight: 500;
-          color: $text-primary;
+          color: black; // ← CAMBIADO A NEGRO
 
           .status-badge {
             display: inline-flex;
