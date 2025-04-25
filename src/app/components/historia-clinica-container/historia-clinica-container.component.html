@@ -1,0 +1,229 @@
+<div class="historia-container">
+  <!-- Header - Mantener solo aquí y quitar del form -->
+  <header class="historia-header">
+    <div class="header-title">
+      <h1>
+        <i class="fas fa-file-medical" *ngIf="isNewHistoria"></i>
+        <i class="fas fa-edit" *ngIf="!isNewHistoria"></i>
+        {{ title }}
+      </h1>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="cancelar()">
+        <i class="fas fa-times"></i>
+        Cancelar
+      </button>
+      <button class="btn-primary" (click)="guardarSeccionActual()" [disabled]="submitting || loading">
+        <i class="fas fa-save"></i>
+        Guardar
+      </button>
+      <button class="btn-outline" (click)="volverAlDashboard()">
+        <i class="fas fa-arrow-left"></i>
+        Volver al Dashboard
+      </button>
+    </div>
+  </header>
+
+  <!-- Mensajes de error -->
+  <div *ngIf="error" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Navegación entre secciones -->
+  <div class="section-tabs">
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('datos-generales')" 
+      (click)="changeSection('datos-generales')"
+    >
+      <i class="fas fa-info-circle"></i>
+      <span>Datos Generales</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['datos-generales']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('interrogatorio')" 
+      (click)="changeSection('interrogatorio')"
+    >
+      <i class="fas fa-clipboard-list"></i>
+      <span>Interrogatorio</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['interrogatorio']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('agudeza-visual')" 
+      (click)="changeSection('agudeza-visual')"
+    >
+      <i class="fas fa-eye"></i>
+      <span>Agudeza Visual</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['agudeza-visual']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('lensometria')" 
+      (click)="changeSection('lensometria')"
+    >
+      <i class="fas fa-glasses"></i>
+      <span>Lensometría</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['lensometria']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('diagnostico')" 
+      (click)="changeSection('diagnostico')"
+    >
+      <i class="fas fa-stethoscope"></i>
+      <span>Diagnóstico</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['diagnostico']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('plan-tratamiento')" 
+      (click)="changeSection('plan-tratamiento')"
+    >
+      <i class="fas fa-clipboard-check"></i>
+      <span>Plan Tratamiento</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['plan-tratamiento']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('pronostico')" 
+      (click)="changeSection('pronostico')"
+    >
+      <i class="fas fa-chart-line"></i>
+      <span>Pronóstico</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['pronostico']"></i>
+    </button>
+
+    <button 
+      type="button" 
+      [ngClass]="getButtonClass('receta')" 
+      (click)="changeSection('receta')"
+    >
+      <i class="fas fa-prescription"></i>
+      <span>Receta Final</span>
+      <i class="fas fa-check" *ngIf="sectionStatus['receta']"></i>
+    </button>
+  </div>
+
+  <!-- Contenido de la sección actual -->
+  <div class="section-content">
+    <!-- Sección de Datos Generales -->
+    <div *ngIf="currentSection === 'datos-generales'">
+      <app-historia-clinica-form
+        [isEditing]="!isNewHistoria"
+        [historiaId]="historiaId"
+        [hideHeaderAndButtons]="true"
+        (formReady)="onFormReady($event)"
+        (completed)="onSectionCompleted('datos-generales', $event)"
+        (historiaCreated)="onHistoriaCreated($event)"
+        (nextSection)="onNextSection()"
+      ></app-historia-clinica-form>
+    </div>
+
+    <!-- Sección de Interrogatorio -->
+    <app-interrogatorio 
+      *ngIf="currentSection === 'interrogatorio'"
+      [historiaId]="historiaId"
+      [hideButtons]="true"
+      (formReady)="onInterrogatorioFormReady($event)"
+      (completed)="onSectionCompleted('interrogatorio', $event)"
+      (nextSection)="onNextSection()"
+    ></app-interrogatorio>
+
+    <!-- Sección de Agudeza Visual -->
+    <div *ngIf="currentSection === 'agudeza-visual'">
+      <!-- Aquí iría el componente de agudeza visual -->
+      <p class="placeholder-message">
+        <i class="fas fa-eye"></i>
+        Componente de Agudeza Visual (pendiente de implementar)
+      </p>
+    </div>
+
+    <!-- Sección de Lensometría -->
+    <div *ngIf="currentSection === 'lensometria'">
+      <!-- Aquí iría el componente de lensometría -->
+      <p class="placeholder-message">
+        <i class="fas fa-glasses"></i>
+        Componente de Lensometría (pendiente de implementar)
+      </p>
+    </div>
+
+    <!-- Sección de Diagnóstico -->
+    <div *ngIf="currentSection === 'diagnostico'">
+      <!-- Aquí iría el componente de diagnóstico -->
+      <p class="placeholder-message">
+        <i class="fas fa-stethoscope"></i>
+        Componente de Diagnóstico (pendiente de implementar)
+      </p>
+    </div>
+
+    <!-- Sección de Plan de Tratamiento -->
+    <div *ngIf="currentSection === 'plan-tratamiento'">
+      <!-- Aquí iría el componente de plan de tratamiento -->
+      <p class="placeholder-message">
+        <i class="fas fa-clipboard-check"></i>
+        Componente de Plan de Tratamiento (pendiente de implementar)
+      </p>
+    </div>
+
+    <!-- Sección de Pronóstico -->
+    <div *ngIf="currentSection === 'pronostico'">
+      <!-- Aquí iría el componente de pronóstico -->
+      <p class="placeholder-message">
+        <i class="fas fa-chart-line"></i>
+        Componente de Pronóstico (pendiente de implementar)
+      </p>
+    </div>
+
+    <!-- Sección de Receta Final -->
+    <div *ngIf="currentSection === 'receta'">
+      <!-- Aquí iría el componente de receta final -->
+      <p class="placeholder-message">
+        <i class="fas fa-prescription"></i>
+        Componente de Receta Final (pendiente de implementar)
+      </p>
+    </div>
+  </div>
+
+  <!-- Barra de progreso -->
+  <div class="progress-bar">
+    <div class="progress-indicator" [style.width.%]="calculateProgress()"></div>
+  </div>
+
+  <!-- Navegación inferior -->
+  <div class="bottom-navigation">
+    <div class="nav-section">
+      <span>{{ currentSection | titlecase }} ({{ getCurrentSectionIndex() + 1 }}/8)</span>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn-navigation" (click)="goToPreviousSection()" [disabled]="getCurrentSectionIndex() === 0">
+        <i class="fas fa-chevron-left"></i>
+        Anterior
+      </button>
+      <button class="btn-navigation" (click)="goToNextSection()" [disabled]="getCurrentSectionIndex() === sections.length - 1">
+        Siguiente
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

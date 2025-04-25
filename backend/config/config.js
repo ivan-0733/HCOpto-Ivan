@@ -8,8 +8,8 @@ environment: process.env.NODE_ENV || 'development'
 database: {
 host: process.env.DB_HOST || 'localhost',
 user: process.env.DB_USER || 'root',
-password: process.env.DB_PASSWORD || 'Saulivan1$',
-database: process.env.DB_NAME || 'HCOpto'
+password: process.env.DB_PASSWORD || '',
+database: process.env.DB_NAME || 'hcopto'
 },
 jwt: {
 secret: process.env.JWT_SECRET || 'hcopto_secret_key',

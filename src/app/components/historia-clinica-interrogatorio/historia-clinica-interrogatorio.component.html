@@ -1,0 +1,138 @@
+<div class="interrogatorio-container">
+  <h2>Interrogatorio</h2>
+  <p class="info-text">Registre los antecedentes y motivo de consulta del paciente.</p>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error && !hideButtons" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success && !hideButtons" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <!-- Formulario de interrogatorio -->
+  <form [formGroup]="interrogatorioForm" (ngSubmit)="guardarInterrogatorio()" *ngIf="!loading">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="motivoConsulta">Motivo de Consulta *</label>
+        <textarea 
+          id="motivoConsulta" 
+          formControlName="motivoConsulta" 
+          placeholder="Describa el motivo por el que el paciente acude a consulta"
+          [ngClass]="{'is-invalid': interrogatorioForm.get('motivoConsulta')?.invalid && interrogatorioForm.get('motivoConsulta')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('motivoConsulta')?.invalid && interrogatorioForm.get('motivoConsulta')?.touched">
+          Por favor, ingrese el motivo de consulta.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="heredoFamiliares">Antecedentes Heredofamiliares *</label>
+        <textarea 
+          id="heredoFamiliares" 
+          formControlName="heredoFamiliares" 
+          placeholder="Historial familiar, enfermedades de padres, hermanos, etc."
+          [ngClass]="{'is-invalid': interrogatorioForm.get('heredoFamiliares')?.invalid && interrogatorioForm.get('heredoFamiliares')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('heredoFamiliares')?.invalid && interrogatorioForm.get('heredoFamiliares')?.touched">
+          Por favor, ingrese los antecedentes heredofamiliares.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="noPatologicos">Antecedentes No Patológicos *</label>
+        <textarea 
+          id="noPatologicos" 
+          formControlName="noPatologicos" 
+          placeholder="Hábitos, alimentación, actividad física, etc."
+          [ngClass]="{'is-invalid': interrogatorioForm.get('noPatologicos')?.invalid && interrogatorioForm.get('noPatologicos')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('noPatologicos')?.invalid && interrogatorioForm.get('noPatologicos')?.touched">
+          Por favor, ingrese los antecedentes no patológicos.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="patologicos">Antecedentes Patológicos *</label>
+        <textarea 
+          id="patologicos" 
+          formControlName="patologicos" 
+          placeholder="Enfermedades, alergias, cirugías, medicación actual"
+          [ngClass]="{'is-invalid': interrogatorioForm.get('patologicos')?.invalid && interrogatorioForm.get('patologicos')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('patologicos')?.invalid && interrogatorioForm.get('patologicos')?.touched">
+          Por favor, ingrese los antecedentes patológicos.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="visualesOculares">Antecedentes Visuales/Oculares *</label>
+        <textarea 
+          id="visualesOculares" 
+          formControlName="visualesOculares" 
+          placeholder="Uso de lentes, enfermedades oculares previas, tratamientos, última revisión"
+          [ngClass]="{'is-invalid': interrogatorioForm.get('visualesOculares')?.invalid && interrogatorioForm.get('visualesOculares')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('visualesOculares')?.invalid && interrogatorioForm.get('visualesOculares')?.touched">
+          Por favor, ingrese los antecedentes visuales/oculares.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="padecimientoActual">Padecimiento Actual *</label>
+        <textarea 
+          id="padecimientoActual" 
+          formControlName="padecimientoActual" 
+          placeholder="Descripción detallada del padecimiento que motiva la consulta"
+          [ngClass]="{'is-invalid': interrogatorioForm.get('padecimientoActual')?.invalid && interrogatorioForm.get('padecimientoActual')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('padecimientoActual')?.invalid && interrogatorioForm.get('padecimientoActual')?.touched">
+          Por favor, ingrese el padecimiento actual.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="prediagnostico">Prediagnóstico *</label>
+        <textarea 
+          id="prediagnostico" 
+          formControlName="prediagnostico" 
+          placeholder="Posible diagnóstico basado en la información proporcionada por el paciente"
+          [ngClass]="{'is-invalid': interrogatorioForm.get('prediagnostico')?.invalid && interrogatorioForm.get('prediagnostico')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="interrogatorioForm.get('prediagnostico')?.invalid && interrogatorioForm.get('prediagnostico')?.touched">
+          Por favor, ingrese el prediagnóstico.
+        </div>
+      </div>
+    </div>
+
+    <!-- Botones de acción - Solo se muestran si hideButtons es false -->
+    <div class="form-actions" *ngIf="!hideButtons">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="submit" class="btn-primary" [disabled]="submitting || interrogatorioForm.invalid">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+        Guardar Interrogatorio
+      </button>
+    </div>
+  </form>
+</div>
