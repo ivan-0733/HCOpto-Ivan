@@ -61,24 +61,32 @@
         id="filtroPaciente"
         [(ngModel)]="filtroPaciente"
         placeholder="Nombre del paciente"
+        (ngModelChange)="resetearPaginacion()"
       >
     </div>
   </div>
 
   <div class="filtro">
     <label for="filtroEstado">Filtrar por estado:</label>
-    <select id="filtroEstado" [(ngModel)]="filtroEstado">
+    <select
+      id="filtroEstado"
+      [(ngModel)]="filtroEstado"
+      (ngModelChange)="resetearPaginacion()">
       <option value="todos">Todos los estados</option>
       <option value="En proceso">En proceso</option>
       <option value="Revisión">Revisión</option>
       <option value="Corrección">Corrección</option>
       <option value="Finalizado">Finalizado</option>
+      <option value="Archivado">Archivados</option>
     </select>
   </div>
 
   <div class="filtro">
     <label for="ordenamiento">Ordenar por:</label>
-    <select id="ordenamiento" [(ngModel)]="ordenamiento" (change)="aplicarOrdenamiento()">
+    <select
+      id="ordenamiento"
+      [(ngModel)]="ordenamiento"
+      (change)="aplicarOrdenamiento()">
       <option value="recientes">Fecha (más recientes primero)</option>
       <option value="antiguas">Fecha (más antiguas primero)</option>
       <option value="alfabetico-asc">Nombre (A-Z)</option>

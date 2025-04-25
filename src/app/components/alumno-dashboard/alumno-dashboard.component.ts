@@ -124,6 +124,13 @@ export class AlumnoDashboardComponent implements OnInit {
     this.router.navigate(['/alumno/historias', id, 'editar']);
   }
 
+  // Método para resetear la paginación cuando cambian los filtros
+  resetearPaginacion(): void {
+    this.registrosPorPagina = 5;
+    this.paginaActual = 1;
+    this.calcularTotalPaginas();
+  }
+
   filtrarHistorias(): HistoriaClinica[] {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
@@ -131,18 +138,29 @@ export class AlumnoDashboardComponent implements OnInit {
 
     // Filtrar historias según criterios
     const historiasFiltradas = this.historiasClinicas.filter(historia => {
-      // Filtrar por estado
-      const cumpleEstado = this.filtroEstado === 'todos' || historia.Estado === this.filtroEstado;
-      if (!cumpleEstado) return false;
+      // Verificar si cumple con el filtro de búsqueda por nombre
+      const nombreCompleto = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`.toLowerCase();
+      const cumplePaciente = termino === '' || nombreCompleto.includes(termino);
 
-      // Filtrar por paciente
-      if (termino !== '') {
-        const nombreCompleto = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`.toLowerCase();
-        const cumplePaciente = nombreCompleto.includes(termino);
-        if (!cumplePaciente) return false;
+      if (!cumplePaciente) {
+        return false;
       }
 
-      return true;
+      // Comprobar si está archivado (convertir a booleano para evitar errores de tipo)
+      const estaArchivado = !!(historia.Archivado as any);
+
+      // Filtro específico para "Archivado"
+      if (this.filtroEstado === 'Archivado') {
+        return estaArchivado;
+      }
+
+      // Para los demás filtros, no mostrar historias archivadas
+      if (estaArchivado) {
+        return false;
+      }
+
+      // Filtrar por estado
+      return this.filtroEstado === 'todos' || historia.Estado === this.filtroEstado;
     });
 
     // Ordenar las historias filtradas
