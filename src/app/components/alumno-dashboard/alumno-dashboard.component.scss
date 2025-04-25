@@ -6,6 +6,7 @@ $warning-color: #f39c12;
 $danger-color: #e74c3c;
 $light-color: #ecf0f1;
 $dark-color: #2c3e50;
+$neutral-gray: #808080;
 $border-radius: 6px;
 $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
@@ -98,9 +99,10 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 // Stats cards
 .stats-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Tarjetas más anchas */
+  gap: 0.1rem; /* Espacio casi imperceptible */
+  margin-bottom: 1.5rem;
+  width: 100%; /* Ocupa todo el ancho disponible */
 }
 
 .stat-card {
@@ -110,15 +112,20 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   box-shadow: $box-shadow;
   display: flex;
   align-items: center;
+  width: 98%; /* Aprovecha el espacio completo del grid */
+  /* Eliminamos transform: scale para evitar espacios artificiales */
+  transform-origin: top left;
+  margin: 0; /* Elimina márgenes residuales */
+  box-sizing: border-box; /* Incluye padding en el ancho */
 
   .stat-card-icon {
-    width: 60px;
-    height: 60px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1rem;
+    margin-right: 0.5rem;
 
     i {
       font-size: 1.6rem;
@@ -128,26 +135,27 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
   .stat-card-content {
     h3 {
-      font-size: 0.9rem;
-      color: #666;
+      font-size: 1.1rem;
+      color: black;
       margin: 0 0 0.5rem;
+      text-align: center;
     }
 
     .stat-value {
-      font-size: 1.8rem;
+      font-size: 1.4rem;
+      text-align: center;
       font-weight: 700;
       margin: 0;
-      color: $primary-color;
+      color: black;
     }
   }
 
-  // Diferentes colores para diferentes tipos de tarjetas
   &.total .stat-card-icon {
-    background-color: $primary-color;
+    background-color: $dark-color;
   }
 
   &.archivadas .stat-card-icon {
-    background-color: $dark-color;
+    background-color: $neutral-gray;
   }
 
   &.por-estado .stat-card-icon {
@@ -338,7 +346,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   .badge.archivado {
     display: inline-block;
     margin-left: 0.5rem;
-    background-color: $dark-color;
+    background-color: $neutral-gray;
     color: #fff;
     padding: 0.2rem 0.5rem;
     border-radius: 20px;
