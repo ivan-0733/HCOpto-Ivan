@@ -38,7 +38,9 @@
       </div>
       <div class="stat-card-content">
         <h3>{{ estado.estado }}</h3>
-        <p class="stat-value">{{ estado.cantidad }}</p>
+        <!-- Usar el método personalizado solo para estado "Finalizado" -->
+        <p class="stat-value" *ngIf="estado.estado !== 'Finalizado'">{{ estado.cantidad }}</p>
+        <p class="stat-value" *ngIf="estado.estado === 'Finalizado'">{{ obtenerFinalizadasNoArchivadas() }}</p>
       </div>
     </div>
   </div>

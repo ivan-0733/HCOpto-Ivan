@@ -53,11 +53,16 @@ export class AlumnoDashboardComponent implements OnInit {
     this.cargarDatos();
   }
 
+  // Modificar el método cargarDatos para coordinar las llamadas
   cargarDatos(): void {
     this.loading = true;
     this.error = '';
 
-    // Cargar perfil del alumno
+    // Banderas para controlar cuando ambos datos estén cargados
+    let historiasListas = false;
+    let estadisticasListas = false;
+
+    // Cargar perfil del alumno (sin cambios)
     this.alumnoService.obtenerPerfil().subscribe({
       next: (perfil) => {
         console.log('Perfil cargado:', perfil);
@@ -68,47 +73,63 @@ export class AlumnoDashboardComponent implements OnInit {
       }
     });
 
-    // Cargar historias clínicas
-    this.historiaClinicaService.obtenerHistoriasClinicas()
-      .pipe(
-        finalize(() => {
-          this.loading = false;
-        })
-      )
-      .subscribe({
-        next: (historias) => {
-          // Asegurarse de que todos los objetos de historia tienen
-          // las propiedades esperadas, incluso si son undefined
-          this.historiasClinicas = historias.map(historia => ({
-            ...historia,
-            CorreoElectronico: historia.CorreoElectronico || undefined,
-            TelefonoCelular: historia.TelefonoCelular || undefined,
-            Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
-          }));
-          console.log('Historias cargadas:', this.historiasClinicas);
+  // Cargar historias clínicas
+  this.historiaClinicaService.obtenerHistoriasClinicas()
+  .pipe(
+    finalize(() => {
+      this.loading = false;
+    })
+  )
+  .subscribe({
+    next: (historias) => {
+      // Asegurarse de que todos los objetos de historia tienen
+      // las propiedades esperadas, incluso si son undefined
+      this.historiasClinicas = historias.map(historia => ({
+        ...historia,
+        CorreoElectronico: historia.CorreoElectronico || undefined,
+        TelefonoCelular: historia.TelefonoCelular || undefined,
+        Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
+      }));
+      console.log('Historias cargadas:', this.historiasClinicas);
 
-          // Aplicar ordenamiento inicial
-          this.aplicarOrdenamiento();
+      // Aplicar ordenamiento inicial
+      this.aplicarOrdenamiento();
 
-          // Calcular total de páginas
-          this.calcularTotalPaginas();
-        },
-        error: (error) => {
-          this.error = 'Error al cargar historias clínicas. Por favor, intenta nuevamente.';
-          console.error('Error al cargar historias:', error);
-        }
-      });
+      // Calcular total de páginas
+      this.calcularTotalPaginas();
 
-    // Cargar estadísticas
-    this.historiaClinicaService.obtenerEstadisticas().subscribe({
-      next: (estadisticas) => {
-        this.estadisticas = estadisticas;
-        console.log('Estadísticas cargadas:', estadisticas);
-      },
-      error: (error) => {
-        console.error('Error al cargar estadísticas:', error);
+      // Marcar historias como cargadas
+      historiasListas = true;
+
+      // Si las estadísticas ya se cargaron, actualizar las finalizadas
+      if (estadisticasListas) {
+        this.actualizarEstadisticasFinalizadas();
       }
-    });
+    },
+    error: (error) => {
+      this.error = 'Error al cargar historias clínicas. Por favor, intenta nuevamente.';
+      console.error('Error al cargar historias:', error);
+    }
+  });
+
+  // Cargar estadísticas
+  this.historiaClinicaService.obtenerEstadisticas().subscribe({
+    next: (estadisticas) => {
+      this.estadisticas = estadisticas;
+      console.log('Estadísticas cargadas:', estadisticas);
+
+      // Marcar estadísticas como cargadas
+      estadisticasListas = true;
+
+      // Si las historias ya se cargaron, actualizar las finalizadas
+      if (historiasListas) {
+        this.actualizarEstadisticasFinalizadas();
+      }
+    },
+    error: (error) => {
+      console.error('Error al cargar estadísticas:', error);
+    }
+  });
   }
 
   crearNuevaHistoria(): void {
@@ -286,13 +307,40 @@ export class AlumnoDashboardComponent implements OnInit {
         return 'estado-correccion';
       case 'Finalizado':
         return 'estado-finalizado';
+      case 'Archivado':
+        return 'estado-archivado';
       default:
         return '';
     }
   }
 
-  cerrarSesion(): void {
-    this.authService.logout();
+  // Método actualizado para obtener historias finalizadas no archivadas
+  obtenerFinalizadasNoArchivadas(): number {
+    if (!this.historiasClinicas || this.historiasClinicas.length === 0) return 0;
+
+    // Contar las historias que están finalizadas pero NO archivadas
+    return this.historiasClinicas.filter(historia => {
+      // Comprobar de manera segura si está archivado
+      // Convertimos explícitamente a booleano para evitar cualquier problema con valores 'truthy' o 'falsy'
+      const estaArchivado = Boolean(historia.Archivado);
+
+      // Solo contar las que están finalizadas Y no archivadas
+      return historia.Estado === 'Finalizado' && !estaArchivado;
+    }).length;
+  }
+
+  // Método para actualizar las estadísticas una vez cargadas las historias
+  actualizarEstadisticasFinalizadas(): void {
+    if (this.estadisticas?.porEstado) {
+      // Buscar el estado "Finalizado" en las estadísticas
+      const estadoFinalizado = this.estadisticas.porEstado.find(e => e.estado === 'Finalizado');
+      if (estadoFinalizado) {
+        // Actualizar el contador para mostrar solo las no archivadas
+        const finalizadasNoArchivadas = this.obtenerFinalizadasNoArchivadas();
+        console.log('Finalizadas no archivadas:', finalizadasNoArchivadas);
+        estadoFinalizado.cantidad = finalizadasNoArchivadas;
+      }
+    }
   }
 
   // Métodos de paginación
