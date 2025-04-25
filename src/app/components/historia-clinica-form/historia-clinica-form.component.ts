@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -18,15 +18,25 @@ import { AlumnoService, Profesor, Semestre, Consultorio, CatalogoItem, Paciente 
     RouterModule
   ]
 })
+
 export class HistoriaClinicaFormComponent implements OnInit {
+  // Inputs y Outputs para comunicación con el componente padre
+  @Input() isEditing = false;
+  @Input() historiaId: number | null = null;
+  @Input() hideHeaderAndButtons = false; // Nuevo input para controlar visibilidad
+  @Output() completed = new EventEmitter<boolean>();
+  @Output() historiaCreated = new EventEmitter<number>();
+  @Output() nextSection = new EventEmitter<void>();
+  @Output() formReady = new EventEmitter<FormGroup>(); // Nuevo output para compartir el formulario
+
   historiaForm!: FormGroup;
   pacienteForm!: FormGroup;
 
   // Para la edición de historia clínica
-  historiaId: number | null = null;
   historia: HistoriaClinicaDetalle | null = null;
-  isEditing = false;
-  currentTab = 'datos-generales';
+  
+  // Eliminamos el uso de tabs internos ya que ahora todo es manejado por el contenedor
+  // currentTab = 'datos-generales';
 
   // Datos para los selectores
   profesores: Profesor[] = [];
@@ -60,14 +70,10 @@ export class HistoriaClinicaFormComponent implements OnInit {
     this.initForms();
     this.loadInitialData();
 
-    // Verificar si estamos en modo edición
-    this.route.params.subscribe(params => {
-      if (params['id']) {
-        this.historiaId = +params['id'];
-        this.isEditing = true;
-        this.loadHistoriaClinica();
-      }
-    });
+    // Cargar historia clínica si estamos en modo edición
+    if (this.isEditing && this.historiaId) {
+      this.loadHistoriaClinica();
+    }
 
     // Configurar búsqueda de pacientes
     const busquedaControl = this.pacienteForm.get('busqueda');
@@ -97,6 +103,9 @@ export class HistoriaClinicaFormComponent implements OnInit {
           this.pacientesBusqueda = pacientes;
         });
     }
+
+    // Emitir el formulario después de inicializarlo
+    this.formReady.emit(this.historiaForm);
   }
 
   initForms(): void {
@@ -291,19 +300,25 @@ export class HistoriaClinicaFormComponent implements OnInit {
           ? 'Historia clínica actualizada correctamente.'
           : 'Historia clínica creada correctamente.';
 
+        // Emitir eventos para el componente padre
+        if (this.isEditing) {
+          this.completed.emit(true);
+        } else {
+          // Obtener el ID de la historia creada
+          const newHistoriaId = response.data.ID;
+          this.historiaCreated.emit(newHistoriaId);
+          this.completed.emit(true);
+        }
+
+        // Después de un breve retraso, pasar a la siguiente sección
         setTimeout(() => {
-          if (this.isEditing) {
-            // Recargar datos para mostrar cambios
-            this.loadHistoriaClinica();
-          } else {
-            // Redirigir a la página de edición
-            this.router.navigate(['/alumno/historias', response.data.ID]);
-          }
+          this.nextSection.emit();
         }, 1500);
       },
       error: (error) => {
         this.error = error.error?.message || 'Error al guardar la historia clínica. Por favor, intenta nuevamente.';
         console.error('Error al guardar historia clínica:', error);
+        this.completed.emit(false);
       }
     });
   }
@@ -319,18 +334,11 @@ export class HistoriaClinicaFormComponent implements OnInit {
     });
   }
 
-  changeTab(tab: string): void {
-    this.currentTab = tab;
-  }
-
-  getButtonClass(tab: string): string {
-    return this.currentTab === tab ? 'active' : '';
-  }
-
   cancelar(): void {
     if (this.isEditing) {
       this.loadHistoriaClinica();
     } else {
+      this.completed.emit(false);
       this.router.navigate(['/alumno/dashboard']);
     }
   }

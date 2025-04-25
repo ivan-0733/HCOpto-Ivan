@@ -27,9 +27,10 @@ export const routes: Routes = [
         loadComponent: () => import('./components/alumno-perfil/alumno-perfil.component').then(m => m.AlumnoPerfilComponent),
         title: 'HCOpto - Mi Perfil'
       },
+      // Historia Clínica - Usar el contenedor para nueva y edición
       {
         path: 'historias/nueva',
-        loadComponent: () => import('./components/historia-clinica-form/historia-clinica-form.component').then(m => m.HistoriaClinicaFormComponent),
+        loadComponent: () => import('./components/historia-clinica-container/historia-clinica-container.component').then(m => m.HistoriaClinicaContainerComponent),
         title: 'HCOpto - Nueva Historia Clínica'
       },
       {
@@ -39,7 +40,7 @@ export const routes: Routes = [
       },
       {
         path: 'historias/:id/editar',
-        loadComponent: () => import('./components/historia-clinica-form/historia-clinica-form.component').then(m => m.HistoriaClinicaFormComponent),
+        loadComponent: () => import('./components/historia-clinica-container/historia-clinica-container.component').then(m => m.HistoriaClinicaContainerComponent),
         title: 'HCOpto - Editar Historia Clínica'
       },
       {
