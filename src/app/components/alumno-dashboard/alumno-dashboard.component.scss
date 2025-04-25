@@ -119,6 +119,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   transform-origin: top left;
   margin: 0; /* Elimina márgenes residuales */
   box-sizing: border-box; /* Incluye padding en el ancho */
+  margin-bottom: 0.2rem;
 
   .stat-card-icon {
     width: 45px;
@@ -462,7 +463,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 // Responsive
-@media (max-width: 768px) {
+@media (max-width: 350px) {
   .content-header {
     flex-direction: column;
     align-items: flex-start;
