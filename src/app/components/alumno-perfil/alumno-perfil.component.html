@@ -81,7 +81,7 @@
         </h3>
         <div class="password-info">
           <i class="material-icons info-icon">info</i>
-          <p>Completa los siguientes campos sólo si deseas cambiar tu contraseña actual.</p>
+          <p>Completa los siguientes campos sólo si deseas cambiar tu contraseña actual</p>
         </div>
 
         <!-- Cambio a estructura horizontal para los inputs de contraseña -->
@@ -105,10 +105,6 @@
                     [ngClass]="{'is-invalid': perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched}">
               <i class="material-icons password-icon">lock_open</i>
             </div>
-            <div class="invalid-feedback" *ngIf="perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched">
-              <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['required']">La nueva contraseña es obligatoria</span>
-              <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['minlength']">Debe tener al menos 6 caracteres</span>
-            </div>
           </div>
 
           <div class="form-group">
@@ -116,11 +112,10 @@
             <div class="password-input-container">
               <input type="password" id="confirmarPassword" formControlName="confirmarPassword"
                     [ngClass]="{'is-invalid': perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched}">
-              <i class="material-icons password-icon">done</i>
-            </div>
-            <div class="invalid-feedback" *ngIf="perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched">
-              <span *ngIf="perfilForm.get('confirmarPassword')?.errors?.['required']">Debes confirmar la nueva contraseña</span>
-              <span *ngIf="perfilForm.hasError('passwordMismatch')">Las contraseñas no coinciden</span>
+              <i class="material-icons password-icon"
+                 [ngClass]="{'match-icon': passwordsMatch() && perfilForm.get('confirmarPassword')?.value}">
+                {{ passwordsMatch() && perfilForm.get('confirmarPassword')?.value ? 'check_circle' : 'check_circle_outline' }}
+              </i>
             </div>
           </div>
         </div>
@@ -128,9 +123,26 @@
         <div class="password-requirements">
           <h4>Requisitos de seguridad:</h4>
           <ul>
-            <li><i class="material-icons">check_circle</i> Mínimo 6 caracteres</li>
-            <li><i class="material-icons">check_circle</i> Se recomienda incluir números y símbolos</li>
-            <li><i class="material-icons">check_circle</i> Evite usar información personal fácil de adivinar</li>
+            <li [ngClass]="{'requirement-met': passwordMeetsMinLength()}">
+              <i class="material-icons">{{ passwordMeetsMinLength() ? 'check_circle' : 'check_circle_outline' }}</i>
+              Mínimo 8 caracteres
+            </li>
+            <li [ngClass]="{'requirement-met': passwordHasNumber()}">
+              <i class="material-icons">{{ passwordHasNumber() ? 'check_circle' : 'check_circle_outline' }}</i>
+              Al menos un número
+            </li>
+            <li [ngClass]="{'requirement-met': passwordHasUppercase()}">
+              <i class="material-icons">{{ passwordHasUppercase() ? 'check_circle' : 'check_circle_outline' }}</i>
+              Al menos una letra mayúscula
+            </li>
+            <li [ngClass]="{'requirement-met': passwordHasSpecialChar()}">
+              <i class="material-icons">{{ passwordHasSpecialChar() ? 'check_circle' : 'check_circle_outline' }}</i>
+              Al menos un carácter especial
+            </li>
+            <li [ngClass]="{'requirement-met': passwordIsDifferent()}">
+              <i class="material-icons">{{ passwordIsDifferent() ? 'check_circle' : 'check_circle_outline' }}</i>
+              Distinta a la contraseña actual
+            </li>
           </ul>
         </div>
       </div>

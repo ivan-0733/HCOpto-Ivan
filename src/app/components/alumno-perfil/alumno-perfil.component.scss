@@ -20,7 +20,7 @@
       align-items: center;
       font-size: 1.8rem;
       font-weight: 600;
-      color: $ipn-guinda-dark;
+      color: $ipn-guinda;
       margin: 0;
 
       i {
@@ -282,15 +282,20 @@
       font-size: 1.25rem;
       opacity: 0.6;
       pointer-events: none; // Evita que el icono interfiera con el input
+
+      &.match-icon {
+        color: $success;
+        opacity: 1;
+      }
     }
   }
 
   .password-requirements {
-    width: calc(100% - 3rem); // Reducir el ancho para dejar espacio en los lados
-    margin: 1.5rem auto 0; // Centrar el contenedor con margen automático
+    width: calc(100% - 3rem);
+    margin: 1.5rem auto 0;
     background-color: rgba($ipn-guinda, 0.05);
     border-radius: $border-radius;
-    padding: 1.5rem; // Aumentar el padding interior
+    padding: 1.5rem;
     flex-basis: 100%;
 
     h4 {
@@ -312,12 +317,22 @@
         font-size: 0.9rem;
         color: black;
         line-height: 1.4;
+        transition: color 0.3s ease;
 
         i {
           color: $ipn-guinda;
           margin-right: 0.5rem;
           font-size: 1rem;
           flex-shrink: 0;
+          transition: color 0.3s ease;
+        }
+
+        &.requirement-met {
+          //color: $success;
+
+          i {
+            color: $success;
+          }
         }
 
         &:last-child {

@@ -52,6 +52,44 @@ export class AlumnoPerfilComponent implements OnInit {
     return nueva && confirmar && nueva !== confirmar ? { passwordMismatch: true } : null;
   }
 
+  passwordsMatch(): boolean {
+    const newPassword = this.perfilForm.get('nuevaPassword')?.value;
+    const confirmPassword = this.perfilForm.get('confirmarPassword')?.value;
+
+    // Devuelve true solo si ambas contraseñas existen y son iguales
+    return newPassword && confirmPassword && newPassword === confirmPassword;
+  }
+
+  // Valida si la contraseña tiene al menos 8 caracteres
+  passwordMeetsMinLength(): boolean {
+    const password = this.perfilForm.get('nuevaPassword')?.value;
+    return password && password.length >= 8;
+  }
+
+  // Valida si la contraseña tiene al menos una letra mayúscula
+  passwordHasUppercase(): boolean {
+    const password = this.perfilForm.get('nuevaPassword')?.value;
+    return password && /[A-Z]/.test(password);
+  }
+
+  // Valida si la contraseña tiene al menos un carácter especial
+  passwordHasSpecialChar(): boolean {
+    const password = this.perfilForm.get('nuevaPassword')?.value;
+    return password && /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password);
+  }
+
+  // Valida si la nueva contraseña es diferente a la actual
+  passwordIsDifferent(): boolean {
+    const currentPassword = this.perfilForm.get('passwordActual')?.value;
+    const newPassword = this.perfilForm.get('nuevaPassword')?.value;
+    return currentPassword && newPassword && currentPassword !== newPassword;
+  }
+
+  passwordHasNumber(): boolean {
+    const password = this.perfilForm.get('nuevaPassword')?.value;
+    return password && /\d/.test(password);
+  }
+
   // Validación para asegurar que todos los campos de contraseña estén llenos si uno está lleno
   validarCamposPassword(group: FormGroup) {
     const actual = group.get('passwordActual')?.value;
@@ -189,3 +227,4 @@ export class AlumnoPerfilComponent implements OnInit {
     return `${this.perfil.SemestreActual}°`;
   }
 }
+
