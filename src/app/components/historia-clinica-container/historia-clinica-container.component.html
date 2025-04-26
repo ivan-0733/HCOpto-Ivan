@@ -184,11 +184,13 @@
 
     <!-- Sección de Estado Refractivo -->
     <div *ngIf="currentSection === 'estado-refractivo'" class="tab-pane">
-      <div class="placeholder-section">
-        <i class="fas fa-glasses"></i>
-        <h3>Estado Refractivo</h3>
-        <p>Estado refractivo y subjetivo de cerca</p>
-      </div>
+      <app-estado-refractivo
+        [historiaId]="historiaId!"
+        [hideButtons]="true"
+        (completed)="onSectionCompleted('estado-refractivo', $event)"
+        (formReady)="onEstadoRefractivoFormReady($event)"
+        (nextSection)="onNextSection()"
+      ></app-estado-refractivo>
     </div>
 
     <!-- Sección de Binocularidad -->

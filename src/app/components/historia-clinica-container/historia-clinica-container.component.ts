@@ -9,6 +9,7 @@ import { InterrogatorioComponent } from '../historia-clinica-interrogatorio/hist
 import { HistoriaClinicaFormComponent } from '../historia-clinica-form/historia-clinica-form.component';
 import { AntecedenteVisualComponent } from '../historia-clinica-antecedente-visual/historia-clinica-antecedente-visual.component';
 import { ExamenPreliminarComponent } from '../historia-clinica-examen-preliminar/historia-clinica-examen-preliminar.component';
+import { EstadoRefractivoComponent } from '../historia-clinica-estado-refractivo/historia-clinica-estado-refractivo.component';
 import { forkJoin } from 'rxjs';
 import { TitleCaseSectionPipe } from '../../pipes/title-case-section.pipe';
 
@@ -24,6 +25,7 @@ imports: [
   HistoriaClinicaFormComponent,
   AntecedenteVisualComponent,
   ExamenPreliminarComponent,
+  EstadoRefractivoComponent,
   TitleCaseSectionPipe
 ]
 })
@@ -38,6 +40,7 @@ error = '';
 success = '';
 title = 'Nueva Historia Clínica';
 allSectionsRequired = false; // Para indicar si se requieren todas las secciones
+
 
 // Lista ordenada de secciones con los nuevos nombres
 sections = [
@@ -78,6 +81,10 @@ motilidadForm: FormGroup | null = null;
 exploracionForm: FormGroup | null = null;
 viaPupilarForm: FormGroup | null = null;
 
+//Formularios para Estado refractivo 
+refraccionForm: FormGroup | null = null;
+subjetivoCercaForm: FormGroup | null = null;
+
 // Almacén para los valores de los formularios (persistencia entre navegaciones)
 formValues: {[key: string]: any} = {
   'datos-generales': null,
@@ -90,6 +97,7 @@ formValues: {[key: string]: any} = {
   'via-pupilar': null,
   'examen-preliminar': null,
   'estado-refractivo': null,
+  'subjetivo-cerca': null,
   'binocularidad': null,
   'deteccion-alteraciones': null,
   'diagnostico': null,
@@ -235,6 +243,39 @@ onExamenPreliminarFormReady(form: FormGroup): void {
   }
 }
 
+// Métodos para recibir los formularios de estado refractivo
+onEstadoRefractivoFormReady(form: FormGroup): void {
+  // Verificar el tipo de formulario recibido analizando sus controles
+  if (form.contains('ojoDerechoQueratometria')) {
+    this.refraccionForm = form;
+    console.log('Formulario de refracción recibido:', form);
+    
+    // Restaurar valores previos si existen
+    if (this.formValues['estado-refractivo']) {
+      form.patchValue(this.formValues['estado-refractivo']);
+    }
+    
+    // Suscribirse a cambios en el formulario para guardar
+    form.valueChanges.subscribe(values => {
+      this.formValues['estado-refractivo'] = values;
+    });
+  }
+  else if (form.contains('valorADD')) {
+    this.subjetivoCercaForm = form;
+    console.log('Formulario de subjetivo cerca recibido:', form);
+    
+    // Restaurar valores previos si existen
+    if (this.formValues['subjetivo-cerca']) {
+      form.patchValue(this.formValues['subjetivo-cerca']);
+    }
+    
+    // Suscribirse a cambios en el formulario para guardar
+    form.valueChanges.subscribe(values => {
+      this.formValues['subjetivo-cerca'] = values;
+    });
+  }
+}
+
 // Suscribirse a cambios en el formulario para guardar los valores mientras se editan
 private subscribeToFormChanges(sectionName: string, form: FormGroup): void {
   form.valueChanges.subscribe(values => {
@@ -273,7 +314,10 @@ loadHistoriaStatus(): void {
           !!historia.viaPupilar;
         
         // Verificaciones para las otras secciones
-        this.sectionStatus['estado-refractivo'] = false; // Implementar cuando se tenga el componente
+        this.sectionStatus['estado-refractivo'] = 
+        !!historia.estadoRefractivo || 
+        !!historia.subjetivoCerca;
+
         this.sectionStatus['binocularidad'] = false; // Implementar cuando se tenga el componente
         this.sectionStatus['deteccion-alteraciones'] = false; // Implementar cuando se tenga el componente
         this.sectionStatus['diagnostico'] = !!historia.diagnostico;
@@ -361,6 +405,15 @@ private actualizarFormValues(): void {
   
   if (this.viaPupilarForm) {
     this.formValues['via-pupilar'] = this.viaPupilarForm.value;
+  }
+  
+  // Actualizar formularios de estado refractivo
+  if (this.refraccionForm) {
+    this.formValues['estado-refractivo'] = this.refraccionForm.value;
+  }
+  
+  if (this.subjetivoCercaForm) {
+    this.formValues['subjetivo-cerca'] = this.subjetivoCercaForm.value;
   }
   
   // Añadir actualización para otras secciones cuando estén implementadas
@@ -663,10 +716,46 @@ private async actualizarSeccionesAdicionales(historiaId: number): Promise<void> 
       this.sectionStatus['examen-preliminar'] = true;
     }
   }
+
+  // Estado refractivo
+  if (this.formValues['estado-refractivo']) {
+    const estadoRefractivoData = this.formValues['estado-refractivo'];
+    
+    if (Object.values(estadoRefractivoData).some(val => val !== '' && val !== null && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'estado-refractivo', 
+            estadoRefractivoData
+          )
+        )
+      );
+      this.sectionStatus['estado-refractivo'] = true;
+    }
+  }
+  
+  // Subjetivo cerca
+  if (this.formValues['subjetivo-cerca']) {
+    const subjetivoCercaData = this.formValues['subjetivo-cerca'];
+    
+    if (Object.values(subjetivoCercaData).some(val => val !== '' && val !== null && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'subjetivo-cerca', 
+            subjetivoCercaData
+          )
+        )
+      );
+      this.sectionStatus['estado-refractivo'] = true;
+    }
+  }
   
   // Agregar más secciones aquí cuando se implementen
   
-  // Esperar a que todas las actualizaciones terminen
+  
   await Promise.all(promesas);
 }
 
@@ -856,7 +945,6 @@ getButtonClass(section: string): string {
 changeSection(section: string): void {
   // Guardar los valores actuales del formulario antes de cambiar
   if (this.currentSection === 'antecedente-visual') {
-    // Guardar los valores de los formularios de antecedente visual
     if (this.agudezaVisualForm) {
       this.formValues['agudeza-visual'] = this.agudezaVisualForm.value;
     }
@@ -864,7 +952,6 @@ changeSection(section: string): void {
       this.formValues['lensometria'] = this.lensometriaForm.value;
     }
   } else if (this.currentSection === 'examen-preliminar') {
-    // Guardar los valores de los formularios de examen preliminar
     if (this.alineacionForm) {
       this.formValues['alineacion-ocular'] = this.alineacionForm.value;
     }
@@ -876,6 +963,13 @@ changeSection(section: string): void {
     }
     if (this.viaPupilarForm) {
       this.formValues['via-pupilar'] = this.viaPupilarForm.value;
+    }
+  } else if (this.currentSection === 'estado-refractivo') {
+    if (this.refraccionForm) {
+      this.formValues['estado-refractivo'] = this.refraccionForm.value;
+    }
+    if (this.subjetivoCercaForm) {
+      this.formValues['subjetivo-cerca'] = this.subjetivoCercaForm.value;
     }
   } else if (this.sectionForms[this.currentSection]) {
     this.formValues[this.currentSection] = this.sectionForms[this.currentSection].value;

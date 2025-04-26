@@ -237,4 +237,44 @@ obtenerDominanciaOcular(dominanciaID: number | null | undefined): string {
   
   return dominancias[dominanciaID] || 'Desconocida';
 }
+
+// Métodos para trabajar con la sección de Estado Refractivo
+mostrarEstadoRefractivo(): boolean {
+  if (!this.historia) return false;
+  return !!this.historia.estadoRefractivo || !!this.historia.subjetivoCerca;
+}
+
+formatearValorNumerico(valor: any): string {
+  if (valor === null || valor === undefined || valor === '') return '-';
+  return valor.toString();
+}
+
+formatearGrados(grados: any): string {
+  if (grados === null || grados === undefined || grados === '') return '-';
+  return `${grados}°`;
+}
+
+verificarSubjetivoCerca(): boolean {
+  if (!this.historia || !this.historia.subjetivoCerca) return false;
+  
+  const subjetivoCerca = this.historia.subjetivoCerca;
+  return !!(
+    subjetivoCerca.OjoDerechoM || 
+    subjetivoCerca.OjoIzquierdoM || 
+    subjetivoCerca.AmbosOjosM ||
+    subjetivoCerca.OjoDerechoJacger || 
+    subjetivoCerca.OjoIzquierdoJacger || 
+    subjetivoCerca.AmbosOjosJacger ||
+    subjetivoCerca.OjoDerechoPuntos || 
+    subjetivoCerca.OjoIzquierdoPuntos || 
+    subjetivoCerca.AmbosOjosPuntos ||
+    subjetivoCerca.OjoDerechoSnellen || 
+    subjetivoCerca.OjoIzquierdoSnellen || 
+    subjetivoCerca.AmbosOjosSnellen ||
+    subjetivoCerca.ValorADD ||
+    subjetivoCerca.AV ||
+    subjetivoCerca.Distancia ||
+    subjetivoCerca.Rango
+  );
+}
 }

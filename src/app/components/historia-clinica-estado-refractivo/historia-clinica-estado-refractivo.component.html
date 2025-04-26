@@ -1,0 +1,310 @@
+<div class="estado-refractivo-container">
+  <h2>Estado Refractivo</h2>
+  <p class="info-text">Registre los datos de queratometría, retinoscopía, subjetivo y balance binoculares del paciente.</p>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error && !hideButtons" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success && !hideButtons" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!loading" class="form-content">
+    <!-- Sección de Queratometría -->
+    <div class="form-section">
+      <h3>Queratometría</h3>
+      <form [formGroup]="refraccionForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoQueratometria">OD Queratometría</label>
+            <input type="text" id="ojoDerechoQueratometria" formControlName="ojoDerechoQueratometria" class="form-control" placeholder="Ej: 40.50x0°/40.75x90°">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoQueratometria">OI Queratometría</label>
+            <input type="text" id="ojoIzquierdoQueratometria" formControlName="ojoIzquierdoQueratometria" class="form-control" placeholder="Ej: 40.50x0°/40.75x90°">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoAstigmatismoCorneal">OD Astigmatismo Corneal</label>
+            <input type="number" step="0.01" id="ojoDerechoAstigmatismoCorneal" formControlName="ojoDerechoAstigmatismoCorneal" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoAstigmatismoCorneal">OI Astigmatismo Corneal</label>
+            <input type="number" step="0.01" id="ojoIzquierdoAstigmatismoCorneal" formControlName="ojoIzquierdoAstigmatismoCorneal" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoAstigmatismoJaval">OD Regla Javal</label>
+            <input type="text" id="ojoDerechoAstigmatismoJaval" formControlName="ojoDerechoAstigmatismoJaval" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoAstigmatismoJaval">OI Regla Javal</label>
+            <input type="text" id="ojoIzquierdoAstigmatismoJaval" formControlName="ojoIzquierdoAstigmatismoJaval" class="form-control">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Retinoscopía -->
+    <div class="form-section">
+      <h3>Retinoscopía</h3>
+      <form [formGroup]="refraccionForm">
+        <div class="rx-table-container">
+          <table class="rx-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Esfera</th>
+                <th>Cilindro</th>
+                <th>Eje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OD</strong></td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoRetinoscopiaEsfera" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoRetinosciopiaCilindro" class="form-control">
+                </td>
+                <td>
+                  <input type="number" min="0" max="180" formControlName="ojoDerechoRetinoscopiaEje" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>OI</strong></td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoRetinoscopiaEsfera" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoRetinosciopiaCilindro" class="form-control">
+                </td>
+                <td>
+                  <input type="number" min="0" max="180" formControlName="ojoIzquierdoRetinoscopiaEje" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Subjetivo -->
+    <div class="form-section">
+      <h3>Subjetivo</h3>
+      <form [formGroup]="refraccionForm">
+        <div class="rx-table-container">
+          <table class="rx-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Esfera</th>
+                <th>Cilindro</th>
+                <th>Eje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OD</strong></td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoSubjetivoEsfera" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoSubjetivoCilindro" class="form-control">
+                </td>
+                <td>
+                  <input type="number" min="0" max="180" formControlName="ojoDerechoSubjetivoEje" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>OI</strong></td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoSubjetivoEsfera" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoSubjetivoCilindro" class="form-control">
+                </td>
+                <td>
+                  <input type="number" min="0" max="180" formControlName="ojoIzquierdoSubjetivoEje" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Balance Binoculares -->
+    <div class="form-section">
+      <h3>Balance Binoculares</h3>
+      <form [formGroup]="refraccionForm">
+        <div class="rx-table-container">
+          <table class="rx-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Esfera</th>
+                <th>Cilindro</th>
+                <th>Eje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OD</strong></td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoBalanceBinocularesEsfera" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoBalanceBinocularesCilindro" class="form-control">
+                </td>
+                <td>
+                  <input type="number" min="0" max="180" formControlName="ojoDerechoBalanceBinocularesEje" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>OI</strong></td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoBalanceBinocularesEsfera" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoBalanceBinocularesCilindro" class="form-control">
+                </td>
+                <td>
+                  <input type="number" min="0" max="180" formControlName="ojoIzquierdoBalanceBinocularesEje" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="ojoDerechoAVLejana">OD AV Lejana</label>
+            <input type="text" id="ojoDerechoAVLejana" formControlName="ojoDerechoAVLejana" class="form-control" placeholder="Ej: 20/20">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="ojoIzquierdoAVLejana">OI AV Lejana</label>
+            <input type="text" id="ojoIzquierdoAVLejana" formControlName="ojoIzquierdoAVLejana" class="form-control" placeholder="Ej: 20/20">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección Subjetivo de Cerca -->
+    <div class="form-section">
+      <h3>Subjetivo de Cerca</h3>
+      <form [formGroup]="subjetivoCercaForm">
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th></th>
+                <th>OD</th>
+                <th>OI</th>
+                <th>AO</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>M</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoM" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoM" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ambosOjosM" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Jaeger</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoJaeger" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoJaeger" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ambosOjosJaeger" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Puntos</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoPuntos" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoPuntos" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ambosOjosPuntos" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Snellen</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoSnellen" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoSnellen" class="form-control">
+                </td>
+                <td>
+                  <input type="text" formControlName="ambosOjosSnellen" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="valorADD">Valor ADD</label>
+            <input type="text" id="valorADD" formControlName="valorADD" class="form-control" placeholder="Ej: +2.50">
+          </div>
+
+          <div class="form-group col-md-4">
+            <label for="av">AV</label>
+            <input type="text" id="av" formControlName="av" class="form-control">
+          </div>
+          
+          <div class="form-group col-md-4">
+            <label for="distancia">Distancia (cm)</label>
+            <input type="text" id="distancia" formControlName="distancia" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="rango">Rango</label>
+            <input type="text" id="rango" formControlName="rango" class="form-control" placeholder="Ej: 33-45 cm">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Botones de acción - Solo se muestran si hideButtons es false -->
+    <div class="form-actions" *ngIf="!hideButtons">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="btn-primary" [disabled]="submitting" (click)="guardarEstadoRefractivo()">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+        Guardar Estado Refractivo
+      </button>
+    </div>
+  </div>
+</div>

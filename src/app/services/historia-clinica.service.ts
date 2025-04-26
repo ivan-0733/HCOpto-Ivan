@@ -98,6 +98,58 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     DIP?: string;
     DominanciaOcularID?: number;
   };
+
+   // Propiedades para estado refractivo
+   estadoRefractivo?: {
+    OjoDerechoQueratometria?: string;
+    OjoIzquierdoQueratometria?: string;
+    OjoDerechoAstigmatismoCorneal?: number;
+    OjoIzquierdoAstigmatismoCorneal?: number;
+    OjoDerechoAstigmatismoJaval?: string;
+    OjoIzquierdoAstigmatismoJaval?: string;
+    
+    OjoDerechoRetinoscopiaEsfera?: number;
+    OjoDerechoRetinosciopiaCilindro?: number;
+    OjoDerechoRetinoscopiaEje?: number;
+    OjoIzquierdoRetinoscopiaEsfera?: number;
+    OjoIzquierdoRetinosciopiaCilindro?: number;
+    OjoIzquierdoRetinoscopiaEje?: number;
+    
+    OjoDerechoSubjetivoEsfera?: number;
+    OjoDerechoSubjetivoCilindro?: number;
+    OjoDerechoSubjetivoEje?: number;
+    OjoIzquierdoSubjetivoEsfera?: number;
+    OjoIzquierdoSubjetivoCilindro?: number;
+    OjoIzquierdoSubjetivoEje?: number;
+    
+    OjoDerechoBalanceBinocularesEsfera?: number;
+    OjoDerechoBalanceBinocularesCilindro?: number;
+    OjoDerechoBalanceBinocularesEje?: number;
+    OjoIzquierdoBalanceBinocularesEsfera?: number;
+    OjoIzquierdoBalanceBinocularesCilindro?: number;
+    OjoIzquierdoBalanceBinocularesEje?: number;
+    OjoDerechoAVLejana?: string;
+    OjoIzquierdoAVLejana?: string;
+  };
+  
+  subjetivoCerca?: {
+    OjoDerechoM?: string;
+    OjoIzquierdoM?: string;
+    AmbosOjosM?: string;
+    OjoDerechoJacger?: string;
+    OjoIzquierdoJacger?: string;
+    AmbosOjosJacger?: string;
+    OjoDerechoPuntos?: string;
+    OjoIzquierdoPuntos?: string;
+    AmbosOjosPuntos?: string;
+    OjoDerechoSnellen?: string;
+    OjoIzquierdoSnellen?: string;
+    AmbosOjosSnellen?: string;
+    ValorADD?: string;
+    AV?: string;
+    Distancia?: string;
+    Rango?: string;
+  };
 }
 
 export interface EstadisticasHistorias {
@@ -177,4 +229,5 @@ export class HistoriaClinicaService {
       );
   }
 }
+
 

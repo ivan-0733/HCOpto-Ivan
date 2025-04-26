@@ -63,9 +63,9 @@
         <i class="fas fa-search"></i>
         Examen Preliminar
       </button>
-      <button type="button" [ngClass]="getButtonClass('diagnostico')" (click)="changeTab('diagnostico')">
-        <i class="fas fa-stethoscope"></i>
-        Diagnóstico
+      <button type="button" [ngClass]="getButtonClass('estado-refractivo')" (click)="changeTab('estado-refractivo')">
+        <i class="fas fa-glasses"></i>
+        Estado Refractivo
       </button>
       <button type="button" [ngClass]="getButtonClass('receta')" (click)="changeTab('receta')">
         <i class="fas fa-prescription"></i>
@@ -540,6 +540,210 @@
           </button>
         </div>
       </div>
+
+      <!-- Estado Refractivo -->
+<div *ngIf="currentTab === 'estado-refractivo'" class="tab-pane">
+  <section class="info-section" *ngIf="historia.estadoRefractivo">
+    <h2>Queratometría y Retinoscopía</h2>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>OD Queratometría</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoQueratometria || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI Queratometría</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoQueratometria || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OD Astigmatismo Corneal</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoAstigmatismoCorneal || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI Astigmatismo Corneal</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoCorneal || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OD Regla Javal</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoAstigmatismoJaval || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI Regla Javal</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoJaval || 'No registrado' }}</p>
+      </div>
+    </div>
+    
+    <h3>Retinoscopía</h3>
+    <div class="table-responsive">
+      <table class="table-lensometria">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Esfera</th>
+            <th>Cilindro</th>
+            <th>Eje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoRetinoscopiaEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoRetinosciopiaCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoRetinoscopiaEje || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinosciopiaCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEje || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <section class="info-section" *ngIf="historia.estadoRefractivo">
+    <h2>Subjetivo y Balance Binoculares</h2>
+    
+    <h3>Subjetivo</h3>
+    <div class="table-responsive">
+      <table class="table-lensometria">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Esfera</th>
+            <th>Cilindro</th>
+            <th>Eje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoEje || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoEje || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <h3>Balance Binoculares</h3>
+    <div class="table-responsive">
+      <table class="table-lensometria">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Esfera</th>
+            <th>Cilindro</th>
+            <th>Eje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesEje || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEje || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>OD AV Lejana</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoAVLejana || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI AV Lejana</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoAVLejana || 'No registrado' }}</p>
+      </div>
+    </div>
+  </section>
+  
+  <section class="info-section" *ngIf="historia.subjetivoCerca">
+    <h2>Subjetivo de Cerca</h2>
+    
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>OD</th>
+            <th>OI</th>
+            <th>AO</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>M</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoM || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoM || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosM || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Jaeger</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoJacger || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoJacger || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosJacger || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Puntos</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoPuntos || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoPuntos || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosPuntos || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Snellen</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoSnellen || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoSnellen || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosSnellen || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>Valor ADD</h3>
+        <p>{{ historia.subjetivoCerca.ValorADD || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>AV</h3>
+        <p>{{ historia.subjetivoCerca.AV || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Distancia</h3>
+        <p>{{ historia.subjetivoCerca.Distancia || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Rango</h3>
+        <p>{{ historia.subjetivoCerca.Rango || 'No registrado' }}</p>
+      </div>
+    </div>
+  </section>
+  
+  <div class="no-data" *ngIf="!historia.estadoRefractivo && !historia.subjetivoCerca">
+    <i class="fas fa-glasses"></i>
+    <p>No se ha registrado información de estado refractivo para esta historia clínica.</p>
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+      <i class="fas fa-edit"></i>
+      Agregar Estado Refractivo
+    </button>
+  </div>
+</div>
 
       <!-- Diagnóstico -->
       <div *ngIf="currentTab === 'diagnostico'" class="tab-pane">
