@@ -1,56 +1,61 @@
-  <div class="perfil-container">
-    <!-- Header -->
-    <header class="content-header">
-      <div class="header-title">
-        <h1>
-          Mi Perfil
-        </h1>
+<div class="perfil-container">
+  <!-- Header -->
+  <header class="content-header">
+    <div class="header-title">
+      <h1>
+        Mi Perfil
+      </h1>
+    </div>
+  </header>
+
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando perfil...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarPerfil()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Success message -->
+  <div class="success-message" *ngIf="success">
+    <i class="fas fa-check-circle"></i>
+    <p>{{ success }}</p>
+  </div>
+
+  <!-- Profile content -->
+  <div class="perfil-content" *ngIf="!loading && !error && perfil">
+    <div class="perfil-header">
+      <div class="perfil-avatar">
+        <i class="material-icons" style="font-size: 75px;">person_outline</i>
       </div>
-    </header>
-
-    <!-- Loading state -->
-    <div class="loading-container" *ngIf="loading">
-      <div class="spinner"></div>
-      <p>Cargando perfil...</p>
-    </div>
-
-    <!-- Error state -->
-    <div class="error-container" *ngIf="error">
-      <i class="fas fa-exclamation-triangle"></i>
-      <p>{{ error }}</p>
-      <button class="btn-retry" (click)="cargarPerfil()">
-        <i class="fas fa-sync-alt"></i>
-        Reintentar
-      </button>
-    </div>
-
-    <!-- Success message -->
-    <div class="success-message" *ngIf="success">
-      <i class="fas fa-check-circle"></i>
-      <p>{{ success }}</p>
-    </div>
-
-    <!-- Profile content -->
-    <div class="perfil-content" *ngIf="!loading && !error && perfil">
-      <div class="perfil-header">
-        <div class="perfil-avatar">
-          <i class="material-icons" style="font-size: 75px;">person_outline</i>
-        </div>
-        <div class="perfil-basic-info">
-          <h2>{{ perfil.NombreUsuario }}</h2>
-          <p class="boleta">Boleta: {{ perfil.NumeroBoleta }}</p>
-          <p class="semestre">Semestre: <span class="semestre-badge">{{ semestreTexto }}</span></p>
-        </div>
-        <div class="perfil-actions" *ngIf="!isEditing">
-          <button class="btn-primary" (click)="toggleEditing()">
-            <i class="fas fa-edit"></i>
-            Editar Perfil
-          </button>
-        </div>
+      <div class="perfil-basic-info">
+        <h2>{{ perfil.NombreUsuario }}</h2>
+        <p class="boleta">Boleta: {{ perfil.NumeroBoleta }}</p>
+        <p class="semestre">Semestre: <span class="semestre-badge">{{ semestreTexto }}</span></p>
       </div>
+      <div class="perfil-actions" *ngIf="!isEditing">
+        <button class="btn-primary" (click)="toggleEditing()">
+          <i class="fas fa-edit"></i>
+          Editar Perfil
+        </button>
+      </div>
+    </div>
 
-      <!-- Formulario de edición -->
-      <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()" *ngIf="isEditing" class="perfil-form">
+    <!-- Formulario de edición -->
+    <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()" *ngIf="isEditing" class="perfil-form">
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="material-icons">person</i>
+          Información Personal
+        </h3>
         <div class="form-group">
           <label for="nombreUsuario">Nombre de Usuario</label>
           <input type="text" id="nombreUsuario" formControlName="nombreUsuario" [ngClass]="{'is-invalid': perfilForm.get('nombreUsuario')?.invalid && perfilForm.get('nombreUsuario')?.touched}">
@@ -66,105 +71,136 @@
             <span *ngIf="perfilForm.get('telefonoCelular')?.errors?.['pattern']">Ingresa un número de teléfono válido (10 dígitos)</span>
           </div>
         </div>
+      </div>
 
-        <!-- Cambio de contraseña -->
-        <div class="form-group">
-          <label for="passwordActual">Contraseña Actual</label>
-          <input type="password" id="passwordActual" formControlName="passwordActual"
-                [ngClass]="{'is-invalid': perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched}">
-          <div class="invalid-feedback" *ngIf="perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched">
-            <span *ngIf="perfilForm.get('passwordActual')?.errors?.['required']">La contraseña actual es obligatoria</span>
-          </div>
+      <!-- Cambio de contraseña -->
+      <div class="form-section password-section">
+        <h3 class="section-title">
+          <i class="material-icons">lock</i>
+          Cambio de Contraseña
+        </h3>
+        <div class="password-info">
+          <i class="material-icons info-icon">info</i>
+          <p>Completa los siguientes campos sólo si deseas cambiar tu contraseña actual.</p>
         </div>
 
-        <div class="form-group">
-          <label for="nuevaPassword">Nueva Contraseña</label>
-          <input type="password" id="nuevaPassword" formControlName="nuevaPassword"
-                [ngClass]="{'is-invalid': perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched}">
-          <div class="invalid-feedback" *ngIf="perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched">
-            <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['required']">La nueva contraseña es obligatoria</span>
-            <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['minlength']">Debe tener al menos 6 caracteres</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="confirmarPassword">Confirmar Nueva Contraseña</label>
-          <input type="password" id="confirmarPassword" formControlName="confirmarPassword"
-                [ngClass]="{'is-invalid': perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched}">
-          <div class="invalid-feedback" *ngIf="perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched">
-            <span *ngIf="perfilForm.get('confirmarPassword')?.errors?.['required']">Debes confirmar la nueva contraseña</span>
-            <span *ngIf="perfilForm.hasError('passwordMismatch')">Las contraseñas no coinciden</span>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn-secondary" (click)="toggleEditing()">
-            <i class="fas fa-times"></i>
-            Cancelar
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="perfilForm.invalid || updating">
-            <i class="fas fa-save"></i>
-            <span *ngIf="!updating">Guardar Cambios</span>
-            <span *ngIf="updating">Guardando...</span>
-          </button>
-        </div>
-      </form>
-
-      <!-- Información detallada del perfil -->
-      <div class="perfil-details" *ngIf="!isEditing">
-        <div class="info-section">
-          <h3>Información Personal</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <label>Nombre de Usuario:</label>
-              <p>{{ perfil.NombreUsuario }}</p>
+        <!-- Cambio a estructura horizontal para los inputs de contraseña -->
+        <div class="password-form-horizontal">
+          <div class="form-group">
+            <label for="passwordActual">Contraseña Actual</label>
+            <div class="password-input-container">
+              <input type="password" id="passwordActual" formControlName="passwordActual"
+                    [ngClass]="{'is-invalid': perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched}">
+              <i class="material-icons password-icon">lock</i>
             </div>
-            <div class="info-item">
-              <label>Correo Electrónico:</label>
-              <p>{{ perfil.CorreoElectronico }}</p>
+            <div class="invalid-feedback" *ngIf="perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched">
+              <span *ngIf="perfilForm.get('passwordActual')?.errors?.['required']">La contraseña actual es obligatoria</span>
             </div>
-            <div class="info-item">
-              <label>Teléfono Celular:</label>
-              <p>{{ perfil.TelefonoCelular || 'No registrado' }}</p>
+          </div>
+
+          <div class="form-group">
+            <label for="nuevaPassword">Nueva Contraseña</label>
+            <div class="password-input-container">
+              <input type="password" id="nuevaPassword" formControlName="nuevaPassword"
+                    [ngClass]="{'is-invalid': perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched}">
+              <i class="material-icons password-icon">lock_open</i>
+            </div>
+            <div class="invalid-feedback" *ngIf="perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched">
+              <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['required']">La nueva contraseña es obligatoria</span>
+              <span *ngIf="perfilForm.get('nuevaPassword')?.errors?.['minlength']">Debe tener al menos 6 caracteres</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmarPassword">Confirmar Nueva Contraseña</label>
+            <div class="password-input-container">
+              <input type="password" id="confirmarPassword" formControlName="confirmarPassword"
+                    [ngClass]="{'is-invalid': perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched}">
+              <i class="material-icons password-icon">done</i>
+            </div>
+            <div class="invalid-feedback" *ngIf="perfilForm.get('confirmarPassword')?.invalid && perfilForm.get('confirmarPassword')?.touched">
+              <span *ngIf="perfilForm.get('confirmarPassword')?.errors?.['required']">Debes confirmar la nueva contraseña</span>
+              <span *ngIf="perfilForm.hasError('passwordMismatch')">Las contraseñas no coinciden</span>
             </div>
           </div>
         </div>
 
-        <div class="info-section">
-          <h3>Información Académica</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <label>Número de Boleta:</label>
-              <p>{{ perfil.NumeroBoleta }}</p>
-            </div>
-            <div class="info-item">
-              <label>Semestre Actual:</label>
-              <p>{{ semestreTexto }}</p>
-            </div>
-            <div class="info-item">
-              <label>Estado de Cuenta:</label>
-              <p><span class="status-badge" [ngClass]="perfil.EstaActivo ? 'active' : 'inactive'">
-                {{ perfil.EstaActivo ? 'Activo' : 'Inactivo' }}
-              </span></p>
-            </div>
+        <div class="password-requirements">
+          <h4>Requisitos de seguridad:</h4>
+          <ul>
+            <li><i class="material-icons">check_circle</i> Mínimo 6 caracteres</li>
+            <li><i class="material-icons">check_circle</i> Se recomienda incluir números y símbolos</li>
+            <li><i class="material-icons">check_circle</i> Evite usar información personal fácil de adivinar</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="toggleEditing()">
+          <i class="fas fa-times"></i>
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="perfilForm.invalid || updating">
+          <i class="fas fa-save"></i>
+          <span *ngIf="!updating">Guardar Cambios</span>
+          <span *ngIf="updating">Guardando...</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Información detallada del perfil -->
+    <div class="perfil-details" *ngIf="!isEditing">
+      <div class="info-section">
+        <h3>Información Personal</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Nombre de Usuario:</label>
+            <p>{{ perfil.NombreUsuario }}</p>
+          </div>
+          <div class="info-item">
+            <label>Correo Electrónico:</label>
+            <p>{{ perfil.CorreoElectronico }}</p>
+          </div>
+          <div class="info-item">
+            <label>Teléfono Celular:</label>
+            <p>{{ perfil.TelefonoCelular || 'No registrado' }}</p>
           </div>
         </div>
+      </div>
 
-        <div class="info-section">
-          <h3>Información de la Cuenta</h3>
-          <div class="info-grid">
-            <div class="info-item">
-              <label>Fecha de Creación:</label>
-              <p>{{ formatDateTime(perfil.FechaCreacion) }}</p>
-            </div>
-            <div class="info-item">
-              <label>Último Acceso:</label>
-              <p>{{ formatDateTime(perfil.FechaUltimoAcceso) }}</p>
-            </div>
+      <div class="info-section">
+        <h3>Información Académica</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Número de Boleta:</label>
+            <p>{{ perfil.NumeroBoleta }}</p>
+          </div>
+          <div class="info-item">
+            <label>Semestre Actual:</label>
+            <p>{{ semestreTexto }}</p>
+          </div>
+          <div class="info-item">
+            <label>Estado de Cuenta:</label>
+            <p><span class="status-badge" [ngClass]="perfil.EstaActivo ? 'active' : 'inactive'">
+              {{ perfil.EstaActivo ? 'Activo' : 'Inactivo' }}
+            </span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>Información de la Cuenta</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Fecha de Creación:</label>
+            <p>{{ formatDateTime(perfil.FechaCreacion) }}</p>
+          </div>
+          <div class="info-item">
+            <label>Último Acceso:</label>
+            <p>{{ formatDateTime(perfil.FechaUltimoAcceso) }}</p>
           </div>
         </div>
       </div>
     </div>
   </div>
-
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</div>
