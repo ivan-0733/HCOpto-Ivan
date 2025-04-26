@@ -745,6 +745,269 @@
   </div>
 </div>
 
+<!-- Sección de Binocularidad -->
+<div *ngIf="currentTab === 'binocularidad'" class="tab-pane">
+  <!-- Subsección de Binocularidad -->
+  <section class="info-section" *ngIf="historia.binocularidad">
+    <h2>Binocularidad</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>PPC</h3>
+        <p>{{ historia.binocularidad.PPC || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>ARN</h3>
+        <p>{{ historia.binocularidad.ARN || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>ARP</h3>
+        <p>{{ historia.binocularidad.ARP || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Mediciones</h3>
+        <ul class="caracteristicas-list">
+          <li *ngIf="historia.binocularidad.Donders">Donders</li>
+          <li *ngIf="historia.binocularidad.Sheards">Sheards</li>
+          <li *ngIf="!historia.binocularidad.Donders && !historia.binocularidad.Sheards">No registrado</li>
+        </ul>
+      </div>
+      <div class="info-item">
+        <h3>Hab. Acom. Lente</h3>
+        <p>{{ historia.binocularidad.HabAcomLente || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Hab. Acom. Dificultad</h3>
+        <p>{{ historia.binocularidad.HabAcomDificultad || 'No registrado' }}</p>
+      </div>
+    </div>
+
+    <h3>Amplitud de Acomodación</h3>
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>cm</th>
+            <th>D</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.binocularidad.OjoDerechoAmpAcomCm || '-' }}</td>
+            <td>{{ historia.binocularidad.OjoDerechoAmpAcomD || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.binocularidad.OjoIzquierdoAmpAcomCm || '-' }}</td>
+            <td>{{ historia.binocularidad.OjoIzquierdoAmpAcomD || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>AO</strong></td>
+            <td>{{ historia.binocularidad.AmbosOjosAmpAcomCm || '-' }}</td>
+            <td>{{ historia.binocularidad.AmbosOjosAmpAcomD || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Subsección de Forias -->
+  <section class="info-section" *ngIf="historia.forias">
+    <h2>Forias</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>Horizontales Lejos</h3>
+        <p>{{ historia.forias.HorizontalesLejos || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Horizontales Cerca</h3>
+        <p>{{ historia.forias.HorizontalesCerca || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Vertical Lejos</h3>
+        <p>{{ historia.forias.VerticalLejos || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Vertical Cerca</h3>
+        <p>{{ historia.forias.VerticalCerca || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Método de Medición</h3>
+        <p>{{ obtenerNombreMetodo(historia.forias.MetodoMedicionID) }}</p>
+      </div>
+      <div class="info-item">
+        <h3>CAA</h3>
+        <p>{{ historia.forias.CAA || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>CAA Calculada</h3>
+        <p>{{ historia.forias.CAACalculada || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>CAA Medida</h3>
+        <p>{{ historia.forias.CAAMedida || 'No registrado' }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subsección de Vergencias -->
+  <section class="info-section" *ngIf="historia.vergencias">
+    <h2>Vergencias</h2>
+    
+    <h3>Vergencias Positivas</h3>
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Borroso</th>
+            <th>Ruptura</th>
+            <th>Recuperación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lejos</strong></td>
+            <td>{{ historia.vergencias.PositivasLejosBorroso || '-' }}</td>
+            <td>{{ historia.vergencias.PositivasLejosRuptura || '-' }}</td>
+            <td>{{ historia.vergencias.PositivasLejosRecuperacion || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Cerca</strong></td>
+            <td>{{ historia.vergencias.PositivasCercaBorroso || '-' }}</td>
+            <td>{{ historia.vergencias.PositivasCercaRuptura || '-' }}</td>
+            <td>{{ historia.vergencias.PositivasCercaRecuperacion || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Vergencias Negativas</h3>
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Borroso</th>
+            <th>Ruptura</th>
+            <th>Recuperación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lejos</strong></td>
+            <td>{{ historia.vergencias.NegativasLejosBorroso || '-' }}</td>
+            <td>{{ historia.vergencias.NegativasLejosRuptura || '-' }}</td>
+            <td>{{ historia.vergencias.NegativasLejosRecuperacion || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Cerca</strong></td>
+            <td>{{ historia.vergencias.NegativasCercaBorroso || '-' }}</td>
+            <td>{{ historia.vergencias.NegativasCercaRuptura || '-' }}</td>
+            <td>{{ historia.vergencias.NegativasCercaRecuperacion || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-section-grid">
+      <div class="grid-section">
+        <h3>Supravergencias</h3>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Ruptura</th>
+                <th>Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Lejos</strong></td>
+                <td>{{ historia.vergencias.SupravergenciasLejosRuptura || '-' }}</td>
+                <td>{{ historia.vergencias.SupravergenciasLejosRecuperacion || '-' }}</td>
+              </tr>
+              <tr>
+                <td><strong>Cerca</strong></td>
+                <td>{{ historia.vergencias.SupravergenciasCercaRuptura || '-' }}</td>
+                <td>{{ historia.vergencias.SupravergenciasCercaRecuperacion || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="grid-section">
+        <h3>Infravergencias</h3>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Ruptura</th>
+                <th>Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Lejos</strong></td>
+                <td>{{ historia.vergencias.InfravergenciasLejosRuptura || '-' }}</td>
+                <td>{{ historia.vergencias.InfravergenciasLejosRecuperacion || '-' }}</td>
+              </tr>
+              <tr>
+                <td><strong>Cerca</strong></td>
+                <td>{{ historia.vergencias.InfravergenciasCercaRuptura || '-' }}</td>
+                <td>{{ historia.vergencias.InfravergenciasCercaRecuperacion || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subsección de Método Gráfico -->
+  <section class="info-section" *ngIf="historia.metodoGrafico">
+    <h2>Método Gráfico</h2>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>Integración Binocular</h3>
+        <p>{{ historia.metodoGrafico.IntegracionBinocular || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Tipo de Test</h3>
+        <p>{{ obtenerTipoTest(historia.metodoGrafico.TipoID) }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Visión Estereoscópica</h3>
+        <p>{{ historia.metodoGrafico.VisionEstereoscopica || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Tipo de Visión Estereoscópica</h3>
+        <p>{{ obtenerTipoVision(historia.metodoGrafico.TipoVisionID) }}</p>
+      </div>
+    </div>
+    
+    <div *ngIf="historia.metodoGrafico.ImagenID" class="metodo-grafico-imagen">
+      <h3>Imagen</h3>
+      <img [src]="obtenerUrlImagen(historia.metodoGrafico.ImagenID)" alt="Imagen de método gráfico">
+    </div>
+  </section>
+
+  <!-- Mensaje cuando no hay datos -->
+  <div class="no-data" *ngIf="!tieneDatosBinocularidad()">
+    <i class="fas fa-binoculars"></i>
+    <p>No se ha registrado información de binocularidad para esta historia clínica.</p>
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+      <i class="fas fa-edit"></i>
+      Agregar Binocularidad
+    </button>
+  </div>
+</div>
+
       <!-- Diagnóstico -->
       <div *ngIf="currentTab === 'diagnostico'" class="tab-pane">
         <section class="info-section" *ngIf="historia.diagnostico">

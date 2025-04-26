@@ -4,6 +4,7 @@ import { finalize } from 'rxjs/operators';
 import { HistoriaClinicaService, HistoriaClinicaDetalle } from '../../services/historia-clinica.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 @Component({
 selector: 'app-historia-clinica-detalle',
@@ -277,4 +278,51 @@ verificarSubjetivoCerca(): boolean {
     subjetivoCerca.Rango
   );
 }
+
+// Métodos auxiliares para la vista de binocularidad
+
+// Verifica si existen datos de binocularidad
+tieneDatosBinocularidad(): boolean {
+  if (!this.historia) return false;
+  
+  return !!(
+    this.historia.binocularidad || 
+    this.historia.forias || 
+    this.historia.vergencias || 
+    this.historia.metodoGrafico
+  );
+}
+
+// Obtiene el nombre del método de medición para forias
+obtenerTipoTest(tipoID: number | null | undefined): string {
+  if (!tipoID) return 'No especificado';
+  
+  const tipos: {[key: number]: string} = {
+    35: 'Pola Mirror',
+    36: 'Otro',
+    37: 'P. de Worth'
+  };
+  
+  return tipos[tipoID] || 'Desconocido';
+}
+
+// Obtiene el tipo de visión estereoscópica
+obtenerTipoVision(tipoVisionID: number | null | undefined): string {
+  if (!tipoVisionID) return 'No especificado';
+  
+  const tiposVision: {[key: number]: string} = {
+    38: 'Titmus',
+    39: 'Random',
+    40: 'Otro'
+  };
+  
+  return tiposVision[tipoVisionID] || 'Desconocido';
+}
+
+// Obtiene la URL de la imagen asociada al método gráfico
+obtenerUrlImagen(imagenID: number | null | undefined): string {
+  if (!imagenID) return '';
+  return `${environment.apiUrl}/imagenes/${imagenID}`;
+}
+
 }

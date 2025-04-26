@@ -100,7 +100,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   };
 
    // Propiedades para estado refractivo
-   estadoRefractivo?: {
+    estadoRefractivo?: {
     OjoDerechoQueratometria?: string;
     OjoIzquierdoQueratometria?: string;
     OjoDerechoAstigmatismoCorneal?: number;
@@ -150,7 +150,67 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     Distancia?: string;
     Rango?: string;
   };
+
+  binocularidad?: {
+    PPC?: string;
+    ARN?: string;
+    ARP?: string;
+    Donders?: boolean;
+    Sheards?: boolean;
+    HabAcomLente?: string;
+    HabAcomDificultad?: string;
+    OjoDerechoAmpAcomCm?: string;
+    OjoDerechoAmpAcomD?: number;
+    OjoIzquierdoAmpAcomCm?: string;
+    OjoIzquierdoAmpAcomD?: number;
+    AmbosOjosAmpAcomCm?: string;
+    AmbosOjosAmpAcomD?: number;
+  };
+
+  forias?: {
+    HorizontalesLejos?: string;
+    HorizontalesCerca?: string;
+    VerticalLejos?: string;
+    VerticalCerca?: string;
+    MetodoMedicionID?: number;
+    CAA?: string;
+    CAACalculada?: string;
+    CAAMedida?: string;
+  };
+
+  vergencias?: {
+    PositivasLejosBorroso?: number;
+    PositivasLejosRuptura?: number;
+    PositivasLejosRecuperacion?: number;
+    PositivasCercaBorroso?: number;
+    PositivasCercaRuptura?: number;
+    PositivasCercaRecuperacion?: number;
+    NegativasLejosBorroso?: number;
+    NegativasLejosRuptura?: number;
+    NegativasLejosRecuperacion?: number;
+    NegativasCercaBorroso?: number;
+    NegativasCercaRuptura?: number;
+    NegativasCercaRecuperacion?: number;
+    SupravergenciasLejosRuptura?: number;
+    SupravergenciasLejosRecuperacion?: number;
+    SupravergenciasCercaRuptura?: number;
+    SupravergenciasCercaRecuperacion?: number;
+    InfravergenciasLejosRuptura?: number;
+    InfravergenciasLejosRecuperacion?: number;
+    InfravergenciasCercaRuptura?: number;
+    InfravergenciasCercaRecuperacion?: number;
+  };
+
+  metodoGrafico?: {
+    IntegracionBinocular?: string;
+    TipoID?: number;
+    VisionEstereoscopica?: string;
+    TipoVisionID?: number;
+    ImagenID?: number;
+  };
 }
+
+
 
 export interface EstadisticasHistorias {
   total: number;
@@ -228,6 +288,15 @@ export class HistoriaClinicaService {
         map(response => response.data)
       );
   }
+
+  // Subir una imagen para la historia clínica
+subirImagen(historiaId: number, formData: FormData): Observable<any> {
+  return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${historiaId}/imagenes`, formData)
+    .pipe(
+      map(response => response.data)
+    );
+  }
+  
 }
 
 

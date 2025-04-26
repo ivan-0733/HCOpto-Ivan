@@ -194,13 +194,17 @@
     </div>
 
     <!-- Sección de Binocularidad -->
-    <div *ngIf="currentSection === 'binocularidad'" class="tab-pane">
-      <div class="placeholder-section">
-        <i class="fas fa-binoculars"></i>
-        <h3>Binocularidad</h3>
-        <p>Forias con Ex, vergencias, integración binocular y visión estereoscópica</p>
-      </div>
-    </div>
+   <div *ngIf="currentSection === 'binocularidad'" class="tab-pane">
+    <app-binocularidad
+      [historiaId]="historiaId!"
+      [hideButtons]="true"
+      (completed)="onSectionCompleted('binocularidad', $event)"
+      (formReady)="onBinocularidadFormReady($event)"
+      (nextSection)="onNextSection()"
+    ></app-binocularidad>
+  </div>
+
+    
 
     <!-- Sección de Detección de Alteraciones -->
     <div *ngIf="currentSection === 'deteccion-alteraciones'" class="tab-pane">

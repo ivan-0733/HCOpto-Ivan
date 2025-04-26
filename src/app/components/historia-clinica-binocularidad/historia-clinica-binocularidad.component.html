@@ -1,0 +1,377 @@
+<div class="binocularidad-container">
+  <h2>Binocularidad</h2>
+  <p class="info-text">Registre los datos de binocularidad, forias, vergencias y método gráfico del paciente.</p>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error && !hideButtons" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success && !hideButtons" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!loading" class="form-content">
+    <!-- Sección de Binocularidad -->
+    <div class="form-section">
+      <h3>Binocularidad</h3>
+      <form [formGroup]="binocularidadForm">
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="ppc">PPC</label>
+            <input type="text" id="ppc" formControlName="ppc" class="form-control" placeholder="Ej: 5/8">
+          </div>
+          <div class="form-group col-md-4">
+            <label for="arn">ARN</label>
+            <input type="text" id="arn" formControlName="arn" class="form-control" placeholder="Ej: +2.00">
+          </div>
+          <div class="form-group col-md-4">
+            <label for="arp">ARP</label>
+            <input type="text" id="arp" formControlName="arp" class="form-control" placeholder="Ej: -2.50">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <div class="checkbox-group">
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="donders" formControlName="donders">
+                <label class="form-check-label" for="donders">Donders</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="sheards" formControlName="sheards">
+                <label class="form-check-label" for="sheards">Sheards</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="habAcomLente">Hab. Acom. Lente</label>
+            <input type="text" id="habAcomLente" formControlName="habAcomLente" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="habAcomDificultad">Hab. Acom. Dificultad</label>
+            <input type="text" id="habAcomDificultad" formControlName="habAcomDificultad" class="form-control">
+          </div>
+        </div>
+
+        <h4>Amplitud de Acomodación</h4>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th></th>
+                <th>cm</th>
+                <th>D</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OD</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoAmpAcomCm" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoDerechoAmpAcomD" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>OI</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoAmpAcomCm" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ojoIzquierdoAmpAcomD" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>AO</strong></td>
+                <td>
+                  <input type="text" formControlName="ambosOjosAmpAcomCm" class="form-control">
+                </td>
+                <td>
+                  <input type="number" step="0.25" formControlName="ambosOjosAmpAcomD" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Forias -->
+    <div class="form-section">
+      <h3>Forias</h3>
+      <form [formGroup]="foriasForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="horizontalesLejos">Horizontales Lejos</label>
+            <input type="text" id="horizontalesLejos" formControlName="horizontalesLejos" class="form-control" placeholder="Ej: 2 DP Exo">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="horizontalesCerca">Horizontales Cerca</label>
+            <input type="text" id="horizontalesCerca" formControlName="horizontalesCerca" class="form-control" placeholder="Ej: 4 DP Eso">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="verticalLejos">Vertical Lejos</label>
+            <input type="text" id="verticalLejos" formControlName="verticalLejos" class="form-control" placeholder="Ej: 1 DP Hiper D">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="verticalCerca">Vertical Cerca</label>
+            <input type="text" id="verticalCerca" formControlName="verticalCerca" class="form-control" placeholder="Ej: 1 DP Hipo I">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-4">
+            <label for="metodoMedicionID">Método de Medición</label>
+            <select id="metodoMedicionID" formControlName="metodoMedicionID" class="form-control">
+              <option [ngValue]="null">Seleccione un método</option>
+              <option *ngFor="let metodo of metodosMedicion" [value]="metodo.ID">{{ metodo.Valor }}</option>
+            </select>
+          </div>
+          <div class="form-group col-md-8">
+            <label for="caa">CAA (Convergencia Acomodativa/Acomodación)</label>
+            <input type="text" id="caa" formControlName="caa" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="caaCalculada">CAA Calculada</label>
+            <input type="text" id="caaCalculada" formControlName="caaCalculada" class="form-control">
+          </div>
+          <div class="form-group col-md-6">
+            <label for="caaMedida">CAA Medida</label>
+            <input type="text" id="caaMedida" formControlName="caaMedida" class="form-control">
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Vergencias -->
+    <div class="form-section">
+      <h3>Vergencias</h3>
+      <form [formGroup]="vergenciasForm">
+        <h4>Vergencias Positivas</h4>
+        <div class="table-responsive">
+          <table class="table-vergencias">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Borroso</th>
+                <th>Ruptura</th>
+                <th>Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Lejos</strong></td>
+                <td>
+                  <input type="number" formControlName="positivasLejosBorroso" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="positivasLejosRuptura" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="positivasLejosRecuperacion" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Cerca</strong></td>
+                <td>
+                  <input type="number" formControlName="positivasCercaBorroso" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="positivasCercaRuptura" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="positivasCercaRecuperacion" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Vergencias Negativas</h4>
+        <div class="table-responsive">
+          <table class="table-vergencias">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Borroso</th>
+                <th>Ruptura</th>
+                <th>Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Lejos</strong></td>
+                <td>
+                  <input type="number" formControlName="negativasLejosBorroso" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="negativasLejosRuptura" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="negativasLejosRecuperacion" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Cerca</strong></td>
+                <td>
+                  <input type="number" formControlName="negativasCercaBorroso" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="negativasCercaRuptura" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="negativasCercaRecuperacion" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Vergencias Verticales</h4>
+        <div class="form-section-grid">
+          <div class="grid-section">
+            <h5>Supravergencias</h5>
+            <div class="table-responsive">
+              <table class="table-vergencias">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Ruptura</th>
+                    <th>Recuperación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Lejos</strong></td>
+                    <td>
+                      <input type="number" formControlName="supravergenciasLejosRuptura" class="form-control">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="supravergenciasLejosRecuperacion" class="form-control">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Cerca</strong></td>
+                    <td>
+                      <input type="number" formControlName="supravergenciasCercaRuptura" class="form-control">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="supravergenciasCercaRecuperacion" class="form-control">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="grid-section">
+            <h5>Infravergencias</h5>
+            <div class="table-responsive">
+              <table class="table-vergencias">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Ruptura</th>
+                    <th>Recuperación</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Lejos</strong></td>
+                    <td>
+                      <input type="number" formControlName="infravergenciasLejosRuptura" class="form-control">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="infravergenciasLejosRecuperacion" class="form-control">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Cerca</strong></td>
+                    <td>
+                      <input type="number" formControlName="infravergenciasCercaRuptura" class="form-control">
+                    </td>
+                    <td>
+                      <input type="number" formControlName="infravergenciasCercaRecuperacion" class="form-control">
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Método Gráfico -->
+    <div class="form-section">
+      <h3>Método Gráfico</h3>
+      <form [formGroup]="metodoGraficoForm">
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="integracionBinocular">Integración Binocular</label>
+            <input type="text" id="integracionBinocular" formControlName="integracionBinocular" class="form-control">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="tipoID">Tipo de Test</label>
+            <select id="tipoID" formControlName="tipoID" class="form-control">
+              <option [ngValue]="null">Seleccione un tipo</option>
+              <option *ngFor="let tipo of tiposTest" [value]="tipo.ID">{{ tipo.Valor }}</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="visionEstereoscopica">Visión Estereoscópica</label>
+            <input type="text" id="visionEstereoscopica" formControlName="visionEstereoscopica" class="form-control" placeholder="Ej: 40 segundos de arco">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="tipoVisionID">Tipo de Visión Estereoscópica</label>
+            <select id="tipoVisionID" formControlName="tipoVisionID" class="form-control">
+              <option [ngValue]="null">Seleccione un tipo</option>
+              <option *ngFor="let tipoVision of tiposVision" [value]="tipoVision.ID">{{ tipoVision.Valor }}</option>
+            </select>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="imagenID">Imagen</label>
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="imagenID" (change)="onFileSelected($event)">
+              <label class="custom-file-label" for="imagenID">{{ selectedFileName || 'Seleccionar archivo...' }}</label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Botones de acción - Solo se muestran si hideButtons es false -->
+    <div class="form-actions" *ngIf="!hideButtons">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="btn-primary" [disabled]="submitting" (click)="guardarBinocularidad()">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+        Guardar Binocularidad
+      </button>
+    </div>
+  </div>
+</div>
