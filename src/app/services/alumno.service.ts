@@ -124,7 +124,8 @@ export class AlumnoService {
     );
   }
 
-  actualizarPassword(datos: { passwordActual: string, nuevaPassword: string }) {
-    return this.http.put('/api/alumno/password', datos);
+  // Actualizar contraseña del alumno
+  actualizarPassword(datos: { passwordActual: string, nuevaPassword: string }): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/password`, datos);
   }
 }

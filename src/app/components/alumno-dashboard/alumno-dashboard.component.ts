@@ -331,14 +331,17 @@ export class AlumnoDashboardComponent implements OnInit {
 
   // Método para actualizar las estadísticas una vez cargadas las historias
   actualizarEstadisticasFinalizadas(): void {
-    if (this.estadisticas?.porEstado) {
-      // Buscar el estado "Finalizado" en las estadísticas
-      const estadoFinalizado = this.estadisticas.porEstado.find(e => e.estado === 'Finalizado');
-      if (estadoFinalizado) {
-        // Actualizar el contador para mostrar solo las no archivadas
-        const finalizadasNoArchivadas = this.obtenerFinalizadasNoArchivadas();
-        console.log('Finalizadas no archivadas:', finalizadasNoArchivadas);
-        estadoFinalizado.cantidad = finalizadasNoArchivadas;
+    if (this.estadisticas) {
+      // Actualizar el contador total para mostrar solo las no archivadas
+      this.estadisticas.total = this.obtenerHistoriasNoArchivadas();
+
+      // Actualizar el estado "Finalizado" en las estadísticas
+      if (this.estadisticas.porEstado) {
+        const estadoFinalizado = this.estadisticas.porEstado.find(e => e.estado === 'Finalizado');
+        if (estadoFinalizado) {
+          // Actualizar el contador para mostrar solo las no archivadas
+          estadoFinalizado.cantidad = this.obtenerFinalizadasNoArchivadas();
+        }
       }
     }
   }
@@ -374,5 +377,37 @@ export class AlumnoDashboardComponent implements OnInit {
     this.paginaActual = 1;
     // Recalcular el total de páginas
     this.calcularTotalPaginas();
+  }
+
+  // Método para obtener el número de historias no archivadas
+  obtenerHistoriasNoArchivadas(): number {
+    if (!this.historiasClinicas || this.historiasClinicas.length === 0) return 0;
+
+    // Contar las historias que NO están archivadas
+    return this.historiasClinicas.filter(historia => {
+      // Comprobar de manera segura si NO está archivado
+      const estaArchivado = Boolean(historia.Archivado);
+      return !estaArchivado;
+    }).length;
+  }
+
+  // Método para aplicar filtro al hacer click en una card
+  aplicarFiltroCard(estado: string): void {
+    // Actualizar el filtro de estado
+    this.filtroEstado = estado;
+
+    // Resetear la paginación
+    this.resetearPaginacion();
+
+    // Resetear el filtro de paciente
+    this.filtroPaciente = '';
+
+    // Opcional: hacer scroll hacia la tabla para que el usuario vea los resultados
+    setTimeout(() => {
+      const tablaElement = document.querySelector('.tabla-container');
+      if (tablaElement) {
+        tablaElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   }
 }

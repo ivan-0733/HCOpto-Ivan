@@ -10,26 +10,78 @@ const alumnoService = {
  * @returns {Promise<Object|null>} - Datos del alumno o null si no existe
  */
 async obtenerAlumnoPorId(alumnoInfoId) {
-try {
-    const [alumnos] = await db.query(
-    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
-            u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
-            u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
-        FROM AlumnosInfo a
-        JOIN Usuarios u ON a.UsuarioID = u.ID
-        WHERE a.ID = ? AND u.EstaActivo = TRUE`,
-    [alumnoInfoId]
+  try {
+      const [alumnos] = await db.query(
+      `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+              u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
+              u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
+          FROM AlumnosInfo a
+          JOIN Usuarios u ON a.UsuarioID = u.ID
+          WHERE a.ID = ? AND u.EstaActivo = TRUE`,
+      [alumnoInfoId]
+      );
+
+      if (alumnos.length === 0) {
+      return null;
+      }
+
+      return alumnos[0];
+  } catch (error) {
+      console.error('Error al obtener alumno por ID:', error);
+      throw error;
+  }
+},
+
+/**
+ * Actualiza la contraseña de un usuario
+ * @param {number} usuarioId - ID del usuario
+ * @param {string} passwordActual - Contraseña actual
+ * @param {string} nuevaPassword - Nueva contraseña
+ * @returns {Promise<boolean>} - true si la actualización fue exitosa
+ */
+async actualizarPassword(usuarioId, passwordActual, nuevaPassword) {
+  const connection = await db.pool.getConnection();
+
+  try {
+    // Primero verificar si la contraseña actual es correcta
+    const [usuarios] = await connection.query(
+      'SELECT ContraseñaHash FROM Usuarios WHERE ID = ?',
+      [usuarioId]
     );
 
-    if (alumnos.length === 0) {
-    return null;
+    if (usuarios.length === 0) {
+      throw new Error('Usuario no encontrado');
     }
 
-    return alumnos[0];
-} catch (error) {
-    console.error('Error al obtener alumno por ID:', error);
+    const usuario = usuarios[0];
+
+    // Aquí asumimos que estás usando bcrypt para hash de contraseñas
+    const bcrypt = require('bcrypt');
+    const isMatch = await bcrypt.compare(passwordActual, usuario.ContraseñaHash);
+
+    if (!isMatch) {
+      throw new Error('Contraseña actual incorrecta');
+    }
+
+    // Hash de la nueva contraseña
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(nuevaPassword, salt);
+
+    // Actualizar la contraseña
+    await connection.query(
+      'UPDATE Usuarios SET ContraseñaHash = ? WHERE ID = ?',
+      [hashedPassword, usuarioId]
+    );
+
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al actualizar contraseña:', error);
     throw error;
-}
+  } finally {
+    connection.release();
+  }
 },
 
 /**
@@ -38,26 +90,26 @@ try {
  * @returns {Promise<Object|null>} - Datos del alumno o null si no existe
  */
 async obtenerAlumnoPorBoleta(boleta) {
-try {
-    const [alumnos] = await db.query(
-    `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
-            u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
-            u.EstaActivo, u.TelefonoCelular
-        FROM AlumnosInfo a
-        JOIN Usuarios u ON a.UsuarioID = u.ID
-        WHERE a.NumeroBoleta = ? AND u.EstaActivo = TRUE`,
-    [boleta]
-    );
+  try {
+      const [alumnos] = await db.query(
+      `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+              u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
+              u.EstaActivo, u.TelefonoCelular
+          FROM AlumnosInfo a
+          JOIN Usuarios u ON a.UsuarioID = u.ID
+          WHERE a.NumeroBoleta = ? AND u.EstaActivo = TRUE`,
+      [boleta]
+      );
 
-    if (alumnos.length === 0) {
-    return null;
-    }
+      if (alumnos.length === 0) {
+      return null;
+      }
 
-    return alumnos[0];
-} catch (error) {
-    console.error('Error al obtener alumno por boleta:', error);
-    throw error;
-}
+      return alumnos[0];
+  } catch (error) {
+      console.error('Error al obtener alumno por boleta:', error);
+      throw error;
+  }
 },
 
 /**
@@ -66,24 +118,24 @@ try {
  * @returns {Promise<Array>} - Lista de profesores asignados
  */
 async obtenerProfesoresAsignados(alumnoInfoId) {
-try {
-    const [profesores] = await db.query(
-    `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
-            u.NombreUsuario, u.CorreoElectronico, u.TelefonoCelular,
-            vap.FechaInicio
-        FROM VinculacionAlumnoProfesor vap
-        JOIN ProfesoresInfo p ON vap.ProfesorInfoID = p.ID
-        JOIN Usuarios u ON p.UsuarioID = u.ID
-        WHERE vap.AlumnoInfoID = ? AND vap.Activo = TRUE
-        ORDER BY vap.FechaInicio DESC`,
-    [alumnoInfoId]
-    );
+  try {
+      const [profesores] = await db.query(
+      `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
+              u.NombreUsuario, u.CorreoElectronico, u.TelefonoCelular,
+              vap.FechaInicio
+          FROM VinculacionAlumnoProfesor vap
+          JOIN ProfesoresInfo p ON vap.ProfesorInfoID = p.ID
+          JOIN Usuarios u ON p.UsuarioID = u.ID
+          WHERE vap.AlumnoInfoID = ? AND vap.Activo = TRUE
+          ORDER BY vap.FechaInicio DESC`,
+      [alumnoInfoId]
+      );
 
-    return profesores;
-} catch (error) {
-    console.error('Error al obtener profesores asignados:', error);
-    throw error;
-}
+      return profesores;
+  } catch (error) {
+      console.error('Error al obtener profesores asignados:', error);
+      throw error;
+  }
 },
 
 /**
@@ -91,20 +143,20 @@ try {
  * @returns {Promise<Object|null>} - Datos del semestre actual o null si no hay ninguno
  */
 async obtenerSemestreActual() {
-try {
-    const [semestres] = await db.query(
-    'SELECT ID, Nombre, FechaInicio, FechaFin FROM Semestres WHERE EsActual = TRUE'
-    );
+  try {
+      const [semestres] = await db.query(
+      'SELECT ID, Nombre, FechaInicio, FechaFin FROM Semestres WHERE EsActual = TRUE'
+      );
 
-    if (semestres.length === 0) {
-    return null;
-    }
+      if (semestres.length === 0) {
+      return null;
+      }
 
-    return semestres[0];
-} catch (error) {
-    console.error('Error al obtener semestre actual:', error);
-    throw error;
-}
+      return semestres[0];
+  } catch (error) {
+      console.error('Error al obtener semestre actual:', error);
+      throw error;
+  }
 },
 
 /**
@@ -112,16 +164,16 @@ try {
  * @returns {Promise<Array>} - Lista de consultorios
  */
 async obtenerConsultorios() {
-try {
-    const [consultorios] = await db.query(
-    'SELECT ID, Nombre, Descripcion FROM Consultorios ORDER BY Nombre'
-    );
+  try {
+      const [consultorios] = await db.query(
+      'SELECT ID, Nombre, Descripcion FROM Consultorios ORDER BY Nombre'
+      );
 
-    return consultorios;
-} catch (error) {
-    console.error('Error al obtener consultorios:', error);
-    throw error;
-}
+      return consultorios;
+  } catch (error) {
+      console.error('Error al obtener consultorios:', error);
+      throw error;
+  }
 },
 
 /**
@@ -130,17 +182,17 @@ try {
  * @returns {Promise<Array>} - Lista de valores del catálogo
  */
 async obtenerCatalogo(tipoCatalogo) {
-try {
-    const [catalogo] = await db.query(
-    'SELECT ID, Valor, Descripcion, Orden FROM CatalogosGenerales WHERE TipoCatalogo = ? ORDER BY Orden',
-    [tipoCatalogo]
-    );
+  try {
+      const [catalogo] = await db.query(
+      'SELECT ID, Valor, Descripcion, Orden FROM CatalogosGenerales WHERE TipoCatalogo = ? ORDER BY Orden',
+      [tipoCatalogo]
+      );
 
-    return catalogo;
-} catch (error) {
-    console.error(`Error al obtener catálogo ${tipoCatalogo}:`, error);
-    throw error;
-}
+      return catalogo;
+  } catch (error) {
+      console.error(`Error al obtener catálogo ${tipoCatalogo}:`, error);
+      throw error;
+  }
 },
 
 /**
@@ -149,22 +201,22 @@ try {
  * @returns {Promise<Array>} - Lista de pacientes encontrados
  */
 async buscarPacientes(termino) {
-try {
-    const [pacientes] = await db.query(
-    `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno,
-            CorreoElectronico, TelefonoCelular, Edad
-        FROM Pacientes
-        WHERE Nombre LIKE ? OR ApellidoPaterno LIKE ? OR
-            ApellidoMaterno LIKE ? OR CorreoElectronico LIKE ?
-        LIMIT 10`,
-    [`%${termino}%`, `%${termino}%`, `%${termino}%`, `%${termino}%`]
-    );
+  try {
+      const [pacientes] = await db.query(
+      `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno,
+              CorreoElectronico, TelefonoCelular, Edad
+          FROM Pacientes
+          WHERE Nombre LIKE ? OR ApellidoPaterno LIKE ? OR
+              ApellidoMaterno LIKE ? OR CorreoElectronico LIKE ?
+          LIMIT 10`,
+      [`%${termino}%`, `%${termino}%`, `%${termino}%`, `%${termino}%`]
+      );
 
-    return pacientes;
-} catch (error) {
-    console.error('Error al buscar pacientes:', error);
-    throw error;
-}
+      return pacientes;
+  } catch (error) {
+      console.error('Error al buscar pacientes:', error);
+      throw error;
+  }
 },
 
 /**
@@ -175,35 +227,35 @@ try {
  * @returns {Promise<boolean>} - true si la actualización fue exitosa
  */
 async actualizarPerfil(alumnoInfoId, usuarioId, datos) {
-const connection = await db.pool.getConnection();
+  const connection = await db.pool.getConnection();
 
-try {
-    await connection.beginTransaction();
+  try {
+      await connection.beginTransaction();
 
-    // Actualizar datos de usuario
-    if (datos.nombreUsuario || datos.telefonoCelular) {
-    await connection.query(
-        `UPDATE Usuarios SET
-        NombreUsuario = COALESCE(?, NombreUsuario),
-        TelefonoCelular = COALESCE(?, TelefonoCelular)
-        WHERE ID = ?`,
-        [datos.nombreUsuario, datos.telefonoCelular, usuarioId]
-    );
-    }
+      // Actualizar datos de usuario
+      if (datos.nombreUsuario || datos.telefonoCelular) {
+      await connection.query(
+          `UPDATE Usuarios SET
+          NombreUsuario = COALESCE(?, NombreUsuario),
+          TelefonoCelular = COALESCE(?, TelefonoCelular)
+          WHERE ID = ?`,
+          [datos.nombreUsuario, datos.telefonoCelular, usuarioId]
+      );
+      }
 
-    // Actualizar datos específicos de alumno si es necesario
-    // (en este caso no hay campos adicionales, pero se deja como ejemplo)
+      // Actualizar datos específicos de alumno si es necesario
+      // (en este caso no hay campos adicionales, pero se deja como ejemplo)
 
-    await connection.commit();
+      await connection.commit();
 
-    return true;
-} catch (error) {
-    await connection.rollback();
-    console.error('Error al actualizar perfil de alumno:', error);
-    throw error;
-} finally {
-    connection.release();
-}
+      return true;
+  } catch (error) {
+      await connection.rollback();
+      console.error('Error al actualizar perfil de alumno:', error);
+      throw error;
+  } finally {
+      connection.release();
+  }
 }
 };
 
