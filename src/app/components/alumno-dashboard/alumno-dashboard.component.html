@@ -12,17 +12,17 @@
 
   <!-- Tarjetas de estadísticas -->
   <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
-    <div class="stat-card total">
+    <div class="stat-card total" (click)="aplicarFiltroCard('todos')">
       <div class="stat-card-icon">
         <i class="fas fa-file-medical"></i>
       </div>
       <div class="stat-card-content">
         <h3>N° Historias</h3>
-        <p class="stat-value">{{ estadisticas.total || 0 }}</p>
+        <p class="stat-value">{{ obtenerHistoriasNoArchivadas() }}</p>
       </div>
     </div>
 
-    <div class="stat-card archivadas">
+    <div class="stat-card archivadas" (click)="aplicarFiltroCard('Archivado')">
       <div class="stat-card-icon">
         <i class="fas fa-archive"></i>
       </div>
@@ -32,7 +32,8 @@
       </div>
     </div>
 
-    <div class="stat-card por-estado" *ngFor="let estado of estadisticas.porEstado">
+    <div class="stat-card por-estado" *ngFor="let estado of estadisticas.porEstado"
+        (click)="aplicarFiltroCard(estado.estado)">
       <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
         <i class="fas fa-tasks"></i>
       </div>
