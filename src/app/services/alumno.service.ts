@@ -79,7 +79,7 @@ export class AlumnoService {
   }
 
   // Actualizar perfil del alumno
-  actualizarPerfil(datos: { nombreUsuario?: string; telefonoCelular?: string }): Observable<any> {
+  actualizarPerfil(datos: { nombreUsuario?: string; correoElectronico?: string; telefonoCelular?: string }): Observable<any> {
     return this.http.patch(`${this.apiUrl}/perfil`, datos);
   }
 

@@ -135,25 +135,63 @@ const alumnoController = {
     const alumnoId = req.usuario.AlumnoInfoID;
     const usuarioId = req.usuario.UsuarioID;
 
-    const { nombreUsuario, telefonoCelular } = req.body;
+    const { nombreUsuario, correoElectronico, telefonoCelular } = req.body;
 
-    if (!nombreUsuario && !telefonoCelular) {
+    if (!nombreUsuario && !correoElectronico && !telefonoCelular) {
       return res.status(400).json({
         status: 'error',
         message: 'Debes enviar al menos un campo para actualizar'
       });
     }
 
-    await alumnoService.actualizarPerfil(alumnoId, usuarioId, {
-      nombreUsuario: nombreUsuario?.trim(),
-      telefonoCelular: telefonoCelular?.trim()
-    });
+    try {
+      await alumnoService.actualizarPerfil(alumnoId, usuarioId, {
+        nombreUsuario: nombreUsuario?.trim(),
+        correoElectronico: correoElectronico?.trim().toLowerCase(),
+        telefonoCelular: telefonoCelular?.trim()
+      });
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Perfil actualizado correctamente',
-      data: null
-    });
+      res.status(200).json({
+        status: 'success',
+        message: 'Perfil actualizado correctamente',
+        data: null
+      });
+    } catch (error) {
+      console.error('Error al actualizar perfil:', error);
+
+      // Manejar errores específicos
+      if (error.message.includes('nombre de usuario ya existe') ||
+          error.message.includes('correo electrónico ya existe') ||
+          error.message.includes('número de teléfono ya existe')) {
+        return res.status(400).json({
+          status: 'error',
+          message: error.message
+        });
+      }
+
+      // Para errores de duplicación de MySQL
+      if (error.code === 'ER_DUP_ENTRY') {
+        let message = 'Ya existe un registro con esos datos.';
+
+        if (error.sqlMessage.includes('idx_telefono')) {
+          message = 'El número de teléfono ya está registrado. Por favor, utiliza otro.';
+        } else if (error.sqlMessage.includes('idx_correo')) {
+          message = 'El correo electrónico ya está registrado. Por favor, utiliza otro.';
+        } else if (error.sqlMessage.includes('idx_nombre')) {
+          message = 'El nombre de usuario ya está en uso. Por favor, elige otro.';
+        }
+
+        return res.status(400).json({
+          status: 'error',
+          message: message,
+          sqlCode: error.code,
+          sqlMessage: error.sqlMessage
+        });
+      }
+
+      // Si es otro tipo de error, lo pasamos al manejador global
+      throw error;
+    }
   }),
 
   /**

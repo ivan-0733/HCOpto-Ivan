@@ -230,31 +230,68 @@ async actualizarPerfil(alumnoInfoId, usuarioId, datos) {
   const connection = await db.pool.getConnection();
 
   try {
-      await connection.beginTransaction();
+    await connection.beginTransaction();
 
-      // Actualizar datos de usuario
-      if (datos.nombreUsuario || datos.telefonoCelular) {
+    // Verificar si el nombre de usuario ya existe (si se está actualizando)
+    if (datos.nombreUsuario) {
+      const [existeNombreUsuario] = await connection.query(
+        'SELECT ID FROM Usuarios WHERE LOWER(NombreUsuario) = LOWER(?) AND ID != ?',
+        [datos.nombreUsuario, usuarioId]
+      );
+
+      if (existeNombreUsuario.length > 0) {
+        throw new Error('El nombre de usuario ya existe. Por favor, elige otro.');
+      }
+    }
+
+    // Verificar si el correo electrónico ya existe (si se está actualizando)
+    if (datos.correoElectronico) {
+      const [existeCorreo] = await connection.query(
+        'SELECT ID FROM Usuarios WHERE LOWER(CorreoElectronico) = LOWER(?) AND ID != ?',
+        [datos.correoElectronico, usuarioId]
+      );
+
+      if (existeCorreo.length > 0) {
+        throw new Error('El correo electrónico ya existe. Por favor, utiliza otro.');
+      }
+    }
+
+    // Verificar si el teléfono ya existe (si se está actualizando)
+    if (datos.telefonoCelular) {
+      const [existeTelefono] = await connection.query(
+        'SELECT ID FROM Usuarios WHERE TelefonoCelular = ? AND ID != ?',
+        [datos.telefonoCelular, usuarioId]
+      );
+
+      if (existeTelefono.length > 0) {
+        throw new Error('El número de teléfono ya existe. Por favor, utiliza otro.');
+      }
+    }
+
+    // Actualizar datos de usuario
+    if (datos.nombreUsuario || datos.correoElectronico || datos.telefonoCelular) {
       await connection.query(
-          `UPDATE Usuarios SET
+        `UPDATE Usuarios SET
           NombreUsuario = COALESCE(?, NombreUsuario),
+          CorreoElectronico = COALESCE(?, CorreoElectronico),
           TelefonoCelular = COALESCE(?, TelefonoCelular)
           WHERE ID = ?`,
-          [datos.nombreUsuario, datos.telefonoCelular, usuarioId]
+        [datos.nombreUsuario, datos.correoElectronico, datos.telefonoCelular, usuarioId]
       );
-      }
+    }
 
-      // Actualizar datos específicos de alumno si es necesario
-      // (en este caso no hay campos adicionales, pero se deja como ejemplo)
+    // Actualizar datos específicos de alumno si es necesario
+    // (en este caso no hay campos adicionales, pero se deja como ejemplo)
 
-      await connection.commit();
+    await connection.commit();
 
-      return true;
+    return true;
   } catch (error) {
-      await connection.rollback();
-      console.error('Error al actualizar perfil de alumno:', error);
-      throw error;
+    await connection.rollback();
+    console.error('Error al actualizar perfil de alumno:', error);
+    throw error;
   } finally {
-      connection.release();
+    connection.release();
   }
 }
 };
