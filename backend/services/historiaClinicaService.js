@@ -225,7 +225,7 @@ try {
         datosHistoria.alumnoID,
         datosHistoria.profesorID,
         datosHistoria.fecha || new Date(),
-        datosHistoria.estadoID || 1, // Por defecto "En proceso"
+        datosHistoria.estadoID || 43, // Por defecto "En proceso"
         datosHistoria.archivado || false,
         datosHistoria.consultorioID,
         datosHistoria.semestreID

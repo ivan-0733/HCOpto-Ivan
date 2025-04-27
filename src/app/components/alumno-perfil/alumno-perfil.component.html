@@ -1,3 +1,4 @@
+<!-- Modificación del formulario de perfil para mostrar todos los errores -->
 <div class="perfil-container">
   <!-- Header -->
   <header class="content-header">
@@ -42,19 +43,21 @@
     <!-- Formulario de edición -->
     <form [formGroup]="perfilForm" (ngSubmit)="onSubmit()" *ngIf="isEditing" class="perfil-form">
 
-    <!-- AÑADIDO: Sección para errores de información personal -->
-    <div class="error-message" *ngIf="personalInfoErrors.length > 0">
-      <div class="error-alert" *ngFor="let personalError of personalInfoErrors" [@fadeOut]>
-        <i class="material-icons error-icon">error</i>
-        <span>{{ personalError.message }}</span>
-      </div>
-    </div>
-
+      <!-- Sección de Información Personal -->
       <div class="form-section">
         <h3 class="section-title">
           <i class="material-icons">person</i>
           Información Personal
         </h3>
+
+        <!-- Contenedor de errores específicos de información personal -->
+        <div class="error-message" *ngIf="personalInfoErrors.length > 0">
+          <div class="error-alert" *ngFor="let personalError of personalInfoErrors" [@fadeOut]>
+            <i class="material-icons error-icon">error</i>
+            <span>{{ personalError.message }}</span>
+          </div>
+        </div>
+
         <div class="form-row">
           <div class="form-group">
             <label for="nombreUsuario">Nombre de Usuario</label>
@@ -83,16 +86,10 @@
         </div>
       </div>
 
-      <!-- TODOS los mensajes de error ahora van en esta sección -->
-      <div class="error-message" *ngIf="passwordError || error || uniqueErrors.length > 0">
-        <!-- Error de contraseña -->
-        <div class="error-alert" *ngIf="passwordError">
-          <i class="material-icons error-icon">error</i>
-          <span>{{ passwordError }}</span>
-        </div>
-
+      <!-- Errores generales o de campos únicos -->
+      <div class="error-message" *ngIf="error || uniqueErrors.length > 0">
         <!-- Error general -->
-        <div class="error-alert" *ngIf="error && !passwordError">
+        <div class="error-alert" *ngIf="error">
           <i class="material-icons error-icon">error</i>
           <span>{{ error }}</span>
           <button class="btn-retry" (click)="cargarPerfil()" *ngIf="!isEditing">
@@ -108,12 +105,21 @@
         </div>
       </div>
 
-      <!-- Cambio de contraseña -->
+      <!-- Sección de Cambio de Contraseña -->
       <div class="form-section password-section">
         <h3 class="section-title">
           <i class="material-icons">lock</i>
           Cambio de Contraseña
         </h3>
+
+        <!-- Errores específicos de contraseña -->
+        <div class="error-message" *ngIf="passwordError">
+          <div class="error-alert">
+            <i class="material-icons error-icon">error</i>
+            <span>{{ passwordError }}</span>
+          </div>
+        </div>
+
         <div class="password-info">
           <i class="material-icons info-icon">info</i>
           <p>Completa los siguientes campos sólo si deseas cambiar tu contraseña actual</p>
