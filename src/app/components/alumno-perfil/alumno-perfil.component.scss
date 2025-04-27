@@ -652,3 +652,59 @@
     }
   }
 }
+
+/* Estilos para los contenedores de inputs de contraseña */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    flex: 1;
+    padding-right: 70px; /* Espacio para los dos iconos */
+  }
+
+  .password-icon {
+    position: absolute;
+    right: 40px;
+    color: #999;
+    cursor: default;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 10px;
+    color: #666;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: $ipn-guinda;
+    }
+  }
+
+  .match-icon {
+    color: #28a745; /* Color verde para contraseñas que coinciden */
+  }
+}
+
+/* Estilos para cuando el input está activo/enfocado */
+.password-input-container:focus-within {
+  .password-toggle {
+    color: $ipn-guinda;
+  }
+}
+
+/* Estilos para cuando se muestra la contraseña */
+.password-input-container.show-password {
+  .password-icon {
+    color: $ipn-guinda;
+  }
+}
+
+/* Asegurar que los iconos de Material tengan el tamaño correcto */
+.material-icons.password-toggle,
+.material-icons.password-icon {
+  font-size: 20px;
+  line-height: 1;
+}

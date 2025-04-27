@@ -40,6 +40,9 @@ export class AlumnoPerfilComponent implements OnInit {
   personalInfoErrors: {field: string, message: string, id?: string}[] = [];
   // Variable para controlar si hay errores en alguno de los sistemas
   hasErrors = false;
+  // Variables para controlar la visibilidad de las contraseñas
+  showPasswordActual = false;
+  showNuevaPassword = false;
 
   constructor(
     private alumnoService: AlumnoService,
@@ -84,6 +87,16 @@ export class AlumnoPerfilComponent implements OnInit {
       this.checkPersonalInfoFields();
       this.checkForErrors();
     });
+  }
+
+  // Método para alternar la visibilidad de la contraseña actual
+  togglePasswordActual(): void {
+    this.showPasswordActual = !this.showPasswordActual;
+  }
+
+  // Método para alternar la visibilidad de la nueva contraseña
+  toggleNuevaPassword(): void {
+    this.showNuevaPassword = !this.showNuevaPassword;
   }
 
   // Método para verificar si hay errores en cualquier parte
@@ -334,6 +347,10 @@ export class AlumnoPerfilComponent implements OnInit {
       this.uniqueErrors = [];
       this.personalInfoErrors = [];
       this.hasErrors = false;
+
+      // Restablecer visibilidad de contraseñas
+      this.showPasswordActual = false;
+      this.showNuevaPassword = false;
     }
   }
 
@@ -511,6 +528,9 @@ export class AlumnoPerfilComponent implements OnInit {
         this.success = 'Perfil actualizado correctamente';
         this.updating = false;
         this.isEditing = false;
+        // Restablecer visibilidad de contraseñas
+        this.showPasswordActual = false;
+        this.showNuevaPassword = false;
         this.cargarPerfil(); // Recargar perfil
 
         // Limpiar los campos de contraseña

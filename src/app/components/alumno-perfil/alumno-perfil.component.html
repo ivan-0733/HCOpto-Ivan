@@ -124,9 +124,11 @@
           <div class="form-group">
             <label for="passwordActual">Contraseña Actual</label>
             <div class="password-input-container">
-              <input type="password" id="passwordActual" formControlName="passwordActual"
+              <input [type]="showPasswordActual ? 'text' : 'password'" id="passwordActual" formControlName="passwordActual"
                     [ngClass]="{'is-invalid': perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched}">
-              <i class="material-icons password-icon">lock</i>
+              <i class="material-icons password-toggle" (click)="togglePasswordActual()">
+                {{ showPasswordActual ? 'visibility' : 'visibility_off' }}
+              </i>
             </div>
             <div class="invalid-feedback" *ngIf="perfilForm.get('passwordActual')?.invalid && perfilForm.get('passwordActual')?.touched">
               <span *ngIf="perfilForm.get('passwordActual')?.errors?.['required']">La contraseña actual es obligatoria</span>
@@ -136,9 +138,11 @@
           <div class="form-group">
             <label for="nuevaPassword">Nueva Contraseña</label>
             <div class="password-input-container">
-              <input type="password" id="nuevaPassword" formControlName="nuevaPassword"
+              <input [type]="showNuevaPassword ? 'text' : 'password'" id="nuevaPassword" formControlName="nuevaPassword"
                     [ngClass]="{'is-invalid': perfilForm.get('nuevaPassword')?.invalid && perfilForm.get('nuevaPassword')?.touched}">
-              <i class="material-icons password-icon">lock_open</i>
+              <i class="material-icons password-toggle" (click)="toggleNuevaPassword()">
+                {{ showNuevaPassword ? 'visibility' : 'visibility_off' }}
+              </i>
             </div>
           </div>
 
