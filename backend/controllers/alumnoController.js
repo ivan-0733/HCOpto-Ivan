@@ -194,6 +194,34 @@ const alumnoController = {
     }
   }),
 
+  // Agregar este método a alumnoController.js
+  verificarPassword: catchAsync(async (req, res) => {
+    const { passwordActual } = req.body;
+    const usuarioId = req.usuario.UsuarioID;
+
+    if (!passwordActual) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'La contraseña actual es requerida'
+      });
+    }
+
+    try {
+      const esValida = await alumnoService.verificarPassword(usuarioId, passwordActual);
+
+      res.status(200).json({
+        status: 'success',
+        data: esValida
+      });
+    } catch (error) {
+      console.error('Error al verificar contraseña:', error);
+      return res.status(400).json({
+        status: 'error',
+        message: error.message || 'Error al verificar contraseña'
+      });
+    }
+  }),
+
   /**
    * Actualiza la contraseña del alumno
    */

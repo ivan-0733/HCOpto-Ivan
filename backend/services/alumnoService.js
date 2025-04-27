@@ -85,6 +85,37 @@ async actualizarPassword(usuarioId, passwordActual, nuevaPassword) {
 },
 
 /**
+ * Verifica si la contraseña actual es correcta
+ * @param {number} usuarioId - ID del usuario
+ * @param {string} passwordActual - Contraseña a verificar
+ * @returns {Promise<boolean>} - true si la contraseña es correcta
+ */
+async verificarPassword(usuarioId, passwordActual) {
+  try {
+    // Obtener el usuario
+    const [usuarios] = await db.query(
+      'SELECT ContraseñaHash FROM Usuarios WHERE ID = ?',
+      [usuarioId]
+    );
+
+    if (usuarios.length === 0) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const usuario = usuarios[0];
+
+    // Verificar la contraseña
+    const bcrypt = require('bcrypt');
+    const isMatch = await bcrypt.compare(passwordActual, usuario.ContraseñaHash);
+
+    return isMatch;
+  } catch (error) {
+    console.error('Error al verificar contraseña:', error);
+    throw error;
+  }
+},
+
+/**
  * Obtiene los datos de un alumno por su número de boleta
  * @param {string} boleta - Número de boleta del alumno
  * @returns {Promise<Object|null>} - Datos del alumno o null si no existe

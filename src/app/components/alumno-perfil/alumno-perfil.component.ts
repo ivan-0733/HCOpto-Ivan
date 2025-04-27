@@ -36,41 +36,68 @@ export class AlumnoPerfilComponent implements OnInit {
   isEditing = false;
   // Arrays para manejar errores específicos de campos únicos
   uniqueErrors: {field: string, message: string, id?: string}[] = [];
-  // NUEVO: Array para manejar errores de información personal
+  // Array para manejar errores de información personal
   personalInfoErrors: {field: string, message: string, id?: string}[] = [];
+  // Variable para controlar si hay errores en alguno de los sistemas
+  hasErrors = false;
 
   constructor(
     private alumnoService: AlumnoService,
     private formBuilder: FormBuilder
   ) { }
 
-  // Añadir eventos para detectar cambios en los campos de contraseña
   ngOnInit(): void {
     this.cargarPerfil();
     this.initForm();
 
-    // Validar contraseñas en tiempo real
+    // Validar formulario en tiempo real
     this.perfilForm.valueChanges.subscribe(() => {
       this.validatePasswords();
-      this.checkPersonalInfoFields(); // Nuevo: Verificar campos de información personal
+      this.checkPersonalInfoFields();
+      this.checkForErrors();
     });
 
-    // Añadir listener para verificar errores de contraseña en tiempo real
-    this.perfilForm.get('nuevaPassword')?.valueChanges.subscribe(() => this.checkPasswordErrors());
-    this.perfilForm.get('confirmarPassword')?.valueChanges.subscribe(() => this.checkPasswordErrors());
-    this.perfilForm.get('passwordActual')?.valueChanges.subscribe(() => this.checkPasswordErrors());
+    // Listeners para campos de contraseña
+    this.perfilForm.get('nuevaPassword')?.valueChanges.subscribe(() => {
+      this.checkPasswordErrors();
+      this.checkForErrors();
+    });
+    this.perfilForm.get('confirmarPassword')?.valueChanges.subscribe(() => {
+      this.checkPasswordErrors();
+      this.checkForErrors();
+    });
+    this.perfilForm.get('passwordActual')?.valueChanges.subscribe(() => {
+      this.checkPasswordErrors();
+      this.checkForErrors();
+    });
 
-    // Añadir listeners para verificar campos de información personal en tiempo real
-    this.perfilForm.get('nombreUsuario')?.valueChanges.subscribe(() => this.checkPersonalInfoFields());
-    this.perfilForm.get('correoElectronico')?.valueChanges.subscribe(() => this.checkPersonalInfoFields());
-    this.perfilForm.get('telefonoCelular')?.valueChanges.subscribe(() => this.checkPersonalInfoFields());
+    // Listeners para campos de información personal
+    this.perfilForm.get('nombreUsuario')?.valueChanges.subscribe(() => {
+      this.checkPersonalInfoFields();
+      this.checkForErrors();
+    });
+    this.perfilForm.get('correoElectronico')?.valueChanges.subscribe(() => {
+      this.checkPersonalInfoFields();
+      this.checkForErrors();
+    });
+    this.perfilForm.get('telefonoCelular')?.valueChanges.subscribe(() => {
+      this.checkPersonalInfoFields();
+      this.checkForErrors();
+    });
+  }
+
+  // Método para verificar si hay errores en cualquier parte
+  checkForErrors(): void {
+    this.hasErrors = this.personalInfoErrors.length > 0 ||
+                    !!this.passwordError ||
+                    !!this.error ||
+                    this.uniqueErrors.length > 0 ||
+                    this.perfilForm.invalid;
   }
 
   // Método para verificar y limpiar errores cuando los campos cambian
   checkPersonalInfoFields(): void {
-    // Si estamos en modo de edición
     if (this.isEditing) {
-      // Obtener valores actuales
       const nombreUsuario = this.perfilForm.get('nombreUsuario')?.value;
       const correoElectronico = this.perfilForm.get('correoElectronico')?.value;
       const telefonoCelular = this.perfilForm.get('telefonoCelular')?.value;
@@ -168,7 +195,6 @@ export class AlumnoPerfilComponent implements OnInit {
 
     // Solo validar si ambos campos tienen valor
     if (nueva && confirmar && nueva !== confirmar) {
-      // En vez de retornar el error, lo almacenamos en la instancia
       return { passwordMismatch: true };
     }
     return null;
@@ -306,48 +332,182 @@ export class AlumnoPerfilComponent implements OnInit {
       this.error = '';
       this.passwordError = '';
       this.uniqueErrors = [];
-      this.personalInfoErrors = []; // NUEVO: Limpiar errores de información personal
+      this.personalInfoErrors = [];
+      this.hasErrors = false;
     }
   }
 
   onSubmit(): void {
     // Limpiar errores previos antes de validar
     this.error = '';
-    this.passwordError = '';
     this.uniqueErrors = [];
     // No limpiamos personalInfoErrors para que se mantengan los errores anteriores
-    // y puedan acumularse si hay nuevos errores
 
-    // Luego validar
+    // Validar todo el formulario
     this.validatePasswords();
+    this.checkPersonalInfoFields();
+    this.checkPasswordErrors();
+    this.checkForErrors();
 
-    if (this.perfilForm.invalid || this.passwordError) {
-      this.checkPasswordErrors();
+    // Obtener valores y verificar si hay cambios en contraseña
+    const { nombreUsuario, correoElectronico, telefonoCelular, passwordActual, nuevaPassword, confirmarPassword } = this.perfilForm.value;
+    const hayAlgunCampoPassword = !!(passwordActual || nuevaPassword || confirmarPassword);
+
+    // Si hay al menos un campo de contraseña, verificar que no tengan errores
+    if (hayAlgunCampoPassword) {
+      // Verificación específica para contraseña
+      if (!passwordActual || !nuevaPassword || !confirmarPassword) {
+        this.passwordError = 'Todos los campos de contraseña son obligatorios';
+      } else if (nuevaPassword !== confirmarPassword) {
+        this.passwordError = 'Las contraseñas no coinciden';
+      } else if (passwordActual === nuevaPassword) {
+        this.passwordError = 'La nueva contraseña debe ser diferente a la actual';
+      } else if (nuevaPassword.length < 8) {
+        this.passwordError = 'La contraseña debe tener al menos 8 caracteres';
+      } else if (!/[A-Z]/.test(nuevaPassword)) {
+        this.passwordError = 'La contraseña debe tener al menos una letra mayúscula';
+      } else if (!/[0-9]/.test(nuevaPassword)) {
+        this.passwordError = 'La contraseña debe tener al menos un número';
+      } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(nuevaPassword)) {
+        this.passwordError = 'La contraseña debe tener al menos un carácter especial';
+      }
+    }
+
+    // Volver a verificar errores después de todas las validaciones
+    this.checkForErrors();
+
+    // PUNTO CLAVE: Verificar errores en CUALQUIER sección antes de continuar
+    if (this.hasErrors || this.perfilForm.invalid || this.passwordError ||
+        this.personalInfoErrors.length > 0 || this.uniqueErrors.length > 0) {
+      console.log('Hay errores en el formulario, no se realizará ninguna actualización');
       return;
     }
 
     this.updating = true;
     this.success = '';
 
-    const { nombreUsuario, correoElectronico, telefonoCelular, passwordActual, nuevaPassword } = this.perfilForm.value;
+    // Determinar qué se va a actualizar
+    const actualizarDatosPerfil = nombreUsuario !== this.perfil?.NombreUsuario ||
+                                 correoElectronico !== this.perfil?.CorreoElectronico ||
+                                 telefonoCelular !== this.perfil?.TelefonoCelular;
+    const actualizarContraseña = hayAlgunCampoPassword && passwordActual && nuevaPassword;
 
-    // Crear una variable para rastrear las operaciones completadas
-    let operacionesCompletadas = 0;
-    let totalOperaciones = 0;
-
-    // Determinar qué operaciones se realizarán
-    const actualizarDatosPerfil = nombreUsuario || correoElectronico || telefonoCelular;
-    const actualizarContraseña = passwordActual && nuevaPassword;
-
-    if (actualizarDatosPerfil) totalOperaciones++;
-    if (actualizarContraseña) totalOperaciones++;
+    // Si no hay nada que actualizar, cerrar el modo edición
+    if (!actualizarDatosPerfil && !actualizarContraseña) {
+      this.updating = false;
+      this.isEditing = false;
+      return;
+    }
 
     // Convertir el nombre de usuario a minúsculas para la validación
     const nombreUsuarioLowerCase = nombreUsuario ? nombreUsuario.toLowerCase() : '';
 
-    const finalizarActualizacion = () => {
-      operacionesCompletadas++;
-      if (operacionesCompletadas === totalOperaciones) {
+    // Variables para control de flujo
+    let errorDuranteActualizacion = false;
+
+    // Función para manejar los errores de la API
+    const manejarError = (error: any, tipo: string) => {
+      errorDuranteActualizacion = true;
+      console.error(`Error al actualizar ${tipo}:`, error);
+
+      // Extraer mensaje de error
+      let errorMessage = '';
+      if (error?.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error?.error?.data?.message) {
+        errorMessage = error.error.data.message;
+      } else if (typeof error?.error === 'string') {
+        errorMessage = error.error;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.sqlMessage) {
+        errorMessage = error.sqlMessage;
+      }
+
+      // Procesar errores según su tipo
+      if (tipo === 'perfil') {
+        const mensajeLowerCase = errorMessage.toLowerCase();
+        let errorEncontrado = false;
+        const errorId = this.generateErrorId();
+
+        // Verificar teléfono
+        if (mensajeLowerCase.includes('teléfono') || mensajeLowerCase.includes('telefono')) {
+          this.personalInfoErrors.push({
+            field: 'telefonoCelular',
+            message: errorMessage,
+            id: errorId
+          });
+          errorEncontrado = true;
+        }
+        // Verificar correo
+        else if (mensajeLowerCase.includes('correo') || mensajeLowerCase.includes('email')) {
+          this.personalInfoErrors.push({
+            field: 'correoElectronico',
+            message: errorMessage,
+            id: errorId
+          });
+          errorEncontrado = true;
+        }
+        // Verificar nombre de usuario
+        else if (mensajeLowerCase.includes('nombre de usuario') || mensajeLowerCase.includes('username')) {
+          this.personalInfoErrors.push({
+            field: 'nombreUsuario',
+            message: errorMessage,
+            id: errorId
+          });
+          errorEncontrado = true;
+        }
+        // Verificar errores específicos de MySQL para duplicados
+        else if (mensajeLowerCase.includes('duplicate entry')) {
+          if (mensajeLowerCase.includes('idx_telefono')) {
+            this.personalInfoErrors.push({
+              field: 'telefonoCelular',
+              message: errorMessage,
+              id: errorId
+            });
+            errorEncontrado = true;
+          }
+          else if (mensajeLowerCase.includes('idx_correo')) {
+            this.personalInfoErrors.push({
+              field: 'correoElectronico',
+              message: errorMessage,
+              id: errorId
+            });
+            errorEncontrado = true;
+          }
+          else if (mensajeLowerCase.includes('idx_nombre')) {
+            this.personalInfoErrors.push({
+              field: 'nombreUsuario',
+              message: errorMessage,
+              id: errorId
+            });
+            errorEncontrado = true;
+          }
+        }
+
+        // Si no se encontró un error específico, mostrar error general
+        if (!errorEncontrado) {
+          this.error = 'Error al actualizar perfil. ' + (errorMessage || 'Por favor, intenta nuevamente.');
+        }
+      }
+      else if (tipo === 'contraseña') {
+        const mensajeLowerCase = errorMessage.toLowerCase();
+        if (mensajeLowerCase.includes('contraseña actual incorrecta') ||
+            mensajeLowerCase.includes('password incorrect') ||
+            mensajeLowerCase.includes('contraseña incorrecta')) {
+          this.passwordError = 'La contraseña actual no es correcta';
+        } else {
+          this.error = 'Error al actualizar contraseña. ' + (errorMessage || 'Por favor, intenta nuevamente.');
+        }
+      }
+
+      this.updating = false;
+      this.checkForErrors();
+    };
+
+    // Función para finalizar el proceso si todo sale bien
+    const finalizarExitosamente = () => {
+      if (!errorDuranteActualizacion) {
         this.success = 'Perfil actualizado correctamente';
         this.updating = false;
         this.isEditing = false;
@@ -367,186 +527,196 @@ export class AlumnoPerfilComponent implements OnInit {
       }
     };
 
-    // Si se modificaron datos del perfil
-    if (actualizarDatosPerfil) {
-      const datos = {
-        nombreUsuario: nombreUsuarioLowerCase,
-        correoElectronico,
-        telefonoCelular
-      };
-
-      this.alumnoService.actualizarPerfil(datos).subscribe({
-        next: (response) => {
-          finalizarActualizacion();
-        },
-        error: (error) => {
-          // Limpiar errores previos
-          this.passwordError = '';
-          this.uniqueErrors = [];
-          // No limpiamos personalInfoErrors para acumular errores
-
-          console.error('Error al actualizar perfil:', error);
-
-          // Extraer mensaje de error, exactamente como viene del backend
-          let errorMessage = '';
-
-          if (error?.error?.message) {
-            errorMessage = error.error.message;
-          } else if (typeof error?.error === 'string') {
-            errorMessage = error.error;
-          } else if (error?.message) {
-            errorMessage = error.message;
-          } else if (error?.sqlMessage) {
-            errorMessage = error.sqlMessage;
-          }
-
-          // Verificar si este error ya existe para evitar duplicados
-          if (this.errorMessageExists(errorMessage)) {
-            this.updating = false;
-            return; // Si el error ya existe, no lo agregamos nuevamente
-          }
-
-          // Usar mensaje de error exactamente como viene del backend
-          const mensajeLowerCase = errorMessage.toLowerCase();
-          let errorEncontrado = false;
-          const errorId = this.generateErrorId(); // Generar ID único para el error
-
-          // Verificar teléfono
-          if (mensajeLowerCase.includes('teléfono') || mensajeLowerCase.includes('telefono')) {
-            // Agregar el error solo si no existe ya
-            this.personalInfoErrors.push({
-              field: 'telefonoCelular',
-              message: errorMessage,
-              id: errorId
-            });
-
-            errorEncontrado = true;
-          }
-
-          // Verificar correo
-          else if (mensajeLowerCase.includes('correo') || mensajeLowerCase.includes('email')) {
-            // Agregar el error solo si no existe ya
-            this.personalInfoErrors.push({
-              field: 'correoElectronico',
-              message: errorMessage,
-              id: errorId
-            });
-
-            errorEncontrado = true;
-          }
-
-          // Verificar nombre de usuario
-          else if (mensajeLowerCase.includes('nombre de usuario') || mensajeLowerCase.includes('username')) {
-            // Agregar el error solo si no existe ya
-            this.personalInfoErrors.push({
-              field: 'nombreUsuario',
-              message: errorMessage,
-              id: errorId
-            });
-
-            errorEncontrado = true;
-          }
-
-          // Verificar errores específicos de MySQL para duplicados
-          else if (mensajeLowerCase.includes('duplicate entry')) {
-            if (mensajeLowerCase.includes('idx_telefono')) {
-              // Agregar el error solo si no existe ya
-              this.personalInfoErrors.push({
-                field: 'telefonoCelular',
-                message: errorMessage,
-                id: errorId
-              });
-
-              errorEncontrado = true;
-            }
-            else if (mensajeLowerCase.includes('idx_correo')) {
-              // Agregar el error solo si no existe ya
-              this.personalInfoErrors.push({
-                field: 'correoElectronico',
-                message: errorMessage,
-                id: errorId
-              });
-
-              errorEncontrado = true;
-            }
-            else if (mensajeLowerCase.includes('idx_nombre')) {
-              // Agregar el error solo si no existe ya
-              this.personalInfoErrors.push({
-                field: 'nombreUsuario',
-                message: errorMessage,
-                id: errorId
-              });
-
-              errorEncontrado = true;
-            }
-          }
-
-          // Si no se encontró un error específico, mostrar el error general
-          if (!errorEncontrado) {
-            this.error = 'Error al actualizar perfil. ' + (errorMessage || 'Por favor, intenta nuevamente.');
-          }
-
-          this.updating = false;
-        }
-      });
-    }
-
-    // Si se ingresaron las contraseñas
+    // Implementación corregida para la verificación y actualización de contraseña
     if (actualizarContraseña) {
-      this.alumnoService.actualizarPassword({
-        passwordActual,
-        nuevaPassword
-      }).subscribe({
-        next: (response) => {
-          finalizarActualizacion();
+      // Verificar primero si la contraseña actual es correcta
+      this.alumnoService.verificarPasswordActual(passwordActual).subscribe({
+        next: (esValida) => {
+          if (!esValida) {
+            // La contraseña no es válida
+            this.passwordError = 'La contraseña actual no es correcta';
+            this.updating = false;
+            this.checkForErrors();
+            return;
+          }
+
+          // Si la contraseña es correcta y hay que actualizar perfil
+          if (actualizarDatosPerfil) {
+            this.actualizarInformacionPersonal(nombreUsuarioLowerCase, correoElectronico, telefonoCelular, () => {
+              if (!errorDuranteActualizacion) {
+                // Solo si la actualización del perfil fue exitosa, actualizamos la contraseña
+                this.actualizarPasswordUsuario(passwordActual, nuevaPassword, finalizarExitosamente);
+              }
+            });
+          } else {
+            // Si solo hay que actualizar la contraseña
+            this.actualizarPasswordUsuario(passwordActual, nuevaPassword, finalizarExitosamente);
+          }
         },
         error: (error) => {
-          console.error('Error al actualizar contraseña:', error);
-
-          // Limpiar errores previos
-          this.passwordError = '';
-          this.error = '';
-
-          // Verificar diferentes formatos posibles del error
-          let errorMessage = '';
-
-          // Intentar extraer el mensaje de error del objeto error
-          if (error?.error?.message) {
-            errorMessage = error.error.message;
-          } else if (error?.error?.data?.message) {
-            errorMessage = error.error.data.message;
-          } else if (typeof error?.error === 'string') {
-            errorMessage = error.error;
-          } else if (error?.message) {
-            errorMessage = error.message;
-          }
-
-          // Verificar por contenido del mensaje, con insensibilidad a mayúsculas/minúsculas
-          const mensajeLowerCase = errorMessage.toLowerCase();
-          if (mensajeLowerCase.includes('contraseña actual incorrecta') ||
-              mensajeLowerCase.includes('password incorrect') ||
-              mensajeLowerCase.includes('contraseña incorrecta')) {
-
-            this.passwordError = 'La contraseña actual no es correcta';
-            this.error = 'Contraseña actual incorrecta. Por favor, intenta nuevamente.';
-          } else {
-            this.error = 'Error al actualizar contraseña. ' + (errorMessage || 'Por favor, intenta nuevamente.');
-          }
-
-          this.updating = false;
+          manejarError(error, 'contraseña');
         }
       });
-    }
-
-    // Si no hay operaciones, simplemente cerrar el modo edición
-    if (totalOperaciones === 0) {
+    } else if (actualizarDatosPerfil) {
+      // Si solo hay que actualizar datos del perfil
+      this.actualizarInformacionPersonal(nombreUsuarioLowerCase, correoElectronico, telefonoCelular, finalizarExitosamente);
+    } else {
+      // No hay nada que actualizar
       this.updating = false;
       this.isEditing = false;
     }
   }
 
+  // Métodos auxiliares para actualizar por separado (mejora el mantenimiento del código)
+  private actualizarInformacionPersonal(
+    nombreUsuario: string,
+    correoElectronico: string,
+    telefonoCelular: string,
+    callback: () => void
+  ): void {
+    const datos = {
+      nombreUsuario,
+      correoElectronico,
+      telefonoCelular
+    };
+
+    this.alumnoService.actualizarPerfil(datos).subscribe({
+      next: (response) => {
+        callback();
+      },
+      error: (error) => {
+        this.manejarErrorActualizacion(error, 'perfil');
+      }
+    });
+  }
+
+  private actualizarPasswordUsuario(
+    passwordActual: string,
+    nuevaPassword: string,
+    callback: () => void
+  ): void {
+    this.alumnoService.actualizarPassword({
+      passwordActual,
+      nuevaPassword
+    }).subscribe({
+      next: (response) => {
+        callback();
+      },
+      error: (error) => {
+        this.manejarErrorActualizacion(error, 'contraseña');
+      }
+    });
+  }
+
+  // Método para manejar errores de actualización
+  private manejarErrorActualizacion(error: any, tipo: string): void {
+    console.error(`Error al actualizar ${tipo}:`, error);
+
+    // Extraer mensaje de error
+    let errorMessage = '';
+    if (error?.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error?.error?.data?.message) {
+      errorMessage = error.error.data.message;
+    } else if (typeof error?.error === 'string') {
+      errorMessage = error.error;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    } else if (error?.sqlMessage) {
+      errorMessage = error.sqlMessage;
+    }
+
+    // Procesar errores según su tipo
+    if (tipo === 'perfil') {
+      const mensajeLowerCase = errorMessage.toLowerCase();
+      let errorEncontrado = false;
+      const errorId = this.generateErrorId();
+
+      // Verificar teléfono
+      if (mensajeLowerCase.includes('teléfono') || mensajeLowerCase.includes('telefono')) {
+        this.personalInfoErrors.push({
+          field: 'telefonoCelular',
+          message: errorMessage,
+          id: errorId
+        });
+        errorEncontrado = true;
+      }
+      // Verificar correo
+      else if (mensajeLowerCase.includes('correo') || mensajeLowerCase.includes('email')) {
+        this.personalInfoErrors.push({
+          field: 'correoElectronico',
+          message: errorMessage,
+          id: errorId
+        });
+        errorEncontrado = true;
+      }
+      // Verificar nombre de usuario
+      else if (mensajeLowerCase.includes('nombre de usuario') || mensajeLowerCase.includes('username')) {
+        this.personalInfoErrors.push({
+          field: 'nombreUsuario',
+          message: errorMessage,
+          id: errorId
+        });
+        errorEncontrado = true;
+      }
+      // Verificar errores específicos de MySQL para duplicados
+      else if (mensajeLowerCase.includes('duplicate entry')) {
+        if (mensajeLowerCase.includes('idx_telefono')) {
+          this.personalInfoErrors.push({
+            field: 'telefonoCelular',
+            message: 'Este número de teléfono ya está en uso',
+            id: errorId
+          });
+          errorEncontrado = true;
+        }
+        else if (mensajeLowerCase.includes('idx_correo')) {
+          this.personalInfoErrors.push({
+            field: 'correoElectronico',
+            message: 'Este correo electrónico ya está en uso',
+            id: errorId
+          });
+          errorEncontrado = true;
+        }
+        else if (mensajeLowerCase.includes('idx_nombre')) {
+          this.personalInfoErrors.push({
+            field: 'nombreUsuario',
+            message: 'Este nombre de usuario ya está en uso',
+            id: errorId
+          });
+          errorEncontrado = true;
+        }
+      }
+
+      // Si no se encontró un error específico, mostrar error general
+      if (!errorEncontrado) {
+        this.error = 'Error al actualizar perfil. ' + (errorMessage || 'Por favor, intenta nuevamente.');
+      }
+    }
+    else if (tipo === 'contraseña') {
+      const mensajeLowerCase = errorMessage.toLowerCase();
+      if (mensajeLowerCase.includes('contraseña actual incorrecta') ||
+          mensajeLowerCase.includes('password incorrect') ||
+          mensajeLowerCase.includes('contraseña incorrecta')) {
+        this.passwordError = 'La contraseña actual no es correcta';
+      } else {
+        this.error = 'Error al actualizar contraseña. ' + (errorMessage || 'Por favor, intenta nuevamente.');
+      }
+    }
+
+    this.updating = false;
+    this.checkForErrors();
+  }
+
   get formIsValid(): boolean {
-    return this.perfilForm.valid && !this.passwordError;
+    // Recalculamos hasErrors por si acaso
+    this.checkForErrors();
+
+    // Debe verificar si NO hay errores en ninguna parte
+    return this.perfilForm.valid &&
+           !this.passwordError &&
+           !this.hasErrors &&
+           this.personalInfoErrors.length === 0 &&
+           this.uniqueErrors.length === 0;
   }
 
   formatDateTime(dateTime: string | null): string {
