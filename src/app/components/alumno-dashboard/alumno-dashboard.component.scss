@@ -119,8 +119,9 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   transform-origin: top left;
   margin: 0; /* Elimina márgenes residuales */
   box-sizing: border-box; /* Incluye padding en el ancho */
-  margin-bottom: 0.6rem;
-  transition: transform 0.2s ease;
+  margin-bottom: 0rem;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-6px);
@@ -128,13 +129,13 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   }
 
   /* Efecto visual cuando se hace clic */
-  .stat-card:active {
+  &:active {
     transform: translateY(-2px);
   }
 
   .stat-card-icon {
-    width: 45px;
-    height: 45px;
+    width: 43px;
+    height: 43px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -189,17 +190,25 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       background-color: $success-color;
     }
   }
+
+  // Estilo para cuando el card está seleccionado
+  &.selected {
+    background-color: rgba(220, 220, 220, 0.25);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    border-left: 3px solid $ipn-guinda;
+  }
 }
 
 // Mensaje de ayuda
 .help-message {
-  background-color: #f8f9fa;
+  background-color: rgba(220, 220, 220, 0.25);
   border-left: 4px solid $ipn-guinda; // Cambiado a color IPN
   padding: 1rem;
   margin-bottom: 1.5rem;
   border-radius: $border-radius;
   display: flex;
   align-items: center;
+  font-size: 1rem;
 
   i {
     font-size: 1.5rem;
@@ -209,7 +218,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
   p {
     margin: 0;
-    color: #666;
+    color: black;
   }
 }
 
@@ -218,7 +227,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.7rem;
   background-color: #fff;
   padding: 1.5rem;
   border-radius: $border-radius;

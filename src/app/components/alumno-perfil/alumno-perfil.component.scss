@@ -265,7 +265,8 @@
   border-bottom: 1px solid $ipn-gray-dark;
 
   .form-section {
-    margin-bottom: 2rem;
+    margin-top: 0.1rem;
+    margin-bottom: 1.8rem;
     background-color: white;
     border-radius: $border-radius;
     padding: 1.5rem 1rem;
@@ -313,6 +314,7 @@
     padding: 1rem;
     border-radius: $border-radius;
     margin-bottom: 1.5rem;
+    font-size: 1rem;
 
     .info-icon {
       color: $ipn-guinda;
@@ -323,7 +325,6 @@
 
     p {
       margin: 0;
-      font-size: 0.95rem;
       color: black;
       line-height: 1.4; // Añadido para mejor legibilidad y alineación
     }
@@ -604,7 +605,7 @@
   padding: 1.5rem;
 
   .info-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
 
     &:last-child {
       margin-bottom: 0;

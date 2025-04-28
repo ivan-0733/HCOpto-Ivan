@@ -10,9 +10,11 @@
     </div>
   </header>
 
-  <!-- Tarjetas de estadísticas -->
+  <!-- Modificar la parte de las tarjetas de estadísticas -->
   <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
-    <div class="stat-card total" (click)="aplicarFiltroCard('todos')">
+    <div class="stat-card total"
+        (click)="aplicarFiltroCard('todos')"
+        [ngClass]="{'selected': filtroEstado === 'todos'}">
       <div class="stat-card-icon">
         <i class="fas fa-file-medical"></i>
       </div>
@@ -22,7 +24,9 @@
       </div>
     </div>
 
-    <div class="stat-card archivadas" (click)="aplicarFiltroCard('Archivado')">
+    <div class="stat-card archivadas"
+        (click)="aplicarFiltroCard('Archivado')"
+        [ngClass]="{'selected': filtroEstado === 'Archivado'}">
       <div class="stat-card-icon">
         <i class="fas fa-archive"></i>
       </div>
@@ -32,8 +36,10 @@
       </div>
     </div>
 
-    <div class="stat-card por-estado" *ngFor="let estado of estadisticas.porEstado"
-        (click)="aplicarFiltroCard(estado.estado)">
+    <div class="stat-card por-estado"
+        *ngFor="let estado of estadisticas.porEstado"
+        (click)="aplicarFiltroCard(estado.estado)"
+        [ngClass]="{'selected': filtroEstado === estado.estado}">
       <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
         <i class="fas fa-tasks"></i>
       </div>
@@ -48,8 +54,8 @@
 
   <!-- Mensaje de ayuda -->
   <div class="help-message" *ngIf="!loading && !error && historiasClinicas && historiasClinicas.length > 0">
-    <i class="fas fa-info-circle"></i>
-    <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas.</p>
+    <i class="material-icons info-icon">info</i>
+    <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas</p>
   </div>
 
 <!-- Filtros -->
