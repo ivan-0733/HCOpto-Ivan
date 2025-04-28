@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Perfil {
@@ -79,7 +79,7 @@ export class AlumnoService {
   }
 
   // Actualizar perfil del alumno
-  actualizarPerfil(datos: { nombreUsuario?: string; telefonoCelular?: string }): Observable<any> {
+  actualizarPerfil(datos: { nombreUsuario?: string; correoElectronico?: string; telefonoCelular?: string }): Observable<any> {
     return this.http.patch(`${this.apiUrl}/perfil`, datos);
   }
 
@@ -127,5 +127,23 @@ export class AlumnoService {
   // Actualizar contraseña del alumno
   actualizarPassword(datos: { passwordActual: string, nuevaPassword: string }): Observable<any> {
     return this.http.patch(`${this.apiUrl}/password`, datos);
+  }
+
+  // Método corregido para verificar contraseña
+  verificarPasswordActual(passwordActual: string): Observable<boolean> {
+    return this.http.post<ApiResponse<boolean>>(`${this.apiUrl}/verificar-password`, {
+      passwordActual
+    }).pipe(
+      map(response => {
+        // Asegurarse de que estamos interpretando correctamente la respuesta
+        // La API devuelve { status: 'success', data: true/false }
+        return response.data === true;
+      }),
+      catchError(error => {
+        console.error('Error al verificar contraseña:', error);
+        // Devolver falso en caso de error para indicar que la contraseña no es válida
+        return of(false);
+      })
+    );
   }
 }

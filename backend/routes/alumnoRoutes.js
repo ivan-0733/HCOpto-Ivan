@@ -12,8 +12,11 @@ router.use(authController.verificarRol('alumno'));
 router.get('/perfil', alumnoController.obtenerPerfil);
 router.patch('/perfil', alumnoController.actualizarPerfil);
 
-// Ruta para actualizar contraseña - ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ PRESENTE
+// Ruta para actualizar contraseña
 router.patch('/password', alumnoController.actualizarPassword);
+
+// Ruta para verificar contraseña - USAR SOLO UNA VEZ
+router.post('/verificar-password', alumnoController.verificarPassword);
 
 // Rutas para obtener profesores asignados
 router.get('/profesores', alumnoController.obtenerProfesoresAsignados);
