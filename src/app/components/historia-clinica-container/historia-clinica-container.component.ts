@@ -160,34 +160,38 @@ this.subscribeToFormChanges('interrogatorio', form);
 }
 
 // Métodos para recibir los formularios de antecedente visual
-onAgudezaVisualFormReady(form: FormGroup): void {
-this.agudezaVisualForm = form;
-console.log('Formulario de agudeza visual recibido:', form);
-
-// Restaurar valores previos si existen
-if (this.formValues['agudeza-visual']) {
-  form.patchValue(this.formValues['agudeza-visual']);
-}
-
-// Suscribirse a cambios en el formulario para guardar
-form.valueChanges.subscribe(values => {
-  this.formValues['agudeza-visual'] = values;
-});
-}
-
-onLensometriaFormReady(form: FormGroup): void {
-this.lensometriaForm = form;
-console.log('Formulario de lensometría recibido:', form);
-
-// Restaurar valores previos si existen
-if (this.formValues['lensometria']) {
-  form.patchValue(this.formValues['lensometria']);
-}
-
-// Suscribirse a cambios en el formulario para guardar
-form.valueChanges.subscribe(values => {
-  this.formValues['lensometria'] = values;
-});
+onAntecedenteVisualFormReady(form: FormGroup): void {
+  // Verificar el tipo de formulario recibido analizando sus controles
+  if (form.contains('sinRxLejosODSnellen') || form.contains('diametroMM')) {
+    this.agudezaVisualForm = form;
+    console.log('Formulario de agudeza visual recibido:', form);
+    
+    // Restaurar valores previos si existen
+    if (this.formValues['agudeza-visual']) {
+      form.patchValue(this.formValues['agudeza-visual']);
+    }
+    
+    // Suscribirse a cambios en el formulario para guardar
+    form.valueChanges.subscribe(values => {
+      this.formValues['agudeza-visual'] = values;
+      console.log('Valores de agudeza visual actualizados:', values);
+    });
+  } 
+  else if (form.contains('ojoDerechoEsfera') || form.contains('tipoBifocalMultifocalID')) {
+    this.lensometriaForm = form;
+    console.log('Formulario de lensometría recibido:', form);
+    
+    // Restaurar valores previos si existen
+    if (this.formValues['lensometria']) {
+      form.patchValue(this.formValues['lensometria']);
+    }
+    
+    // Suscribirse a cambios en el formulario para guardar
+    form.valueChanges.subscribe(values => {
+      this.formValues['lensometria'] = values;
+      console.log('Valores de lensometría actualizados:', values);
+    });
+  }
 }
 
 // Métodos para recibir los formularios de examen preliminar
@@ -353,81 +357,154 @@ form.valueChanges.subscribe(values => {
 }
 
 loadHistoriaStatus(): void {
-if (!this.historiaId) return;
+  if (!this.historiaId) return;
 
-this.loading = true;
-this.error = '';
+  this.loading = true;
+  this.error = '';
 
-this.historiaClinicaService.obtenerHistoriaClinica(this.historiaId)
-  .pipe(
-    finalize(() => {
-      this.loading = false;
-    })
-  )
-  .subscribe({
-    next: (historia) => {
-      // Actualizar el estado de compleción de cada sección basándose en la presencia de datos
-      this.sectionStatus['datos-generales'] = true; // Siempre true si existe la historia
-      this.sectionStatus['interrogatorio'] = !!historia.interrogatorio;
-      
-      // Para antecedente visual, verificamos agudeza visual y lensometría
-      this.sectionStatus['antecedente-visual'] = 
-        (!!historia.agudezaVisual && historia.agudezaVisual.length > 0) || 
-        !!historia.lensometria;
-      
-      // Para examen preliminar, verificamos alguna de sus subsecciones
-      this.sectionStatus['examen-preliminar'] = 
-        !!historia.alineacionOcular || 
-        !!historia.motilidad || 
-        !!historia.exploracionFisica || 
-        !!historia.viaPupilar;
-      
-      // Verificaciones para las otras secciones
-      this.sectionStatus['estado-refractivo'] = 
-      !!historia.estadoRefractivo || 
-      !!historia.subjetivoCerca;
+  this.historiaClinicaService.obtenerHistoriaClinica(this.historiaId)
+    .pipe(
+      finalize(() => {
+        this.loading = false;
+      })
+    )
+    .subscribe({
+      next: (historia) => {
+        console.log('Historia clínica cargada:', historia);
+        
+        // Actualizar el estado de compleción de cada sección basándose en la presencia de datos
+        this.sectionStatus['datos-generales'] = true; // Siempre true si existe la historia
+        this.sectionStatus['interrogatorio'] = !!historia.interrogatorio;
+        
+        // Para antecedente visual, verificamos agudeza visual y lensometría
+        this.sectionStatus['antecedente-visual'] = 
+          (!!historia.agudezaVisual && historia.agudezaVisual.length > 0) || 
+          !!historia.lensometria;
+        
+        // Para examen preliminar, verificamos alguna de sus subsecciones
+        this.sectionStatus['examen-preliminar'] = 
+          !!historia.alineacionOcular || 
+          !!historia.motilidad || 
+          !!historia.exploracionFisica || 
+          !!historia.viaPupilar;
+        
+        // Verificaciones para las otras secciones
+        this.sectionStatus['estado-refractivo'] = 
+          !!historia.estadoRefractivo || 
+          !!historia.subjetivoCerca;
 
-      // Verificaciones para binocularidad
-      this.sectionStatus['binocularidad'] = 
-      !!historia.binocularidad || 
-      !!historia.forias || 
-      !!historia.vergencias || 
-      !!historia.metodoGrafico;
+        // Verificaciones para binocularidad
+        this.sectionStatus['binocularidad'] = 
+          !!historia.binocularidad || 
+          !!historia.forias || 
+          !!historia.vergencias || 
+          !!historia.metodoGrafico;
 
-      this.sectionStatus['deteccion-alteraciones'] = false; // Implementar cuando se tenga el componente
-      this.sectionStatus['diagnostico'] = !!historia.diagnostico;
-      this.sectionStatus['receta'] = !!historia.recetaFinal;
-      
-      // Guardar datos en el almacén de formularios para preservarlos
-      if (historia.interrogatorio) {
-        this.formValues['interrogatorio'] = historia.interrogatorio;
+        this.sectionStatus['deteccion-alteraciones'] = false; // Implementar cuando se tenga el componente
+        this.sectionStatus['diagnostico'] = !!historia.diagnostico;
+        this.sectionStatus['receta'] = !!historia.recetaFinal;
+        
+        // Cargar los datos del paciente para el formulario de datos generales
+        this.formValues['datos-generales'] = {
+          nombre: historia.Nombre,
+          apellidoPaterno: historia.ApellidoPaterno,
+          apellidoMaterno: historia.ApellidoMaterno || '',
+          edad: historia.Edad,
+          generoID: historia.GeneroID,
+          estadoCivilID: historia.EstadoCivilID,
+          escolaridadID: historia.EscolaridadID,
+          ocupacion: historia.Ocupacion,
+          direccionLinea1: historia.DireccionLinea1,
+          direccionLinea2: historia.DireccionLinea2,
+          ciudad: historia.Ciudad,
+          estadoID: historia.PacienteEstadoID,
+          codigoPostal: historia.CodigoPostal,
+          pais: historia.Pais,
+          correoElectronico: historia.CorreoElectronico,
+          telefonoCelular: historia.TelefonoCelular,
+          telefono: historia.Telefono,
+          // Datos adicionales para la historia clínica
+          profesorID: historia.ProfesorID,
+          consultorioID: historia.ConsultorioID,
+          semestreID: historia.SemestreID,
+          pacienteID: historia.PacienteID
+        };
+        
+        // Guardar datos del interrogatorio
+        if (historia.interrogatorio) {
+          this.formValues['interrogatorio'] = historia.interrogatorio;
+        }
+        
+        // Cargar datos de agudeza visual
+        // Ya que estamos usando el componente AntecedenteVisualComponent,
+        // no necesitamos convertir los datos de agudeza visual aquí
+        // El componente se encargará de cargar y procesar los datos correctamente
+
+        // Guardar datos de lensometría
+        if (historia.lensometria) {
+          this.formValues['lensometria'] = historia.lensometria;
+        }
+        
+        // Guardar datos de examen preliminar
+        if (historia.alineacionOcular) {
+          this.formValues['alineacion-ocular'] = historia.alineacionOcular;
+        }
+        
+        if (historia.motilidad) {
+          this.formValues['motilidad'] = historia.motilidad;
+        }
+        
+        if (historia.exploracionFisica) {
+          this.formValues['exploracion-fisica'] = historia.exploracionFisica;
+        }
+        
+        if (historia.viaPupilar) {
+          this.formValues['via-pupilar'] = historia.viaPupilar;
+        }
+        
+        // Guardar datos de estado refractivo
+        if (historia.estadoRefractivo) {
+          this.formValues['estado-refractivo'] = historia.estadoRefractivo;
+        }
+        
+        if (historia.subjetivoCerca) {
+          this.formValues['subjetivo-cerca'] = historia.subjetivoCerca;
+        }
+        
+        // Guardar datos de binocularidad
+        if (historia.binocularidad) {
+          this.formValues['binocularidad'] = historia.binocularidad;
+        }
+        
+        if (historia.forias) {
+          this.formValues['forias'] = historia.forias;
+        }
+        
+        if (historia.vergencias) {
+          this.formValues['vergencias'] = historia.vergencias;
+        }
+        
+        if (historia.metodoGrafico) {
+          this.formValues['metodo-grafico'] = historia.metodoGrafico;
+        }
+        
+        // Guardar datos de diagnóstico
+        if (historia.diagnostico) {
+          this.formValues['diagnostico'] = historia.diagnostico;
+        }
+        
+        // Guardar datos de receta final
+        if (historia.recetaFinal) {
+          this.formValues['receta'] = historia.recetaFinal;
+        }
+        
+        console.log('Datos cargados en formValues:', this.formValues);
+      },
+      error: (error) => {
+        this.error = 'Error al cargar la historia clínica: ' + (error.message || 'Intente nuevamente');
+        console.error('Error al cargar historia clínica:', error);
       }
-      
-      // Guardar datos de examen preliminar si existen
-      if (historia.alineacionOcular) {
-        this.formValues['alineacion-ocular'] = historia.alineacionOcular;
-      }
-      
-      if (historia.motilidad) {
-        this.formValues['motilidad'] = historia.motilidad;
-      }
-      
-      if (historia.exploracionFisica) {
-        this.formValues['exploracion-fisica'] = historia.exploracionFisica;
-      }
-      
-      if (historia.viaPupilar) {
-        this.formValues['via-pupilar'] = historia.viaPupilar;
-      }
-      
-      // También podríamos pre-cargar otros valores de secciones aquí
-      // a medida que se implementen los componentes
-    },
-    error: (error) => {
-      this.error = 'Error al cargar la historia clínica: ' + (error.message || 'Intente nuevamente');
-      console.error('Error al cargar historia clínica:', error);
-    }
-  });
+    });
 }
 
 // Método centralizado para guardar toda la historia clínica
@@ -445,69 +522,70 @@ if (this.isNewHistoria && !this.historiaId) {
 
 // Actualizar todos los valores de formularios
 private actualizarFormValues(): void {
-// Actualizar datos generales
-if (this.sectionForms['datos-generales']) {
-  this.formValues['datos-generales'] = this.sectionForms['datos-generales'].value;
-}
+  // Actualizar datos generales
+  if (this.sectionForms['datos-generales']) {
+    this.formValues['datos-generales'] = this.sectionForms['datos-generales'].value;
+  }
 
-// Actualizar interrogatorio
-if (this.sectionForms['interrogatorio']) {
-  this.formValues['interrogatorio'] = this.sectionForms['interrogatorio'].value;
-}
+  // Actualizar interrogatorio
+  if (this.sectionForms['interrogatorio']) {
+    this.formValues['interrogatorio'] = this.sectionForms['interrogatorio'].value;
+  }
 
-// Actualizar agudeza visual
-if (this.agudezaVisualForm) {
-  this.formValues['agudeza-visual'] = this.agudezaVisualForm.value;
-}
+  // Actualizar agudeza visual - asegurar que se capture el valor actual
+  if (this.agudezaVisualForm) {
+    this.formValues['agudeza-visual'] = this.agudezaVisualForm.value;
+    console.log('Valores actualizados de agudeza visual:', this.agudezaVisualForm.value);
+  }
 
-// Actualizar lensometría
-if (this.lensometriaForm) {
-  this.formValues['lensometria'] = this.lensometriaForm.value;
-}
+  // Actualizar lensometría - asegurar que se capture el valor actual
+  if (this.lensometriaForm) {
+    this.formValues['lensometria'] = this.lensometriaForm.value;
+    console.log('Valores actualizados de lensometría:', this.lensometriaForm.value);
+  }
 
-// Actualizar formularios de examen preliminar
-if (this.alineacionForm) {
-  this.formValues['alineacion-ocular'] = this.alineacionForm.value;
-}
+  // Actualizar formularios de examen preliminar
+  if (this.alineacionForm) {
+    this.formValues['alineacion-ocular'] = this.alineacionForm.value;
+  }
 
-if (this.motilidadForm) {
-  this.formValues['motilidad'] = this.motilidadForm.value;
-}
+  if (this.motilidadForm) {
+    this.formValues['motilidad'] = this.motilidadForm.value;
+  }
 
-if (this.exploracionForm) {
-  this.formValues['exploracion-fisica'] = this.exploracionForm.value;
-}
+  if (this.exploracionForm) {
+    this.formValues['exploracion-fisica'] = this.exploracionForm.value;
+  }
 
-if (this.viaPupilarForm) {
-  this.formValues['via-pupilar'] = this.viaPupilarForm.value;
-}
+  if (this.viaPupilarForm) {
+    this.formValues['via-pupilar'] = this.viaPupilarForm.value;
+  }
 
-// Actualizar formularios de estado refractivo
-if (this.refraccionForm) {
-  this.formValues['estado-refractivo'] = this.refraccionForm.value;
-}
+  // Actualizar formularios de estado refractivo
+  if (this.refraccionForm) {
+    this.formValues['estado-refractivo'] = this.refraccionForm.value;
+  }
 
-if (this.subjetivoCercaForm) {
-  this.formValues['subjetivo-cerca'] = this.subjetivoCercaForm.value;
-}
+  if (this.subjetivoCercaForm) {
+    this.formValues['subjetivo-cerca'] = this.subjetivoCercaForm.value;
+  }
 
-if (this.binocularidadForm) {
-  this.formValues['binocularidad'] = this.binocularidadForm.value;
-}
+  // Actualizar formularios de binocularidad
+  if (this.binocularidadForm) {
+    this.formValues['binocularidad'] = this.binocularidadForm.value;
+  }
 
-if (this.foriasForm) {
-  this.formValues['forias'] = this.foriasForm.value;
-}
+  if (this.foriasForm) {
+    this.formValues['forias'] = this.foriasForm.value;
+  }
 
-if (this.vergenciasForm) {
-  this.formValues['vergencias'] = this.vergenciasForm.value;
-}
+  if (this.vergenciasForm) {
+    this.formValues['vergencias'] = this.vergenciasForm.value;
+  }
 
-if (this.metodoGraficoForm) {
-  this.formValues['metodo-grafico'] = this.metodoGraficoForm.value;
-
-// Añadir actualización para otras secciones cuando estén implementadas
-}
+  if (this.metodoGraficoForm) {
+    this.formValues['metodo-grafico'] = this.metodoGraficoForm.value;
+  }
 }
 
 // Método para crear una nueva historia clínica
@@ -696,24 +774,26 @@ if (this.formValues['interrogatorio']) {
   this.sectionStatus['interrogatorio'] = true;
 }
 
-// Actualizar agudeza visual si hay datos
+//actualizar agudeza visual 
 if (this.formValues['agudeza-visual']) {
-  // Preparar datos en el formato correcto para la API
-  const agudezaVisualData = this.prepararDatosAgudezaVisual();
+  const agudezaVisualData = this.formValues['agudeza-visual'];
   
-  if (agudezaVisualData.length > 0) {
+  // Verificar si hay datos para enviar
+  if (Object.values(agudezaVisualData).some(val => val !== '' && val !== null && val !== undefined)) {
+    // Crear un array para conformar con el formato que espera la API
+    const agudezaVisualArray = [agudezaVisualData];
+    
     promesas.push(
       this.convertirObservableAPromise(
         this.historiaClinicaService.actualizarSeccion(
           historiaId, 
           'agudeza-visual', 
-          { agudezaVisual: agudezaVisualData }
+          { agudezaVisual: agudezaVisualArray }
         )
       )
     );
     this.sectionStatus['antecedente-visual'] = true;
   }
-}
 
 // Actualizar lensometría si hay datos
 if (this.formValues['lensometria']) {
@@ -921,6 +1001,9 @@ if (this.formValues['metodo-grafico']) {
 await Promise.all(promesas);
 }
 
+}
+
+
 private convertirObservableAPromise<T>(observable: Observable<T>): Promise<T> {
 return new Promise<T>((resolve, reject) => {
   observable.subscribe({
@@ -928,101 +1011,6 @@ return new Promise<T>((resolve, reject) => {
     error: (error) => reject(error)
   });
 });
-}
-
-// Preparar datos de agudeza visual para enviar al API
-private prepararDatosAgudezaVisual(): any[] {
-const formValue = this.formValues['agudeza-visual'];
-const agudezaVisualArray = [];
-
-// Datos Sin RX Lejos
-if (formValue.sinRxLejosODSnellen || formValue.sinRxLejosOISnellen || formValue.sinRxLejosAOSnellen ||
-    formValue.sinRxLejosODMetros || formValue.sinRxLejosOIMetros || formValue.sinRxLejosAOMetros ||
-    formValue.sinRxLejosODMAR || formValue.sinRxLejosOIMAR || formValue.sinRxLejosAOMAR) {
-  
-  agudezaVisualArray.push({
-    TipoMedicion: 'SIN_RX_LEJOS',
-    OjoDerechoSnellen: formValue.sinRxLejosODSnellen,
-    OjoIzquierdoSnellen: formValue.sinRxLejosOISnellen,
-    AmbosOjosSnellen: formValue.sinRxLejosAOSnellen,
-    OjoDerechoMetros: formValue.sinRxLejosODMetros,
-    OjoIzquierdoMetros: formValue.sinRxLejosOIMetros,
-    AmbosOjosMetros: formValue.sinRxLejosAOMetros,
-    OjoDerechoMAR: formValue.sinRxLejosODMAR,
-    OjoIzquierdoMAR: formValue.sinRxLejosOIMAR,
-    AmbosOjosMAR: formValue.sinRxLejosAOMAR
-  });
-}
-
-// Datos Con RX Anterior Lejos
-if (formValue.conRxLejosODSnellen || formValue.conRxLejosOISnellen || formValue.conRxLejosAOSnellen ||
-    formValue.conRxLejosODMetros || formValue.conRxLejosOIMetros || formValue.conRxLejosAOMetros ||
-    formValue.conRxLejosODMAR || formValue.conRxLejosOIMAR || formValue.conRxLejosAOMAR) {
-  
-  agudezaVisualArray.push({
-    TipoMedicion: 'CON_RX_ANTERIOR_LEJOS',
-    OjoDerechoSnellen: formValue.conRxLejosODSnellen,
-    OjoIzquierdoSnellen: formValue.conRxLejosOISnellen,
-    AmbosOjosSnellen: formValue.conRxLejosAOSnellen,
-    OjoDerechoMetros: formValue.conRxLejosODMetros,
-    OjoIzquierdoMetros: formValue.conRxLejosOIMetros,
-    AmbosOjosMetros: formValue.conRxLejosAOMetros,
-    OjoDerechoMAR: formValue.conRxLejosODMAR,
-    OjoIzquierdoMAR: formValue.conRxLejosOIMAR,
-    AmbosOjosMAR: formValue.conRxLejosAOMAR
-  });
-}
-
-// Datos Sin RX Cerca
-if (formValue.sinRxCercaODM || formValue.sinRxCercaOIM || formValue.sinRxCercaAOM ||
-    formValue.sinRxCercaODJeager || formValue.sinRxCercaOIJeager || formValue.sinRxCercaAOJeager ||
-    formValue.sinRxCercaODPuntos || formValue.sinRxCercaOIPuntos || formValue.sinRxCercaAOPuntos) {
-  
-  agudezaVisualArray.push({
-    TipoMedicion: 'SIN_RX_CERCA',
-    OjoDerechoM: formValue.sinRxCercaODM,
-    OjoIzquierdoM: formValue.sinRxCercaOIM,
-    AmbosOjosM: formValue.sinRxCercaAOM,
-    OjoDerechoJeager: formValue.sinRxCercaODJeager,
-    OjoIzquierdoJeager: formValue.sinRxCercaOIJeager,
-    AmbosOjosJeager: formValue.sinRxCercaAOJeager,
-    OjoDerechoPuntos: formValue.sinRxCercaODPuntos,
-    OjoIzquierdoPuntos: formValue.sinRxCercaOIPuntos,
-    AmbosOjosPuntos: formValue.sinRxCercaAOPuntos
-  });
-}
-
-// Datos Con RX Anterior Cerca
-if (formValue.conRxCercaODM || formValue.conRxCercaOIM || formValue.conRxCercaAOM ||
-    formValue.conRxCercaODJeager || formValue.conRxCercaOIJeager || formValue.conRxCercaAOJeager ||
-    formValue.conRxCercaODPuntos || formValue.conRxCercaOIPuntos || formValue.conRxCercaAOPuntos) {
-  
-  agudezaVisualArray.push({
-    TipoMedicion: 'CON_RX_ANTERIOR_CERCA',
-    OjoDerechoM: formValue.conRxCercaODM,
-    OjoIzquierdoM: formValue.conRxCercaOIM,
-    AmbosOjosM: formValue.conRxCercaAOM,
-    OjoDerechoJeager: formValue.conRxCercaODJeager,
-    OjoIzquierdoJeager: formValue.conRxCercaOIJeager,
-    AmbosOjosJeager: formValue.conRxCercaAOJeager,
-    OjoDerechoPuntos: formValue.conRxCercaODPuntos,
-    OjoIzquierdoPuntos: formValue.conRxCercaOIPuntos,
-    AmbosOjosPuntos: formValue.conRxCercaAOPuntos
-  });
-}
-
-// Datos Capacidad Visual
-if (formValue.capacidadVisualOD || formValue.capacidadVisualOI || formValue.capacidadVisualAO || formValue.diametroMM) {
-  agudezaVisualArray.push({
-    TipoMedicion: 'CAP_VISUAL',
-    CapacidadVisualOD: formValue.capacidadVisualOD,
-    CapacidadVisualOI: formValue.capacidadVisualOI,
-    CapacidadVisualAO: formValue.capacidadVisualAO,
-    DiametroMM: formValue.diametroMM
-  });
-}
-
-return agudezaVisualArray;
 }
 
 // Método para cancelar la edición
@@ -1104,42 +1092,81 @@ return this.currentSection === section ? 'section-button active' : 'section-butt
 
 // Cambiar a otra sección manteniendo datos
 changeSection(section: string): void {
-// Guardar los valores actuales del formulario antes de cambiar
-if (this.currentSection === 'antecedente-visual') {
-  if (this.agudezaVisualForm) {
-    this.formValues['agudeza-visual'] = this.agudezaVisualForm.value;
-  }
-  if (this.lensometriaForm) {
-    this.formValues['lensometria'] = this.lensometriaForm.value;
-  }
-} else if (this.currentSection === 'examen-preliminar') {
-  if (this.alineacionForm) {
-    this.formValues['alineacion-ocular'] = this.alineacionForm.value;
-  }
-  if (this.motilidadForm) {
-    this.formValues['motilidad'] = this.motilidadForm.value;
-  }
-  if (this.exploracionForm) {
-    this.formValues['exploracion-fisica'] = this.exploracionForm.value;
-  }
-  if (this.viaPupilarForm) {
-    this.formValues['via-pupilar'] = this.viaPupilarForm.value;
-  }
-} else if (this.currentSection === 'estado-refractivo') {
-  if (this.refraccionForm) {
-    this.formValues['estado-refractivo'] = this.refraccionForm.value;
-  }
-  if (this.subjetivoCercaForm) {
-    this.formValues['subjetivo-cerca'] = this.subjetivoCercaForm.value;
-  }
-} else if (this.sectionForms[this.currentSection]) {
-  this.formValues[this.currentSection] = this.sectionForms[this.currentSection].value;
-  console.log(`Datos de la sección ${this.currentSection} guardados en memoria:`, this.formValues[this.currentSection]);
-}
+  // Guardar los valores actuales del formulario antes de cambiar
+  switch (this.currentSection) {
+    
+    case 'datos-generales':
+      if (this.sectionForms['datos-generales']) {
+        this.formValues['datos-generales'] = this.sectionForms['datos-generales'].value;
+      }
+      break;
 
-// Cambiar a la nueva sección
-this.currentSection = section;
-this.error = ''; 
-this.success = '';
+    case 'interrogatorio':
+      if (this.sectionForms['interrogatorio']) {
+        this.formValues['interrogatorio'] = this.sectionForms['interrogatorio'].value;
+      }
+      break;
+
+    case 'antecedente-visual':
+      // Actualizar correctamente ambos formularios del antecedente visual
+      if (this.agudezaVisualForm) {
+        this.formValues['agudeza-visual'] = this.agudezaVisualForm.value;
+      }
+      if (this.lensometriaForm) {
+        this.formValues['lensometria'] = this.lensometriaForm.value;
+      }
+      break;
+
+    case 'examen-preliminar':
+      if (this.alineacionForm) {
+        this.formValues['alineacion-ocular'] = this.alineacionForm.value;
+      }
+      if (this.motilidadForm) {
+        this.formValues['motilidad'] = this.motilidadForm.value;
+      }
+      if (this.exploracionForm) {
+        this.formValues['exploracion-fisica'] = this.exploracionForm.value;
+      }
+      if (this.viaPupilarForm) {
+        this.formValues['via-pupilar'] = this.viaPupilarForm.value;
+      }
+      break;
+
+    case 'estado-refractivo':
+      if (this.refraccionForm) {
+        this.formValues['estado-refractivo'] = this.refraccionForm.value;
+      }
+      if (this.subjetivoCercaForm) {
+        this.formValues['subjetivo-cerca'] = this.subjetivoCercaForm.value;
+      }
+      break;
+
+    case 'binocularidad':
+      if (this.binocularidadForm) {
+        this.formValues['binocularidad'] = this.binocularidadForm.value;
+      }
+      if (this.foriasForm) {
+        this.formValues['forias'] = this.foriasForm.value;
+      }
+      if (this.vergenciasForm) {
+        this.formValues['vergencias'] = this.vergenciasForm.value;
+      }
+      if (this.metodoGraficoForm) {
+        this.formValues['metodo-grafico'] = this.metodoGraficoForm.value;
+      }
+      break;
+
+    default:
+      if (this.sectionForms[this.currentSection]) {
+        this.formValues[this.currentSection] = this.sectionForms[this.currentSection].value;
+      }
+  }
+
+  // Cambiar a la nueva sección
+  this.currentSection = section;
+  this.error = '';
+  this.success = '';
+  
+  console.log('Datos temporales guardados:', this.formValues);
 }
 }

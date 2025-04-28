@@ -165,8 +165,7 @@
       <app-antecedente-visual
         [historiaId]="historiaId!"
         (datosGuardados)="onSectionCompleted('antecedente-visual', $event)"
-        (agudezaVisualFormReady)="onAgudezaVisualFormReady($event)"
-        (lensometriaFormReady)="onLensometriaFormReady($event)"
+        (formReady)="onAntecedenteVisualFormReady($event)"
         id="antecedenteVisualComponent"
       ></app-antecedente-visual>
     </div>
