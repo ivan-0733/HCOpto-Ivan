@@ -129,11 +129,12 @@ imprimirHistoria(): void {
   window.print();
 }
 
-get nombreCompleto(): string {
+get nombreCompletoAlumno(): string {
   if (!this.historia) return '';
-  const { Nombre, ApellidoPaterno, ApellidoMaterno } = this.historia;
-  return `${Nombre} ${ApellidoPaterno} ${ApellidoMaterno ?? ''}`;
+  const { AlumnoNombre, AlumnoApellidoPaterno, AlumnoApellidoMaterno } = this.historia;
+  return `${AlumnoNombre} ${AlumnoApellidoPaterno} ${AlumnoApellidoMaterno ?? ''}`.trim();
 }
+
 
 get nombreCompletoProfesor(): string {
   if (!this.historia) return '';
@@ -278,8 +279,6 @@ verificarSubjetivoCerca(): boolean {
     subjetivoCerca.Rango
   );
 }
-
-// Métodos auxiliares para la vista de binocularidad
 
 // Verifica si existen datos de binocularidad
 tieneDatosBinocularidad(): boolean {

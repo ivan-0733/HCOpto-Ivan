@@ -46,26 +46,47 @@ try {
 
   // Consulta única optimizada con todos los joins necesarios
   const [historias] = await db.query(
-    `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-            p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-            p.GeneroID, p.Edad, p.EstadoCivilID, p.EscolaridadID, p.Ocupacion,
-            p.DireccionLinea1, p.DireccionLinea2, p.Ciudad, p.EstadoID AS PacienteEstadoID,
-            p.CodigoPostal, p.Pais, p.CorreoElectronico, p.TelefonoCelular, p.Telefono,
-            cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre,
-            a.ID AS AlumnoID, a.NumeroBoleta, ua.NombreUsuario AS AlumnoNombre,
-            pr.ID AS ProfesorID, pr.NumeroEmpleado, up.NombreUsuario AS ProfesorNombre
-      FROM HistorialesClinicos hc
-      JOIN Pacientes p ON hc.PacienteID = p.ID
-      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-      JOIN Consultorios c ON hc.ConsultorioID = c.ID
-      JOIN Semestres s ON hc.SemestreID = s.ID
-      JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
-      JOIN Usuarios ua ON a.UsuarioID = ua.ID
-      JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
-      JOIN Usuarios up ON pr.UsuarioID = up.ID
-      WHERE hc.ID = ? AND hc.AlumnoID = ?`,
+    `SELECT
+      hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
+  
+      -- Datos del Paciente
+      p.ID AS PacienteID,
+      p.Nombre AS PacienteNombre,
+      p.ApellidoPaterno AS PacienteApellidoPaterno,
+      p.ApellidoMaterno AS PacienteApellidoMaterno,
+      p.GeneroID, p.Edad, p.EstadoCivilID, p.EscolaridadID, p.Ocupacion,
+      p.DireccionLinea1, p.DireccionLinea2, p.Ciudad, p.EstadoID AS PacienteEstadoID,
+      p.CodigoPostal, p.Pais, p.CorreoElectronico, p.TelefonoCelular, p.Telefono,
+  
+      -- Datos del Catálogo
+      cg.Valor AS Estado,
+  
+      -- Consultorio y semestre
+      c.Nombre AS Consultorio,
+      s.Nombre AS Semestre,
+  
+      -- Datos del Alumno desde AlumnosInfo
+      a.Nombre AS AlumnoNombre,
+      a.ApellidoPaterno AS AlumnoApellidoPaterno,
+      a.ApellidoMaterno AS AlumnoApellidoMaterno,
+  
+      -- Datos del Profesor
+      up.NombreUsuario AS ProfesorNombre
+  
+    FROM HistorialesClinicos hc
+    JOIN Pacientes p ON hc.PacienteID = p.ID
+    JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+    JOIN Consultorios c ON hc.ConsultorioID = c.ID
+    JOIN Semestres s ON hc.SemestreID = s.ID
+    JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+    JOIN Usuarios ua ON a.UsuarioID = ua.ID
+    JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
+    JOIN Usuarios up ON pr.UsuarioID = up.ID
+  
+    WHERE hc.ID = ? AND hc.AlumnoID = ?`,
     [id, alumnoId]
   );
+  
 
   if (historias.length === 0) {
     console.log(`Historia no encontrada ID=${id} para alumnoId=${alumnoId}`);

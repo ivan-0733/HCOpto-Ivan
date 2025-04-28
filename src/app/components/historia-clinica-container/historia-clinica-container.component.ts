@@ -782,7 +782,6 @@ if (this.formValues['agudeza-visual']) {
   if (Object.values(agudezaVisualData).some(val => val !== '' && val !== null && val !== undefined)) {
     // Crear un array para conformar con el formato que espera la API
     const agudezaVisualArray = [agudezaVisualData];
-    
     promesas.push(
       this.convertirObservableAPromise(
         this.historiaClinicaService.actualizarSeccion(
@@ -794,6 +793,7 @@ if (this.formValues['agudeza-visual']) {
     );
     this.sectionStatus['antecedente-visual'] = true;
   }
+}
 
 // Actualizar lensometría si hay datos
 if (this.formValues['lensometria']) {
@@ -1001,7 +1001,6 @@ if (this.formValues['metodo-grafico']) {
 await Promise.all(promesas);
 }
 
-}
 
 
 private convertirObservableAPromise<T>(observable: Observable<T>): Promise<T> {

@@ -18,9 +18,9 @@ import { finalize } from 'rxjs/operators';
 export class AntecedenteVisualComponent implements OnInit, OnChanges {
   @Input() historiaId: number | null = null;
   @Input() hideButtons = false;
-  @Output() datosGuardados = new EventEmitter<boolean>();
   @Output() nextSection = new EventEmitter<void>();
-  @Output() formReady = new EventEmitter<FormGroup>
+  @Output() datosGuardados = new EventEmitter<any>();
+  @Output() formReady = new EventEmitter<any>();
 
   agudezaVisual!: FormGroup;
   lensometria!: FormGroup;
