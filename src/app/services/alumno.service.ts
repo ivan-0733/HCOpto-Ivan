@@ -15,12 +15,19 @@ export interface Perfil {
   TelefonoCelular: string | null;
   FechaCreacion: string;
   FechaUltimoAcceso: string | null;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string | null;
 }
 
 export interface Profesor {
   ProfesorInfoID: number;
   NumeroEmpleado: string;
-  NombreUsuario: string;
+  NombreUsuario: string;          // Mantenido
+  Nombre: string;                 // Nuevo
+  ApellidoPaterno: string;        // Nuevo
+  ApellidoMaterno: string | null; // Nuevo
+  NombreMateria: string;
   CorreoElectronico: string;
   TelefonoCelular: string | null;
   FechaInicio: string;

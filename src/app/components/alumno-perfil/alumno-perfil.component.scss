@@ -146,6 +146,7 @@
       font-size: 1.5rem;
       font-weight: 700;
       color: $ipn-white;
+      margin-bottom: 0.75rem;
     }
 
     p {
@@ -570,6 +571,20 @@
   }
 }
 
+.readonly-field {
+  padding: 0.5rem;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.full-width {
+  width: 100%;
+}
+
 .form-row {
   display: flex;
   flex-wrap: wrap;
@@ -606,7 +621,7 @@
 
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(4, 1fr); // Exactamente 4 columnas de igual tamaño
       gap: 1.25rem;
 
       .info-item {

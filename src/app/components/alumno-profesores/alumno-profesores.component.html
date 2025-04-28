@@ -39,8 +39,8 @@
         <i class="material-icons" style="font-size: 60px;">person</i>
       </div>
       <div class="profesor-info">
-        <h3>{{ profesor.NombreUsuario }}</h3>
-        <p class="profesor-id">ID: {{ profesor.NumeroEmpleado }}</p>
+        <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }} {{ profesor.ApellidoMaterno || '' }}</h3>
+        <p class="profesor-id">{{ profesor.NombreMateria }}</p>
         <p class="profesor-contact">
           <i class="fas fa-envelope"></i> {{ profesor.CorreoElectronico }}
         </p>

@@ -128,10 +128,10 @@ export class HistoriaClinicaDetalleComponent implements OnInit {
     window.print();
   }
 
-  get nombreCompleto(): string {
+  get nombreCompletoAlumno(): string {
     if (!this.historia) return '';
-    const { Nombre, ApellidoPaterno, ApellidoMaterno } = this.historia;
-    return `${Nombre} ${ApellidoPaterno} ${ApellidoMaterno ?? ''}`;
+    const { AlumnoNombre, AlumnoApellidoPaterno, AlumnoApellidoMaterno } = this.historia;
+    return `${AlumnoNombre} ${AlumnoApellidoPaterno} ${AlumnoApellidoMaterno ?? ''}`.trim();
   }
 
   get nombreCompletoProfesor(): string {

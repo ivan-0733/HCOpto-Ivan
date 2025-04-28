@@ -298,6 +298,7 @@ export class AlumnoPerfilComponent implements OnInit {
 
     this.alumnoService.obtenerPerfil().subscribe({
       next: (perfil) => {
+        console.log('Datos del perfil:', perfil);
         this.perfil = perfil;
         this.loading = false;
 

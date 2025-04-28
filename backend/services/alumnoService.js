@@ -11,24 +11,28 @@ const alumnoService = {
  */
 async obtenerAlumnoPorId(alumnoInfoId) {
   try {
-      const [alumnos] = await db.query(
+    const [alumnos] = await db.query(
       `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+              a.Nombre, a.ApellidoPaterno, a.ApellidoMaterno,
               u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
               u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
           FROM AlumnosInfo a
           JOIN Usuarios u ON a.UsuarioID = u.ID
           WHERE a.ID = ? AND u.EstaActivo = TRUE`,
       [alumnoInfoId]
-      );
+    );
 
-      if (alumnos.length === 0) {
+    // En tu endpoint de obtenerPerfil o endpoint relacionado
+console.log('Datos enviados al frontend:', JSON.stringify(alumnos[0], null, 2));
+
+    if (alumnos.length === 0) {
       return null;
-      }
+    }
 
-      return alumnos[0];
+    return alumnos[0];
   } catch (error) {
-      console.error('Error al obtener alumno por ID:', error);
-      throw error;
+    console.error('Error al obtener alumno por ID:', error);
+    throw error;
   }
 },
 
@@ -150,22 +154,30 @@ async obtenerAlumnoPorBoleta(boleta) {
  */
 async obtenerProfesoresAsignados(alumnoInfoId) {
   try {
-      const [profesores] = await db.query(
-      `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
-              u.NombreUsuario, u.CorreoElectronico, u.TelefonoCelular,
-              vap.FechaInicio
-          FROM VinculacionAlumnoProfesor vap
-          JOIN ProfesoresInfo p ON vap.ProfesorInfoID = p.ID
-          JOIN Usuarios u ON p.UsuarioID = u.ID
-          WHERE vap.AlumnoInfoID = ? AND vap.Activo = TRUE
-          ORDER BY vap.FechaInicio DESC`,
+    const [profesores] = await db.query(`
+    SELECT
+        p.ID AS ProfesorID,
+        p.NumeroEmpleado,
+        p.Nombre,
+        p.ApellidoPaterno,
+        p.ApellidoMaterno,
+        p.NombreMateria,
+        u.NombreUsuario,
+        u.CorreoElectronico,
+        u.TelefonoCelular,
+        vap.FechaInicio
+    FROM VinculacionAlumnoProfesor vap
+    JOIN ProfesoresInfo p ON vap.ProfesorInfoID = p.ID
+    JOIN Usuarios u ON p.UsuarioID = u.ID
+    WHERE vap.AlumnoInfoID = ?
+      AND vap.Activo = TRUE
+    ORDER BY vap.FechaInicio DESC;`,
       [alumnoInfoId]
-      );
-
-      return profesores;
+    );
+    return profesores;
   } catch (error) {
-      console.error('Error al obtener profesores asignados:', error);
-      throw error;
+    console.error('Error al obtener profesores asignados:', error);
+    throw error;
   }
 },
 
