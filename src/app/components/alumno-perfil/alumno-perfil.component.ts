@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AlumnoService, Perfil } from '../../services/alumno.service';
+import { AuthService } from '../../services/auth.service';
 import { trigger, state, style, animate, transition } from '@angular/animations';
 
 @Component({
@@ -46,7 +47,8 @@ export class AlumnoPerfilComponent implements OnInit {
 
   constructor(
     private alumnoService: AlumnoService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -529,6 +531,12 @@ export class AlumnoPerfilComponent implements OnInit {
         this.success = 'Perfil actualizado correctamente';
         this.updating = false;
         this.isEditing = false;
+
+        // Actualizar información en el AuthService si se cambió el nombre de usuario
+        if (nombreUsuario !== this.perfil?.NombreUsuario) {
+          this.authService.updateUserData({ nombreUsuario });
+        }
+
         // Restablecer visibilidad de contraseñas
         this.showPasswordActual = false;
         this.showNuevaPassword = false;

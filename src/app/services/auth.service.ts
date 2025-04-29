@@ -139,4 +139,22 @@ export class AuthService {
 
     return localStorage.getItem('token');
   }
+
+  // Nuevo método para actualizar los datos del usuario en memoria y localStorage
+  updateUserData(userData: Partial<Usuario>): void {
+    if (!this.isBrowser || !this.currentUserValue) {
+      return;
+    }
+
+    const updatedUser = {
+      ...this.currentUserValue,
+      ...userData
+    };
+
+    // Actualizar en localStorage
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+    // Actualizar el BehaviorSubject para notificar a todos los componentes suscritos
+    this.currentUserSubject.next(updatedUser);
+  }
 }
