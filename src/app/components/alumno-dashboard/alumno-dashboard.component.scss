@@ -117,7 +117,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   width: 98%; /* Aprovecha el espacio completo del grid */
   /* Eliminamos transform: scale para evitar espacios artificiales */
   transform-origin: top left;
-  margin: 0; /* Elimina márgenes residuales */
+  margin: 1rem 0rem; /* Elimina márgenes residuales */
   box-sizing: border-box; /* Incluye padding en el ancho */
   margin-bottom: 0rem;
   transition: transform 0.2s ease, background-color 0.3s ease;

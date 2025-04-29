@@ -25,14 +25,30 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           errorMessage = 'Error interno del servidor. Por favor, intenta nuevamente más tarde.';
         }
 
-        // Mensaje del backend
+        // Mensaje del backend - Preservamos el objeto error original
         if (error.error && error.error.message) {
           errorMessage = error.error.message;
+          console.log('Mensaje de error desde backend:', errorMessage);
+
+          // Mantenemos el objeto error.error original pero actualizamos el mensaje para debugging
+          const originalError = error.error;
+          return throwError(() => ({
+            error: originalError,
+            message: errorMessage,
+            status: error.status
+          }));
         }
       }
 
       console.error('Error interceptado:', error);
-      return throwError(() => new Error(errorMessage));
+      // Devolvemos un objeto con la misma estructura que el backend
+      return throwError(() => ({
+        error: {
+          status: 'error',
+          message: errorMessage
+        },
+        status: error.status
+      }));
     })
   );
 };

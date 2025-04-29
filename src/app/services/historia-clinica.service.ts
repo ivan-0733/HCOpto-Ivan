@@ -25,6 +25,10 @@ export interface HistoriaClinica {
   AlumnoNombre: string;
   AlumnoApellidoPaterno: string;
   AlumnoApellidoMaterno: string | null;
+
+  ProfesorNombre: string;
+  ProfesorApellidoPaterno: string;
+  ProfesorApellidoMaterno: string | null;
 }
 
 export interface HistoriaClinicaDetalle extends HistoriaClinica {
