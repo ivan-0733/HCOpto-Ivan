@@ -11,7 +11,8 @@ export interface HistoriaClinica {
   FechaArchivado: string | null;
   EstadoID: number;
   PacienteID: number;
-  Nombre: string;  // Sigue siendo del paciente
+  ProfesorID: number; // Añadir este campo
+  Nombre: string;
   ApellidoPaterno: string;
   ApellidoMaterno: string | null;
   Edad?: number;
@@ -21,7 +22,6 @@ export interface HistoriaClinica {
   CorreoElectronico?: string;
   TelefonoCelular?: string;
 
-  // Nuevos campos del alumno
   AlumnoNombre: string;
   AlumnoApellidoPaterno: string;
   AlumnoApellidoMaterno: string | null;

@@ -10,6 +10,56 @@
     </div>
   </header>
 
+  <!-- Cards de profesores - NUEVA SECCIÓN -->
+<div class="professor-cards" *ngIf="profesores && profesores.length >= 2">
+  <div class="professor-cards-row">
+    <!-- Card para "Todos los profesores" -->
+    <div class="professor-card small"
+         (click)="aplicarFiltroProfesor(null)"
+         [ngClass]="{'selected': profesorSeleccionadoId === null}">
+      <div class="professor-card-icon2">
+        <i class="material-icons" style="font-size: 35px;">group</i>
+      </div>
+      <div class="professor-card-content">
+        <h3>Todos los profesores</h3>
+      </div>
+    </div>
+
+    <!-- Contenedor para las dos cards de profesores del mismo tamaño -->
+    <div class="professor-cards-large">
+      <!-- Mostrar solo los primeros dos profesores -->
+      <div class="professor-card large"
+           *ngFor="let profesor of obtenerPrimerosDos()"
+           (click)="aplicarFiltroProfesor(profesor.ProfesorID)"
+           [ngClass]="{'selected': profesorSeleccionadoId === profesor.ProfesorID}">
+        <div class="professor-card-icon">
+          <i class="material-icons" style="font-size: 40px;">person</i>
+        </div>
+        <div class="professor-card-content">
+          <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }} {{ profesor.ApellidoMaterno }}</h3>
+          <!--<p class="stat-value">{{ obtenerHistoriasPorProfesor(profesor.ProfesorID) }}</p>-->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Si hay más de 2 profesores, mostrar el resto en otra fila con mismo tamaño -->
+  <div class="professor-cards-additional" *ngIf="profesores.length > 2">
+    <div class="professor-card additional"
+         *ngFor="let profesor of obtenerProfesoresAdicionales()"
+         (click)="aplicarFiltroProfesor(profesor.ProfesorID)"
+         [ngClass]="{'selected': profesorSeleccionadoId === profesor.ProfesorID}">
+      <div class="professor-card-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="professor-card-content">
+        <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }}</h3>
+        <p class="stat-value">{{ obtenerHistoriasPorProfesor(profesor.ProfesorID) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Modificar la parte de las tarjetas de estadísticas -->
   <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
     <div class="stat-card total"

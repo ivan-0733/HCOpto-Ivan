@@ -16,7 +16,8 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
       `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
               p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
               p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-              cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre
+              cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre,
+              hc.ProfesorID  -- Asegurarse de incluir ProfesorID desde la tabla HistorialesClinicos
       FROM HistorialesClinicos hc
           JOIN Pacientes p ON hc.PacienteID = p.ID
           JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
@@ -26,6 +27,9 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
           ORDER BY hc.Fecha DESC`,
       [alumnoId]
     );
+
+    // Hacer console.log para verificar que ProfesorID está presente en los resultados
+    console.log('Primera historia clínica obtenida:', historias.length > 0 ? historias[0] : 'No hay historias');
 
     return historias;
   } catch (error) {

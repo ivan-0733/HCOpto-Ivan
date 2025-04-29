@@ -605,3 +605,162 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     }
   }
 }
+
+// Estilos para las cards de profesores
+.professor-cards {
+  margin-bottom: 0.55rem;
+  width: 100%;
+}
+
+.professor-cards-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.1rem;
+}
+
+.professor-cards-large {
+  display: flex;
+  flex: 2;
+  gap: 0.5rem;
+}
+
+.professor-card {
+  background-color: #fff;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $box-shadow;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(-2px);
+  }
+
+  &.selected {
+    background-color: rgba(220, 220, 220, 0.25); // Similar a stat-card
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);    // Más notorio que el normal
+    border-left: 3px solid $ipn-guinda;         // Indicador visual con color IPN
+  }
+
+  .professor-card-icon {
+    width: 50px;
+    height: 43px; // Cambiado a 50px para ser un círculo perfecto
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    background-color: $primary-color;
+
+    i {
+      font-size: 1.3rem;
+      color: #fff;
+    }
+  }
+
+  .professor-card-icon2 {
+    width: 53px;
+    height: 43px; // Cambiado a 50px para ser un círculo perfecto
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    background-color: $primary-color;
+
+    i {
+      font-size: 1.3rem;
+      color: #fff;
+    }
+  }
+
+  .professor-card-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+
+    h3 {
+      font-size: 1.3rem; // Tamaño de letra unificado para todos los profesores
+      color: black;
+      margin: 0 0 0.5rem 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .stat-value {
+      font-size: 1.3rem; // Aumentado el tamaño para el valor de historias clínicas
+      font-weight: 700;
+      color: black;
+      margin: 0 0 0 1rem;
+      display: inline-block;
+    }
+  }
+
+  // Estilos específicos según tamaño
+  &.small {
+    flex: 0 0 auto;
+    min-width: 350px;
+
+    .professor-card-content {
+      text-align: center;
+
+      h3 {
+        font-size: 1.4rem; // Unificado con los demás
+        margin: 0;
+      }
+    }
+  }
+
+  &.large {
+    flex: 1;
+
+    .professor-card-content {
+      text-align: center;
+
+      h3 {
+        font-size: 1.3rem; // Unificado con los demás
+        margin: 0 0 0.5rem;
+      }
+
+      .stat-value {
+        font-size: 1.3rem; // Aumentado para ser consistente
+      }
+    }
+  }
+}
+
+// Estilos para profesores adicionales
+.professor-cards-additional {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.professor-card.additional {
+  flex: 1;
+  min-width: 300px;
+
+  .professor-card-content {
+    h3 {
+      font-size: 1.3rem; // Unificado con los demás
+    }
+
+    .stat-value {
+      font-size: 1.3rem; // Aumentado para ser consistente
+    }
+  }
+}
