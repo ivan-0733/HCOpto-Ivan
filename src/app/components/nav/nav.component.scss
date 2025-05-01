@@ -153,28 +153,30 @@
     }
   }
 
-  @media (max-width: $breakpoint-lg) {
+  @media (max-width: 920px) {
     .nav-header {
       .nav-toggle {
-        display: block;
+        display: none; /* Cambiado de 'block' a 'none' para ocultar el botón de toggle */
       }
     }
 
     .nav-collapse {
-      max-height: 0;
-      overflow: hidden;
+      display: flex !important; /* Forzar la visualización del menú */
+      max-height: none !important; /* Eliminar la altura máxima */
+      overflow: visible; /* Cambiar de hidden a visible */
       flex-direction: column;
       align-items: stretch;
-      transition: max-height 0.3s ease-in-out;
 
+      /* Eliminar la clase .show ya que siempre estará visible */
       &.show {
-        max-height: 1000px;
+        max-height: none;
       }
     }
 
     .nav-menu {
       flex-direction: column;
       width: 100%;
+      display: flex !important; /* Asegurar que siempre esté visible */
 
       .nav-item {
         a {
@@ -192,6 +194,7 @@
     .nav-user {
       padding: $spacing-md;
       flex-direction: column;
+      display: flex !important; /* Asegurar que siempre esté visible */
 
       .user-info {
         margin-right: 0;

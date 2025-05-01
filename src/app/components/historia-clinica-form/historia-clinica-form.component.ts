@@ -173,7 +173,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
         }
 
         if (this.profesores.length === 1) {
-          this.historiaForm.patchValue({ profesorID: this.profesores[0].ProfesorInfoID });
+          this.historiaForm.patchValue({ profesorID: this.profesores[0].ProfesorID });
         }
       },
       error: (error) => {

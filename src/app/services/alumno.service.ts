@@ -15,12 +15,20 @@ export interface Perfil {
   TelefonoCelular: string | null;
   FechaCreacion: string;
   FechaUltimoAcceso: string | null;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string | null;
 }
 
+// Corregir la interfaz Profesor en alumno.service.ts
 export interface Profesor {
-  ProfesorInfoID: number;
+  ProfesorID: number;       // Cambiado de ProfesorInfoID a ProfesorID para coincidir con el backend
   NumeroEmpleado: string;
   NombreUsuario: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string | null;
+  NombreMateria: string;
   CorreoElectronico: string;
   TelefonoCelular: string | null;
   FechaInicio: string;

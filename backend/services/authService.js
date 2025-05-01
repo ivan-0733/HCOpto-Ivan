@@ -7,6 +7,137 @@ const db = require('../config/database.js');
  */
 const authService = {
   /**
+   * Verifica si existe un alumno con la boleta especificada
+   * @param {string} boleta - Número de boleta del alumno
+   * @returns {Promise<boolean>} - true si existe, false en caso contrario
+   */
+  async verificarExistenciaAlumno(boleta) {
+    try {
+      const [alumnos] = await db.query(
+        `SELECT COUNT(*) as count
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ?
+        AND u.EstaActivo = TRUE`,
+        [boleta]
+      );
+
+      return alumnos[0].count > 0;
+    } catch (error) {
+      console.error('Error al verificar existencia de alumno:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Verifica si el correo proporcionado corresponde a la boleta
+   * @param {string} boleta - Número de boleta del alumno
+   * @param {string} correo - Correo electrónico
+   * @returns {Promise<boolean>} - true si corresponde, false en caso contrario
+   */
+  async verificarCorreoBoleta(boleta, correo) {
+    try {
+      const [alumnos] = await db.query(
+        `SELECT COUNT(*) as count
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ?
+        AND u.CorreoElectronico = ?
+        AND u.EstaActivo = TRUE`,
+        [boleta, correo]
+      );
+
+      return alumnos[0].count > 0;
+    } catch (error) {
+      console.error('Error al verificar correo y boleta:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Verifica si existe un usuario con el correo especificado
+   * @param {string} correo - Correo electrónico
+   * @returns {Promise<boolean>} - true si existe, false en caso contrario
+   */
+  async verificarExistenciaCorreo(correo) {
+    try {
+      const [usuarios] = await db.query(
+        `SELECT COUNT(*) as count
+        FROM Usuarios
+        WHERE CorreoElectronico = ?
+        AND EstaActivo = TRUE`,
+        [correo]
+      );
+
+      return usuarios[0].count > 0;
+    } catch (error) {
+      console.error('Error al verificar existencia de correo:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Verifica si la contraseña es correcta para un alumno
+   * @param {string} boleta - Número de boleta del alumno
+   * @param {string} correo - Correo electrónico del alumno
+   * @param {string} password - Contraseña a verificar
+   * @returns {Promise<boolean>} - true si la contraseña es correcta
+   */
+  async verificarPasswordAlumno(boleta, correo, password) {
+    try {
+      const [alumnos] = await db.query(
+        `SELECT u.ContraseñaHash
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ?
+        AND u.CorreoElectronico = ?
+        AND u.EstaActivo = TRUE`,
+        [boleta, correo]
+      );
+
+      if (alumnos.length === 0) {
+        return false;
+      }
+
+      const alumno = alumnos[0];
+      return await this.verificarPassword(password, alumno.ContraseñaHash);
+    } catch (error) {
+      console.error('Error al verificar contraseña de alumno:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene los datos de un alumno por boleta y correo
+   * @param {string} boleta - Número de boleta del alumno
+   * @param {string} correo - Correo electrónico del alumno
+   * @returns {Promise<Object|null>} - Datos del alumno o null si no existe
+   */
+  async obtenerDatosAlumno(boleta, correo) {
+    try {
+      const [alumnos] = await db.query(
+        `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+                u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ?
+        AND u.CorreoElectronico = ?
+        AND u.EstaActivo = TRUE`,
+        [boleta, correo]
+      );
+
+      if (alumnos.length === 0) {
+        return null;
+      }
+
+      return alumnos[0];
+    } catch (error) {
+      console.error('Error al obtener datos del alumno:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Verifica las credenciales de un alumno y devuelve los datos si son correctos
    * @param {string} boleta - Número de boleta del alumno
    * @param {string} correo - Correo electrónico del alumno

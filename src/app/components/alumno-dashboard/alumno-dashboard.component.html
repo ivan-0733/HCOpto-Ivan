@@ -6,13 +6,65 @@
         <i class="fas fa-tachometer-alt"></i>
         Dashboard
       </h1>
-      <p *ngIf="perfil">Bienvenido,   <strong>{{ perfil.NombreUsuario }}</strong></p>
+      <p *ngIf="perfil">Bienvenido,   <strong>{{ perfil.Nombre }} {{ perfil.ApellidoPaterno }} {{ perfil.ApellidoMaterno }}</strong></p>
     </div>
   </header>
 
-  <!-- Tarjetas de estadísticas -->
+  <!-- Cards de profesores - NUEVA SECCIÓN -->
+<div class="professor-cards" *ngIf="profesores && profesores.length >= 2">
+  <div class="professor-cards-row">
+    <!-- Card para "Todos los profesores" -->
+    <div class="professor-card small"
+         (click)="aplicarFiltroProfesor(null)"
+         [ngClass]="{'selected': profesorSeleccionadoId === null}">
+      <div class="professor-card-icon2">
+        <i class="material-icons" style="font-size: 35px;">group</i>
+      </div>
+      <div class="professor-card-content">
+        <h3>Todos los profesores</h3>
+      </div>
+    </div>
+
+    <!-- Contenedor para las dos cards de profesores del mismo tamaño -->
+    <div class="professor-cards-large">
+      <!-- Mostrar solo los primeros dos profesores -->
+      <div class="professor-card large"
+           *ngFor="let profesor of obtenerPrimerosDos()"
+           (click)="aplicarFiltroProfesor(profesor.ProfesorID)"
+           [ngClass]="{'selected': profesorSeleccionadoId === profesor.ProfesorID}">
+        <div class="professor-card-icon">
+          <i class="material-icons" style="font-size: 40px;">person</i>
+        </div>
+        <div class="professor-card-content">
+          <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }} {{ profesor.ApellidoMaterno }}</h3>
+          <!--<p class="stat-value">{{ obtenerHistoriasPorProfesor(profesor.ProfesorID) }}</p>-->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Si hay más de 2 profesores, mostrar el resto en otra fila con mismo tamaño -->
+  <div class="professor-cards-additional" *ngIf="profesores.length > 2">
+    <div class="professor-card additional"
+         *ngFor="let profesor of obtenerProfesoresAdicionales()"
+         (click)="aplicarFiltroProfesor(profesor.ProfesorID)"
+         [ngClass]="{'selected': profesorSeleccionadoId === profesor.ProfesorID}">
+      <div class="professor-card-icon">
+        <i class="fas fa-user-tie"></i>
+      </div>
+      <div class="professor-card-content">
+        <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }}</h3>
+        <p class="stat-value">{{ obtenerHistoriasPorProfesor(profesor.ProfesorID) }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Modificar la parte de las tarjetas de estadísticas -->
   <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
-    <div class="stat-card total" (click)="aplicarFiltroCard('todos')">
+    <div class="stat-card total"
+        (click)="aplicarFiltroCard('todos')"
+        [ngClass]="{'selected': filtroEstado === 'todos'}">
       <div class="stat-card-icon">
         <i class="fas fa-file-medical"></i>
       </div>
@@ -22,7 +74,9 @@
       </div>
     </div>
 
-    <div class="stat-card archivadas" (click)="aplicarFiltroCard('Archivado')">
+    <div class="stat-card archivadas"
+        (click)="aplicarFiltroCard('Archivado')"
+        [ngClass]="{'selected': filtroEstado === 'Archivado'}">
       <div class="stat-card-icon">
         <i class="fas fa-archive"></i>
       </div>
@@ -32,8 +86,10 @@
       </div>
     </div>
 
-    <div class="stat-card por-estado" *ngFor="let estado of estadisticas.porEstado"
-        (click)="aplicarFiltroCard(estado.estado)">
+    <div class="stat-card por-estado"
+        *ngFor="let estado of estadisticas.porEstado"
+        (click)="aplicarFiltroCard(estado.estado)"
+        [ngClass]="{'selected': filtroEstado === estado.estado}">
       <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
         <i class="fas fa-tasks"></i>
       </div>
@@ -48,8 +104,8 @@
 
   <!-- Mensaje de ayuda -->
   <div class="help-message" *ngIf="!loading && !error && historiasClinicas && historiasClinicas.length > 0">
-    <i class="fas fa-info-circle"></i>
-    <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas.</p>
+    <i class="material-icons info-icon">info</i>
+    <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas</p>
   </div>
 
 <!-- Filtros -->

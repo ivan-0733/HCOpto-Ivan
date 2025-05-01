@@ -53,7 +53,7 @@
             <label for="profesorID">Profesor Asignado *</label>
             <select id="profesorID" formControlName="profesorID" [ngClass]="{'is-invalid': historiaForm.get('profesorID')?.invalid && historiaForm.get('profesorID')?.touched}">
               <option value="">Selecciona un profesor</option>
-              <option *ngFor="let profesor of profesores" [value]="profesor.ProfesorInfoID">
+              <option *ngFor="let profesor of profesores" [value]="profesor.ProfesorID">
                 {{ profesor.NombreUsuario }} ({{ profesor.NumeroEmpleado }})
               </option>
             </select>

@@ -135,15 +135,10 @@ get nombreCompletoAlumno(): string {
   return `${AlumnoNombre} ${AlumnoApellidoPaterno} ${AlumnoApellidoMaterno ?? ''}`.trim();
 }
 
-
 get nombreCompletoProfesor(): string {
   if (!this.historia) return '';
-  const {
-    ProfesorNombre,
-    ProfesorApellidoPaterno,
-    ProfesorApellidoMaterno
-  } = this.historia as any;
-  return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`;
+  const { ProfesorNombre, ProfesorApellidoPaterno, ProfesorApellidoMaterno } = this.historia;
+  return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`.trim();
 }
 
 // Métodos para trabajar con la sección de Antecedente Visual
@@ -323,6 +318,4 @@ obtenerUrlImagen(imagenID: number | null | undefined): string {
   if (!imagenID) return '';
   return `${environment.apiUrl}/imagenes/${imagenID}`;
 }
-
-
 }

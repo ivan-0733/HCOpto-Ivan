@@ -19,14 +19,44 @@ loginAlumno: catchAsync(async (req, res) => {
     });
   }
 
-  // Verificar credenciales
-  const alumno = await authService.verificarCredencialesAlumno(boleta, correo, password);
-  if (!alumno) {
+  // Verificar si existe el alumno con la boleta proporcionada
+  const alumnoExiste = await authService.verificarExistenciaAlumno(boleta);
+  if (!alumnoExiste) {
     return res.status(401).json({
-    status: 'error',
-    message: 'Credenciales incorrectas'
+      status: 'error',
+      message: 'La boleta ingresada no existe en el sistema'
     });
   }
+
+  // Verificar si el correo corresponde a la boleta
+  const correoCorresponde = await authService.verificarCorreoBoleta(boleta, correo);
+  if (!correoCorresponde) {
+    // Verificar si el correo existe pero con otra boleta
+    const existeCorreo = await authService.verificarExistenciaCorreo(correo);
+    if (existeCorreo) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'El correo no corresponde a esta boleta'
+      });
+    } else {
+      return res.status(401).json({
+        status: 'error',
+        message: 'El correo electrónico ingresado no existe en el sistema'
+      });
+    }
+  }
+
+  // Verificar la contraseña
+  const passwordCorrecta = await authService.verificarPasswordAlumno(boleta, correo, password);
+  if (!passwordCorrecta) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'La contraseña es incorrecta'
+    });
+  }
+
+  // Obtener datos del alumno
+  const alumno = await authService.obtenerDatosAlumno(boleta, correo);
 
   // Actualizar fecha de último acceso
   await authService.actualizarUltimoAcceso(alumno.UsuarioID);
