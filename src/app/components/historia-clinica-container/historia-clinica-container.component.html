@@ -195,23 +195,31 @@
     <!-- Sección de Binocularidad -->
    <div *ngIf="currentSection === 'binocularidad'" class="tab-pane">
     <app-binocularidad
-      [historiaId]="historiaId!"
-      [hideButtons]="true"
-      (completed)="onSectionCompleted('binocularidad', $event)"
-      (formReady)="onBinocularidadFormReady($event)"
-      (nextSection)="onNextSection()"
+    [historiaId]="historiaId!"
+    [hideButtons]="true"
+    [selectedFile]="selectedFile"
+    [selectedFileName]="selectedFileName"
+    [initialImageBase64]="imgPreview"
+    (imageBase64Change)="onImageBase64Change($event)"
+    (completed)="onSectionCompleted('binocularidad', $event)"
+    (formReady)="onBinocularidadFormReady($event)"
+    (nextSection)="onNextSection()"
     ></app-binocularidad>
   </div>
 
-    
-
     <!-- Sección de Detección de Alteraciones -->
     <div *ngIf="currentSection === 'deteccion-alteraciones'" class="tab-pane">
-      <div class="placeholder-section">
-        <i class="fas fa-exclamation-triangle"></i>
-        <h3>Detección de Alteraciones Oculares</h3>
-        <p>Grid de Amsler, tonometría, paquimetría, campimetría, biomicroscopía y oftalmoscopía</p>
-      </div>
+      <app-deteccion-alteraciones 
+      *ngIf="currentSection === 'deteccion-alteraciones'"
+      [historiaId]="historiaId"
+      [hideButtons]="false"
+      [initialImagenPreviews]="imagenPreviewsDeteccion"
+      (completed)="onSectionCompleted('alteraciones',$event)"
+      (nextSection)="changeSection('diagnostico')"
+      (formReady)="onDeteccionAlteracionesFormReady($event)"
+      (fileSelected)="selectedFile"
+      (imageBase64Change)="onImageBase64Change($event)">
+    </app-deteccion-alteraciones>
     </div>
 
     <!-- Sección de Diagnóstico -->
