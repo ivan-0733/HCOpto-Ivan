@@ -9,7 +9,6 @@ const historiaClinicaService = {
  * @param {number} alumnoId - ID del alumno (de AlumnosInfo)
  * @returns {Promise<Array>} - Lista de historias clínicas
  */
-// En historiaClinicaService.js
 async obtenerHistoriasClinicasPorAlumno(alumnoId) {
   try {
     const [historias] = await db.query(
