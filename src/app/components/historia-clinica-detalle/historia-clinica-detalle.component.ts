@@ -146,6 +146,8 @@ get nombreCompletoProfesor(): string {
   return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`;
 }
 
+
+
 // Métodos para trabajar con la sección de Antecedente Visual
 obtenerNombreTipoMedicion(tipoMedicion: string): string {
   const tipos: {[key: string]: string} = {

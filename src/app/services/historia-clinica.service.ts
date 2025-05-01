@@ -207,12 +207,129 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   };
 
   metodoGrafico?: {
-    IntegracionBinocular?: string;
-    TipoID?: number;
-    VisionEstereoscopica?: string;
-    TipoVisionID?: number;
-    ImagenID?: number;
+    integracionBinocular?: string;
+    tipoID?: number;
+    visionEstereoscopica?: string;
+    tipoVisionID?: number;
+    imagenID?: number;
+    imagenBase64?: string;
+  }
+
+  // Propiedades para detección de alteraciones
+  gridAmsler?: {
+    numeroCartilla?: string;
+    ojoDerechoSensibilidadContraste?: string;
+    ojoIzquierdoSensibilidadContraste?: string;
+    ojoDerechoVisionCromatica?: string;
+    ojoIzquierdoVisionCromatica?: string;
+    ojoDerechoImagenID?: number;
+    ojoIzquierdoImagenID?: number;
+    ojoDerechoImagenBase64?: string;
+    ojoIzquierdoImagenBase64?: string;
   };
+  
+  tonometria?: {
+    metodoAnestesico?: string;
+    fecha?: string;
+    hora?: string;
+    ojoDerecho?: number;
+    ojoIzquierdo?: number;
+    tipoID?: number;
+  };
+  
+  paquimetria?: {
+    ojoDerechoCCT?: number;
+    ojoIzquierdoCCT?: number;
+    ojoDerechoPIOCorregida?: number;
+    ojoIzquierdoPIOCorregida?: number;
+  };
+  
+  campimetria?: {
+    distancia?: number;
+    tamanoColorIndice?: string;
+    tamanoColorPuntoFijacion?: string;
+    ojoDerechoImagenID?: number;
+    ojoIzquierdoImagenID?: number;
+    ojoDerechoImagenBase64?: string;
+    ojoIzquierdoImagenBase64?: string;
+  };
+  
+  biomicroscopia?: {
+    ojoDerechoPestanas?: string;
+    ojoIzquierdoPestanas?: string;
+    ojoDerechoParpadosIndice?: string;
+    ojoIzquierdoParpadosIndice?: string;
+    ojoDerechoBordePalpebral?: string;
+    ojoIzquierdoBordePalpebral?: string;
+    ojoDerechoLineaGris?: string;
+    ojoIzquierdoLineaGris?: string;
+    ojoDerechoCantoExterno?: string;
+    ojoIzquierdoCantoExterno?: string;
+    ojoDerechoCantoInterno?: string;
+    ojoIzquierdoCantoInterno?: string;
+    ojoDerechoPuntosLagrimales?: string;
+    ojoIzquierdoPuntosLagrimales?: string;
+    ojoDerechoConjuntivaTarsal?: string;
+    ojoIzquierdoConjuntivaTarsal?: string;
+    ojoDerechoConjuntivaBulbar?: string;
+    ojoIzquierdoConjuntivaBulbar?: string;
+    ojoDerechoFondoSaco?: string;
+    ojoIzquierdoFondoSaco?: string;
+    ojoDerechoLimbo?: string;
+    ojoIzquierdoLimbo?: string;
+    ojoDerechoCorneaBiomicroscopia?: string;
+    ojoIzquierdoCorneaBiomicroscopia?: string;
+    ojoDerechoCamaraAnterior?: string;
+    ojoIzquierdoCamaraAnterior?: string;
+    ojoDerechoIris?: string;
+    ojoIzquierdoIris?: string;
+    ojoDerechoCristalino?: string;
+    ojoIzquierdoCristalino?: string;
+    
+    // IDs de imagen
+    ojoDerechoImagenID?: number;
+    ojoIzquierdoImagenID?: number;
+    ojoDerechoImagenID2?: number;
+    ojoIzquierdoImagenID2?: number;
+    ojoDerechoImagenID3?: number;
+    ojoIzquierdoImagenID3?: number;
+    
+    // Base64 de imágenes
+    ojoDerechoImagenBase64?: string;
+    ojoIzquierdoImagenBase64?: string;
+    ojoDerechoImagenBase64_2?: string;
+    ojoIzquierdoImagenBase64_2?: string;
+    ojoDerechoImagenBase64_3?: string;
+    ojoIzquierdoImagenBase64_3?: string;
+  };
+  
+  oftalmoscopia?: {
+    ojoDerechoPapila?: string;
+    ojoIzquierdoPapila?: string;
+    ojoDerechoExcavacion?: string;
+    ojoIzquierdoExcavacion?: string;
+    ojoDerechoRadio?: string;
+    ojoIzquierdoRadio?: string;
+    ojoDerechoProfundidad?: string;
+    ojoIzquierdoProfundidad?: string;
+    ojoDerechoVasos?: string;
+    ojoIzquierdoVasos?: string;
+    ojoDerechoRELAV?: string;
+    ojoIzquierdoRELAV?: string;
+    ojoDerechoMacula?: string;
+    ojoIzquierdoMacula?: string;
+    ojoDerechoReflejo?: string;
+    ojoIzquierdoReflejo?: string;
+    ojoDerechoRetinaPeriferica?: string;
+    ojoIzquierdoRetinaPeriferica?: string;
+    ojoDerechoISNT?: string;
+    ojoIzquierdoISNT?: string;
+    ojoDerechoImagenID?: number;
+    ojoIzquierdoImagenID?: number;
+    ojoDerechoImagenBase64?: string;
+    ojoIzquierdoImagenBase64?: string;
+  };
+
 }
 
 

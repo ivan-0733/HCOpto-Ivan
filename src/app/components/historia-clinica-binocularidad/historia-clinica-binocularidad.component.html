@@ -357,14 +357,21 @@
           <div class="form-group col-md-6">
             <label for="imagenID">Imagen</label>
             <div class="custom-file">
-              <input type="file" class="custom-file-input" id="imagenID" (change)="onFileSelected($event)">
-              <label class="custom-file-label" for="imagenID">{{ selectedFileName || 'Seleccionar archivo...' }}</label>
+              <input type="file" id="metodoGraficoImagen" (change)="onImageSelected($event)">
+              
+              <!-- Muestra la imagen previsualizada si existe -->
+              <div class="image-preview mt-2" *ngIf="imgPreview">
+                <img [src]="imgPreview" alt="Previsualización" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                
+                <!-- Botón opcional para eliminar la imagen -->
+                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen()">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </form>
-    </div>
 
+    
     <!-- Botones de acción - Solo se muestran si hideButtons es false -->
     <div class="form-actions" *ngIf="!hideButtons">
       <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
@@ -374,4 +381,3 @@
       </button>
     </div>
   </div>
-</div>

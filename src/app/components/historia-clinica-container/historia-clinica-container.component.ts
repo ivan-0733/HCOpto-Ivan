@@ -11,6 +11,7 @@ import { AntecedenteVisualComponent } from '../historia-clinica-antecedente-visu
 import { ExamenPreliminarComponent } from '../historia-clinica-examen-preliminar/historia-clinica-examen-preliminar.component';
 import { EstadoRefractivoComponent } from '../historia-clinica-estado-refractivo/historia-clinica-estado-refractivo.component';
 import { BinocularidadComponent } from '../historia-clinica-binocularidad/historia-clinica-binocularidad.component';
+import { DeteccionAlteracionesComponent } from '../historia-clinica-alteraciones/historia-clinica-alteraciones.component';
 import { forkJoin } from 'rxjs';
 import { TitleCaseSectionPipe } from '../../pipes/title-case-section.pipe';
 
@@ -28,7 +29,8 @@ AntecedenteVisualComponent,
 ExamenPreliminarComponent,
 EstadoRefractivoComponent,
 TitleCaseSectionPipe,
-BinocularidadComponent
+BinocularidadComponent,
+DeteccionAlteracionesComponent 
 ]
 })
 
@@ -41,7 +43,7 @@ submitting = false;
 error = '';
 success = '';
 title = 'Nueva Historia Clínica';
-allSectionsRequired = false; // Para indicar si se requieren todas las secciones
+allSectionsRequired = false; 
 
 
 // Lista ordenada de secciones con los nuevos nombres
@@ -89,9 +91,34 @@ subjetivoCercaForm: FormGroup | null = null;
 
 // Formularios específicos para binocularidad
 binocularidadForm: FormGroup | null = null;
+selectedFile: File | null = null;
+selectedFileName: string = '';
 foriasForm: FormGroup | null = null;
 vergenciasForm: FormGroup | null = null;
 metodoGraficoForm: FormGroup | null = null;
+imgPreview: string | null = null;
+
+//Formularios para deteccion de alteraciones 
+gridAmslerForm: FormGroup | null = null;
+tonometriaForm: FormGroup | null = null;
+paquimetriaForm: FormGroup | null = null;
+campimetriaForm: FormGroup | null = null;
+biomicroscopiaForm: FormGroup | null = null;
+oftalmoscopiaForm: FormGroup | null = null;
+imagenPreviewsDeteccion: {[key: string]: string | null} = {
+  gridAmslerOD: null,
+  gridAmslerOI: null,
+  campimetriaOD: null,
+  campimetriaOI: null,
+  biomicroscopiaOD1: null,
+  biomicroscopiaOI1: null,
+  biomicroscopiaOD2: null,
+  biomicroscopiaOI2: null,
+  biomicroscopiaOD3: null,
+  biomicroscopiaOI3: null,
+  oftalmoscopiaOD: null,
+  oftalmoscopiaOI: null
+};
 
 // Almacén para los valores de los formularios (persistencia entre navegaciones)
 formValues: {[key: string]: any} = {
@@ -290,63 +317,159 @@ else if (form.contains('valorADD')) {
 
 // Métodos para recibir los formularios de binocularidad
 onBinocularidadFormReady(form: FormGroup): void {
-// Verificar el tipo de formulario recibido analizando sus controles
-if (form.contains('ppc')) {
-  this.binocularidadForm = form;
-  console.log('Formulario de binocularidad recibido:', form);
-  
-  // Restaurar valores previos si existen
-  if (this.formValues['binocularidad']) {
-    form.patchValue(this.formValues['binocularidad']);
+  // Verificar el tipo de formulario recibido analizando sus controles
+  if (form.contains('ppc')) {
+    this.binocularidadForm = form;
+    console.log('Formulario de binocularidad recibido:', form);
+
+    // Restaurar valores previos si existen
+    if (this.formValues['binocularidad']) {
+      form.patchValue(this.formValues['binocularidad']);
+    }
+
+    // Suscribirse a cambios en el formulario para guardar
+    form.valueChanges.subscribe(values => {
+      this.formValues['binocularidad'] = values;
+    });
   }
-  
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['binocularidad'] = values;
-  });
-}
-else if (form.contains('horizontalesLejos')) {
-  this.foriasForm = form;
-  console.log('Formulario de forias recibido:', form);
-  
-  // Restaurar valores previos si existen
-  if (this.formValues['forias']) {
-    form.patchValue(this.formValues['forias']);
+  else if (form.contains('horizontalesLejos')) {
+    this.foriasForm = form;
+    console.log('Formulario de forias recibido:', form);
+
+    if (this.formValues['forias']) {
+      form.patchValue(this.formValues['forias']);
+    }
+
+    form.valueChanges.subscribe(values => {
+      this.formValues['forias'] = values;
+    });
   }
-  
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['forias'] = values;
-  });
-}
-else if (form.contains('positivasLejosBorroso')) {
-  this.vergenciasForm = form;
-  console.log('Formulario de vergencias recibido:', form);
-  
-  // Restaurar valores previos si existen
-  if (this.formValues['vergencias']) {
-    form.patchValue(this.formValues['vergencias']);
+  else if (form.contains('positivasLejosBorroso')) {
+    this.vergenciasForm = form;
+    console.log('Formulario de vergencias recibido:', form);
+
+    if (this.formValues['vergencias']) {
+      form.patchValue(this.formValues['vergencias']);
+    }
+
+    form.valueChanges.subscribe(values => {
+      this.formValues['vergencias'] = values;
+    });
   }
-  
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['vergencias'] = values;
-  });
-}
-else if (form.contains('integracionBinocular')) {
-  this.metodoGraficoForm = form;
-  console.log('Formulario de método gráfico recibido:', form);
-  
-  // Restaurar valores previos si existen
-  if (this.formValues['metodo-grafico']) {
-    form.patchValue(this.formValues['metodo-grafico']);
+  else if (form.contains('integracionBinocular')) {
+    this.metodoGraficoForm = form;
+    console.log('Formulario de método gráfico recibido:', form);
+
+    // Restaurar valores previos si existen
+    if (this.formValues['metodo-grafico']) {
+      form.patchValue(this.formValues['metodo-grafico']);
+    } 
+     // Restaurar la imagen si existe
+      if (this.formValues['metodo-grafico'].imagenBase64) {
+        this.imgPreview = this.formValues['metodo-grafico'].imagenBase64;
+      }
+    }
+
+    if (this.imgPreview) {
+      // Podríamos necesitar un pequeño retraso para asegurar que el componente hijo esté listo
+      setTimeout(() => {
+        this.onImageBase64Change(this.imgPreview);
+      }, 100);
+
+    if (this.formValues['metodo-grafico']?.imagenBase64) {
+      this.imgPreview = this.formValues['metodo-grafico'].imagenBase64;
+    } else {
+      this.imgPreview = null;
+    }
+    
+    // Suscribirse a cambios en el formulario para guardar, incluyendo la imagen base64
+    form.valueChanges.subscribe(values => {
+      this.formValues['metodo-grafico'] = {
+        ...values,
+        imagenBase64: this.imgPreview || this.formValues['metodo-grafico']?.imagenBase64 
+      };
+    });
+    
   }
-  
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['metodo-grafico'] = values;
-  });
 }
+
+// Métodos para recibir los formularios de alteraciones
+onDeteccionAlteracionesFormReady(form: FormGroup): void {
+  // Verificar el tipo de formulario recibido analizando sus controles
+  if (form.contains('numeroCartilla')) {
+    this.gridAmslerForm = form;
+    console.log('Formulario de Grid de Amsler recibido:', form);
+    
+    // Restaurar valores previos si existen
+    if (this.formValues['grid-amsler']) {
+      form.patchValue(this.formValues['grid-amsler']);
+    }
+    
+    // Suscribirse a cambios en el formulario para guardar
+    form.valueChanges.subscribe(values => {
+      this.formValues['grid-amsler'] = values;
+    });
+  }
+  else if (form.contains('metodoAnestesico')) {
+    this.tonometriaForm = form;
+    console.log('Formulario de Tonometría recibido:', form);
+    
+    if (this.formValues['tonometria']) {
+      form.patchValue(this.formValues['tonometria']);
+    }
+    
+    form.valueChanges.subscribe(values => {
+      this.formValues['tonometria'] = values;
+    });
+  }
+  else if (form.contains('ojoDerechoCCT')) {
+    this.paquimetriaForm = form;
+    console.log('Formulario de Paquimetría recibido:', form);
+    
+    if (this.formValues['paquimetria']) {
+      form.patchValue(this.formValues['paquimetria']);
+    }
+    
+    form.valueChanges.subscribe(values => {
+      this.formValues['paquimetria'] = values;
+    });
+  }
+  else if (form.contains('tamanoColorIndice')) {
+    this.campimetriaForm = form;
+    console.log('Formulario de Campimetría recibido:', form);
+    
+    if (this.formValues['campimetria']) {
+      form.patchValue(this.formValues['campimetria']);
+    }
+    
+    form.valueChanges.subscribe(values => {
+      this.formValues['campimetria'] = values;
+    });
+  }
+  else if (form.contains('ojoDerechoPestanas')) {
+    this.biomicroscopiaForm = form;
+    console.log('Formulario de Biomicroscopía recibido:', form);
+    
+    if (this.formValues['biomicroscopia']) {
+      form.patchValue(this.formValues['biomicroscopia']);
+    }
+    
+    form.valueChanges.subscribe(values => {
+      this.formValues['biomicroscopia'] = values;
+    });
+  }
+  else if (form.contains('ojoDerechoPapila')) {
+    this.oftalmoscopiaForm = form;
+    console.log('Formulario de Oftalmoscopía recibido:', form);
+    
+    if (this.formValues['oftalmoscopia']) {
+      form.patchValue(this.formValues['oftalmoscopia']);
+    }
+    
+    form.valueChanges.subscribe(values => {
+      this.formValues['oftalmoscopia'] = values;
+    });
+  }
 }
 
 // Suscribirse a cambios en el formulario para guardar los valores mientras se editan
@@ -400,7 +523,15 @@ loadHistoriaStatus(): void {
           !!historia.vergencias || 
           !!historia.metodoGrafico;
 
-        this.sectionStatus['deteccion-alteraciones'] = false; // Implementar cuando se tenga el componente
+        //verificaciones para alteraciones 
+        this.sectionStatus['deteccion-alteraciones'] = 
+          !!historia.gridAmsler || 
+          !!historia.tonometria || 
+          !!historia.paquimetria || 
+          !!historia.campimetria || 
+          !!historia.biomicroscopia || 
+          !!historia.oftalmoscopia;
+          
         this.sectionStatus['diagnostico'] = !!historia.diagnostico;
         this.sectionStatus['receta'] = !!historia.recetaFinal;
         
@@ -435,11 +566,6 @@ loadHistoriaStatus(): void {
           this.formValues['interrogatorio'] = historia.interrogatorio;
         }
         
-        // Cargar datos de agudeza visual
-        // Ya que estamos usando el componente AntecedenteVisualComponent,
-        // no necesitamos convertir los datos de agudeza visual aquí
-        // El componente se encargará de cargar y procesar los datos correctamente
-
         // Guardar datos de lensometría
         if (historia.lensometria) {
           this.formValues['lensometria'] = historia.lensometria;
@@ -486,6 +612,36 @@ loadHistoriaStatus(): void {
         
         if (historia.metodoGrafico) {
           this.formValues['metodo-grafico'] = historia.metodoGrafico;
+        }
+
+        // Guardar datos de grid amsler
+        if (historia.gridAmsler) {
+          this.formValues['grid-amsler'] = historia.gridAmsler;
+        }
+        
+        // Guardar datos de tonometría
+        if (historia.tonometria) {
+          this.formValues['tonometria'] = historia.tonometria;
+        }
+        
+        // Guardar datos de paquimetría
+        if (historia.paquimetria) {
+          this.formValues['paquimetria'] = historia.paquimetria;
+        }
+        
+        // Guardar datos de campimetría
+        if (historia.campimetria) {
+          this.formValues['campimetria'] = historia.campimetria;
+        }
+        
+        // Guardar datos de biomicroscopía
+        if (historia.biomicroscopia) {
+          this.formValues['biomicroscopia'] = historia.biomicroscopia;
+        }
+        
+        // Guardar datos de oftalmoscopía
+        if (historia.oftalmoscopia) {
+          this.formValues['oftalmoscopia'] = historia.oftalmoscopia;
         }
         
         // Guardar datos de diagnóstico
@@ -586,7 +742,34 @@ private actualizarFormValues(): void {
   if (this.metodoGraficoForm) {
     this.formValues['metodo-grafico'] = this.metodoGraficoForm.value;
   }
+
+  //Actualizar formularios de alteraciones
+  if (this.gridAmslerForm) {
+    this.formValues['grid-amsler'] = this.gridAmslerForm.value;
+  }
+
+  if (this.tonometriaForm) {
+    this.formValues['tonometria'] = this.tonometriaForm.value;
+  }
+
+  if (this.paquimetriaForm) {
+    this.formValues['paquimetria'] = this.paquimetriaForm.value;
+  }
+
+  if (this.campimetriaForm) {
+    this.formValues['campimetria'] = this.campimetriaForm.value;
+  }
+
+  if (this.biomicroscopiaForm) {
+    this.formValues['biomicroscopia'] = this.biomicroscopiaForm.value;
+  }
+
+  if (this.oftalmoscopiaForm) {
+    this.formValues['oftalmoscopia'] = this.oftalmoscopiaForm.value;
+  }
+  
 }
+
 
 // Método para crear una nueva historia clínica
 crearNuevaHistoria(): void {
@@ -995,12 +1178,185 @@ if (this.formValues['metodo-grafico']) {
   }
 }
 
+ // Grid de Amsler
+  if (this.formValues['grid-amsler']) {
+    const gridAmslerData = this.formValues['grid-amsler'];
+    
+    if (Object.values(gridAmslerData).some(val => val !== null && val !== '' && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'grid-amsler', 
+            gridAmslerData
+          )
+        )
+      );
+      this.sectionStatus['deteccion-alteraciones'] = true;
+    }
+  }
+
+  // Tonometría
+  if (this.formValues['tonometria']) {
+    const tonometriaData = this.formValues['tonometria'];
+    
+    if (Object.values(tonometriaData).some(val => val !== null && val !== '' && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'tonometria', 
+            tonometriaData
+          )
+        )
+      );
+      this.sectionStatus['deteccion-alteraciones'] = true;
+    }
+  }
+
+  // Paquimetría
+  if (this.formValues['paquimetria']) {
+    const paquimetriaData = this.formValues['paquimetria'];
+    
+    if (Object.values(paquimetriaData).some(val => val !== null && val !== '' && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'paquimetria', 
+            paquimetriaData
+          )
+        )
+      );
+      this.sectionStatus['deteccion-alteraciones'] = true;
+    }
+  }
+
+  // Campimetría
+  if (this.formValues['campimetria']) {
+    const campimetriaData = this.formValues['campimetria'];
+    
+    if (Object.values(campimetriaData).some(val => val !== null && val !== '' && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'campimetria', 
+            campimetriaData
+          )
+        )
+      );
+      this.sectionStatus['deteccion-alteraciones'] = true;
+    }
+  }
+
+  // Biomicroscopía
+  if (this.formValues['biomicroscopia']) {
+    const biomicroscopiaData = this.formValues['biomicroscopia'];
+    
+    if (Object.values(biomicroscopiaData).some(val => val !== null && val !== '' && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'biomicroscopia', 
+            biomicroscopiaData
+          )
+        )
+      );
+      this.sectionStatus['deteccion-alteraciones'] = true;
+    }
+  }
+
+  // Oftalmoscopía
+  if (this.formValues['oftalmoscopia']) {
+    const oftalmoscopiaData = this.formValues['oftalmoscopia'];
+    
+    if (Object.values(oftalmoscopiaData).some(val => val !== null && val !== '' && val !== undefined)) {
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'oftalmoscopia', 
+            oftalmoscopiaData
+          )
+        )
+      );
+      this.sectionStatus['deteccion-alteraciones'] = true;
+    }
+  }
+
+
 // Agregar más secciones aquí cuando se implementen
 
 
 await Promise.all(promesas);
 }
 
+//metodo para imagenes
+onImageSelected(event: Event): void {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imgPreview = reader.result as string;
+      this.formValues['metodo-grafico'] = {
+        ...this.formValues['metodo-grafico'],
+        imagenBase64: this.imgPreview
+      };
+      if (this.metodoGraficoForm) {
+        this.metodoGraficoForm.patchValue({ imagenBase64: this.imgPreview });
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+onImageBase64Change(event: any): void {
+  // Si el evento es un objeto con las propiedades base64 e imageType
+  if (event && typeof event === 'object' && 'base64' in event && 'imageType' in event) {
+    const { base64, imageType } = event;
+    
+    // Almacenar la imagen en el objeto de previsualizaciones
+    this.imagenPreviewsDeteccion[imageType] = base64;
+    
+    // Almacenar en el objeto formValues según el tipo de imagen
+    if (imageType.startsWith('gridAmsler')) {
+      this.formValues['grid-amsler-images'] = {
+        ...this.formValues['grid-amsler-images'] || {},
+        [imageType]: base64
+      };
+    } else if (imageType.startsWith('campimetria')) {
+      this.formValues['campimetria-images'] = {
+        ...this.formValues['campimetria-images'] || {},
+        [imageType]: base64
+      };
+    } else if (imageType.startsWith('biomicroscopia')) {
+      this.formValues['biomicroscopia-images'] = {
+        ...this.formValues['biomicroscopia-images'] || {},
+        [imageType]: base64
+      };
+    } else if (imageType.startsWith('oftalmoscopia')) {
+      this.formValues['oftalmoscopia-images'] = {
+        ...this.formValues['oftalmoscopia-images'] || {},
+        [imageType]: base64
+      };
+    }
+  } else {
+    // Es el formato original para binocularidad (método gráfico)
+    this.imgPreview = event;
+    this.formValues['metodo-grafico'] = {
+      ...this.formValues['metodo-grafico'] || {},
+      imagenBase64: event
+    };
+    
+    // Actualizar el formulario reactivo si existe
+    if (this.metodoGraficoForm) {
+      this.metodoGraficoForm.patchValue({ imagenBase64: event });
+    }
+  }
+}
 
 
 private convertirObservableAPromise<T>(observable: Observable<T>): Promise<T> {
@@ -1058,13 +1414,12 @@ if (currentIndex < this.sections.length - 1) {
 }
 }
 
-// Estos métodos ya existen pero podrían necesitar implementación adicional
 goToNextSection(): void {
-const currentIndex = this.getCurrentSectionIndex();
-if (currentIndex < this.sections.length - 1) {
-  this.changeSection(this.sections[currentIndex + 1]);
-}
-}
+  const currentIndex = this.getCurrentSectionIndex();
+  if (currentIndex < this.sections.length - 1) {
+    this.changeSection(this.sections[currentIndex + 1]);
+  }
+  }
 
 goToPreviousSection(): void {
 const currentIndex = this.getCurrentSectionIndex();
@@ -1140,7 +1495,7 @@ changeSection(section: string): void {
       }
       break;
 
-    case 'binocularidad':
+      case 'binocularidad':
       if (this.binocularidadForm) {
         this.formValues['binocularidad'] = this.binocularidadForm.value;
       }
@@ -1151,15 +1506,38 @@ changeSection(section: string): void {
         this.formValues['vergencias'] = this.vergenciasForm.value;
       }
       if (this.metodoGraficoForm) {
-        this.formValues['metodo-grafico'] = this.metodoGraficoForm.value;
+        this.formValues['metodo-grafico'] = {
+          ...this.metodoGraficoForm.value,
+          imagenBase64: this.imgPreview 
+        };
       }
       break;
 
-    default:
-      if (this.sectionForms[this.currentSection]) {
-        this.formValues[this.currentSection] = this.sectionForms[this.currentSection].value;
-      }
-  }
+      
+      case 'deteccion-alteraciones':
+        if (this.gridAmslerForm) {
+          this.formValues['grid-amsler'] = this.gridAmslerForm.value;
+        }
+        if (this.tonometriaForm) {
+          this.formValues['tonometria'] = this.tonometriaForm.value;
+        }
+        if (this.paquimetriaForm) {
+          this.formValues['paquimetria'] = this.paquimetriaForm.value;
+        }
+        if (this.campimetriaForm) {
+          this.formValues['campimetria'] = this.campimetriaForm.value;
+        }
+        if (this.biomicroscopiaForm) {
+          this.formValues['biomicroscopia'] = this.biomicroscopiaForm.value;
+        }
+        if (this.oftalmoscopiaForm) {
+          this.formValues['oftalmoscopia'] = this.oftalmoscopiaForm.value;
+        }
+        
+        // Guardar el estado actual de las imágenes
+        this.formValues['imagen-previews-deteccion'] = { ...this.imagenPreviewsDeteccion };
+        break;
+    }
 
   // Cambiar a la nueva sección
   this.currentSection = section;
