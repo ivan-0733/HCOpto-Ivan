@@ -3,6 +3,7 @@ import { FormGroup, FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HistoriaClinicaService } from '../../services/historia-clinica.service';
 import { finalize } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-deteccion-alteraciones',
@@ -347,40 +348,105 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       });
   }
 
-  // Método para manejar la selección de imágenes
+  // // Método para manejar la selección de imágenes
+  // onImageSelected(event: Event, imageType: string): void {
+  //   const input = event.target as HTMLInputElement;
+  //   if (input.files && input.files[0]) {
+  //     const file = input.files[0];
+      
+  //     // Guardar referencia al archivo
+  //     this.selectedFiles[imageType] = file;
+      
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       // Almacenar la previsualización
+  //       const base64 = reader.result as string;
+  //       this.imagenPreviews[imageType] = base64;
+        
+  //       // Actualizar el formulario correspondiente
+  //       this.actualizarFormularioConImagen(imageType, base64);
+        
+  //       // Emitir al componente padre
+  //       this.imageBase64Change.emit({
+  //         base64: base64,
+  //         imageType: imageType
+  //       });
+        
+  //       // Emitir información del archivo
+  //       this.fileSelected.emit({
+  //         file: file,
+  //         fileName: file.name,
+  //         imageType: imageType
+  //       });
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // }
+
   onImageSelected(event: Event, imageType: string): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      
-      // Guardar referencia al archivo
-      this.selectedFiles[imageType] = file;
-      
-      const reader = new FileReader();
-      reader.onload = () => {
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+    
+    const file = input.files[0];
+    
+    // Validar tipo de archivo
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      this.error = 'Solo se permiten archivos JPG o PNG';
+      return;
+    }
+    
+    // Validar tamaño (máximo 10MB)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.error = 'La imagen no debe superar los 10MB';
+      return;
+    }
+    
+    // Guardar referencia al archivo para envío multipart posterior
+    this.selectedFiles[imageType] = file;
+    
+    // Crear previsualización usando Base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
         // Almacenar la previsualización
         const base64 = reader.result as string;
         this.imagenPreviews[imageType] = base64;
         
-        // Actualizar el formulario correspondiente
+        // Actualizar el formulario correspondiente solo para previsualización
         this.actualizarFormularioConImagen(imageType, base64);
         
-        // Emitir al componente padre
+        // Emitir al componente padre para coordinar previsualizaciones
         this.imageBase64Change.emit({
           base64: base64,
           imageType: imageType
         });
         
-        // Emitir información del archivo
+        // Emitir información del archivo para futuro envío
         this.fileSelected.emit({
           file: file,
           fileName: file.name,
           imageType: imageType
         });
-      };
-      reader.readAsDataURL(file);
-    }
+        
+        // Limpiar errores previos
+        this.error = '';
+      } catch (error) {
+        console.error('Error procesando la imagen:', error);
+        this.error = 'Error al procesar la imagen';
+      }
+    };
+    
+    reader.onerror = () => {
+      this.error = 'Error al leer el archivo';
+    };
+    
+    reader.readAsDataURL(file);
   }
+  
 
   guardarDeteccionAlteraciones(): void {
     if (!this.historiaId) {
@@ -456,20 +522,72 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     });
   }
 
-  // Método asíncrono para subir todas las imágenes
-  private async subirImagenes(): Promise<void> {
-    const promises: Promise<void>[] = [];
+  // // Método asíncrono para subir todas las imágenes
+  // private async subirImagenes(): Promise<void> {
+  //   const promises: Promise<void>[] = [];
     
+  //   Object.keys(this.selectedFiles).forEach(imageType => {
+  //     const file = this.selectedFiles[imageType];
+  //     if (file) {
+  //       promises.push(this.subirImagen(imageType, file));
+  //     }
+  //   });
+    
+  //   await Promise.all(promises);
+  // }
+
+  private async subirImagenes(): Promise<void> {
+    if (!this.historiaId || Object.keys(this.selectedFiles).length === 0) {
+      return;
+    }
+  
+    this.submitting = true;
+    this.error = '';
+    this.success = '';
+  
+    // Cambiamos el tipo de las promesas a Promise<any> para mayor flexibilidad
+    const promises: Promise<any>[] = [];
+    const errores: string[] = [];
+    const exitos: string[] = [];
+  
     Object.keys(this.selectedFiles).forEach(imageType => {
       const file = this.selectedFiles[imageType];
       if (file) {
-        promises.push(this.subirImagen(imageType, file));
+        // Aseguramos que cada promise resuelva a void explícitamente
+        promises.push(
+          this.subirImagen(imageType, file)
+            .then((result) => {
+              exitos.push(imageType);
+              return; // Aseguramos retorno void explícito
+            })
+            .catch((error: unknown) => {
+              const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+              errores.push(`${imageType}: ${errorMessage}`);
+              return; // Aseguramos retorno void explícito
+            })
+        );
       }
     });
-    
-    await Promise.all(promises);
+  
+    try {
+      await Promise.all(promises);
+      
+      if (errores.length > 0) {
+        this.error = `Error en ${errores.length} de ${promises.length} imágenes`;
+        if (exitos.length > 0) {
+          this.success = `${exitos.length} imágenes subidas correctamente`;
+        }
+      } else {
+        this.success = 'Todas las imágenes subidas correctamente';
+      }
+    } catch (error) {
+      console.error('Error general:', error);
+      this.error = 'Error al subir las imágenes';
+    } finally {
+      this.submitting = false;
+    }
   }
-
+  
   // Método para subir una imagen específica
   private async subirImagen(imageType: string, file: File): Promise<void> {
     if (!this.historiaId) return;

@@ -336,7 +336,12 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
 
 }
 
-
+export interface ImagenUpload {
+  file: File;
+  seccionID: number;
+  tipoImagenID: number;
+  campo?: string; // Campo opcional para identificar a qué parte de la sección pertenece (ej: OD, OI)
+}
 
 export interface EstadisticasHistorias {
   total: number;
@@ -422,7 +427,43 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
       map(response => response.data)
     );
   }
+
+  // Método específico para subir imágenes con multipart
+  subirImagenMultipart(historiaId: number, file: File, seccionID: string, tipoImagenID: string): Observable<any> {
+    const formData = new FormData();
+    formData.append('imagen', file);
+    formData.append('seccionID', seccionID);
+    formData.append('tipoImagenID', tipoImagenID);
+    
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${historiaId}/imagenes`, formData)
+      .pipe(
+        map(response => response.data)
+      );
+  }
   
+
+  subirMultiplesImagenes(
+    historiaId: string, 
+    imagenes: Array<{
+      file: File;
+      seccionID: string;
+      tipoImagenID: string;
+      campo: string;
+    }>
+  ): Observable<any> {
+    const formData = new FormData();
+    
+    imagenes.forEach((imagen, index) => {
+      formData.append(`files[${index}]`, imagen.file);
+      formData.append(`secciones[${index}]`, imagen.seccionID);
+      formData.append(`tipos[${index}]`, imagen.tipoImagenID);
+      formData.append(`campos[${index}]`, imagen.campo);
+    });
+
+    return this.http.post(`/api/historias/${historiaId}/imagenes/multiples`, formData, {
+      reportProgress: true,
+      observe: 'response'
+    });
+  }
+
 }
-
-

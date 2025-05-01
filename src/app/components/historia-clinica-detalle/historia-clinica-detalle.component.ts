@@ -281,12 +281,21 @@ verificarSubjetivoCerca(): boolean {
 tieneDatosBinocularidad(): boolean {
   if (!this.historia) return false;
   
-  return !!(
+  // Verificar si hay datos en cualquiera de los objetos de binocularidad
+  const tieneRegistroBinocularidad = !!(
     this.historia.binocularidad || 
     this.historia.forias || 
-    this.historia.vergencias || 
-    this.historia.metodoGrafico
+    this.historia.vergencias
   );
+  
+  // Verificar si hay datos en metodoGrafico o una imagen asociada
+  const tieneMetodoGrafico = !!(
+    this.historia.metodoGrafico && 
+    (Object.keys(this.historia.metodoGrafico).length > 0 || 
+    this.historia.metodoGrafico.imagenID)
+  );
+  
+  return tieneRegistroBinocularidad || tieneMetodoGrafico;
 }
 
 // Obtiene el nombre del método de medición para forias

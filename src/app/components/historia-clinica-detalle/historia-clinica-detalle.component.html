@@ -973,33 +973,33 @@
   </section>
 
   <!-- Subsección de Método Gráfico -->
-  <!-- <section class="info-section" *ngIf="historia.metodoGrafico">
+  <section class="info-section" *ngIf="historia.metodoGrafico">
     <h2>Método Gráfico</h2>
     
     <div class="info-grid">
       <div class="info-item">
         <h3>Integración Binocular</h3>
-        <p>{{ historia.metodoGrafico.IntegracionBinocular || 'No registrado' }}</p>
+        <p>{{ historia.metodoGrafico.integracionBinocular || 'No registrado' }}</p>
       </div>
       <div class="info-item">
         <h3>Tipo de Test</h3>
-        <p>{{ obtenerTipoTest(historia.metodoGrafico.TipoID) }}</p>
+        <p>{{ obtenerTipoTest(historia.metodoGrafico.tipoID) }}</p>
       </div>
       <div class="info-item">
         <h3>Visión Estereoscópica</h3>
-        <p>{{ historia.metodoGrafico.VisionEstereoscopica || 'No registrado' }}</p>
+        <p>{{ historia.metodoGrafico.visionEstereoscopica || 'No registrado' }}</p>
       </div>
       <div class="info-item">
         <h3>Tipo de Visión Estereoscópica</h3>
-        <p>{{ obtenerTipoVision(historia.metodoGrafico.TipoVisionID) }}</p>
+        <p>{{ obtenerTipoVision(historia.metodoGrafico.tipoVisionID) }}</p>
       </div>
     </div>
     
-    <div *ngIf="historia.metodoGrafico.ImagenID" class="metodo-grafico-imagen">
+    <div *ngIf="historia.metodoGrafico.imagenID" class="metodo-grafico-imagen">
       <h3>Imagen</h3>
-      <img [src]="obtenerUrlImagen(historia.metodoGrafico.ImagenID)" alt="Imagen de método gráfico">
+      <img [src]="obtenerUrlImagen(historia.metodoGrafico.imagenID)" alt="Imagen de método gráfico">
     </div>
-  </section> -->
+  </section>
 
   <!-- Mensaje cuando no hay datos -->
   <div class="no-data" *ngIf="!tieneDatosBinocularidad()">
