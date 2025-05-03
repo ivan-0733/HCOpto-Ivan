@@ -61,7 +61,7 @@ router.post(
 // Ruta para subir imágenes (con middleware de Multer)
 router.post(
     '/:id/imagenes', 
-    uploadController.upload.single('imagen'), // Asume que uploadController tiene configurado Multer
+    uploadController.upload.single('file'), 
     uploadController.uploadHistoriaClinicaImage
 );
 

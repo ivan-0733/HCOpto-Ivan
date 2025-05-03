@@ -138,86 +138,98 @@ export class BinocularidadComponent implements OnInit, OnChanges {
     });
   }
 
-  cargarDatosExistentes(): void {
-    if (!this.historiaId) return;
-    this.loading = true;
-  
-    this.historiaService.obtenerHistoriaClinica(this.historiaId)
-      .pipe(finalize(() => this.loading = false))
-      .subscribe({
-        next: (historia) => {
-          if (historia.binocularidad) this.binocularidadForm.patchValue(historia.binocularidad);
-          if (historia.forias) this.foriasForm.patchValue(historia.forias);
-          if (historia.vergencias) this.vergenciasForm.patchValue(historia.vergencias);
+// En historia-clinica-binocularidad.component.ts
+
+cargarDatosExistentes(): void {
+  if (!this.historiaId) return;
+  this.loading = true;
+
+  this.historiaService.obtenerHistoriaClinica(this.historiaId)
+    .pipe(finalize(() => this.loading = false))
+    .subscribe({
+      next: (historia) => {
+        if (historia.binocularidad) this.binocularidadForm.patchValue(historia.binocularidad);
+        if (historia.forias) this.foriasForm.patchValue(historia.forias);
+        if (historia.vergencias) this.vergenciasForm.patchValue(historia.vergencias);
+        
+        if (historia.metodoGrafico) {
+          this.metodoGraficoForm.patchValue(historia.metodoGrafico);
           
-          if (historia.metodoGrafico) {
-            this.metodoGraficoForm.patchValue(historia.metodoGrafico);
-            
-            // Si hay una imagen base64 guardada en metodoGrafico, actualizar la vista previa
-            if (historia.metodoGrafico.imagenBase64) {
-              this.imgPreview = historia.metodoGrafico.imagenBase64;
-              // Emitir el cambio al componente padre
-              this.imageBase64Change.emit(this.imgPreview);
-            }
+          // Si hay una imagen base64 guardada, actualizar la vista previa
+          if (historia.metodoGrafico.imagenBase64) {
+            this.imgPreview = historia.metodoGrafico.imagenBase64;
+            this.imageBase64Change.emit(this.imgPreview);
           }
-        },
-        error: (err) => {
-          console.error('Error al cargar datos de binocularidad:', err);
-          this.error = 'Error al cargar datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
+          
+          // Si hay un ID de imagen, pero no tenemos la imagen en base64
+          if (historia.metodoGrafico.imagenID && !historia.metodoGrafico.imagenBase64) {
+            // Aquí podríamos cargar la imagen desde el servidor si fuera necesario
+            console.log(`Imagen ID: ${historia.metodoGrafico.imagenID}`);
+          }
         }
-      });
+      },
+      error: (err) => {
+        console.error('Error al cargar datos de binocularidad:', err);
+        this.error = 'Error al cargar datos. Por favor, intente nuevamente.';
+        this.completed.emit(false);
+      }
+    });
+}
+
+guardarBinocularidad(): void {
+  if (!this.historiaId) {
+    this.error = 'No se ha podido identificar la historia clínica.';
+    return;
   }
 
-  guardarBinocularidad(): void {
-    if (!this.historiaId) {
-      this.error = 'No se ha podido identificar la historia clínica.';
-      return;
-    }
-  
-    this.submitting = true;
-    this.error = '';
-    this.success = '';
-  
-    // Actualizar el formulario con la imagen actual si existe
-    if (this.imgPreview && this.metodoGraficoForm) {
-      this.metodoGraficoForm.patchValue({ 
-        imagenBase64: this.imgPreview 
-      });
-    }
-  
-    const payload = {
-      binocularidad: this.binocularidadForm.value,
-      forias: this.foriasForm.value,
-      vergencias: this.vergenciasForm.value,
-      metodoGrafico: {
-        ...this.metodoGraficoForm.value,
-        imagenBase64: this.imgPreview  // Asegurar que la imagen se incluya en el payload
-      }
-    };
-  
-    this.historiaService.actualizarSeccion(this.historiaId, 'binocularidad', payload)
-      .pipe(finalize(() => this.submitting = false))
-      .subscribe({
-        next: () => {
-          this.success = 'Binocularidad guardada correctamente.';
-          this.completed.emit(true);
-          if (this.selectedFile) this.subirImagen();
-          else if (!this.hideButtons) setTimeout(() => this.nextSection.emit(), 1500);
-        },
-        error: (err) => {
-          console.error('Error al guardar binocularidad:', err);
-          this.error = 'Error al guardar los datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
-        }
-      });
+  this.submitting = true;
+  this.error = '';
+  this.success = '';
+
+  // Actualizar el formulario con la imagen actual si existe
+  if (this.imgPreview && this.metodoGraficoForm) {
+    this.metodoGraficoForm.patchValue({ 
+      imagenBase64: this.imgPreview 
+    });
   }
+
+  const payload = {
+    binocularidad: this.binocularidadForm.value,
+    forias: this.foriasForm.value,
+    vergencias: this.vergenciasForm.value,
+    metodoGrafico: this.metodoGraficoForm.value
+  };
+
+  this.historiaService.actualizarSeccion(this.historiaId, 'binocularidad', payload)
+    .pipe(finalize(() => this.submitting = false))
+    .subscribe({
+      next: () => {
+        this.success = 'Binocularidad guardada correctamente.';
+        this.completed.emit(true);
+        
+        // Si hay un archivo seleccionado y no tenemos un ID de imagen, subir la imagen
+        if (this.selectedFile && !this.metodoGraficoForm.value.imagenID) {
+          this.subirImagen();
+        } else if (!this.hideButtons) {
+          setTimeout(() => this.nextSection.emit(), 1500);
+        }
+      },
+      error: (err) => {
+        console.error('Error al guardar binocularidad:', err);
+        this.error = 'Error al guardar los datos. Por favor, intente nuevamente.';
+        this.completed.emit(false);
+      }
+    });
+}
 
   // Método para manejar la selección de imagen
   onImageSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      this.selectedFile = file; // Guardar la referencia al archivo
+      this.selectedFileName = file.name;
+      
       const reader = new FileReader();
       reader.onload = () => {
         // Actualizar la vista previa
@@ -230,6 +242,12 @@ export class BinocularidadComponent implements OnInit, OnChanges {
         
         // Emitir el base64 al padre (container)
         this.imageBase64Change.emit(this.imgPreview);
+        
+        // También emitir el archivo seleccionado
+        this.fileSelected.emit({
+          file: file,
+          fileName: file.name
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -249,24 +267,42 @@ export class BinocularidadComponent implements OnInit, OnChanges {
   }
 
   subirImagen(): void {
-    if (!this.historiaId || !this.selectedFile) return;
-    const formData = new FormData();
-    formData.append('file', this.selectedFile);
-    formData.append('seccionID', '12');
-    formData.append('tipoImagenID', '2');
+    if (!this.historiaId || (!this.selectedFile && !this.imgPreview)) return;
+    
+    let formData = new FormData();
+    
+    // Si tenemos un archivo seleccionado directamente, lo usamos
+    if (this.selectedFile) {
+      formData.append('file', this.selectedFile);
+    } 
+    // Si solo tenemos la base64, la convertimos a File
+    else if (this.imgPreview) {
+      const file = this.base64ToFile(this.imgPreview, 'metodo-grafico.png');
+      if (file) {
+        formData.append('file', file);
+      } else {
+        console.error('No se pudo convertir la imagen base64 a File');
+        if (!this.hideButtons) setTimeout(() => this.nextSection.emit(), 1500);
+        return;
+      }
+    }
+    
+    formData.append('seccionID', '12'); // ID de la sección de binocularidad
+    formData.append('tipoImagenID', '2'); // ID para método gráfico
   
     this.historiaService.subirImagen(this.historiaId, formData)
       .subscribe({
-        next: (response: {imageId?: number}) => {
+        next: (response) => {
           if (response && response.imageId) {
             this.metodoGraficoForm.patchValue({ imagenID: response.imageId });
             this.actualizarImagenMetodoGrafico(response.imageId);
           }
           if (!this.hideButtons) setTimeout(() => this.nextSection.emit(), 1500);
         },
-        error: (error: any) => {
+        error: (error) => {
           console.error('Error al subir imagen:', error);
           this.error = 'La binocularidad se guardó pero hubo un error al subir la imagen.';
+          if (!this.hideButtons) setTimeout(() => this.nextSection.emit(), 1500);
         }
       });
   }
@@ -284,6 +320,28 @@ export class BinocularidadComponent implements OnInit, OnChanges {
         next: () => console.log('Imagen actualizada en método gráfico'),
         error: (err) => console.error('Error al actualizar imagen en método gráfico:', err)
       });
+  }
+
+  base64ToFile(base64String: string, filename: string = 'imagen.png'): File | null {
+    if (!base64String) return null;
+    
+    try {
+      // Extraer la parte de datos del string base64
+      const arr = base64String.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      
+      return new File([u8arr], filename, { type: mime });
+    } catch (error) {
+      console.error('Error al convertir base64 a File:', error);
+      return null;
+    }
   }
 
   eliminarImagen(): void {

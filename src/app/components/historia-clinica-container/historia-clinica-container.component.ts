@@ -1165,15 +1165,101 @@ if (this.formValues['metodo-grafico']) {
   const metodoGraficoData = this.formValues['metodo-grafico'];
   
   if (Object.values(metodoGraficoData).some(val => val !== null && val !== '' && val !== undefined)) {
-    promesas.push(
-      this.convertirObservableAPromise(
-        this.historiaClinicaService.actualizarSeccion(
-          historiaId, 
-          'metodo-grafico', 
-          metodoGraficoData
+    // Si tenemos una imagen en base64 que aún no se ha subido
+    if (this.imgPreview && !metodoGraficoData.imagenID) {
+      // Crear una promesa para subir la imagen
+      const subirImagenPromesa = new Promise<void>((resolve, reject) => {
+        // Convertir base64 a File
+        const base64String = this.imgPreview as string;
+        if (base64String && base64String.includes('base64')) {
+          try {
+            // Extraer la parte de datos del string base64
+            const arr = base64String.split(',');
+            const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            
+            while (n--) {
+              u8arr[n] = bstr.charCodeAt(n);
+            }
+            
+            const file = new File([u8arr], 'metodo-grafico.png', { type: mime });
+            
+            // Crear FormData para la subida
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('seccionID', '12'); // ID de la sección de binocularidad
+            formData.append('tipoImagenID', '2'); // ID del tipo de imagen para método gráfico
+            
+            // Subir la imagen
+            this.historiaClinicaService.subirImagen(historiaId, formData)
+              .subscribe({
+                next: (response) => {
+                  if (response && response.imageId) {
+                    // Actualizar el ID de la imagen en el objeto de datos
+                    metodoGraficoData.imagenID = response.imageId;
+                    
+                    // Actualizar la sección con el nuevo ID de imagen
+                    this.historiaClinicaService.actualizarSeccion(
+                      historiaId, 
+                      'metodo-grafico', 
+                      metodoGraficoData
+                    ).subscribe({
+                      next: () => resolve(),
+                      error: (err) => {
+                        console.error('Error al actualizar método gráfico con ID de imagen:', err);
+                        reject(err);
+                      }
+                    });
+                  } else {
+                    resolve(); // Continuar aunque no haya ID de imagen
+                  }
+                },
+                error: (err) => {
+                  console.error('Error al subir imagen de método gráfico:', err);
+                  // Continuar con el guardado de los datos del método gráfico sin la imagen
+                  this.historiaClinicaService.actualizarSeccion(
+                    historiaId, 
+                    'metodo-grafico', 
+                    metodoGraficoData
+                  ).subscribe({
+                    next: () => resolve(),
+                    error: (updateErr) => reject(updateErr)
+                  });
+                }
+              });
+          } catch (error) {
+            console.error('Error al procesar la imagen:', error);
+            reject(error);
+          }
+        } else {
+          // Si no hay imagen base64 válida, solo actualizamos los datos
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'metodo-grafico', 
+            metodoGraficoData
+          ).subscribe({
+            next: () => resolve(),
+            error: (err) => reject(err)
+          });
+        }
+      });
+      
+      promesas.push(subirImagenPromesa);
+    } else {
+      // Si no hay imagen nueva, o ya tenemos ID de imagen, solo actualizamos los datos
+      promesas.push(
+        this.convertirObservableAPromise(
+          this.historiaClinicaService.actualizarSeccion(
+            historiaId, 
+            'metodo-grafico', 
+            metodoGraficoData
+          )
         )
-      )
-    );
+      );
+    }
+    
     this.sectionStatus['binocularidad'] = true;
   }
 }
