@@ -8,7 +8,7 @@ const alumnoRoutes = require('./routes/alumnoRoutes');
 const historiaClinicaRoutes = require('./routes/historiaClinicaRoutes');
 const { errorHandler } = require('./utils/errorHandler');
 const multer = require('multer'); 
-
+const path = require('path');
 
 
 // Cargar variables de entorno
@@ -17,6 +17,7 @@ dotenv.config();
 // Crear aplicación Express
 const app = express();
 const PORT = config.server.port;
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(cors(config.cors));

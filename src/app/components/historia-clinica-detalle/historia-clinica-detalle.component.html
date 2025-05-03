@@ -995,10 +995,18 @@
       </div>
     </div>
     
-    <div *ngIf="historia.metodoGrafico.imagenID" class="metodo-grafico-imagen">
+    <div *ngIf="historia.metodoGrafico.imagenID || historia.metodoGrafico.imagenBase64" class="metodo-grafico-imagen">
       <h3>Imagen</h3>
-      <img [src]="obtenerUrlImagen(historia.metodoGrafico.imagenID)" alt="Imagen de método gráfico">
+      <img 
+        *ngIf="historia.metodoGrafico.imagenBase64" 
+        [src]="historia.metodoGrafico.imagenBase64" 
+        alt="Imagen de método gráfico (Base64)">
+      <img 
+        *ngIf="!historia.metodoGrafico.imagenBase64 && historia.metodoGrafico.imagenID" 
+        [src]="obtenerUrlImagen(historia.metodoGrafico.imagenID)" 
+        alt="Imagen de método gráfico (URL)">
     </div>
+    
   </section>
 
   <!-- Mensaje cuando no hay datos -->

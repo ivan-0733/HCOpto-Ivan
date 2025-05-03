@@ -65,6 +65,9 @@ router.post(
     uploadController.uploadHistoriaClinicaImage
 );
 
+//ruta para obtener una imagen por su ID
+router.get('/imagenes/:id', uploadController.getImageById);
+
 // Ruta de prueba para imágenes (con Multer configurado directamente)
 router.post(
 '/:id/imagenes-test', 

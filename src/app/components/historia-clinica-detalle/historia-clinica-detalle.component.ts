@@ -56,6 +56,11 @@ loadHistoriaClinica(): void {
       next: (historia) => {
         this.historia = historia;
         console.log('Historia cargada correctamente:', historia);
+        
+        // Cargar imágenes si existen
+        if (historia.metodoGrafico && historia.metodoGrafico.imagenID) {
+          this.cargarImagenBase64(historia.metodoGrafico.imagenID);
+        }
       },
       error: (error) => {
         this.error = 'No se pudo cargar la historia clínica. ' + error.message;
@@ -327,6 +332,26 @@ obtenerTipoVision(tipoVisionID: number | null | undefined): string {
 // Obtiene la URL de la imagen asociada al método gráfico
 obtenerUrlImagen(imagenID: number | null | undefined): string {
   if (!imagenID) return '';
-  return `${environment.apiUrl}/imagenes/${imagenID}`;
+  return `${environment.apiUrl}/historias-clinicas/imagenes/${imagenID}`;
 }
+
+// Agregar un nuevo método para cargar la imagen en base64
+cargarImagenBase64(imagenID: number): void {
+  if (!imagenID) return;
+  
+  this.historiaClinicaService.obtenerImagenBase64(imagenID)
+    .subscribe({
+      next: (base64) => {
+        // Guardar la imagen en una propiedad para mostrarla
+        if (this.historia && this.historia.metodoGrafico) {
+          this.historia.metodoGrafico.imagenBase64 = base64;
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar imagen:', error);
+      }
+    });
+}
+
+
 }

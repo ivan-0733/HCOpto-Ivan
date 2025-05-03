@@ -4,7 +4,8 @@ const sharp = require('sharp');
 const crypto = require('crypto');
 
 // Configuración básica
-const UPLOAD_DIR = path.join(__dirname, '../../uploads');
+const UPLOAD_DIR = path.resolve(__dirname, '..', '..', 'uploads'); 
+console.log('UPLOAD_DIR RESUELTO:', UPLOAD_DIR);
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png']; // Solo JPG/PNG
 
@@ -45,76 +46,61 @@ const validateFile = (file) => {
 
 // Guardar imagen con procesamiento básico
 const saveImage = async (file, options) => {
-    // Validaciones iniciales
-    await ensureUploadsDir();
-    validateFile(file);
-  
-    const { alumnoId, pacienteId, estudio } = options;
-    if (!alumnoId || !pacienteId || !estudio) {
+  // Validaciones iniciales
+  await ensureUploadsDir();
+  validateFile(file);
+
+  const { alumnoId, pacienteId, estudio } = options;
+  if (!alumnoId || !pacienteId || !estudio) {
       throw new Error('Faltan datos requeridos: alumnoId, pacienteId, estudio');
-    }
+  }
+
+  // Estructura de carpetas (relativa a UPLOAD_DIR)
+  const relativeDir = path.join(alumnoId.toString(), pacienteId.toString(), estudio);
+  const absoluteDir = path.join(UPLOAD_DIR, relativeDir);
   
-    // Estructura de carpetas
-    const studyPath = getStudyPath(alumnoId, pacienteId, estudio);
-    const fullPath = path.join(UPLOAD_DIR, studyPath);
-    await fs.mkdir(fullPath, { recursive: true });
+  await fs.mkdir(absoluteDir, { recursive: true });
+
+  // Nombre de archivo único
+  const timestamp = Date.now();
+  const hash = crypto.randomBytes(4).toString('hex');
+  const extension = path.extname(file.originalname).toLowerCase() || '.jpg';
+  const filename = `${timestamp}-${hash}${extension}`;
+  const absolutePath = path.join(absoluteDir, filename);
+
+  // Procesamiento de la imagen
+  const sharpInstance = file.buffer ? sharp(file.buffer) : sharp(file.path);
   
-    // Generar nombre de archivo único
-    const timestamp = Date.now();
-    const hash = crypto.randomBytes(4).toString('hex');
-    const extension = path.extname(file.originalname).toLowerCase() || '.jpg';
-    const filename = `${timestamp}-${hash}${extension}`;
-    const filePath = path.join(fullPath, filename);
-  
-    // Determinar si estamos trabajando con buffer o un archivo en disco
-    let sharpInstance;
-    
-    if (file.buffer) {
-      // Si es un buffer (memoryStorage)
-      sharpInstance = sharp(file.buffer);
-    } else if (file.path) {
-      // Si es un archivo en disco (diskStorage)
-      sharpInstance = sharp(file.path);
-    } else {
-      throw new Error('Formato de archivo no válido');
-    }
-  
-    // Procesamiento con sharp
-    await sharpInstance
-      .resize(1600, 1600, { 
-        fit: 'inside', 
-        withoutEnlargement: true 
+  await sharpInstance
+      .resize(1600, 1600, {
+          fit: 'inside',
+          withoutEnlargement: true
       })
-      .jpeg({ 
-        quality: 80,
-        progressive: true 
+      .jpeg({
+          quality: 80,
+          progressive: true
       })
-      .toFile(filePath);
-  
-    // Si fue un archivo de disco temporal (diskStorage) y no lo necesitamos más, podemos eliminarlo
-    if (file.path && file.path !== filePath) {
-      try {
-        await fs.unlink(file.path).catch(() => {
-          console.log('No se pudo eliminar el archivo temporal:', file.path);
-        });
-      } catch (error) {
-        console.error('Error al eliminar archivo temporal:', error);
-      }
-    }
-  
-    // Obtener metadatos del archivo guardado
-    const stats = await fs.stat(filePath);
-  
-    return {
-      path: path.join('/uploads', studyPath, filename).replace(/\\/g, '/'), // Asegurar rutas con /
+      .toFile(absolutePath);
+
+  // Limpieza de archivo temporal si existe
+  if (file.path && file.path !== absolutePath) {
+      await fs.unlink(file.path).catch(console.error);
+  }
+
+  // Estadísticas del archivo
+  const stats = await fs.stat(absolutePath);
+
+  return {
+      // Guardamos solo la ruta relativa (sin '/uploads/')
+      path: path.join(relativeDir, filename).replace(/\\/g, '/'),
       filename,
       estudio,
       mimeType: file.mimetype,
       originalName: file.originalname,
       size: stats.size,
       createdAt: new Date(timestamp).toISOString()
-    };
   };
+};
 
 // Eliminar archivo de manera segura
 const deleteFile = async (filePath) => {
@@ -141,9 +127,10 @@ throw error;
 };
 
 module.exports = {
-STUDY_TYPES,
-saveImage,
-deleteFile,
-ALLOWED_TYPES,
-MAX_FILE_SIZE
+  STUDY_TYPES,
+  saveImage,
+  deleteFile,
+  ALLOWED_TYPES,
+  MAX_FILE_SIZE,
+  UPLOAD_DIR
 };

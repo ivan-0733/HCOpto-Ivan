@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable,from } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface HistoriaClinica {
@@ -466,4 +466,26 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
     });
   }
 
+  obtenerImagen(imagenId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/imagenes/${imagenId}`, {
+      responseType: 'blob'
+    });
+  }
+  
+  // Método para convertir un Blob a base64
+  convertirImagenABase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+  
+  // Método para obtener una imagen como base64
+  obtenerImagenBase64(imagenId: number): Observable<string> {
+    return this.obtenerImagen(imagenId).pipe(
+      switchMap(blob => from(this.convertirImagenABase64(blob)))
+    );
+  }
 }

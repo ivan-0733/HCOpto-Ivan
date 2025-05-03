@@ -3,6 +3,8 @@ const { STUDY_TYPES } = fileManager;
 const fs = require('fs').promises;
 const db = require('../config/database');
 const path = require('path');
+const { UPLOAD_DIR } = require('../utils/fileManager');
+
 
 // Configuración de Multer
 const multer = require('multer');
@@ -17,32 +19,58 @@ try {
     console.log('Creando directorio de uploads:', error);
 }
 
-// Cambiar a diskStorage para mayor estabilidad
+// // Cambiar a diskStorage para mayor estabilidad
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         cb(null, uploadDir);
+//     },
+//     filename: function (req, file, cb) {
+//         cb(null, Date.now() + '-' + file.originalname);
+//     }
+// });
+
+// // Configuración global de Multer
+// const upload = multer({
+//     storage: storage,
+//     limits: { fileSize: fileManager.MAX_FILE_SIZE || 10 * 1024 * 1024 }, // 10MB por defecto si no está definido
+//     fileFilter: (req, file, cb) => {
+//         console.log(`Validando tipo de archivo: ${file.mimetype}`);
+//         if (fileManager.ALLOWED_TYPES && fileManager.ALLOWED_TYPES.includes(file.mimetype)) {
+//             cb(null, true);
+//         } else {
+//             console.warn(`Tipo de archivo no permitido: ${file.mimetype}`);
+//             cb(new Error('Solo se permiten imágenes JPG/PNG'), false);
+//         }
+//     }
+// });
+
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadDir);
+    destination: (req, file, cb) => {
+        const tempDir = path.join(process.cwd(), 'temp_uploads');
+        fs.mkdir(tempDir, { recursive: true })
+            .then(() => cb(null, tempDir))
+            .catch(err => cb(err));
     },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
 
-// Configuración global de Multer
 const upload = multer({
-    storage: storage,
-    limits: { fileSize: fileManager.MAX_FILE_SIZE || 10 * 1024 * 1024 }, // 10MB por defecto si no está definido
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     fileFilter: (req, file, cb) => {
-        console.log(`Validando tipo de archivo: ${file.mimetype}`);
-        if (fileManager.ALLOWED_TYPES && fileManager.ALLOWED_TYPES.includes(file.mimetype)) {
+        if (file.mimetype.startsWith('image/')) {
             cb(null, true);
         } else {
-            console.warn(`Tipo de archivo no permitido: ${file.mimetype}`);
-            cb(new Error('Solo se permiten imágenes JPG/PNG'), false);
+            cb(new Error('Solo se permiten imágenes'), false);
         }
     }
 });
 
-// Controlador para manejar la subida de imágenes
+
+//Controlador para manejar la subida de imágenes
 const uploadHistoriaClinicaImage = async (req, res) => {
     console.log('Inicio de uploadHistoriaClinicaImage');
     
@@ -238,6 +266,92 @@ const uploadHistoriaClinicaImage = async (req, res) => {
     }
 };
 
+// Controlador para obtener una imagen por su ID (en uploadController.js)
+const getImageById = async (req, res) => {
+    try {
+        const imageId = req.params.id;
+        
+        // 1. Obtener información de la imagen
+        const [imagen] = await db.query(
+            `SELECT Ruta, Nombre, Tipo FROM Imagenes WHERE ID = ?`,
+            [imageId]
+        );
+
+        if (!imagen?.length) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Imagen no encontrada en la base de datos'
+            });
+        }
+
+        const imagenInfo = imagen[0];
+        console.log("imagenInfo:", imagenInfo);        
+        // 2. Construir ruta absoluta correctamente
+        const relativePath = imagenInfo.Ruta.startsWith('uploads/')
+        ? imagenInfo.Ruta.substring(7)
+        : imagenInfo.Ruta;
+
+        const absolutePath = path.join(process.cwd(), 'uploads', relativePath);
+
+    
+        // 3. Verificar existencia del archivo
+        try {
+            await fs.access(absolutePath);
+            
+            // 4. Servir el archivo
+            res.setHeader('Content-Type', imagenInfo.Tipo || 'application/octet-stream');
+            return res.sendFile(absolutePath);
+            
+        } catch (error) {
+            console.error('Archivo no encontrado en:', absolutePath);
+            
+            // 5. Búsqueda recursiva como último recurso
+            const fileName = path.basename(imagenInfo.Ruta);
+            const foundFiles = await findFilesByPattern(UPLOAD_DIR, fileName);
+            
+            if (foundFiles.length > 0) {
+                res.setHeader('Content-Type', imagenInfo.Tipo || 'application/octet-stream');
+                return res.sendFile(foundFiles[0]);
+            }
+
+            return res.status(404).json({
+                status: 'error',
+                message: 'Imagen no encontrada en el sistema de archivos',
+                debug: {
+                    rutaOriginal: imagenInfo.Ruta,
+                    rutaBuscada: absolutePath,
+                    directorioUploads: UPLOAD_DIR,
+                    archivoBuscado: fileName
+                }                
+            });
+        }
+
+    } catch (error) {
+        console.error('Error en getImageById:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Error al procesar la solicitud',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+};
+
+async function findFilesByPattern(startPath, fileName) {
+let results = [];
+const files = await fs.readdir(startPath, { withFileTypes: true });
+
+for (const file of files) {
+    const filePath = path.join(startPath, file.name);
+    if (file.isDirectory()) {
+        results = results.concat(await findFilesByPattern(filePath, fileName));
+    } else if (file.name === fileName) {
+        results.push(filePath);
+    }
+}
+
+return results;
+};
+
 // Controlador para eliminar imágenes
 const deleteImage = async (req, res) => {
     console.log('Inicio de deleteImage');
@@ -316,5 +430,7 @@ module.exports = {
     uploadHistoriaClinicaImage,
     deleteImage,
     listStudyImages,
-    upload // Exportamos la configuración global de upload
+    getImageById,
+    UPLOAD_DIR,
+    upload 
 };
