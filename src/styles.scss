@@ -1,0 +1,109 @@
+/* You can add global styles to this file, and also import other style files */
+@import './app/styles/variables.scss';
+
+/* Estilos base que se aplican a toda la aplicación */
+body {
+  color: $text-primary;
+  background-color: $bg-primary;
+  margin: 0;
+  padding: 0;
+  transition: $transition-base;
+}
+
+/* Añade algunas clases de utilidad para tus colores IPN */
+.bg-ipn-guinda {
+  background-color: $ipn-guinda;
+}
+
+.bg-ipn-primary {
+  background-color: $primary;
+}
+
+.text-ipn-guinda {
+  color: $ipn-guinda;
+}
+
+.text-primary {
+  color: $text-primary;
+}
+
+.text-secondary {
+  color: $text-secondary;
+}
+
+.border-ipn {
+  border-color: $ipn-guinda;
+}
+
+/* Estilos específicos para modo oscuro */
+.dark-theme {
+  color: $text-primary;
+  background-color: $bg-primary;
+}
+
+/* Estilos específicos para modo claro */
+.light-theme {
+  color: $text-primary;
+  background-color: $bg-primary;
+}
+
+/* Establece estilos básicos para botones */
+button {
+  background-color: $ipn-guinda;
+  color: white;
+  border: none;
+  border-radius: $border-radius;
+  padding: $spacing-sm $spacing-md;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    background-color: $ipn-guinda-light;
+  }
+
+  &:active {
+    background-color: $ipn-guinda-dark;
+  }
+}
+
+/* Estilos para links */
+a {
+  color: $ipn-guinda;
+  text-decoration: none;
+  transition: $transition-fast;
+
+  &:hover {
+    color: $ipn-guinda-light;
+    text-decoration: underline;
+  }
+}
+
+/* Estilos para inputs */
+input, select, textarea {
+  background-color: var(--input-bg); // Usar variable CSS
+  color: $text-primary;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  padding: $spacing-sm;
+  transition: $transition-fast;
+
+  &:focus {
+    outline: none;
+    border-color: $ipn-guinda;
+  }
+}
+
+/* Estilos para cards */
+.card {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  padding: $spacing-md;
+  margin-bottom: $spacing-md;
+  transition: $transition-base;
+}
+
+/* Estilos para transiciones de tema */
+.theme-transition * {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}

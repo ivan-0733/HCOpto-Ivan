@@ -117,7 +117,7 @@
 
 .success-message {
   background-color: rgba($success, 0.1);
-  color: darken($success, 10%);
+  color: $success-dark;
   border-left: 4px solid $success;
 }
 

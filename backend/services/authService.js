@@ -116,7 +116,7 @@ const authService = {
   async obtenerDatosAlumno(boleta, correo) {
     try {
       const [alumnos] = await db.query(
-        `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+        `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.PeriodoEscolarActualID,
                 u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico
         FROM AlumnosInfo a
         JOIN Usuarios u ON a.UsuarioID = u.ID
@@ -253,7 +253,7 @@ const authService = {
       switch (role) {
         case 'alumno':
           query = `
-            SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+            SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.PeriodoEscolarActualID,
                   u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
                   u.EstaActivo, u.TelefonoCelular
             FROM AlumnosInfo a

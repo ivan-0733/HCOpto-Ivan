@@ -6,59 +6,39 @@
         <i class="fas fa-tachometer-alt"></i>
         Dashboard
       </h1>
-      <p *ngIf="perfil">Bienvenido,   <strong>{{ perfil.Nombre }} {{ perfil.ApellidoPaterno }} {{ perfil.ApellidoMaterno }}</strong></p>
+      <p *ngIf="perfil">Bienvenido, <strong>{{ perfil.Nombre }} {{ perfil.ApellidoPaterno }} {{ perfil.ApellidoMaterno }}</strong></p>
     </div>
   </header>
 
-  <!-- Cards de profesores - NUEVA SECCIÓN -->
-<div class="professor-cards" *ngIf="profesores && profesores.length >= 2">
-  <div class="professor-cards-row">
-    <!-- Card para "Todos los profesores" -->
-    <div class="professor-card small"
-         (click)="aplicarFiltroProfesor(null)"
-         [ngClass]="{'selected': profesorSeleccionadoId === null}">
-      <div class="professor-card-icon2">
-        <i class="material-icons" style="font-size: 35px;">group</i>
-      </div>
-      <div class="professor-card-content">
-        <h3>Todos los profesores</h3>
-      </div>
-    </div>
-
-    <!-- Contenedor para las dos cards de profesores del mismo tamaño -->
-    <div class="professor-cards-large">
-      <!-- Mostrar solo los primeros dos profesores -->
-      <div class="professor-card large"
-           *ngFor="let profesor of obtenerPrimerosDos()"
-           (click)="aplicarFiltroProfesor(profesor.ProfesorID)"
-           [ngClass]="{'selected': profesorSeleccionadoId === profesor.ProfesorID}">
-        <div class="professor-card-icon">
-          <i class="material-icons" style="font-size: 40px;">person</i>
+  <!-- Cards de materias -->
+  <div class="materias-cards" *ngIf="materias && materias.length > 0">
+    <div class="materias-cards-container">
+      <!-- Card para "Todas las materias" (solo se muestra si hay más de una materia) -->
+      <div class="materia-card" *ngIf="materias.length > 1"
+           (click)="aplicarFiltroMateria(null)"
+           [ngClass]="{'selected': materiaSeleccionadaId === null}">
+        <div class="materia-card-icon">
+          <i class="material-icons">school</i>
         </div>
-        <div class="professor-card-content">
-          <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }} {{ profesor.ApellidoMaterno }}</h3>
-          <!--<p class="stat-value">{{ obtenerHistoriasPorProfesor(profesor.ProfesorID) }}</p>-->
+        <div class="materia-card-content">
+          <h3>Todas las materias</h3>
+        </div>
+      </div>
+
+      <!-- Cards para cada materia -->
+      <div class="materia-card"
+           *ngFor="let materia of materias"
+           (click)="aplicarFiltroMateria(materia.ID)"
+           [ngClass]="{'selected': materiaSeleccionadaId === materia.ID}">
+        <div class="materia-card-icon">
+          <i class="material-icons">book</i>
+        </div>
+        <div class="materia-card-content">
+          <h3>{{ materia.NombreMateria }}</h3>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Si hay más de 2 profesores, mostrar el resto en otra fila con mismo tamaño -->
-  <div class="professor-cards-additional" *ngIf="profesores.length > 2">
-    <div class="professor-card additional"
-         *ngFor="let profesor of obtenerProfesoresAdicionales()"
-         (click)="aplicarFiltroProfesor(profesor.ProfesorID)"
-         [ngClass]="{'selected': profesorSeleccionadoId === profesor.ProfesorID}">
-      <div class="professor-card-icon">
-        <i class="fas fa-user-tie"></i>
-      </div>
-      <div class="professor-card-content">
-        <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }}</h3>
-        <p class="stat-value">{{ obtenerHistoriasPorProfesor(profesor.ProfesorID) }}</p>
-      </div>
-    </div>
-  </div>
-</div>
 
   <!-- Modificar la parte de las tarjetas de estadísticas -->
   <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
@@ -132,11 +112,11 @@
       [(ngModel)]="filtroEstado"
       (ngModelChange)="resetearPaginacion()">
       <option value="todos">Todos los estados</option>
+      <option value="Archivado">Archivados</option>
+      <option value="Finalizado">Finalizado</option>
       <option value="En proceso">En proceso</option>
       <option value="Revisión">Revisión</option>
       <option value="Corrección">Corrección</option>
-      <option value="Finalizado">Finalizado</option>
-      <option value="Archivado">Archivados</option>
     </select>
   </div>
 
@@ -224,7 +204,7 @@
             </span>
           </td>
           <td>{{ historia.Consultorio }}</td>
-          <td>{{ historia.Semestre }}</td>
+          <td>{{ historia.PeriodoEscolar }}</td>
           <td class="acciones">
             <button class="btn-icon btn-view" (click)="verHistoria(historia.ID)" title="Ver Historia Clínica Completa">
               <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">visibility</i>

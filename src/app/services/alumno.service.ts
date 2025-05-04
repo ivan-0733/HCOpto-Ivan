@@ -5,19 +5,45 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Perfil {
+  ID: number;
+  UsuarioID: number;
   AlumnoInfoID: number;
   NumeroBoleta: string;
-  SemestreActual: number;
-  UsuarioID: number;
-  NombreUsuario: string;
-  CorreoElectronico: string;
-  EstaActivo: boolean;
-  TelefonoCelular: string | null;
-  FechaCreacion: string;
-  FechaUltimoAcceso: string | null;
+  PeriodoEscolarActualID?: number;  // Changed from SemestreActual
   Nombre: string;
   ApellidoPaterno: string;
-  ApellidoMaterno: string | null;
+  ApellidoMaterno: string;
+  NombreUsuario: string;
+  CorreoElectronico: string;
+  TelefonoCelular?: string;
+  EstaActivo: boolean;
+  FechaCreacion?: string;
+  FechaUltimoAcceso?: string;
+}
+
+// Update the existing PeriodoEscolar interface from your file (if it exists already) or add it
+export interface PeriodoEscolar {
+  ID: number;
+  Codigo: string;
+  FechaInicio: string;
+  FechaFin: string;
+  EsActual: boolean;
+  FechaInicioSiguiente?: string;
+}
+
+export interface MateriaAlumno {
+  ID: number;
+  AlumnoInfoID: number;
+  MateriaProfesorID: number;
+  PeriodoEscolarID: number;
+  FechaInscripcion: string;
+  NombreMateria: string;
+  NombreProfesor: string;
+  Codigo?: string;    // Nombre correcto según la respuesta
+  Semestre?: number;         // Este ya está correcto
+  EjeFormativo?: string;     // Este necesitamos verificar
+  Descripcion?: string;      // Este necesitamos verificar
+  PeriodoEscolar?: string;   // También aparece en la respuesta
 }
 
 // Corregir la interfaz Profesor en alumno.service.ts
@@ -99,9 +125,17 @@ export class AlumnoService {
       );
   }
 
-  // Obtener semestre actual
-  obtenerSemestreActual(): Observable<Semestre> {
-    return this.http.get<ApiResponse<Semestre>>(`${this.apiUrl}/semestre-actual`)
+  // Cambiar obtenerSemestreActual por obtenerPeriodoEscolarActual
+  obtenerPeriodoEscolarActual(): Observable<PeriodoEscolar> {
+    return this.http.get<ApiResponse<PeriodoEscolar>>(`${this.apiUrl}/periodo-actual`)
+      .pipe(
+        map(response => response.data)
+      );
+  }
+
+  // Añadir método para obtener materias
+  obtenerMaterias(): Observable<MateriaAlumno[]> {
+    return this.http.get<ApiResponse<MateriaAlumno[]>>(`${this.apiUrl}/materias`)
       .pipe(
         map(response => response.data)
       );

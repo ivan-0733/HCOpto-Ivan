@@ -11,8 +11,9 @@ const alumnoService = {
  */
 async obtenerAlumnoPorId(alumnoInfoId) {
   try {
+    // In alumnoService.js - update the query in obtenerAlumnoPorId
     const [alumnos] = await db.query(
-      `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+      `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.PeriodoEscolarActualID,
               a.Nombre, a.ApellidoPaterno, a.ApellidoMaterno,
               u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
               u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
@@ -126,54 +127,99 @@ async verificarPassword(usuarioId, passwordActual) {
  */
 async obtenerAlumnoPorBoleta(boleta) {
   try {
-      const [alumnos] = await db.query(
-      `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
+    const [alumnos] = await db.query(
+      `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.PeriodoEscolarActualID,
               u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
               u.EstaActivo, u.TelefonoCelular
           FROM AlumnosInfo a
           JOIN Usuarios u ON a.UsuarioID = u.ID
           WHERE a.NumeroBoleta = ? AND u.EstaActivo = TRUE`,
       [boleta]
-      );
+    );
 
-      if (alumnos.length === 0) {
+    if (alumnos.length === 0) {
       return null;
-      }
+    }
 
-      return alumnos[0];
+    return alumnos[0];
   } catch (error) {
-      console.error('Error al obtener alumno por boleta:', error);
-      throw error;
+    console.error('Error al obtener alumno por boleta:', error);
+    throw error;
+  }
+},
+
+/**
+ * Obtiene las materias asignadas a un alumno
+ * @param {number} alumnoId - ID del alumno (de AlumnosInfo)
+ * @returns {Promise<Array>} - Lista de materias del alumno
+ */
+async obtenerMateriasAlumno(alumnoId) {
+  try {
+    const [materias] = await db.query(`
+      SELECT
+        ma.ID,
+        ma.AlumnoInfoID,
+        ma.MateriaProfesorID,
+        ma.PeriodoEscolarID,
+        m.Nombre AS NombreMateria,
+        m.Codigo,
+        m.Semestre,
+        m.EjeFormativo,
+        m.Descripcion,
+        CONCAT(p.Nombre, ' ', p.ApellidoPaterno) AS NombreProfesor,
+        pe.Codigo AS PeriodoEscolar,
+        ma.FechaInscripcion
+      FROM MateriasAlumno ma
+      JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
+      JOIN ProfesoresInfo p ON mp.ProfesorInfoID = p.ID
+      JOIN PeriodosEscolares pe ON ma.PeriodoEscolarID = pe.ID
+      WHERE ma.AlumnoInfoID = ?
+      AND pe.EsActual = TRUE
+      ORDER BY m.Semestre, m.Nombre`,
+      [alumnoId]
+    );
+
+    return materias;
+  } catch (error) {
+    console.error('Error al obtener materias del alumno:', error);
+    throw error;
   }
 },
 
 /**
  * Obtiene los profesores asignados a un alumno
- * @param {number} alumnoInfoId - ID del alumno (de AlumnosInfo)
+ * @param {number} alumnoId - ID del alumno (de AlumnosInfo)
  * @returns {Promise<Array>} - Lista de profesores asignados
  */
-async obtenerProfesoresAsignados(alumnoInfoId) {
+async obtenerProfesoresAsignados(alumnoId) {
   try {
     const [profesores] = await db.query(`
-    SELECT
-        p.ID AS ProfesorID,
-        p.NumeroEmpleado,
-        p.Nombre,
-        p.ApellidoPaterno,
-        p.ApellidoMaterno,
-        p.NombreMateria,
-        u.NombreUsuario,
-        u.CorreoElectronico,
-        u.TelefonoCelular,
-        vap.FechaInicio
-    FROM VinculacionAlumnoProfesor vap
-    JOIN ProfesoresInfo p ON vap.ProfesorInfoID = p.ID
-    JOIN Usuarios u ON p.UsuarioID = u.ID
-    WHERE vap.AlumnoInfoID = ?
-      AND vap.Activo = TRUE
-    ORDER BY vap.FechaInicio DESC;`,
-      [alumnoInfoId]
+      SELECT DISTINCT
+          p.ID AS ProfesorID,
+          p.NumeroEmpleado,
+          p.Nombre,
+          p.ApellidoPaterno,
+          p.ApellidoMaterno,
+          p.NombreMateria,
+          u.NombreUsuario,
+          u.CorreoElectronico,
+          u.TelefonoCelular,
+          ma.FechaInscripcion AS FechaInicio
+      FROM MateriasAlumno ma
+      JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
+      JOIN ProfesoresInfo p ON mp.ProfesorInfoID = p.ID
+      JOIN Usuarios u ON p.UsuarioID = u.ID
+      JOIN PeriodosEscolares pe ON ma.PeriodoEscolarID = pe.ID
+      WHERE ma.AlumnoInfoID = ?
+        AND pe.EsActual = TRUE
+      ORDER BY ma.FechaInscripcion DESC`,
+      [alumnoId]
     );
+
+    // Verificar que estamos obteniendo resultados
+    console.log(`Profesores recuperados para alumnoId=${alumnoId}:`, profesores);
+
     return profesores;
   } catch (error) {
     console.error('Error al obtener profesores asignados:', error);
@@ -185,20 +231,21 @@ async obtenerProfesoresAsignados(alumnoInfoId) {
  * Obtiene el semestre actual
  * @returns {Promise<Object|null>} - Datos del semestre actual o null si no hay ninguno
  */
-async obtenerSemestreActual() {
+// Cambiar obtenerSemestreActual por obtenerPeriodoEscolarActual
+async obtenerPeriodoEscolarActual() {
   try {
-      const [semestres] = await db.query(
-      'SELECT ID, Nombre, FechaInicio, FechaFin FROM Semestres WHERE EsActual = TRUE'
-      );
+    const [periodos] = await db.query(
+      'SELECT ID, Codigo, FechaInicio, FechaFin FROM PeriodosEscolares WHERE EsActual = TRUE'
+    );
 
-      if (semestres.length === 0) {
+    if (periodos.length === 0) {
       return null;
-      }
+    }
 
-      return semestres[0];
+    return periodos[0];
   } catch (error) {
-      console.error('Error al obtener semestre actual:', error);
-      throw error;
+    console.error('Error al obtener período escolar actual:', error);
+    throw error;
   }
 },
 

@@ -18,7 +18,7 @@ export interface HistoriaClinica {
   Edad?: number;
   Estado: string;
   Consultorio: string;
-  Semestre: string;
+  PeriodoEscolar: string; // Changed from Semestre
   CorreoElectronico?: string;
   TelefonoCelular?: string;
 
@@ -34,7 +34,7 @@ export interface HistoriaClinica {
 export interface HistoriaClinicaDetalle extends HistoriaClinica {
   ProfesorID: number;
   ConsultorioID: number;
-  SemestreID: number;
+  PeriodoEscolarID: number; // Cambiar SemestreID por PeriodoEscolarID
   GeneroID: number;
   EstadoCivilID: number;
   EscolaridadID: number;

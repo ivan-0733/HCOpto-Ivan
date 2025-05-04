@@ -42,7 +42,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
     p {
       margin: 0.5rem 0 0;
-      color: #666;
+      color: $text-secondary; // Cambiado para soporte de tema
     }
   }
 
@@ -73,7 +73,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   }
 
   &:disabled {
-    background-color: lighten($ipn-guinda, 20%);
+    background-color: $ipn-guinda;
     cursor: not-allowed;
   }
 }
@@ -98,27 +98,26 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   }
 }
 
-// Stats cards - SIN CAMBIOS como fue solicitado
+// Stats cards - Modificado para soportar temas
 .stats-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Tarjetas más anchas */
-  gap: 0.1rem; /* Espacio casi imperceptible */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); // Mismo comportamiento responsive
+  gap: 0.3rem;
+  width: 100%;
   margin-bottom: 1.5rem;
-  width: 100%; /* Ocupa todo el ancho disponible */
 }
 
 .stat-card {
-  background-color: #fff;
+  background-color: $bg-primary;
   border-radius: $border-radius;
   padding: 1.5rem;
   box-shadow: $box-shadow;
   display: flex;
   align-items: center;
-  width: 98%; /* Aprovecha el espacio completo del grid */
-  /* Eliminamos transform: scale para evitar espacios artificiales */
+  width: 100%;
   transform-origin: top left;
-  margin: 1rem 0rem; /* Elimina márgenes residuales */
-  box-sizing: border-box; /* Incluye padding en el ancho */
+  margin: 1rem 0rem;
+  box-sizing: border-box;
   margin-bottom: 0rem;
   transition: transform 0.2s ease, background-color 0.3s ease;
   cursor: pointer;
@@ -141,6 +140,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     align-items: center;
     justify-content: center;
     margin-right: 0.5rem;
+    background-color: $primary-color;
 
     i {
       font-size: 1.6rem;
@@ -151,7 +151,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   .stat-card-content {
     h3 {
       font-size: 1.1rem;
-      color: black;
+      color: $text-primary;
       margin: 0 0 0.5rem;
       text-align: center;
     }
@@ -161,7 +161,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       text-align: center;
       font-weight: 700;
       margin: 0;
-      color: black;
+      color: $text-primary; // Cambiado para soporte de tema
     }
   }
 
@@ -193,7 +193,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
   // Estilo para cuando el card está seleccionado
   &.selected {
-    background-color: rgba(220, 220, 220, 0.25);
+    background-color: rgba($ipn-guinda, 0.1); // Cambiado para mejor compatibilidad con tema
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     border-left: 3px solid $ipn-guinda;
   }
@@ -201,7 +201,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
 // Mensaje de ayuda
 .help-message {
-  background-color: rgba(220, 220, 220, 0.25);
+  background-color: rgba(220, 220, 220, 0.25); // Cambiado para soporte de tema
   border-left: 4px solid $ipn-guinda; // Cambiado a color IPN
   padding: 1rem;
   margin-bottom: 1.5rem;
@@ -218,7 +218,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
   p {
     margin: 0;
-    color: black;
+    color: $text-primary; // Cambiado para soporte de tema
   }
 }
 
@@ -228,7 +228,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   flex-wrap: wrap;
   gap: 1.5rem;
   margin-bottom: 1.7rem;
-  background-color: #fff;
+  background-color: $bg-primary; // Cambiado para soporte de tema
   padding: 1.5rem;
   border-radius: $border-radius;
   box-shadow: $box-shadow;
@@ -250,10 +250,12 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     select, input {
       width: 100%;
       padding: 0.6rem;
-      border: 1px solid #ddd;
+      border: 1px solid $border-color; // Cambiado para soporte de tema
       border-radius: $border-radius;
       font-size: 0.95rem;
       box-sizing: border-box; // ← evita sumar padding al width
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      color: $text-primary; // Cambiado para soporte de tema
 
       &:focus {
         outline: none;
@@ -270,7 +272,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
         left: 0.5rem;
         top: 50%;
         transform: translateY(-50%);
-        color: #999;
+        color: $text-secondary; // Cambiado para soporte de tema
       }
 
       input {
@@ -298,7 +300,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
 // Tabla de historias
 .tabla-container {
-  background-color: #fff;
+  background-color: $bg-primary; // Cambiado para soporte de tema
   border-radius: $border-radius;
   box-shadow: $box-shadow;
   padding: 1.5rem;
@@ -312,7 +314,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   th, td {
     padding: 1rem;
     text-align: center;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
   }
 
   th {
@@ -325,13 +327,14 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
     transition: background-color 0.2s;
 
     &:hover {
-      background-color: rgba($ipn-gray, 0.75)// Cambiado a color IPN muy claro
+      background-color: rgba($ipn-guinda, 0.1); // Cambiado para mejor compatibilidad con tema
     }
   }
 
   .paciente-info {
     display: flex;
     flex-direction: column;
+    font-size: 1.15rem;
 
     .nombre-completo {
       font-weight: 500;
@@ -340,7 +343,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
     .contacto-paciente {
       font-size: 0.85rem;
-      color: #666;
+      color: $text-secondary; // Cambiado para soporte de tema
       margin-top: 0.2rem;
 
       i {
@@ -402,19 +405,20 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       justify-content: center;
       border: none;
       cursor: pointer;
-      background-color: #fff;
+      background-color: transparent; // Cambiado para soporte de tema
 
       i {
-        color: $ipn-guinda; // Cambiado a color IPN ($ipn-guinda en vez de #800000)
+        background-color: $bg-primary !important; // Cambiado para soporte de tema
+        color: $ipn-guinda !important; // Cambiado a color IPN
         font-size: 1.2rem;
       }
 
       &:hover {
-        background-color: #fff;
+        background-color: rgba($ipn-guinda, 0.1); // Cambiado para soporte de tema
       }
 
       &:disabled {
-        background-color: #fff;
+        opacity: 0.5;
         cursor: not-allowed;
       }
     }
@@ -443,7 +447,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   }
 
   p {
-    color: #666;
+    color: $text-secondary; // Cambiado para soporte de tema
     margin-bottom: 1rem;
   }
 }
@@ -484,6 +488,17 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
 // Responsive
 @media (max-width: 350px) {
+
+  .materias-cards-container,
+  .materias-cards-large,
+  .materias-cards-additional {
+    grid-template-columns: 1fr; // Una columna en móviles pequeños
+  }
+
+  .materia-card {
+    width: 95%; // Ligeramente más estrecho para mantener márgenes
+  }
+
   .content-header {
     flex-direction: column;
     align-items: flex-start;
@@ -515,12 +530,12 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   align-items: center;
   margin-top: 1.5rem;
   padding: 1rem;
-  background-color: #f8f9fa;
+  background-color: rgba($ipn-guinda, 0.05); // Cambiado para soporte de tema
   border-radius: $border-radius;
   font-size: 0.9rem;
 
   .paginacion-info {
-    color: #666;
+    color: $text-secondary; // Cambiado para soporte de tema
     padding: 0.5rem 0;
   }
 
@@ -530,14 +545,15 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
     label {
       margin-right: 0.5rem;
-      color: #666;
+      color: $text-secondary; // Cambiado para soporte de tema
     }
 
     select {
       padding: 0.3rem 0.6rem;
-      border: 1px solid #ddd;
+      border: 1px solid $border-color; // Cambiado para soporte de tema
       border-radius: $border-radius;
-      background-color: white;
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      color: $text-primary; // Cambiado para soporte de tema
 
       &:focus {
         outline: none;
@@ -557,8 +573,8 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: white;
-      border: 1px solid #ddd;
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      border: 1px solid $border-color; // Cambiado para soporte de tema
       border-radius: $border-radius;
       cursor: pointer;
       transition: all 0.2s;
@@ -578,7 +594,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
         cursor: not-allowed;
 
         &:hover {
-          background-color: white;
+          background-color: $bg-primary; // Cambiado para soporte de tema
         }
       }
     }
@@ -604,35 +620,64 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       align-self: center;
     }
   }
+
+  .materias-cards-container,
+  .materias-cards-large,
+  .materias-cards-additional {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); // Celdas un poco más pequeñas en tablets
+  }
+
+  .materia-card {
+    text-align: center;
+
+    .materia-card-icon {
+      margin-right: 0; // Eliminar el margen lateral
+      margin-bottom: 1rem; // Añadir espacio abajo del icono
+    }
+}
 }
 
-// Estilos para las cards de profesores
-.professor-cards {
-  margin-bottom: 0.55rem;
+.materias-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); // Mismo comportamiento responsive
+  gap: 0.3rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+// Make the materias cards responsive
+.materias-cards {
+  margin-bottom: 0.5rem;
   width: 100%;
 }
 
-.professor-cards-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.1rem;
+.materias-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); // Exactamente 3 columnas por fila
+  gap: 1rem; // Espacio entre las tarjetas
+  width: 100%;
 }
 
-.professor-cards-large {
+.materias-cards-large {
   display: flex;
   flex: 2;
+  flex-wrap: wrap; // Allow wrapping on smaller screens
   gap: 0.5rem;
+  min-width: 0; // Allow shrinking below content size
 }
 
-.professor-card {
-  background-color: #fff;
+.materia-card {
+  background-color: $bg-primary;
   border-radius: $border-radius;
   padding: 1.5rem;
   box-shadow: $box-shadow;
   display: flex;
   align-items: center;
-  justify-content: center;
+  width: 100%;
+  transform-origin: top left;
+  margin: 0.3rem 0rem;
   box-sizing: border-box;
+  margin-bottom: 0rem;
   transition: transform 0.2s ease, background-color 0.3s ease;
   cursor: pointer;
 
@@ -646,121 +691,197 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   }
 
   &.selected {
-    background-color: rgba(220, 220, 220, 0.25); // Similar a stat-card
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);    // Más notorio que el normal
-    border-left: 3px solid $ipn-guinda;         // Indicador visual con color IPN
+    background-color: rgba($ipn-guinda, 0.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    border-left: 3px solid $ipn-guinda;
   }
 
-  .professor-card-icon {
+  .materia-card-icon {
     width: 50px;
-    height: 43px; // Cambiado a 50px para ser un círculo perfecto
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 1rem;
+    margin-right: 0.5rem;
     background-color: $primary-color;
 
     i {
-      font-size: 1.3rem;
+      font-size: 2.2rem;
       color: #fff;
     }
   }
 
-  .professor-card-icon2 {
-    width: 53px;
-    height: 43px; // Cambiado a 50px para ser un círculo perfecto
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-    background-color: $primary-color;
-
-    i {
-      font-size: 1.3rem;
-      color: #fff;
-    }
-  }
-
-  .professor-card-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    text-align: left;
+  .materia-card-content {
+    flex: 1;
 
     h3 {
-      font-size: 1.3rem; // Tamaño de letra unificado para todos los profesores
-      color: black;
-      margin: 0 0 0.5rem 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-block;
-    }
-
-    .stat-value {
-      font-size: 1.3rem; // Aumentado el tamaño para el valor de historias clínicas
-      font-weight: 700;
-      color: black;
-      margin: 0 0 0 1rem;
-      display: inline-block;
-    }
-  }
-
-  // Estilos específicos según tamaño
-  &.small {
-    flex: 0 0 auto;
-    min-width: 350px;
-
-    .professor-card-content {
+      font-size: 1.3rem;
+      color: $text-primary;
+      margin: 0rem;
       text-align: center;
-
-      h3 {
-        font-size: 1.4rem; // Unificado con los demás
-        margin: 0;
-      }
     }
   }
 
   &.large {
     flex: 1;
 
-    .professor-card-content {
+    .materia-card-content {
       text-align: center;
 
       h3 {
-        font-size: 1.3rem; // Unificado con los demás
+        font-size: 1.3rem;
         margin: 0 0 0.5rem;
       }
 
       .stat-value {
-        font-size: 1.3rem; // Aumentado para ser consistente
+        font-size: 1.3rem;
       }
     }
   }
 }
 
-// Estilos para profesores adicionales
-.professor-cards-additional {
-  display: flex;
-  flex-wrap: wrap;
+// Estilos para materias adicionales
+.materias-cards-large, .materias-cards-additional {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); // El mismo patrón responsivo
   gap: 1rem;
-  margin-top: 1rem;
+  width: 100%;
 }
 
-.professor-card.additional {
-  flex: 1;
-  min-width: 300px;
+// Añadir clases específicas para el modo oscuro si hay elementos personalizados
+:host-context(.dark-theme) {
+  .btn-icon i {
+    background-color: $bg-primary !important;
+    color: $ipn-guinda !important;
+  }
+}
 
-  .professor-card-content {
-    h3 {
-      font-size: 1.3rem; // Unificado con los demás
-    }
+// Añade esto al final de tu archivo SCSS
 
-    .stat-value {
-      font-size: 1.3rem; // Aumentado para ser consistente
+// Variables para el tema oscuro
+$dark-bg-card: #2a2a2a; // Fondo gris para cards en modo oscuro
+$dark-selected-bg: #1e1e1e; // Fondo más oscuro para cards seleccionadas en modo oscuro
+$light-selected-bg: #f0f0f0; // Fondo gris claro para cards seleccionadas en modo claro
+$hover-bg-light: #f0f0f0; // Fondo para hover en registros de tabla en modo claro
+$hover-bg-dark: #1e1e1e; // Fondo para hover en registros de tabla en modo oscuro
+$accent-color-dark: $ipn-guinda; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+$accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+
+// Modificaciones para el modo oscuro
+:host-context(.dark-theme) {
+  // Estilos para cards en modo oscuro
+  .stat-card {
+    background-color: $dark-bg-card;
+
+    &.selected {
+      background-color: $dark-selected-bg;
     }
   }
+
+  // Estilos para tablas en modo oscuro
+  .tabla-container {
+    background-color: $dark-bg-card;
+  }
+
+  // Estilos para filtros en modo oscuro
+  .filtros-container {
+    background-color: $dark-bg-card;
+  }
+
+  // Estilos para materia cards en modo oscuro
+  .materia-card {
+    background-color: $dark-bg-card;
+
+    &.selected {
+      background-color: $dark-selected-bg;
+    }
+  }
+
+  // Estilos para help-message en modo oscuro
+  .help-message {
+    background-color: $dark-bg-card;
+    border-left: 4px solid $ipn-guinda;
+
+    i {
+      color: $ipn-guinda;
+    }
+  }
+
+  // Modificar el hover de las tablas en modo oscuro
+  .tabla-historias {
+    tbody tr {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  // Mantén los iconos visibles en modo oscuro
+  .btn-icon i {
+    background-color: transparent !important;
+    color: $accent-color-dark !important;
+  }
+
+  // Unificar colores de acento en modo oscuro
+  .header-title h1,
+  .header-title h1 i,
+  .filtro label,
+  .section-title,
+  .paciente-info .nombre-completo,
+  .paciente-info .contacto-paciente i,
+  .valor-destacado,
+  .paginacion-botones .btn-pagina i.material-icons {
+    color: $accent-color-dark2;
+  }
+
+  .estado-badge{color: black}
+
+  // Bordes con color de acento
+  .help-message,
+  .stat-card.selected,
+  .materia-card.selected {
+    border-left-color: $accent-color-dark;
+  }
+
+  // Fondos con color de acento
+  .stat-card-icon,
+  .materia-card-icon,
+  .materia-card-icon2 {
+    background-color: $accent-color-dark;
+  }
+}
+
+// Modificaciones para cards seleccionadas en modo claro
+.stat-card.selected {
+  background-color: $light-selected-bg;
+  border-left: 3px solid $ipn-guinda;
+}
+
+.materia-card.selected {
+  background-color: $light-selected-bg;
+  border-left: 3px solid $ipn-guinda;
+}
+
+// Modificaciones para el hover en tablas (tanto modo claro como oscuro)
+.tabla-historias {
+  tbody tr {
+    &:hover {
+      background-color: $hover-bg-light;
+    }
+  }
+}
+
+.iconos-apilados {
+  position: relative;
+  display: inline-block;
+}
+.icono-atras {
+  position: absolute;
+  top: -0.2em;
+  left: 0;
+}
+.icono-adelante {
+  position: relative;
+  left: 0.3em;
 }

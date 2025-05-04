@@ -11,11 +11,9 @@ html, body {
   min-height: 100vh;
 }
 
-// Contenedor principal
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+// app.component.scss
+.app-container.with-nav {
+  padding-top: 60px; // Valor consistente para todos los tamaños de pantalla
 }
 
 // Contenido principal

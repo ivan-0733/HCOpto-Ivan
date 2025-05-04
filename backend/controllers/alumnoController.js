@@ -32,6 +32,40 @@ const alumnoController = {
   }),
 
   /**
+   * Obtener información del período escolar actual
+   */
+  obtenerPeriodoEscolar: catchAsync(async (req, res) => {
+    const periodo = await alumnoService.obtenerPeriodoEscolarActual();
+
+    if (!periodo) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'No hay un período escolar activo actualmente'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: periodo
+    });
+  }),
+
+  /**
+   * Obtener materias del alumno
+   */
+  obtenerMaterias: catchAsync(async (req, res) => {
+    const alumnoId = req.usuario.AlumnoInfoID;
+
+    const materias = await alumnoService.obtenerMateriasAlumno(alumnoId);
+
+    res.status(200).json({
+      status: 'success',
+      results: materias.length,
+      data: materias
+    });
+  }),
+
+  /**
    * Obtener profesores asignados al alumno
    */
   obtenerProfesoresAsignados: catchAsync(async (req, res) => {

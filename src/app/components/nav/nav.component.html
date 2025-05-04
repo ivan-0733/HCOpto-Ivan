@@ -1,39 +1,40 @@
-<nav class="main-nav" [class.collapsed]="isCollapsed">
+<nav class="main-nav" [class.collapsed]="isCollapsed" [style.--nav-height-adjustment]="menuHeight">
   <div class="nav-container">
     <div class="nav-header">
       <a routerLink="/" class="nav-logo">
         <span>HCOpto</span>
       </a>
 
-      <button class="nav-toggle" (click)="toggleMenu()">
-        <i class="fas" [ngClass]="isCollapsed ? 'fa-bars' : 'fa-times'"></i>
+      <!-- Botón de menú móvil -->
+      <button class="nav-toggle" (click)="toggleMenu()" aria-label="Toggle navigation menu">
+        <i class="material-icons">{{ isCollapsed ? 'menu' : 'close' }}</i>
       </button>
     </div>
 
-    <div class="nav-collapse" [class.show]="!isCollapsed">
+    <div class="nav-collapse" [class.show]="!isCollapsed" #navCollapse>
       <!-- Menú para Alumno -->
       <ul class="nav-menu" *ngIf="isAlumno">
         <li class="nav-item">
-          <a routerLink="/alumno/dashboard" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-tachometer-alt"></i>
+          <a routerLink="/alumno/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">
+            <i class="material-icons">dashboard</i>
             <span>Dashboard</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/alumno/historias/nueva" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-plus-circle"></i>
+          <a routerLink="/alumno/historias/nueva" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">add_circle</i>
             <span>Nueva Historia</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/alumno/profesores" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-chalkboard-teacher"></i>
-            <span>Mis Profesores</span>
+          <a routerLink="/alumno/profesores" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">event</i>
+            <span>Mi Semestre</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/alumno/perfil" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-user-cog"></i>
+          <a routerLink="/alumno/perfil" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">person_outline</i>
             <span>Mi Perfil</span>
           </a>
         </li>
@@ -42,26 +43,26 @@
       <!-- Menú para Profesor -->
       <ul class="nav-menu" *ngIf="isProfesor">
         <li class="nav-item">
-          <a routerLink="/profesor/dashboard" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-tachometer-alt"></i>
+          <a routerLink="/profesor/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">dashboard</i>
             <span>Dashboard</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/profesor/historias" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-file-medical"></i>
+          <a routerLink="/profesor/historias" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">
+            <i class="material-icons">description</i>
             <span>Historias Clínicas</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/profesor/alumnos" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-user-graduate"></i>
+          <a routerLink="/profesor/alumnos" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">
+            <i class="material-icons">groups</i>
             <span>Mis Alumnos</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/profesor/perfil" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-user-cog"></i>
+          <a routerLink="/profesor/perfil" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">person</i>
             <span>Mi Perfil</span>
           </a>
         </li>
@@ -70,50 +71,68 @@
       <!-- Menú para Admin -->
       <ul class="nav-menu" *ngIf="isAdmin">
         <li class="nav-item">
-          <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-tachometer-alt"></i>
+          <a routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">dashboard</i>
             <span>Dashboard</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/admin/usuarios" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-users"></i>
+          <a routerLink="/admin/usuarios" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">
+            <i class="material-icons">people</i>
             <span>Usuarios</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/admin/configuracion" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-cogs"></i>
+          <a routerLink="/admin/configuracion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+            <i class="material-icons">settings</i>
             <span>Configuración</span>
           </a>
         </li>
       </ul>
 
-      <!-- Menú para usuario no autenticado -->
-      <ul class="nav-menu" *ngIf="!authService.isAuthenticated()">
-        <li class="nav-item">
-          <a routerLink="/login" routerLinkActive="active" (click)="closeMenu()">
-            <i class="fas fa-sign-in-alt"></i>
-            <span>Iniciar Sesión</span>
-          </a>
-        </li>
-      </ul>
-
-      <!-- Menú de usuario -->
+      <!-- Menú de usuario y tema -->
       <div class="nav-user" *ngIf="authService.isAuthenticated()">
-        <div class="user-info">
-          <div class="user-avatar material-icons" [title]="isAlumno ? 'Alumno' : (isProfesor ? 'Profesor' : 'Administrador')">
-            {{ isAlumno ? 'person_outline' : (isProfesor ? 'person' : 'supervisor_account') }}
+        <div class="user-theme-row">
+
+          <!-- Selector de tema -->
+          <div class="theme-selector-container">
+            <button class="theme-toggle" (click)="toggleThemeSelector()" title="Cambiar tema">
+              <i class="material-icons" [ngClass]="{'dark-icon': currentTheme === 'dark'}">{{ getThemeIcon() }}</i>
+            </button>
+
+            <div class="theme-options" *ngIf="showThemeSelector">
+              <button class="theme-option" (click)="setTheme('light')">
+                <i class="material-icons">brightness_high</i>
+                <span>Claro</span>
+              </button>
+              <button class="theme-option" (click)="setTheme('dark')">
+                <i class="material-icons">brightness_2</i>
+                <span>Oscuro</span>
+              </button>
+              <button class="theme-option" (click)="setTheme('system')">
+                <i class="material-icons">settings</i>
+                <span>Sistema</span>
+              </button>
+            </div>
           </div>
-          <div class="user-name">
-            <p>{{ userName }}</p>
-            <small *ngIf="isAlumno">Alumno <span class="semestre-badge">{{ userSemestre }}</span></small>
-            <small *ngIf="isProfesor">Profesor</small>
-            <small *ngIf="isAdmin">Administrador</small>
+
+          <!-- Información del usuario -->
+          <div class="user-info">
+            <div class="user-avatar">
+              <i class="material-icons">{{ isAlumno ? 'person_outline' : (isProfesor ? 'person' : 'supervisor_account') }}</i>
+            </div>
+            <div class="user-name">
+              <p>{{ userName }}</p>
+              <small *ngIf="isAlumno" style="width: 100%; text-align: center;">Alumno</small>
+              <small *ngIf="isProfesor">Profesor</small>
+              <small *ngIf="isAdmin">Administrador</small>
+            </div>
           </div>
         </div>
+
+        <!-- Botón de logout -->
         <button class="btn-logout" (click)="logout()">
-          <i class="fas fa-sign-out-alt"></i>
+          <i class="material-icons">exit_to_app</i>
           <span>Cerrar Sesión</span>
         </button>
       </div>

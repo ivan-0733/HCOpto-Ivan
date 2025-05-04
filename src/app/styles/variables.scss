@@ -1,18 +1,189 @@
-// Colores institucionales del IPN
-// Puede ser: #8d0066 o #aa325a
-$ipn-guinda: #731635;
-$ipn-guinda-light: #922041;
-$ipn-guinda-dark: #5a112a;
-$ipn-white: #ffffff;
-$ipn-gray: #f0f0f0;
-$ipn-gray-dark: #c0c0c0;
+// Sistema de temas para la aplicación
+@import './theme.scss';
+
+// Valores base para modos claro y oscuro
+// Light theme colors (valores predeterminados)
+$light-ipn-guinda: #731635;
+$light-ipn-guinda-light: #922041;
+$light-ipn-guinda-dark: #5a112a;
+$light-ipn-white: #ffffff;
+$light-ipn-gray: #f0f0f0;
+$light-ipn-gray-dark: #c0c0c0;
+$light-ipn-secondary: #ffffff;
+
+$light-success: #2ecc71;
+$light-success-dark: darken($light-success, 10%);
+$light-info: #3498db;
+$light-warning: #f39c12;
+$light-warning-dark: darken($light-warning, 15%);
+$light-danger: #e74c3c;
+$light-danger-light: #fff5f5;
+
+$light-text-primary: #333333;
+$light-text-secondary: #666666;
+$light-text-tertiary: #999999;
+
+$light-bg-primary: #ffffff;
+$light-bg-secondary: #f8f9fa;
+$light-bg-tertiary: #f0f0f0;
+
+$light-border-color: #dcdcdc;
+$light-border-light: #e9e9e9;
+$light-border-dark: #c0c0c0;
+
+$light-shadow-color: rgba(0, 0, 0, 0.1);
+
+$light-ipn-primary: #722F37;
+$light-ipn-accent: #9E9E9E;
+
+// Dark theme colors
+$dark-ipn-guinda: #731635;
+$dark-ipn-guinda-light: lighten($dark-ipn-guinda, 15%);
+$dark-ipn-guinda-dark: darken($dark-ipn-guinda, 10%);
+$dark-ipn-white: #222222;
+$dark-ipn-gray: #333333;
+$dark-ipn-gray-dark: rgba(220, 220, 220, 0.25);
+$dark-ipn-secondary: #e0e0e0;
+
+$dark-success: #1db954;
+$dark-success-dark: darken($dark-success, 10%);
+$dark-info: #3498db;
+$dark-warning: #e67e22;
+$dark-warning-dark: darken($dark-warning, 15%);
+$dark-danger: #e74c3c;
+$dark-danger-light: #461818;
+
+$dark-text-primary: #ffffff;
+$dark-text-secondary: #cdcdcd;
+$dark-text-tertiary: #a0a0a0;
+
+$dark-bg-primary: #1a1a1a;
+$dark-bg-secondary: #1e1e1e;
+$dark-bg-tertiary: #2a2a2a;
+
+$dark-border-color: #3a3a3a;
+$dark-border-light: #444444;
+$dark-border-dark: #333333;
+
+$dark-shadow-color: rgba(0, 0, 0, 0.3);
+
+$dark-ipn-primary: #922041;
+$dark-ipn-accent: #777777;
+
+// Configuración de tema basada en atributo data-theme en el nivel de :root
+:root {
+  // Configuración de tema claro (predeterminado)
+  --ipn-guinda: #{$light-ipn-guinda};
+  --ipn-guinda-light: #{$light-ipn-guinda-light};
+  --ipn-guinda-dark: #{$light-ipn-guinda-dark};
+  --ipn-white: #{$light-ipn-white};
+  --ipn-gray: #{$light-ipn-gray};
+  --ipn-gray-dark: #{$light-ipn-gray-dark};
+  --ipn-secondary: #{$light-ipn-secondary};
+
+  --success: #{$light-success};
+  --success-dark: #{$light-success-dark};
+  --info: #{$light-info};
+  --warning: #{$light-warning};
+  --warning-dark: #{$light-warning-dark};
+  --danger: #{$light-danger};
+  --danger-light: #{$light-danger-light};
+
+  --text-primary: #{$light-text-primary};
+  --text-secondary: #{$light-text-secondary};
+  --text-tertiary: #{$light-text-tertiary};
+
+  --bg-primary: #{$light-bg-primary};
+  --bg-secondary: #{$light-bg-secondary};
+  --bg-tertiary: #{$light-bg-tertiary};
+
+  --border-color: #{$light-border-color};
+  --border-light: #{$light-border-light};
+  --border-dark: #{$light-border-dark};
+
+  --shadow-color: #{$light-shadow-color};
+
+  --ipn-primary: #{$light-ipn-primary};
+  --ipn-accent: #{$light-ipn-accent};
+}
+
+// Configuración para tema oscuro
+[data-theme="dark"] {
+  --ipn-guinda: #{$dark-ipn-guinda};
+  --ipn-guinda-light: #{$dark-ipn-guinda-light};
+  --ipn-guinda-dark: #{$dark-ipn-guinda-dark};
+  --ipn-white: #{$dark-ipn-white};
+  --ipn-gray: #{$dark-ipn-gray};
+  --ipn-gray-dark: #{$dark-ipn-gray-dark};
+  --ipn-secondary: #{$dark-ipn-secondary};
+
+  --success: #{$dark-success};
+  --success-dark: #{$dark-success-dark};
+  --info: #{$dark-info};
+  --warning: #{$dark-warning};
+  --warning-dark: #{$dark-warning-dark};
+  --danger: #{$dark-danger};
+  --danger-light: #{$dark-danger-light};
+
+  --text-primary: #{$dark-text-primary};
+  --text-secondary: #{$dark-text-secondary};
+  --text-tertiary: #{$dark-text-tertiary};
+
+  --bg-primary: #{$dark-bg-primary};
+  --bg-secondary: #{$dark-bg-secondary};
+  --bg-tertiary: #{$dark-bg-tertiary};
+
+  --border-color: #{$dark-border-color};
+  --border-light: #{$dark-border-light};
+  --border-dark: #{$dark-border-dark};
+
+  --shadow-color: #{$dark-shadow-color};
+
+  --ipn-primary: #{$dark-ipn-primary};
+  --ipn-accent: #{$dark-ipn-accent};
+}
+
+// Variables SCSS que utilizan los valores de CSS variables
+$ipn-guinda: var(--ipn-guinda);
+$ipn-guinda-light: var(--ipn-guinda-light);
+$ipn-guinda-dark: var(--ipn-guinda-dark);
+$ipn-white: var(--ipn-white);
+$ipn-gray: var(--ipn-gray);
+$ipn-gray-dark: var(--ipn-gray-dark);
+$ipn-secondary: var(--ipn-secondary);
 
 // Colores para estados
-$success: #2ecc71;
-$info: #3498db;
-$warning: #f39c12;
-$danger: #e74c3c;
-$danger-light: #fff5f5;
+$success: var(--success);
+$success-dark: var(--success-dark);
+$info: var(--info);
+$info-dark: var(--info-dark);
+$warning: var(--warning);
+$warning-dark: var(--warning-dark);
+$danger: var(--danger);
+$danger-light: var(--danger-light);
+
+// Colores de texto
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-tertiary: var(--text-tertiary);
+
+// Colores de fondo
+$bg-primary: var(--bg-primary);
+$bg-secondary: var(--bg-secondary);
+$bg-tertiary: var(--bg-tertiary);
+
+// Colores de borde
+$border-color: var(--border-color);
+$border-light: var(--border-light);
+$border-dark: var(--border-dark);
+
+// Colores de sombra
+$shadow-color: var(--shadow-color);
+
+// Colores IPN adicionales
+$primary: var(--ipn-primary);
+$primary-light: var(--ipn-guinda-light);
+$primary-dark: var(--ipn-guinda-dark);
 
 // Estilo de fuentes
 $font-family-base: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -44,10 +215,10 @@ $border-radius-xl: 12px;
 $border-radius-xxl: 16px;
 
 // Sombras
-$box-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-$box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-$box-shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
-$box-shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+$box-shadow-sm: 0 2px 4px $shadow-color;
+$box-shadow: 0 4px 8px $shadow-color;
+$box-shadow-lg: 0 8px 16px $shadow-color;
+$box-shadow-xl: 0 12px 24px $shadow-color;
 
 // Transiciones
 $transition-base: all 0.3s ease;
@@ -66,32 +237,16 @@ $z-index-tooltip: 1070;
 // Altura del navbar
 $nav-height: 64px;
 
-// Colores base adicionales
-$primary: $ipn-guinda;
-$primary-light: $ipn-guinda-light;
-$primary-dark: $ipn-guinda-dark;
-
 // Texto
-$text-primary: #333333;
-$text-secondary: #666666;
-$text-tertiary: #999999;
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-tertiary: var(--text-tertiary);
 
 // Fondo
-$bg-white: $ipn-white;
-$bg-gray: $ipn-gray;
+$bg-white: var(--bg-primary);
+$bg-gray: var(--bg-tertiary);
 
 // Sombras personalizadas
 $shadow-sm: $box-shadow-sm;
 $shadow-md: $box-shadow;
 $shadow-lg: $box-shadow-lg;
-
-// Bordes adicionales
-$border-color: #dcdcdc;
-
-// Fondos adicionales
-$bg-light: #f8f9fa;
-
-// Definición de los colores del IPN
-$ipn-primary: #722F37;     // Guinda/Vino - Color principal del IPN
-$ipn-secondary: #FFFFFF;   // Blanco
-$ipn-accent: #9E9E9E;      // Gris para estado inactivo/deshabilitado

@@ -2,11 +2,14 @@
 
 .main-nav {
   background-color: $ipn-guinda;
-  color: $ipn-white;
-  position: sticky;
+  color: lighten(#fff, 90%) !important;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: $z-index-fixed;
   box-shadow: $box-shadow;
+  width: 100%;
 
   .nav-container {
     max-width: 1200px;
@@ -18,32 +21,39 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $spacing-md 0;
+    padding: $spacing-sm 0;
+    position: relative; // Añadido para contexto de posición
 
     .nav-logo {
       display: flex;
       align-items: center;
       text-decoration: none;
-      color: $ipn-white;
+      color: lighten(#fff, 90%) !important;
       font-size: 1.5rem;
       font-weight: $font-weight-bold;
-
-      img {
-        height: 40px;
-        margin-right: $spacing-md;
-      }
     }
 
     .nav-toggle {
-      display: none;
+      display: none; // Solo esta declaración
       background: none;
       border: none;
-      color: $ipn-white;
+      color: lighten(#fff, 90%) !important;
       font-size: 1.5rem;
       cursor: pointer;
       padding: $spacing-sm;
       border-radius: $border-radius;
       transition: $transition-base;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      width: 40px;
+      margin: 0;
+
+      i {
+        // Ajuste fino del icono
+        font-size: 1.8rem; // Tamaño un poco más grande
+        transform: translateY(1px); // Ajuste óptico de centrado
+      }
 
       &:hover {
         background-color: rgba($ipn-white, 0.1);
@@ -70,24 +80,29 @@
         display: flex;
         align-items: center;
         padding: $spacing-md $spacing-lg;
-        color: rgba($ipn-white, 0.9);
+        color: lighten(#fff, 90%) !important;
         text-decoration: none;
         transition: $transition-base;
 
         i {
           margin-right: $spacing-sm;
+          font-size: 1.2rem;
         }
 
         &:hover, &:focus {
-          color: $ipn-white;
-          background-color: rgba($ipn-white, 0.1);
+          color: $ipn-secondary !important; // Siempre blanco al hacer hover
+          background-color: rgba($ipn-secondary, 0.15); // Un poco más visible
         }
 
         &.active {
-          color: $ipn-white;
-          background-color: rgba($ipn-white, 0.2);
-          border-bottom: 3px solid $ipn-white;
-          font-weight: $font-weight-medium;
+          background-color: rgba(255, 255, 255, 0.1);
+          border-bottom: 5px solid $ipn-secondary; // Barra inferior más gruesa (5px)
+
+          // Estilos específicos para el modo oscuro
+          :host-context(.dark-theme) & {
+            background-color: rgba(0, 0, 0, 0.15) !important; // Gris claro translúcido
+            border-bottom: 5px solid rgba(64, 64, 64, 1) !important; // Barra más gruesa en gris oscuro
+          }
         }
       }
     }
@@ -96,80 +111,216 @@
   .nav-user {
     display: flex;
     align-items: center;
-    padding: 0 $spacing-lg;
+
+    // Nueva estructura para fila combinada
+    .user-theme-row {
+      display: flex;
+      align-items: center;
+      flex-grow: 1; // Ocupa el espacio disponible
+
+      @media (max-width: 1050px) {
+        width: 100%;
+        justify-content: space-between; // Cambiado a space-between para separar elementos
+      }
+
+      .theme-selector-container {
+        margin-top: 0;
+        position: relative;
+
+        @media (max-width: 1050px) {
+          margin-left: 0; // Eliminado el auto para que no empuje
+          .theme-toggle {
+            width: auto; // Ancho automático para solo el icono
+            padding: 0;
+            background-color: transparent !important;
+          }
+        }
+      }
+    }
+
+    @media (max-width: 1050px) {
+      display: none; // Ocultar en móvil
+    }
 
     .user-info {
       display: flex;
-      align-items: center;
-      margin-right: $spacing-lg;
+      justify-content: flex-start; // Alinear contenido a la izquierda
 
       .user-avatar {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        background-color: rgba($ipn-white, 0.2);
+        background-color: rgba($ipn-secondary, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: $spacing-md;
+        margin-right: 8px;
 
         i {
-          font-size: 1.2rem;
+          font-size: 1.5rem;
         }
       }
 
       .user-name {
+
         p {
           margin: 0;
           font-weight: $font-weight-medium;
           line-height: 1.2;
+          text-align: left; // Centrar nombre
         }
 
         small {
-          color: rgba($ipn-white, 0.7);
+          color: rgba($ipn-secondary, 0.7);
           font-size: 0.85rem;
+          text-align: left; // Asegurar centrado
+          display: block; // Hacer que ocupe su propia línea
+          width: 100%;
+        }
+      }
+    }
+
+    // Estilos para el selector de tema
+    .theme-selector-container {
+      position: relative;
+      margin-top: 0.1rem;
+
+      .theme-toggle {
+        background-color: transparent;
+        border: none;
+        color: lighten(#fff, 90%) !important;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: $transition-base;
+
+        &:hover {
+          background-color: rgba($ipn-secondary, 0.1);
+        }
+
+        i {
+          font-size: 1.2rem;
+
+          &.dark-icon {
+            transform: rotate(30deg);
+          }
+        }
+      }
+
+      .theme-options {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: $bg-primary;
+        border-radius: $border-radius;
+        box-shadow: $box-shadow;
+        width: 150px;
+        overflow: hidden;
+        z-index: $z-index-dropdown;
+
+        .theme-option {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          padding: $spacing-md;
+          border: none;
+          background-color: transparent;
+          color: $text-primary;
+          cursor: pointer;
+          transition: $transition-base;
+          text-align: left;
+
+          &:hover {
+            background-color: $bg-secondary;
+          }
+
+          i {
+            margin-right: $spacing-md;
+            font-size: 1.2rem;
+
+            &.dark-icon {
+              transform: rotate(30deg);
+            }
+          }
+
+          span {
+            font-size: 0.9rem;
+          }
         }
       }
     }
 
     .btn-logout {
-      background-color: rgba($ipn-white, 0.1);
+      background-color: rgba($ipn-secondary, 0.1);
       border: none;
-      color: $ipn-white;
-      padding: $spacing-sm $spacing-md;
+      color: lighten(#fff, 90%) !important;
       border-radius: $border-radius;
       display: flex;
       align-items: center;
       cursor: pointer;
       transition: $transition-base;
+      padding: $spacing-md;
 
       i {
         margin-right: $spacing-sm;
       }
 
       &:hover {
-        background-color: rgba($ipn-white, 0.2);
+        background-color: rgba($ipn-secondary, 0.2);
       }
     }
   }
 
-  @media (max-width: 920px) {
+  @media (max-width: 1050px) {
     .nav-header {
       .nav-toggle {
-        display: none; /* Cambiado de 'block' a 'none' para ocultar el botón de toggle */
+        display: flex !important; // Mostrar solo en mobile
       }
     }
 
     .nav-collapse {
-      display: flex !important; /* Forzar la visualización del menú */
-      max-height: none !important; /* Eliminar la altura máxima */
-      overflow: visible; /* Cambiar de hidden a visible */
+      display: none !important;
+      width: 100%;
+      background-color: $ipn-guinda;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      box-shadow: $box-shadow;
+      padding: 0 $spacing-md $spacing-md;
       flex-direction: column;
       align-items: stretch;
 
-      /* Eliminar la clase .show ya que siempre estará visible */
+      .user-theme-row {
+        flex-direction: row; // Cambiado a row para alinear en fila
+        width: 100%;
+        justify-content: space-between; // Espaciado entre elementos
+        align-items: center; // Centrado vertical
+        padding: $spacing-md;
+        margin-left: 30px;
+      }
+
+      .nav-user {
+        display: flex !important; // Mostrar en móvil cuando el menú está abierto
+        flex-direction: column;
+        width: 100%;
+
+        .theme-selector-container {
+          width: auto; // Cambiado para que no ocupe todo el ancho
+          margin-bottom: 0; // Eliminar margen inferior
+        }
+
+        .btn-logout {
+          width: 100%;
+        }
+      }
+
       &.show {
-        max-height: none;
+        display: flex !important; // Mostrar cuando está activo
+        // Mantenemos el margen en la altura base, no add
       }
     }
 
@@ -182,35 +333,84 @@
         a {
           padding: $spacing-md;
           border-bottom: 1px solid rgba($ipn-white, 0.1);
+          color: lighten(#fff, 90%) !important;
 
           &.active {
-            border-bottom: 1px solid rgba($ipn-white, 0.1);
-            border-left: 4px solid $ipn-white;
+            border-left: none !important; // Eliminamos la barra izquierda
+            border-bottom: 5px solid $ipn-secondary; // Mantenemos y reforzamos la barra inferior
+            margin-right: 31px; // Añadimos margen derecho equivalente al left original
+
+            .dark-theme & {
+                border-left-color: rgba(64, 64, 64, 1) !important; // Borde izquierdo gris oscuro
+            }
           }
         }
       }
     }
 
     .nav-user {
-      padding: $spacing-md;
       flex-direction: column;
       display: flex !important; /* Asegurar que siempre esté visible */
 
       .user-info {
-        margin-right: 0;
-        margin-bottom: $spacing-md;
-        width: 100%;
+        flex-grow: 1; // Permite que ocupe el espacio disponible
+        justify-content: flex-start; // Alinear contenido a la izquierda
+        margin-bottom: 0; // Espaciado consistente
 
         .user-name {
-          flex: 1;
+          small {
+            display: block; // Rol en nueva línea
+            text-align: center;
+          }
+        }
+      }
+
+      // Adaptar selector de tema para móvil
+      .theme-selector-container {
+        width: auto; // Cambiado a auto para que no tome todo el ancho
+        margin-bottom: 0; // Eliminar margen inferior
+
+        .theme-toggle {
+          width: auto; // Ancho automático
+          border-radius: $border-radius;
+          display: flex;
+          justify-content: center;
+          padding: $spacing-sm;
+          background-color: transparent; // Transparente para que sea más sutil
+        }
+
+        .theme-options {
+          position: absolute; // Mantener como menú desplegable
+          left: 0; // Cambiado de right a left para que abra hacia la derecha
+          top: 100%;
+          margin-top: $spacing-sm;
+          width: 150px; // Ancho fijo más pequeño
+
+          .theme-option {
+            border-bottom: 1px solid $border-color;
+
+            &:last-child {
+              border-bottom: none;
+            }
+          }
         }
       }
 
       .btn-logout {
         width: 100%;
-        justify-content: center;
-        padding: $spacing-md;
       }
+    }
+  }
+
+  // Animación para el menú
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }

@@ -35,6 +35,11 @@ export class AlumnoPerfilComponent implements OnInit {
   success = '';
   passwordError = '';
   isEditing = false;
+  periodoEscolarActual: string = ''; // Nueva variable
+  numeroMaterias: number | null = null;
+  profesoresUnicos: number | null = null;
+  fechaInicioPeriodo: string | null = null;
+  fechaFinPeriodo: string | null = null;
   // Arrays para manejar errores específicos de campos únicos
   uniqueErrors: {field: string, message: string, id?: string}[] = [];
   // Array para manejar errores de información personal
@@ -53,7 +58,10 @@ export class AlumnoPerfilComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarPerfil();
+    this.cargarPeriodoEscolar(); // Llamar a la nueva función
     this.initForm();
+    this.cargarMaterias(); // Nueva función
+    this.cargarProfesoresUnicos(); // Nueva función
 
     // Validar formulario en tiempo real
     this.perfilForm.valueChanges.subscribe(() => {
@@ -99,6 +107,50 @@ export class AlumnoPerfilComponent implements OnInit {
   // Método para alternar la visibilidad de la nueva contraseña
   toggleNuevaPassword(): void {
     this.showNuevaPassword = !this.showNuevaPassword;
+  }
+
+  // Añadir esta función
+  private cargarPeriodoEscolar(): void {
+    this.alumnoService.obtenerPeriodoEscolarActual().subscribe({
+      next: (periodo) => {
+        this.periodoEscolarActual = periodo.Codigo || `Periodo ${periodo.ID}`;
+        this.fechaInicioPeriodo = periodo.FechaInicio;
+        this.fechaFinPeriodo = periodo.FechaFin;
+      },
+      error: (error) => {
+        console.error('Error al cargar el período escolar:', error);
+        this.periodoEscolarActual = 'No disponible';
+        this.fechaInicioPeriodo = null;
+        this.fechaFinPeriodo = null;
+      }
+    });
+  }
+
+  // Nueva función específica para profesores únicos
+  private cargarProfesoresUnicos(): void {
+    this.alumnoService.obtenerProfesoresAsignados().subscribe({
+      next: (profesores) => {
+        // Filtrar duplicados usando ProfesorID
+        const profesoresUnicos = [...new Map(profesores.map(p => [p.ProfesorID, p]))].values();
+        this.profesoresUnicos = Array.from(profesoresUnicos).length;
+      },
+      error: (error) => {
+        console.error('Error al cargar profesores:', error);
+        this.profesoresUnicos = null;
+      }
+    });
+  }
+
+  private cargarMaterias(): void {
+    this.alumnoService.obtenerMaterias().subscribe({
+      next: (materias) => {
+        this.numeroMaterias = materias.length;
+      },
+      error: (error) => {
+        console.error('Error al cargar materias:', error);
+        this.numeroMaterias = null;
+      }
+    });
   }
 
   // Método para verificar si hay errores en cualquier parte
@@ -748,13 +800,23 @@ export class AlumnoPerfilComponent implements OnInit {
            this.uniqueErrors.length === 0;
   }
 
-  formatDateTime(dateTime: string | null): string {
+  // In alumno-perfil.component.ts
+  formatDateTime(dateTime: string | null | undefined): string {
     if (!dateTime) return 'Nunca';
     return new Date(dateTime).toLocaleString();
   }
 
+  formatDate(dateString: string | null | undefined): string {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric'
+    });
+  }
+
   get semestreTexto(): string {
-    if (!this.perfil) return '';
-    return `${this.perfil.SemestreActual}°`;
+    return this.periodoEscolarActual || '-';
   }
 }

@@ -104,17 +104,18 @@
           </div>
         </div>
 
-        <div class="form-row">
+          <!-- En src/app/components/historia-clinica-form/historia-clinica-form.component.html -->
+
           <div class="form-group">
-            <label for="semestreID">Semestre *</label>
-            <select id="semestreID" formControlName="semestreID" [ngClass]="{'is-invalid': historiaForm.get('semestreID')?.invalid && historiaForm.get('semestreID')?.touched}">
-              <option value="">Selecciona un semestre</option>
-              <option *ngIf="semestreActual" [value]="semestreActual.ID">
-                {{ semestreActual.Nombre }} ({{ semestreActual.FechaInicio | date:'dd/MM/yyyy' }} - {{ semestreActual.FechaFin | date:'dd/MM/yyyy' }})
+            <label for="periodoEscolarID">Período Escolar *</label>
+            <select id="periodoEscolarID" formControlName="periodoEscolarID" [ngClass]="{'is-invalid': historiaForm.get('periodoEscolarID')?.invalid && historiaForm.get('periodoEscolarID')?.touched}">
+              <option value="">Selecciona un período escolar</option>
+              <option *ngIf="periodoEscolar" [value]="periodoEscolar.ID">
+                {{ periodoEscolar.Codigo }} ({{ periodoEscolar.FechaInicio | date:'dd/MM/yyyy' }} - {{ periodoEscolar.FechaFin | date:'dd/MM/yyyy' }})
               </option>
             </select>
-            <div class="invalid-feedback" *ngIf="historiaForm.get('semestreID')?.invalid && historiaForm.get('semestreID')?.touched">
-              Por favor, selecciona un semestre.
+            <div class="invalid-feedback" *ngIf="historiaForm.get('periodoEscolarID')?.invalid && historiaForm.get('periodoEscolarID')?.touched">
+              Por favor, selecciona un período escolar.
             </div>
           </div>
 
@@ -333,7 +334,6 @@
             </div>
           </div>
         </div>
-      </div>
 
       <!-- Secciones adicionales para cuando estamos en modo edición -->
       <div class="form-section" *ngIf="currentTab === 'interrogatorio' && isEditing">

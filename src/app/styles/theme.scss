@@ -1,0 +1,215 @@
+// Sistema de temas para HCOpto
+// Este archivo maneja las variables tanto para modo claro como oscuro
+
+// Colores base IPN
+$ipn-guinda: #7A003C;
+$ipn-guinda-light: lighten($ipn-guinda, 10%);
+$ipn-guinda-dark: darken($ipn-guinda, 10%);
+$ipn-blanco: #ffffff;
+$ipn-gris: #5f6368;
+$ipn-gris-claro: #e0e0e0;
+$ipn-gris-medio: #9e9e9e;
+$ipn-gris-oscuro: #424242;
+$ipn-negro: #202124;
+$ipn-error: #d93025;
+
+// Definición del tema claro (por defecto)
+:root {
+  // Colores primarios
+  --primary: #{$ipn-guinda};
+  --primary-light: #{$ipn-guinda-light};
+  --primary-dark: #{$ipn-guinda-dark};
+
+  // Fondo y texto
+  --bg-primary: #{$ipn-blanco};
+  --bg-secondary: #{$ipn-gris-claro};
+  --bg-tertiary: #f5f5f5;
+  --text-primary: #{$ipn-negro};
+  --text-secondary: #{$ipn-gris};
+  --text-tertiary: #{$ipn-gris-medio};
+
+  // Bordes y sombras
+  --border-color: #e0e0e0;
+  --box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  // Estados y acciones
+  --error-color: #{$ipn-error};
+  --success-color: #34a853;
+  --warning-color: #fbbc05;
+  --info-color: #4285f4;
+
+  // Estados específicos de historias clínicas
+  --estado-proceso: #F9A825;
+  --estado-revision: #1E88E5;
+  --estado-correccion: #E53935;
+  --estado-finalizado: #43A047;
+  --estado-archivado: #757575;
+
+  // Elementos de navegación
+  --nav-bg: #{$ipn-guinda};
+  --nav-text: #{$ipn-blanco};
+  --nav-active: rgba(255, 255, 255, 0.2);
+  --nav-hover: rgba(255, 255, 255, 0.1);
+
+  // Tablas
+  --table-header-bg: #{$ipn-guinda};
+  --table-header-text: #{$ipn-blanco};
+  --table-row-odd: #f9f9f9;
+  --table-row-even: #{$ipn-blanco};
+  --table-border: #e0e0e0;
+
+  // Botones
+  --btn-primary-bg: #{$ipn-guinda};
+  --btn-primary-text: #{$ipn-blanco};
+  --btn-secondary-bg: #f5f5f5;
+  --btn-secondary-text: #{$ipn-negro};
+
+  // Cards
+  --card-bg: #{$ipn-blanco};
+  --card-border: #e0e0e0;
+  --card-selected-bg: #f0f0f0;
+
+  // Inputs
+  --input-bg: #{$ipn-blanco};
+  --input-border: #e0e0e0;
+  --input-text: #{$ipn-negro};
+
+  // Notificaciones y mensajes
+  --notification-info-bg: #e8f0fe;
+  --notification-error-bg: #fdeded;
+  --notification-success-bg: #e6f4ea;
+  --notification-warning-bg: #fef7e0;
+}
+
+// Definición del tema oscuro
+.dark-theme {
+  // Colores primarios
+  --primary: #{$ipn-guinda-light};
+  --primary-light: #{lighten($ipn-guinda-light, 10%)};
+  --primary-dark: #{$ipn-guinda};
+
+  // Fondo y texto
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #2d2d2d;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #909090;
+
+  // Bordes y sombras
+  --border-color: #333333;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+
+  // Estados y acciones
+  --error-color: #f28b82;
+  --success-color: #81c995;
+  --warning-color: #fdd663;
+  --info-color: #8ab4f8;
+
+  // Estados específicos de historias clínicas
+  --estado-proceso: #FBC02D;
+  --estado-revision: #42A5F5;
+  --estado-correccion: #EF5350;
+  --estado-finalizado: #66BB6A;
+  --estado-archivado: #9E9E9E;
+
+  // Elementos de navegación
+  --nav-bg: #1a1a1a;
+  --nav-text: #{$ipn-blanco};
+  --nav-active: rgba(122, 0, 60, 0.5);
+  --nav-hover: rgba(122, 0, 60, 0.3);
+
+  // Tablas
+  --table-header-bg: #2d2d2d;
+  --table-header-text: #e0e0e0;
+  --table-row-odd: #242424;
+  --table-row-even: #1e1e1e;
+  --table-border: #333333;
+
+  // Botones
+  --btn-primary-bg: #{$ipn-guinda-light};
+  --btn-primary-text: #{$ipn-blanco};
+  --btn-secondary-bg: #2d2d2d;
+  --btn-secondary-text: #e0e0e0;
+
+  // Cards
+  --card-bg: #1e1e1e;
+  --card-border: #333333;
+  --card-selected-bg: #2d2d2d;
+
+  // Inputs
+  --input-bg: #1e1e1e;
+  --input-border: #333333;
+  --input-text: #e0e0e0;
+
+  // Notificaciones y mensajes
+  --notification-info-bg: #1a3b6d;
+  --notification-error-bg: #571c1c;
+  --notification-success-bg: #1e4620;
+  --notification-warning-bg: #5c4f1d;
+}
+
+// Variables para ser usadas en los componentes (mapeo a CSS vars)
+$primary: var(--primary);
+$primary-light: var(--primary-light);
+$primary-dark: var(--primary-dark);
+
+$bg-primary: var(--bg-primary);
+$bg-secondary: var(--bg-secondary);
+$bg-tertiary: var(--bg-tertiary);
+$text-primary: var(--text-primary);
+$text-secondary: var(--text-secondary);
+$text-tertiary: var(--text-tertiary);
+
+$border-color: var(--border-color);
+$box-shadow: var(--box-shadow);
+
+$error-color: var(--error-color);
+$success-color: var(--success-color);
+$warning-color: var(--warning-color);
+$info-color: var(--info-color);
+
+$estado-proceso: var(--estado-proceso);
+$estado-revision: var(--estado-revision);
+$estado-correccion: var(--estado-correccion);
+$estado-finalizado: var(--estado-finalizado);
+$estado-archivado: var(--estado-archivado);
+
+$nav-bg: var(--nav-bg);
+$nav-text: var(--nav-text);
+$nav-active: var(--nav-active);
+$nav-hover: var(--nav-hover);
+
+$table-header-bg: var(--table-header-bg);
+$table-header-text: var(--table-header-text);
+$table-row-odd: var(--table-row-odd);
+$table-row-even: var(--table-row-even);
+$table-border: var(--table-border);
+
+$btn-primary-bg: var(--btn-primary-bg);
+$btn-primary-text: var(--btn-primary-text);
+$btn-secondary-bg: var(--btn-secondary-bg);
+$btn-secondary-text: var(--btn-secondary-text);
+
+$card-bg: var(--card-bg);
+$card-border: var(--card-border);
+$card-selected-bg: var(--card-selected-bg);
+
+$input-bg: var(--input-bg);
+$input-border: var(--input-border);
+$input-text: var(--input-text);
+
+$notification-info-bg: var(--notification-info-bg);
+$notification-error-bg: var(--notification-error-bg);
+$notification-success-bg: var(--notification-success-bg);
+$notification-warning-bg: var(--notification-warning-bg);
+
+// Variables comunes para ambos temas
+$border-radius: 4px;
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 1.5rem;
+$spacing-xl: 2rem;
+$transition-fast: all 0.2s ease;
+$transition-base: all 0.3s ease;

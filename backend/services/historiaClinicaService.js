@@ -16,20 +16,17 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
       `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
               p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
               p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-              cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre,
-              hc.ProfesorID  -- Asegurarse de incluir ProfesorID desde la tabla HistorialesClinicos
+              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
+              hc.ProfesorID
       FROM HistorialesClinicos hc
           JOIN Pacientes p ON hc.PacienteID = p.ID
           JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
           JOIN Consultorios c ON hc.ConsultorioID = c.ID
-          JOIN Semestres s ON hc.SemestreID = s.ID
+          JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
           WHERE hc.AlumnoID = ?
           ORDER BY hc.Fecha DESC`,
       [alumnoId]
     );
-
-    // Hacer console.log para verificar que ProfesorID está presente en los resultados
-    console.log('Primera historia clínica obtenida:', historias.length > 0 ? historias[0] : 'No hay historias');
 
     return historias;
   } catch (error) {
@@ -80,9 +77,9 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
         -- Datos del Catálogo
         cg.Valor AS Estado,
 
-        -- Consultorio y semestre
+        -- Consultorio y periodo escolar
         c.Nombre AS Consultorio,
-        s.Nombre AS Semestre,
+        pe.Codigo AS PeriodoEscolar,
 
         -- Datos del Alumno desde AlumnosInfo
         a.Nombre AS AlumnoNombre,
@@ -98,7 +95,7 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
         JOIN Pacientes p ON hc.PacienteID = p.ID
         JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
         JOIN Consultorios c ON hc.ConsultorioID = c.ID
-        JOIN Semestres s ON hc.SemestreID = s.ID
+        JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
         JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
         JOIN Usuarios ua ON a.UsuarioID = ua.ID
         JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
@@ -220,6 +217,13 @@ try {
         [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
     );
 
+    // Obtener el período escolar actual en lugar del semestre
+    const [periodos] = await connection.query(
+      'SELECT ID FROM PeriodosEscolares WHERE EsActual = TRUE LIMIT 1'
+    );
+
+    const periodoEscolarId = periodos.length > 0 ? periodos[0].ID : null;
+
     if (pacientesExistentes.length > 0) {
         pacienteId = pacientesExistentes[0].ID;
     } else {
@@ -257,20 +261,20 @@ try {
 
     // 2. Crear la historia clínica
     const [resultHistoria] = await connection.query(
-    `INSERT INTO HistorialesClinicos (
-        PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
-        Archivado, ConsultorioID, SemestreID
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-        pacienteId,
-        datosHistoria.alumnoID,
-        datosHistoria.profesorID,
-        datosHistoria.fecha || new Date(),
-        datosHistoria.estadoID || 43, // Por defecto "En proceso"
-        datosHistoria.archivado || false,
-        datosHistoria.consultorioID,
-        datosHistoria.semestreID
-    ]
+      `INSERT INTO HistorialesClinicos (
+          PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
+          Archivado, ConsultorioID, PeriodoEscolarID
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+          pacienteId,
+          datosHistoria.alumnoID,
+          datosHistoria.profesorID,
+          datosHistoria.fecha || new Date(),
+          datosHistoria.estadoID || 43, // Por defecto "En proceso"
+          datosHistoria.archivado || false,
+          datosHistoria.consultorioID,
+          datosHistoria.periodoEscolarID || periodoEscolarId
+      ]
     );
 
     const historiaId = resultHistoria.insertId;
