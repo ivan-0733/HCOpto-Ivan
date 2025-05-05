@@ -318,10 +318,8 @@
             <div class="form-group col-md-3">
               <label for="tipoBifocalMultifocalID">Tipo de Lente</label>
               <select id="tipoBifocalMultifocalID" formControlName="tipoBifocalMultifocalID" class="form-control form-control-xs">
-                <option value="">Seleccionar tipo</option>
-                <option value="MONOCAL">Monocal</option>
-                <option value="BIFOCAL">Bifocal</option>
-                <option value="MULTIFOCAL">Multifocal</option>
+                <option [ngValue]="null">Seleccionar tipo</option>
+                <option *ngFor="let tipo of tiposLente" [ngValue]="tipo.ID">{{ tipo.Valor }}</option>
               </select>
             </div>
 

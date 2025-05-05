@@ -25,8 +25,13 @@ router.get('/', historiaClinicaController.obtenerHistoriasClinicas);
 // Obtener estadísticas de historias clínicas
 router.get('/estadisticas', historiaClinicaController.obtenerEstadisticas);
 
-// Crear una nueva historia clínica
-router.post('/', crearHistoriaClinicaRules, validateResults, historiaClinicaController.crearHistoriaClinica);
+// Crear una historia clínica completa
+router.post(
+    '/completa',
+    verifyToken,
+    checkRole('alumno'),
+    historiaClinicaController.crearHistoriaClinicaCompleta
+);
 
 // Obtener una historia clínica específica
 router.get('/:id', checkHistoriaOwnership, historiaClinicaController.obtenerHistoriaClinica);
@@ -105,5 +110,14 @@ try {
 }
 }
 );
+
+
+// Obtener plantilla para crear historia clínica
+// router.get(
+//     '/plantilla',
+//     verifyToken,
+//     checkRole('alumno'),
+//     historiaClinicaController.obtenerPlantillaHistoriaClinica
+// );
 
 module.exports = router;

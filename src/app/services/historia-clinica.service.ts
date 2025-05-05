@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable,from } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface HistoriaClinica {
@@ -388,13 +388,30 @@ export class HistoriaClinicaService {
       );
   }
 
+  crearHistoriaClinicaCompleta(datosHistoria: any, secciones: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/completa`, {
+      datosHistoria,
+      secciones
+    });
+  }
+
   // Actualizar una sección específica de la historia clínica
   actualizarSeccion(id: number, seccion: string, datos: any): Observable<any> {
+    console.log(`Actualizando sección ${seccion} para historia ${id} con datos:`, datos);
+    
     return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${id}/secciones/${seccion}`, datos)
       .pipe(
-        map(response => response.data)
+        map(response => {
+          console.log(`Respuesta de actualizar sección ${seccion}:`, response);
+          return response.data || response;
+        }),
+        catchError(error => {
+          console.error(`Error al actualizar sección ${seccion}:`, error);
+          return throwError(() => error);
+        })
       );
   }
+
 
   // Responder a un comentario de un profesor
   responderComentario(historiaId: number, comentarioId: number, respuesta: string): Observable<any> {
@@ -467,6 +484,10 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
   }
 
   obtenerImagen(imagenId: number): Observable<Blob> {
+    if (!imagenId) {
+      return throwError(() => new Error('ID de imagen no proporcionado'));
+    }
+    
     return this.http.get(`${this.apiUrl}/imagenes/${imagenId}`, {
       responseType: 'blob'
     });
@@ -483,9 +504,49 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
   }
   
   // Método para obtener una imagen como base64
-  obtenerImagenBase64(imagenId: number): Observable<string> {
-    return this.obtenerImagen(imagenId).pipe(
-      switchMap(blob => from(this.convertirImagenABase64(blob)))
+  obtenerImagenBase64(imageId: number): Observable<string> {
+    if (!imageId) {
+      return throwError(() => new Error('ID de imagen no proporcionado'));
+    }
+  
+    const url = `${this.apiUrl}/imagenes/${imageId}`;
+    
+    return this.http.get(url, { 
+      responseType: 'blob' 
+    }).pipe(
+      switchMap(blob => {
+        if (!blob || blob.size === 0) {
+          return throwError(() => new Error('La respuesta no contiene datos de imagen'));
+        }
+  
+        return new Observable<string>(observer => {
+          const reader = new FileReader();
+          
+          reader.onloadend = () => {
+            observer.next(reader.result as string);
+            observer.complete();
+          };
+          
+          reader.onerror = error => {
+            observer.error(new Error('Error al convertir la imagen a base64: ' + error));
+          };
+          
+          reader.readAsDataURL(blob);
+        });
+      }),
+      catchError(error => {
+        console.error('Error al obtener imagen:', error);
+        // Intentar con URL directa como fallback
+        console.log('Intentando obtener imagen por URL directa');
+        return of(`${this.apiUrl}/imagenes/${imageId}`);
+      })
     );
+  }
+
+  private getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json, image/jpeg, image/png, image/gif'
+    };
   }
 }

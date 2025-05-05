@@ -56,15 +56,42 @@ loadHistoriaClinica(): void {
       next: (historia) => {
         this.historia = historia;
         console.log('Historia cargada correctamente:', historia);
-        
-        // Cargar imágenes si existen
-        if (historia.metodoGrafico && historia.metodoGrafico.imagenID) {
-          this.cargarImagenBase64(historia.metodoGrafico.imagenID);
+
+        // Cargar imágenes de método gráfico si están disponibles por ID
+        if (historia.metodoGrafico && historia.metodoGrafico.imagenID && !historia.metodoGrafico.imagenBase64) {
+          this.cargarImagenMetodoGrafico(historia.metodoGrafico.imagenID);
         }
       },
       error: (error) => {
         this.error = 'No se pudo cargar la historia clínica. ' + error.message;
         console.error('Error al cargar historia clínica:', error);
+      }
+    });
+}
+
+cargarImagenMetodoGrafico(imagenID: number): void {
+  if (!imagenID) return;
+  
+  this.historiaClinicaService.obtenerImagenBase64(imagenID)
+    .subscribe({
+      next: (base64) => {
+        if (typeof base64 === 'string' && base64.length > 0) {
+          // Asegurar que la cadena tenga el formato correcto
+          if (!base64.startsWith('data:image')) {
+            base64 = `data:image/png;base64,${base64}`;
+          }
+          
+          // Actualizar la imagen en el objeto
+          if (this.historia && this.historia.metodoGrafico) {
+            this.historia.metodoGrafico.imagenBase64 = base64;
+            console.log('Imagen de método gráfico cargada correctamente');
+          }
+        } else {
+          console.error('La respuesta no contiene datos válidos de imagen');
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar la imagen del método gráfico:', error);
       }
     });
 }
@@ -184,9 +211,8 @@ obtenerTipoLente(tipoID: number | string | null | undefined): string {
   return tipos[tipoID.toString()] || 'Tipo desconocido';
 }
 
-// Métodos para trabajar con la sección de Examen Preliminar
 obtenerNombreMetodo(metodoID: number | null | undefined): string {
-  if (!metodoID) return 'No especificado';
+  if (!metodoID) return '-';
   
   const metodos: {[key: number]: string} = {
     1: 'Pantalleo',
@@ -195,8 +221,10 @@ obtenerNombreMetodo(metodoID: number | null | undefined): string {
     4: 'Von Graeffe'
   };
   
-  return metodos[metodoID] || 'Desconocido';
+  return metodos[metodoID] || '-';
 }
+
+
 
 tieneReflejosOD(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
@@ -286,26 +314,48 @@ verificarSubjetivoCerca(): boolean {
 tieneDatosBinocularidad(): boolean {
   if (!this.historia) return false;
   
-  // Verificar si hay datos en cualquiera de los objetos de binocularidad
-  const tieneRegistroBinocularidad = !!(
-    this.historia.binocularidad || 
-    this.historia.forias || 
-    this.historia.vergencias
+  // Función auxiliar para verificar si un valor tiene datos significativos
+  const tieneValor = (val: any): boolean => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') return val.trim() !== '';
+    if (typeof val === 'number') return !isNaN(val);
+    if (typeof val === 'boolean') return val;
+    return true;
+  };
+
+  // Verificar datos en binocularidad
+  const hasBinocularidadData = !!(
+    this.historia.binocularidad && 
+    Object.values(this.historia.binocularidad).some(tieneValor)
   );
-  
-  // Verificar si hay datos en metodoGrafico o una imagen asociada
-  const tieneMetodoGrafico = !!(
-    this.historia.metodoGrafico && 
-    (Object.keys(this.historia.metodoGrafico).length > 0 || 
-    this.historia.metodoGrafico.imagenID)
+
+  // Verificar datos en forias
+  const hasForiasData = !!(
+    this.historia.forias && 
+    Object.values(this.historia.forias).some(tieneValor)
   );
-  
-  return tieneRegistroBinocularidad || tieneMetodoGrafico;
+
+  // Verificar datos en vergencias
+  const hasVergenciasData = !!(
+    this.historia.vergencias && 
+    Object.values(this.historia.vergencias).some(tieneValor)
+  );
+
+  // Verificar datos en metodoGrafico
+  const hasMetodoGraficoData = !!(
+    this.historia.metodoGrafico && (
+      Object.values(this.historia.metodoGrafico).some(tieneValor) ||
+      this.historia.metodoGrafico.imagenID ||
+      this.historia.metodoGrafico.imagenBase64
+    )
+  );
+
+  return hasBinocularidadData || hasForiasData || hasVergenciasData || hasMetodoGraficoData;
 }
 
 // Obtiene el nombre del método de medición para forias
 obtenerTipoTest(tipoID: number | null | undefined): string {
-  if (!tipoID) return 'No especificado';
+  if (!tipoID) return '-';
   
   const tipos: {[key: number]: string} = {
     35: 'Pola Mirror',
@@ -313,12 +363,12 @@ obtenerTipoTest(tipoID: number | null | undefined): string {
     37: 'P. de Worth'
   };
   
-  return tipos[tipoID] || 'Desconocido';
+  return tipos[tipoID] || '-';
 }
 
 // Obtiene el tipo de visión estereoscópica
 obtenerTipoVision(tipoVisionID: number | null | undefined): string {
-  if (!tipoVisionID) return 'No especificado';
+  if (!tipoVisionID) return '-';
   
   const tiposVision: {[key: number]: string} = {
     38: 'Titmus',
@@ -326,7 +376,7 @@ obtenerTipoVision(tipoVisionID: number | null | undefined): string {
     40: 'Otro'
   };
   
-  return tiposVision[tipoVisionID] || 'Desconocido';
+  return tiposVision[tipoVisionID] || '-';
 }
 
 // Obtiene la URL de la imagen asociada al método gráfico
@@ -335,16 +385,27 @@ obtenerUrlImagen(imagenID: number | null | undefined): string {
   return `${environment.apiUrl}/historias-clinicas/imagenes/${imagenID}`;
 }
 
-// Agregar un nuevo método para cargar la imagen en base64
+// método para cargar la imagen en base64
 cargarImagenBase64(imagenID: number): void {
   if (!imagenID) return;
   
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
-        // Guardar la imagen en una propiedad para mostrarla
-        if (this.historia && this.historia.metodoGrafico) {
-          this.historia.metodoGrafico.imagenBase64 = base64;
+        if (typeof base64 === 'string' && base64.length > 0) {
+          if (!base64.startsWith('data:image')) {
+            base64 = `data:image/png;base64,${base64}`;
+          }
+          if (this.historia && !this.historia.metodoGrafico) {
+            this.historia.metodoGrafico = {};
+          }
+          
+          if (this.historia && this.historia.metodoGrafico) {
+            this.historia.metodoGrafico.imagenBase64 = base64;
+            console.log('Imagen cargada correctamente en base64');
+          }
+        } else {
+          console.error('La respuesta no contiene datos válidos de imagen en base64');
         }
       },
       error: (error) => {
@@ -353,5 +414,77 @@ cargarImagenBase64(imagenID: number): void {
     });
 }
 
+// Helper method to check if amplitud acomodacion has any data
+tieneDatosAmplitudAcomodacion(binocularidad: any): boolean {
+  if (!binocularidad) return false;
+  
+  return !!(
+    binocularidad.ojoDerechoAmpAcomCm || 
+    binocularidad.ojoDerechoAmpAcomD || 
+    binocularidad.ojoIzquierdoAmpAcomCm || 
+    binocularidad.ojoIzquierdoAmpAcomD || 
+    binocularidad.ambosOjosAmpAcomCm || 
+    binocularidad.ambosOjosAmpAcomD
+  );
+}
+
+// Helper method to check if vergencias positivas has any data
+tieneDatosVergenciasPositivas(vergencias: any): boolean {
+  if (!vergencias) return false;
+  
+  return !!(
+    vergencias.positivasLejosBorroso || 
+    vergencias.positivasLejosRuptura || 
+    vergencias.positivasLejosRecuperacion || 
+    vergencias.positivasCercaBorroso || 
+    vergencias.positivasCercaRuptura || 
+    vergencias.positivasCercaRecuperacion
+  );
+}
+
+// Helper method to check if vergencias negativas has any data
+tieneDatosVergenciasNegativas(vergencias: any): boolean {
+  if (!vergencias) return false;
+  
+  return !!(
+    vergencias.negativasLejosBorroso || 
+    vergencias.negativasLejosRuptura || 
+    vergencias.negativasLejosRecuperacion || 
+    vergencias.negativasCercaBorroso || 
+    vergencias.negativasCercaRuptura || 
+    vergencias.negativasCercaRecuperacion
+  );
+}
+
+// Helper method to check if vergencias verticales has any data
+tieneDatosVergenciasVerticales(vergencias: any): boolean {
+  if (!vergencias) return false;
+  
+  return this.tieneDatosSupravergencias(vergencias) || this.tieneDatosInfravergencias(vergencias);
+}
+
+// Helper method to check if supravergencias has any data
+tieneDatosSupravergencias(vergencias: any): boolean {
+  if (!vergencias) return false;
+  
+  return !!(
+    vergencias.supravergenciasLejosRuptura || 
+    vergencias.supravergenciasLejosRecuperacion || 
+    vergencias.supravergenciasCercaRuptura || 
+    vergencias.supravergenciasCercaRecuperacion
+  );
+}
+
+// Helper method to check if infravergencias has any data
+tieneDatosInfravergencias(vergencias: any): boolean {
+  if (!vergencias) return false;
+  
+  return !!(
+    vergencias.infravergenciasLejosRuptura || 
+    vergencias.infravergenciasLejosRecuperacion || 
+    vergencias.infravergenciasCercaRuptura || 
+    vergencias.infravergenciasCercaRecuperacion
+  );
+}
 
 }

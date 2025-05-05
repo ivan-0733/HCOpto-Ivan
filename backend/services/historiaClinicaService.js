@@ -1,4 +1,5 @@
 const db = require('../config/database.js');
+const { crearHistoriaClinicaCompleta } = require('../controllers/historiaClinicaController.js');
 
 /**
  * Servicio para gestionar historias clínicas en la base de datos
@@ -187,126 +188,730 @@ try {
 },
 
 /**
- * Crea una nueva historia clínica
- * @param {Object} datosHistoria - Datos de la historia clínica
+ * Crea una historia clínica completa con todas sus secciones
+ * @param {Object} datosHistoria - Datos principales de la historia clínica
+ * @param {Object} secciones - Objeto con todas las secciones de la historia clínica
  * @returns {Promise<Object>} - Historia clínica creada
  */
-async crearHistoriaClinica(datosHistoria) {
-const connection = await db.pool.getConnection();
+async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
+  const connection = await db.pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+  
+    // 1. Crear el paciente si no existe
+    let pacienteId;
+  
+    if (datosHistoria.paciente.id) {
+    // Si se proporciona un ID de paciente, verificar que exista
+    const [pacientes] = await connection.query(
+        'SELECT ID FROM Pacientes WHERE ID = ?',
+        [datosHistoria.paciente.id]
+    );
+  
+    if (pacientes.length === 0) {
+        throw new Error('El paciente no existe');
+    }
+  
+    pacienteId = datosHistoria.paciente.id;
+    } else {
+    // Verificar si el paciente ya existe por correo o teléfono
+    const [pacientesExistentes] = await connection.query(
+        'SELECT ID FROM Pacientes WHERE CorreoElectronico = ? OR TelefonoCelular = ?',
+        [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
+    );
+  
+    if (pacientesExistentes.length > 0) {
+        pacienteId = pacientesExistentes[0].ID;
+    } else {
+        // Crear nuevo paciente
+        const [resultPaciente] = await connection.query(
+        `INSERT INTO Pacientes (
+            Nombre, ApellidoPaterno, ApellidoMaterno, GeneroID, Edad,
+            EstadoCivilID, EscolaridadID, Ocupacion, DireccionLinea1, DireccionLinea2,
+            Ciudad, EstadoID, CodigoPostal, Pais, CorreoElectronico, TelefonoCelular, Telefono
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+            datosHistoria.paciente.nombre,
+            datosHistoria.paciente.apellidoPaterno,
+            datosHistoria.paciente.apellidoMaterno,
+            datosHistoria.paciente.generoID,
+            datosHistoria.paciente.edad,
+            datosHistoria.paciente.estadoCivilID,
+            datosHistoria.paciente.escolaridadID,
+            datosHistoria.paciente.ocupacion,
+            datosHistoria.paciente.direccionLinea1,
+            datosHistoria.paciente.direccionLinea2,
+            datosHistoria.paciente.ciudad,
+            datosHistoria.paciente.estadoID ? parseInt(datosHistoria.paciente.estadoID) : null, // Conversión y manejo de nulos
+            datosHistoria.paciente.codigoPostal,
+            datosHistoria.paciente.pais || 'México',
+            datosHistoria.paciente.correoElectronico,
+            datosHistoria.paciente.telefonoCelular,
+            datosHistoria.paciente.telefono
+        ]
+        );
+  
+        pacienteId = resultPaciente.insertId;
+    }
+    }
+  
 
-try {
-  await connection.beginTransaction();
-
-  // 1. Crear el paciente si no existe
-  let pacienteId;
-
-  if (datosHistoria.paciente.id) {
-  // Si se proporciona un ID de paciente, verificar que exista
-  const [pacientes] = await connection.query(
-      'SELECT ID FROM Pacientes WHERE ID = ?',
-      [datosHistoria.paciente.id]
-  );
-
-  if (pacientes.length === 0) {
-      throw new Error('El paciente no existe');
-  }
-
-  pacienteId = datosHistoria.paciente.id;
-  } else {
-  // Verificar si el paciente ya existe por correo o teléfono
-  const [pacientesExistentes] = await connection.query(
-      'SELECT ID FROM Pacientes WHERE CorreoElectronico = ? OR TelefonoCelular = ?',
-      [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
-  );
-
-  if (pacientesExistentes.length > 0) {
-      pacienteId = pacientesExistentes[0].ID;
-  } else {
-      // Crear nuevo paciente
-      const [resultPaciente] = await connection.query(
-      `INSERT INTO Pacientes (
-          Nombre, ApellidoPaterno, ApellidoMaterno, GeneroID, Edad,
-          EstadoCivilID, EscolaridadID, Ocupacion, DireccionLinea1, DireccionLinea2,
-          Ciudad, EstadoID, CodigoPostal, Pais, CorreoElectronico, TelefonoCelular, Telefono
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    // 2. Crear el registro de la historia clínica con estado "En proceso"
+    const [estadoEnProceso] = await connection.query(
+      "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = 'En proceso'"
+    );
+    
+    const estadoId = estadoEnProceso.length > 0 ? estadoEnProceso[0].ID : 43; // 43 como predeterminado si no se encuentra
+    
+    const [historiaResult] = await connection.query(
+      `INSERT INTO HistorialesClinicos (
+        PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
+        Archivado, ConsultorioID, SemestreID, CreadoEn
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
-          datosHistoria.paciente.nombre,
-          datosHistoria.paciente.apellidoPaterno,
-          datosHistoria.paciente.apellidoMaterno,
-          datosHistoria.paciente.generoID,
-          datosHistoria.paciente.edad,
-          datosHistoria.paciente.estadoCivilID,
-          datosHistoria.paciente.escolaridadID,
-          datosHistoria.paciente.ocupacion,
-          datosHistoria.paciente.direccionLinea1,
-          datosHistoria.paciente.direccionLinea2,
-          datosHistoria.paciente.ciudad,
-          datosHistoria.paciente.estadoID ? parseInt(datosHistoria.paciente.estadoID) : null, // Conversión y manejo de nulos
-          datosHistoria.paciente.codigoPostal,
-          datosHistoria.paciente.pais || 'México',
-          datosHistoria.paciente.correoElectronico,
-          datosHistoria.paciente.telefonoCelular,
-          datosHistoria.paciente.telefono
+        pacienteId,
+        datosHistoria.alumnoID,
+        datosHistoria.profesorID,
+        datosHistoria.fecha || new Date(),
+        estadoId,
+        false,
+        datosHistoria.consultorioID,
+        datosHistoria.semestreID,
       ]
+    );
+
+    const historiaID = historiaResult.insertId;
+
+    // 3. Procesar todas las secciones
+
+    // Interrogatorio
+    if (secciones.interrogatorio) {
+      await connection.query(
+        `INSERT INTO Interrogatorio (
+          HistorialID, MotivoConsulta, HeredoFamiliares, NoPatologicos,
+          Patologicos, VisualesOculares, PadecimientoActual, Prediagnostico
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.interrogatorio.motivoConsulta || null,
+          secciones.interrogatorio.heredoFamiliares || null,
+          secciones.interrogatorio.noPatologicos || null,
+          secciones.interrogatorio.patologicos || null,
+          secciones.interrogatorio.visualesOculares || null,
+          secciones.interrogatorio.padecimientoActual || null,
+          secciones.interrogatorio.prediagnostico || null
+        ]
       );
+    }
 
-      pacienteId = resultPaciente.insertId;
+    // Antecedente Visual - Agudeza Visual
+    if (secciones.agudezaVisual && Array.isArray(secciones.agudezaVisual)) {
+      for (const agudeza of secciones.agudezaVisual) {
+        await connection.query(
+          `INSERT INTO AgudezaVisual (
+            HistorialID, TipoMedicion, 
+            OjoDerechoSnellen, OjoDerechoMetros, OjoDerechoDecimal, OjoDerechoMAR,
+            OjoIzquierdoSnellen, OjoIzquierdoMetros, OjoIzquierdoDecimal, OjoIzquierdoMAR,
+            AmbosOjosSnellen, AmbosOjosMetros, AmbosOjosDecimal, AmbosOjosMAR,
+            OjoDerechoM, OjoDerechoJeager, OjoDerechoPuntos,
+            OjoIzquierdoM, OjoIzquierdoJeager, OjoIzquierdoPuntos,
+            AmbosOjosM, AmbosOjosJeager, AmbosOjosPuntos,
+            DiametroMM, CapacidadVisualOD, CapacidadVisualOI, CapacidadVisualAO
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            historiaID,
+            agudeza.tipoMedicion || 'SIN_RX_LEJOS',
+            agudeza.ojoDerechoSnellen || null,
+            agudeza.ojoDerechoMetros || null,
+            agudeza.ojoDerechoDecimal || null,
+            agudeza.ojoDerechoMAR || null,
+            agudeza.ojoIzquierdoSnellen || null,
+            agudeza.ojoIzquierdoMetros || null,
+            agudeza.ojoIzquierdoDecimal || null,
+            agudeza.ojoIzquierdoMAR || null,
+            agudeza.ambosOjosSnellen || null,
+            agudeza.ambosOjosMetros || null,
+            agudeza.ambosOjosDecimal || null,
+            agudeza.ambosOjosMAR || null,
+            agudeza.ojoDerechoM || null,
+            agudeza.ojoDerechoJeager || null,
+            agudeza.ojoDerechoPuntos || null,
+            agudeza.ojoIzquierdoM || null,
+            agudeza.ojoIzquierdoJeager || null,
+            agudeza.ojoIzquierdoPuntos || null,
+            agudeza.ambosOjosM || null,
+            agudeza.ambosOjosJeager || null,
+            agudeza.ambosOjosPuntos || null,
+            agudeza.diametroMM || null,
+            agudeza.capacidadVisualOD || null,
+            agudeza.capacidadVisualOI || null,
+            agudeza.capacidadVisualAO || null
+          ]
+        );
+      }
+    }
+
+    // Antecedente Visual - Lensometría
+    if (secciones.lensometria) {
+      await connection.query(
+        `INSERT INTO Lensometria (
+          HistorialID, OjoDerechoEsfera, OjoDerechoCilindro, OjoDerechoEje,
+          OjoIzquierdoEsfera, OjoIzquierdoCilindro, OjoIzquierdoEje,
+          TipoBifocalMultifocalID, ValorADD, DistanciaRango, CentroOptico
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.lensometria.ojoDerechoEsfera || null,
+          secciones.lensometria.ojoDerechoCilindro || null,
+          secciones.lensometria.ojoDerechoEje || null,
+          secciones.lensometria.ojoIzquierdoEsfera || null,
+          secciones.lensometria.ojoIzquierdoCilindro || null,
+          secciones.lensometria.ojoIzquierdoEje || null,
+          secciones.lensometria.tipoBifocalMultifocalID, 
+          secciones.lensometria.valorADD || null,
+          secciones.lensometria.distanciaRango || null,
+          secciones.lensometria.centroOptico || null
+        ]
+      );
+    }
+
+    // Examen Preliminar - Alineación Ocular
+    if (secciones.alineacionOcular) {
+      await connection.query(
+        `INSERT INTO AlineacionOcular (
+          HistorialID, LejosHorizontal, LejoVertical, CercaHorizontal, CercaVertical, MetodoID
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.alineacionOcular.lejosHorizontal || null,
+          secciones.alineacionOcular.lejoVertical || null,
+          secciones.alineacionOcular.cercaHorizontal || null,
+          secciones.alineacionOcular.cercaVertical || null,
+          secciones.alineacionOcular.metodoID || null
+        ]
+      );
+    }
+
+    // Examen Preliminar - Motilidad
+    if (secciones.motilidad) {
+      await connection.query(
+        `INSERT INTO Motilidad (
+          HistorialID, Versiones, Ducciones, Sacadicos, Persecucion, Fijacion
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.motilidad.versiones || null,
+          secciones.motilidad.ducciones || null,
+          secciones.motilidad.sacadicos || null,
+          secciones.motilidad.persecucion || null,
+          secciones.motilidad.fijacion || null
+        ]
+      );
+    }
+
+    // Examen Preliminar - Exploración Física
+    if (secciones.exploracionFisica) {
+      await connection.query(
+        `INSERT INTO ExploracionFisica (
+          HistorialID, OjoDerechoAnexos, OjoIzquierdoAnexos, 
+          OjoDerechoSegmentoAnterior, OjoIzquierdoSegmentoAnterior
+        ) VALUES (?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.exploracionFisica.ojoDerechoAnexos || null,
+          secciones.exploracionFisica.ojoIzquierdoAnexos || null,
+          secciones.exploracionFisica.ojoDerechoSegmentoAnterior || null,
+          secciones.exploracionFisica.ojoIzquierdoSegmentoAnterior || null
+        ]
+      );
+    }
+
+    // Examen Preliminar - Vía Pupilar
+    if (secciones.viaPupilar) {
+      await connection.query(
+        `INSERT INTO ViaPupilar (
+          HistorialID, OjoDerechoDiametro, OjoIzquierdoDiametro,
+          OjoDerechoFotomotorPresente, OjoDerechoConsensualPresente, OjoDerechoAcomodativoPresente,
+          OjoIzquierdoFotomotorPresente, OjoIzquierdoConsensualPresente, OjoIzquierdoAcomodativoPresente,
+          OjoDerechoFotomotorAusente, OjoDerechoConsensualAusente, OjoDerechoAcomodativoAusente,
+          OjoIzquierdoFotomotorAusente, OjoIzquierdoConsensualAusente, OjoIzquierdoAcomodativoAusente,
+          EsIsocoria, EsAnisocoria, RespuestaAcomodacion, PupilasIguales, PupilasRedondas, 
+          RespuestaLuz, DIP, DominanciaOcularID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.viaPupilar.ojoDerechoDiametro || null,
+          secciones.viaPupilar.ojoIzquierdoDiametro || null,
+          secciones.viaPupilar.ojoDerechoFotomotorPresente || false,
+          secciones.viaPupilar.ojoDerechoConsensualPresente || false,
+          secciones.viaPupilar.ojoDerechoAcomodativoPresente || false,
+          secciones.viaPupilar.ojoIzquierdoFotomotorPresente || false,
+          secciones.viaPupilar.ojoIzquierdoConsensualPresente || false,
+          secciones.viaPupilar.ojoIzquierdoAcomodativoPresente || false,
+          secciones.viaPupilar.ojoDerechoFotomotorAusente || false,
+          secciones.viaPupilar.ojoDerechoConsensualAusente || false,
+          secciones.viaPupilar.ojoDerechoAcomodativoAusente || false,
+          secciones.viaPupilar.ojoIzquierdoFotomotorAusente || false,
+          secciones.viaPupilar.ojoIzquierdoConsensualAusente || false,
+          secciones.viaPupilar.ojoIzquierdoAcomodativoAusente || false,
+          secciones.viaPupilar.esIsocoria || false,
+          secciones.viaPupilar.esAnisocoria || false,
+          secciones.viaPupilar.respuestaAcomodacion || false,
+          secciones.viaPupilar.pupilasIguales || false,
+          secciones.viaPupilar.pupilasRedondas || false,
+          secciones.viaPupilar.respuestaLuz || false,
+          secciones.viaPupilar.dip || null,
+          secciones.viaPupilar.dominanciaOcularID || null
+        ]
+      );
+    }
+
+    // Estado Refractivo - Estado Refractivo
+    if (secciones.estadoRefractivo) {
+      await connection.query(
+        `INSERT INTO EstadoRefractivo (
+          HistorialID, OjoDerechoQueratometria, OjoIzquierdoQueratometria, 
+          OjoDerechoAstigmatismoCorneal, OjoIzquierdoAstigmatismoCorneal,
+          OjoDerechoAstigmatismoJaval, OjoIzquierdoAstigmatismoJaval,
+          OjoDerechoRetinoscopiaEsfera, OjoDerechoRetinosciopiaCilindro, OjoDerechoRetinoscopiaEje,
+          OjoIzquierdoRetinoscopiaEsfera, OjoIzquierdoRetinosciopiaCilindro, OjoIzquierdoRetinoscopiaEje,
+          OjoDerechoSubjetivoEsfera, OjoDerechoSubjetivoCilindro, OjoDerechoSubjetivoEje,
+          OjoIzquierdoSubjetivoEsfera, OjoIzquierdoSubjetivoCilindro, OjoIzquierdoSubjetivoEje,
+          OjoDerechoBalanceBinocularesEsfera, OjoDerechoBalanceBinocularesCilindro, OjoDerechoBalanceBinocularesEje,
+          OjoIzquierdoBalanceBinocularesEsfera, OjoIzquierdoBalanceBinocularesCilindro, OjoIzquierdoBalanceBinocularesEje,
+          OjoDerechoAVLejana, OjoIzquierdoAVLejana
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.estadoRefractivo.ojoDerechoQueratometria || null,
+          secciones.estadoRefractivo.ojoIzquierdoQueratometria || null,
+          secciones.estadoRefractivo.ojoDerechoAstigmatismoCorneal || null,
+          secciones.estadoRefractivo.ojoIzquierdoAstigmatismoCorneal || null,
+          secciones.estadoRefractivo.ojoDerechoAstigmatismoJaval || null,
+          secciones.estadoRefractivo.ojoIzquierdoAstigmatismoJaval || null,
+          secciones.estadoRefractivo.ojoDerechoRetinoscopiaEsfera || null,
+          secciones.estadoRefractivo.ojoDerechoRetinosciopiaCilindro || null,
+          secciones.estadoRefractivo.ojoDerechoRetinoscopiaEje || null,
+          secciones.estadoRefractivo.ojoIzquierdoRetinoscopiaEsfera || null,
+          secciones.estadoRefractivo.ojoIzquierdoRetinosciopiaCilindro || null,
+          secciones.estadoRefractivo.ojoIzquierdoRetinoscopiaEje || null,
+          secciones.estadoRefractivo.ojoDerechoSubjetivoEsfera || null,
+          secciones.estadoRefractivo.ojoDerechoSubjetivoCilindro || null,
+          secciones.estadoRefractivo.ojoDerechoSubjetivoEje || null,
+          secciones.estadoRefractivo.ojoIzquierdoSubjetivoEsfera || null,
+          secciones.estadoRefractivo.ojoIzquierdoSubjetivoCilindro || null,
+          secciones.estadoRefractivo.ojoIzquierdoSubjetivoEje || null,
+          secciones.estadoRefractivo.ojoDerechoBalanceBinocularesEsfera || null,
+          secciones.estadoRefractivo.ojoDerechoBalanceBinocularesCilindro || null,
+          secciones.estadoRefractivo.ojoDerechoBalanceBinocularesEje || null,
+          secciones.estadoRefractivo.ojoIzquierdoBalanceBinocularesEsfera || null,
+          secciones.estadoRefractivo.ojoIzquierdoBalanceBinocularesCilindro || null,
+          secciones.estadoRefractivo.ojoIzquierdoBalanceBinocularesEje || null,
+          secciones.estadoRefractivo.ojoDerechoAVLejana || null,
+          secciones.estadoRefractivo.ojoIzquierdoAVLejana || null
+        ]
+      );
+    }
+
+    // Estado Refractivo - Subjetivo Cerca
+    if (secciones.subjetivoCerca) {
+      await connection.query(
+        `INSERT INTO SubjetivoCerca (
+          HistorialID, OjoDerechoM, OjoDerechoJacger, OjoDerechoPuntos, OjoDerechoSnellen,
+          OjoIzquierdoM, OjoIzquierdoJacger, OjoIzquierdoPuntos, OjoIzquierdoSnellen,
+          AmbosOjosM, AmbosOjosJacger, AmbosOjosPuntos, AmbosOjosSnellen,
+          ValorADD, AV, Distancia, Rango
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.subjetivoCerca.ojoDerechoM || null,
+          secciones.subjetivoCerca.ojoDerechoJacger || null,
+          secciones.subjetivoCerca.ojoDerechoPuntos || null,
+          secciones.subjetivoCerca.ojoDerechoSnellen || null,
+          secciones.subjetivoCerca.ojoIzquierdoM || null,
+          secciones.subjetivoCerca.ojoIzquierdoJacger || null,
+          secciones.subjetivoCerca.ojoIzquierdoPuntos || null,
+          secciones.subjetivoCerca.ojoIzquierdoSnellen || null,
+          secciones.subjetivoCerca.ambosOjosM || null,
+          secciones.subjetivoCerca.ambosOjosJacger || null,
+          secciones.subjetivoCerca.ambosOjosPuntos || null,
+          secciones.subjetivoCerca.ambosOjosSnellen || null,
+          secciones.subjetivoCerca.valorADD || null,
+          secciones.subjetivoCerca.av || null,
+          secciones.subjetivoCerca.distancia || null,
+          secciones.subjetivoCerca.rango || null
+        ]
+      );
+    }
+
+    // Binocularidad - Binocularidad
+    if (secciones.binocularidad) {
+      await connection.query(
+        `INSERT INTO Binocularidad (
+          HistorialID, PPC, ARN, ARP, Donders, Sheards, HabAcomLente, HabAcomDificultad,
+          OjoDerechoAmpAcomCm, OjoDerechoAmpAcomD, OjoIzquierdoAmpAcomCm, OjoIzquierdoAmpAcomD,
+          AmbosOjosAmpAcomCm, AmbosOjosAmpAcomD
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.binocularidad.ppc || null,
+          secciones.binocularidad.arn || null,
+          secciones.binocularidad.arp || null,
+          secciones.binocularidad.donders || false,
+          secciones.binocularidad.sheards || false,
+          secciones.binocularidad.habAcomLente || null,
+          secciones.binocularidad.habAcomDificultad || null,
+          secciones.binocularidad.ojoDerechoAmpAcomCm || null,
+          secciones.binocularidad.ojoDerechoAmpAcomD || null,
+          secciones.binocularidad.ojoIzquierdoAmpAcomCm || null,
+          secciones.binocularidad.ojoIzquierdoAmpAcomD || null,
+          secciones.binocularidad.ambosOjosAmpAcomCm || null,
+          secciones.binocularidad.ambosOjosAmpAcomD || null
+        ]
+      );
+    }
+
+    // Binocularidad - Forias
+    if (secciones.forias) {
+      await connection.query(
+        `INSERT INTO Forias (
+          HistorialID, HorizontalesLejos, HorizontalesCerca, 
+          VerticalLejos, VerticalCerca, MetodoMedicionID, 
+          CAA, CAACalculada, CAAMedida
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.forias.horizontalesLejos || null,
+          secciones.forias.horizontalesCerca || null,
+          secciones.forias.verticalLejos || null,
+          secciones.forias.verticalCerca || null,
+          secciones.forias.metodoMedicionID,
+          secciones.forias.caa || null,
+          secciones.forias.caaCalculada || null,
+          secciones.forias.caaMedida || null
+        ]
+      );
+    }
+
+    // Binocularidad - Vergencias
+    if (secciones.vergencias) {
+      await connection.query(
+        `INSERT INTO Vergencias (
+          HistorialID, PositivasLejosBorroso, PositivasLejosRuptura, PositivasLejosRecuperacion,
+          PositivasCercaBorroso, PositivasCercaRuptura, PositivasCercaRecuperacion,
+          NegativasLejosBorroso, NegativasLejosRuptura, NegativasLejosRecuperacion,
+          NegativasCercaBorroso, NegativasCercaRuptura, NegativasCercaRecuperacion,
+          SupravergenciasLejosRuptura, SupravergenciasLejosRecuperacion,
+          SupravergenciasCercaRuptura, SupravergenciasCercaRecuperacion,
+          InfravergenciasLejosRuptura, InfravergenciasLejosRecuperacion,
+          InfravergenciasCercaRuptura, InfravergenciasCercaRecuperacion
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.vergencias.positivasLejosBorroso || null,
+          secciones.vergencias.positivasLejosRuptura || null,
+          secciones.vergencias.positivasLejosRecuperacion || null,
+          secciones.vergencias.positivasCercaBorroso || null,
+          secciones.vergencias.positivasCercaRuptura || null,
+          secciones.vergencias.positivasCercaRecuperacion || null,
+          secciones.vergencias.negativasLejosBorroso || null,
+          secciones.vergencias.negativasLejosRuptura || null,
+          secciones.vergencias.negativasLejosRecuperacion || null,
+          secciones.vergencias.negativasCercaBorroso || null,
+          secciones.vergencias.negativasCercaRuptura || null,
+          secciones.vergencias.negativasCercaRecuperacion || null,
+          secciones.vergencias.supravergenciasLejosRuptura || null,
+          secciones.vergencias.supravergenciasLejosRecuperacion || null,
+          secciones.vergencias.supravergenciasCercaRuptura || null,
+          secciones.vergencias.supravergenciasCercaRecuperacion || null,
+          secciones.vergencias.infravergenciasLejosRuptura || null,
+          secciones.vergencias.infravergenciasLejosRecuperacion || null,
+          secciones.vergencias.infravergenciasCercaRuptura || null,
+          secciones.vergencias.infravergenciasCercaRecuperacion || null
+        ]
+      );
+    }
+
+    // Binocularidad - Método Gráfico
+    if (secciones.metodoGrafico) {
+      await connection.query(
+        `INSERT INTO MetodoGrafico (
+          HistorialID, IntegracionBinocular, TipoID, 
+          VisionEstereoscopica, TipoVisionID, ImagenID
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.metodoGrafico.integracionBinocular || null,
+          secciones.metodoGrafico.tipoID || null,
+          secciones.metodoGrafico.visionEstereoscopica || null,
+          secciones.metodoGrafico.tipoVisionID || null,
+          secciones.metodoGrafico.imagenID || null
+        ]
+      );
+    }
+
+    // Detección de Alteraciones - Grid de Amsler
+    if (secciones.gridAmsler) {
+      await connection.query(
+        `INSERT INTO GridAmsler (
+          HistorialID, NumeroCartilla, OjoDerechoSensibilidadContraste, OjoIzquierdoSensibilidadContraste,
+          OjoDerechoVisionCromatica, OjoIzquierdoVisionCromatica, OjoDerechoImagenID, OjoIzquierdoImagenID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.gridAmsler.numeroCartilla || null,
+          secciones.gridAmsler.ojoDerechoSensibilidadContraste || null,
+          secciones.gridAmsler.ojoIzquierdoSensibilidadContraste || null,
+          secciones.gridAmsler.ojoDerechoVisionCromatica || null,
+          secciones.gridAmsler.ojoIzquierdoVision || null,
+          secciones.gridAmsler.ojoIzquierdoVisionCromatica || null,
+          secciones.gridAmsler.ojoDerechoImagenID || null,
+          secciones.gridAmsler.ojoIzquierdoImagenID || null
+        ]
+      );
+    }
+
+    // Detección de Alteraciones - Tonometría
+    if (secciones.tonometria) {
+      await connection.query(
+        `INSERT INTO Tonometria (
+          HistorialID, MetodoAnestesico, Fecha, Hora, OjoDerecho, OjoIzquierdo, TipoID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.tonometria.metodoAnestesico || null,
+          secciones.tonometria.fecha || null,
+          secciones.tonometria.hora || null,
+          secciones.tonometria.ojoDerecho || null,
+          secciones.tonometria.ojoIzquierdo || null,
+          secciones.tonometria.tipoID || null
+        ]
+      );
+    }
+
+    // Detección de Alteraciones - Paquimetría
+    if (secciones.paquimetria) {
+      await connection.query(
+        `INSERT INTO Paquimetria (
+          HistorialID, OjoDerechoCCT, OjoIzquierdoCCT, OjoDerechoPIOCorregida, OjoIzquierdoPIOCorregida
+        ) VALUES (?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.paquimetria.ojoDerechoCCT || null,
+          secciones.paquimetria.ojoIzquierdoCCT || null,
+          secciones.paquimetria.ojoDerechoPIOCorregida || null,
+          secciones.paquimetria.ojoIzquierdoPIOCorregida || null
+        ]
+      );
+    }
+
+    // Detección de Alteraciones - Campimetría
+    if (secciones.campimetria) {
+      await connection.query(
+        `INSERT INTO Campimetria (
+          HistorialID, Distancia, TamanoColorIndice, TamanoColorPuntoFijacion,
+          OjoDerechoImagenID, OjoIzquierdoImagenID
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.campimetria.distancia || null,
+          secciones.campimetria.tamanoColorIndice || null,
+          secciones.campimetria.tamanoColorPuntoFijacion || null,
+          secciones.campimetria.ojoDerechoImagenID || null,
+          secciones.campimetria.ojoIzquierdoImagenID || null
+        ]
+      );
+    }
+      
+    // Detección de Alteraciones - Biomicroscopía
+    if (secciones.biomicroscopia) {
+      await connection.query(
+        `INSERT INTO Biomicroscopia (
+          HistorialID, OjoDerechoPestanas, OjoIzquierdoPestanas, OjoDerechoParpadosIndice, OjoIzquierdoParpadosIndice,
+          OjoDerechoBordePalpebral, OjoIzquierdoBordePalpebral, OjoDerechoLineaGris, OjoIzquierdoLineaGris,
+          OjoDerechoCantoExterno, OjoIzquierdoCantoExterno, OjoDerechoCantoInterno, OjoIzquierdoCantoInterno,
+          OjoDerechoPuntosLagrimales, OjoIzquierdoPuntosLagrimales, OjoDerechoConjuntivaTarsal, OjoIzquierdoConjuntivaTarsal,
+          OjoDerechoConjuntivaBulbar, OjoIzquierdoConjuntivaBulbar, OjoDerechoFondoSaco, OjoIzquierdoFondoSaco,
+          OjoDerechoLimbo, OjoIzquierdoLimbo, OjoDerechoCorneaBiomicroscopia, OjoIzquierdoCorneaBiomicroscopia,
+          OjoDerechoCamaraAnterior, OjoIzquierdoCamaraAnterior, OjoDerechoIris, OjoIzquierdoIris,
+          OjoDerechoCristalino, OjoIzquierdoCristalino, OjoDerechoImagenID, OjoIzquierdoImagenID,
+          OjoDerechoImagenID2, OjoIzquierdoImagenID2, OjoDerechoImagenID3, OjoIzquierdoImagenID3
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.biomicroscopia.ojoDerechoPestanas || null,
+          secciones.biomicroscopia.ojoIzquierdoPestanas || null,
+          secciones.biomicroscopia.ojoDerechoParpadosIndice || null,
+          secciones.biomicroscopia.ojoIzquierdoParpadosIndice || null,
+          secciones.biomicroscopia.ojoDerechoBordePalpebral || null,
+          secciones.biomicroscopia.ojoIzquierdoBordePalpebral || null,
+          secciones.biomicroscopia.ojoDerechoLineaGris || null,
+          secciones.biomicroscopia.ojoIzquierdoLineaGris || null,
+          secciones.biomicroscopia.ojoDerechoCantoExterno || null,
+          secciones.biomicroscopia.ojoIzquierdoCantoExterno || null,
+          secciones.biomicroscopia.ojoDerechoCantoInterno || null,
+          secciones.biomicroscopia.ojoIzquierdoCantoInterno || null,
+          secciones.biomicroscopia.ojoDerechoPuntosLagrimales || null,
+          secciones.biomicroscopia.ojoIzquierdoPuntosLagrimales || null,
+          secciones.biomicroscopia.ojoDerechoConjuntivaTarsal || null,
+          secciones.biomicroscopia.ojoIzquierdoConjuntivaTarsal || null,
+          secciones.biomicroscopia.ojoDerechoConjuntivaBulbar || null,
+          secciones.biomicroscopia.ojoIzquierdoConjuntivaBulbar || null,
+          secciones.biomicroscopia.ojoDerechoFondoSaco || null,
+          secciones.biomicroscopia.ojoIzquierdoFondoSaco || null,
+          secciones.biomicroscopia.ojoDerechoLimbo || null,
+          secciones.biomicroscopia.ojoIzquierdoLimbo || null,
+          secciones.biomicroscopia.ojoDerechoCorneaBiomicroscopia || null,
+          secciones.biomicroscopia.ojoIzquierdoCorneaBiomicroscopia || null,
+          secciones.biomicroscopia.ojoDerechoCamaraAnterior || null,
+          secciones.biomicroscopia.ojoIzquierdoCamaraAnterior || null,
+          secciones.biomicroscopia.ojoDerechoIris || null,
+          secciones.biomicroscopia.ojoIzquierdoIris || null,
+          secciones.biomicroscopia.ojoDerechoCristalino || null,
+          secciones.biomicroscopia.ojoIzquierdoCristalino || null,
+          secciones.biomicroscopia.ojoDerechoImagenID || null,
+          secciones.biomicroscopia.ojoIzquierdoImagenID || null,
+          secciones.biomicroscopia.ojoDerechoImagenID2 || null,
+          secciones.biomicroscopia.ojoIzquierdoImagenID2 || null,
+          secciones.biomicroscopia.ojoDerechoImagenID3 || null,
+          secciones.biomicroscopia.ojoIzquierdoImagenID3 || null
+        ]
+      );
+    }
+
+    // Detección de Alteraciones - Oftalmoscopía
+    if (secciones.oftalmoscopia) {
+      await connection.query(
+        `INSERT INTO Oftalmoscopia (
+          HistorialID, OjoDerechoPapila, OjoIzquierdoPapila, OjoDerechoExcavacion, OjoIzquierdoExcavacion,
+          OjoDerechoRadio, OjoIzquierdoRadio, OjoDerechoProfundidad, OjoIzquierdoProfundidad,
+          OjoDerechoVasos, OjoIzquierdoVasos, OjoDerechoRELAV, OjoIzquierdoRELAV,
+          OjoDerechoMacula, OjoIzquierdoMacula, OjoDerechoReflejo, OjoIzquierdoReflejo,
+          OjoDerechoRetinaPeriferica, OjoIzquierdoRetinaPeriferica, OjoDerechoISNT, OjoIzquierdoISNT,
+          OjoDerechoImagenID, OjoIzquierdoImagenID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.oftalmoscopia.ojoDerechoPapila || null,
+          secciones.oftalmoscopia.ojoIzquierdoPapila || null,
+          secciones.oftalmoscopia.ojoDerechoExcavacion || null,
+          secciones.oftalmoscopia.ojoIzquierdoExcavacion || null,
+          secciones.oftalmoscopia.ojoDerechoRadio || null,
+          secciones.oftalmoscopia.ojoIzquierdoRadio || null,
+          secciones.oftalmoscopia.ojoDerechoProfundidad || null,
+          secciones.oftalmoscopia.ojoIzquierdoProfundidad || null,
+          secciones.oftalmoscopia.ojoDerechoVasos || null,
+          secciones.oftalmoscopia.ojoIzquierdoVasos || null,
+          secciones.oftalmoscopia.ojoDerechoRELAV || null,
+          secciones.oftalmoscopia.ojoIzquierdoRELAV || null,
+          secciones.oftalmoscopia.ojoDerechoMacula || null,
+          secciones.oftalmoscopia.ojoIzquierdoMacula || null,
+          secciones.oftalmoscopia.ojoDerechoReflejo || null,
+          secciones.oftalmoscopia.ojoIzquierdoReflejo || null,
+          secciones.oftalmoscopia.ojoDerechoRetinaPeriferica || null,
+          secciones.oftalmoscopia.ojoIzquierdoRetinaPeriferica || null,
+          secciones.oftalmoscopia.ojoDerechoISNT || null,
+          secciones.oftalmoscopia.ojoIzquierdoISNT || null,
+          secciones.oftalmoscopia.ojoDerechoImagenID || null,
+          secciones.oftalmoscopia.ojoIzquierdoImagenID || null
+        ]
+      );
+    }
+
+    // Diagnóstico
+    if (secciones.diagnostico) {
+      await connection.query(
+        `INSERT INTO Diagnostico (
+          HistorialID, OjoDerechoRefractivo, OjoIzquierdoRefractivo,
+          OjoDerechoPatologico, OjoIzquierdoPatologico, Binocular, Sensorial
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.diagnostico.ojoDerechoRefractivo || null,
+          secciones.diagnostico.ojoIzquierdoRefractivo || null,
+          secciones.diagnostico.ojoDerechoPatologico || null,
+          secciones.diagnostico.ojoIzquierdoPatologico || null,
+          secciones.diagnostico.binocular || null,
+          secciones.diagnostico.sensorial || null
+        ]
+      );
+    }
+
+    // Plan de Tratamiento
+    if (secciones.planTratamiento) {
+      await connection.query(
+        `INSERT INTO PlanTratamiento (HistorialID, Descripcion)
+        VALUES (?, ?)`,
+        [historiaID, secciones.planTratamiento.descripcion || null]
+      );
+    }
+
+    // Pronóstico
+    if (secciones.pronostico) {
+      await connection.query(
+        `INSERT INTO Pronostico (HistorialID, Descripcion)
+        VALUES (?, ?)`,
+        [historiaID, secciones.pronostico.descripcion || null]
+      );
+    }
+
+    // Recomendaciones
+    if (secciones.recomendaciones) {
+      await connection.query(
+        `INSERT INTO Recomendaciones (HistorialID, Descripcion)
+        VALUES (?, ?)`,
+        [historiaID, secciones.recomendaciones.descripcion || null]
+      );
+    }
+
+    // Receta Final
+    if (secciones.recetaFinal) {
+      await connection.query(
+        `INSERT INTO RecetaFinal (
+          HistorialID, OjoDerechoEsfera, OjoDerechoCilindro, OjoDerechoEje,
+          OjoDerechoPrisma, OjoDerechoEjePrisma, OjoIzquierdoEsfera,
+          OjoIzquierdoCilindro, OjoIzquierdoEje, OjoIzquierdoPrisma,
+          OjoIzquierdoEjePrisma, Tratamiento, TipoID, DIP,
+          ADD, Material, Observaciones
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          historiaID,
+          secciones.recetaFinal.ojoDerechoEsfera || null,
+          secciones.recetaFinal.ojoDerechoCilindro || null,
+          secciones.recetaFinal.ojoDerechoEje || null,
+          secciones.recetaFinal.ojoDerechoPrisma || null,
+          secciones.recetaFinal.ojoDerechoEjePrisma || null,
+          secciones.recetaFinal.ojoIzquierdoEsfera || null,
+          secciones.recetaFinal.ojoIzquierdoCilindro || null,
+          secciones.recetaFinal.ojoIzquierdoEje || null,
+          secciones.recetaFinal.ojoIzquierdoPrisma || null,
+          secciones.recetaFinal.ojoIzquierdoEjePrisma || null,
+          secciones.recetaFinal.tratamiento || null,
+          secciones.recetaFinal.tipoID || null,
+          secciones.recetaFinal.dip || null,
+          secciones.recetaFinal.add || null,
+          secciones.recetaFinal.material || null,
+          secciones.recetaFinal.observaciones || null
+        ]
+      );
+    }
+
+    await connection.commit();
+
+    // Obtener la historia clínica completa creada
+    return {
+      ...await this.obtenerHistoriaClinicaPorId(historiaID, datosHistoria.alumnoID),
+      ID: historiaID
+    };
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al crear historia clínica completa:', error);
+    throw error;
+  } finally {
+    connection.release();
   }
-  }
-
-  // 2. Crear la historia clínica
-  const [resultHistoria] = await connection.query(
-  `INSERT INTO HistorialesClinicos (
-      PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
-      Archivado, ConsultorioID, SemestreID
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-  [
-      pacienteId,
-      datosHistoria.alumnoID,
-      datosHistoria.profesorID,
-      datosHistoria.fecha || new Date(),
-      datosHistoria.estadoID || 43, // Por defecto "En proceso"
-      datosHistoria.archivado || false,
-      datosHistoria.consultorioID,
-      datosHistoria.semestreID
-  ]
-  );
-
-  const historiaId = resultHistoria.insertId;
-
-  // 3. Crear el interrogatorio (si se proporciona)
-  if (datosHistoria.interrogatorio) {
-  await connection.query(
-      `INSERT INTO Interrogatorio (
-      HistorialID, MotivoConsulta, HeredoFamiliares, NoPatologicos,
-      Patologicos, VisualesOculares, PadecimientoActual, Prediagnostico
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-      historiaId,
-      datosHistoria.interrogatorio.motivoConsulta,
-      datosHistoria.interrogatorio.heredoFamiliares,
-      datosHistoria.interrogatorio.noPatologicos,
-      datosHistoria.interrogatorio.patologicos,
-      datosHistoria.interrogatorio.visualesOculares,
-      datosHistoria.interrogatorio.padecimientoActual,
-      datosHistoria.interrogatorio.prediagnostico
-      ]
-  );
-  }
-
-  await connection.commit();
-
-  // Obtener la historia clínica creada
-  const historiaCreada = await this.obtenerHistoriaClinicaPorId(historiaId, datosHistoria.alumnoID);
-
-  return historiaCreada;
-} catch (error) {
-  await connection.rollback();
-  console.error('Error al crear historia clínica:', error);
-  throw error;
-} finally {
-  connection.release();
-}
 },
 
 /**
@@ -316,6 +921,7 @@ try {
  * @param {Object} datos - Datos para actualizar
  * @returns {Promise<boolean>} - true si la actualización fue exitosa
  */
+
 async actualizarSeccion(historiaId, seccion, datos) {
 const connection = await db.pool.getConnection();
 
@@ -438,67 +1044,151 @@ try {
       }
       break;
 
-  case 'lensometria':
-      // Verificar si ya existe un registro de lensometría para esta historia
-      const [lensometrias] = await connection.query(
-      'SELECT ID FROM Lensometria WHERE HistorialID = ?',
-      [historiaId]
-      );
+      case 'lensometria':
+        // Verificar si ya existe un registro de lensometría para esta historia
+        const [lensometrias] = await connection.query(
+          'SELECT ID FROM Lensometria WHERE HistorialID = ?',
+          [historiaId]
+        );
+      
+        if (lensometrias.length === 0) {
+          // Crear nuevo registro de lensometría
+          await connection.query(
+            `INSERT INTO Lensometria (
+              HistorialID, OjoDerechoEsfera, OjoDerechoCilindro, OjoDerechoEje,
+              OjoIzquierdoEsfera, OjoIzquierdoCilindro, OjoIzquierdoEje,
+              TipoBifocalMultifocalID, ValorADD, DistanciaRango, CentroOptico
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              historiaId,
+              datos.ojoDerechoEsfera,
+              datos.ojoDerechoCilindro,
+              datos.ojoDerechoEje,
+              datos.ojoIzquierdoEsfera,
+              datos.ojoIzquierdoCilindro,
+              datos.ojoIzquierdoEje,
+              datos.tipoBifocalMultifocalID,
+              datos.add,
+              datos.distanciaRango,
+              datos.centroOptico
+            ]
+          );
+        } else {
+          // Actualizar registro de lensometría existente
+          await connection.query(
+            `UPDATE Lensometria SET
+              OjoDerechoEsfera = ?,
+              OjoDerechoCilindro = ?,
+              OjoDerechoEje = ?,
+              OjoIzquierdoEsfera = ?,
+              OjoIzquierdoCilindro = ?,
+              OjoIzquierdoEje = ?,
+              TipoBifocalMultifocalID = ?,
+              ValorADD = ?,
+              DistanciaRango = ?,
+              CentroOptico = ?
+            WHERE HistorialID = ?`,
+            [
+              datos.ojoDerechoEsfera,
+              datos.ojoDerechoCilindro,
+              datos.ojoDerechoEje,
+              datos.ojoIzquierdoEsfera,
+              datos.ojoIzquierdoCilindro,
+              datos.ojoIzquierdoEje,
+              mapTipoLenteToId(datos.tipoBifocalMultifocalID), 
+              datos.valorADD,
+              datos.distanciaRango,
+              datos.centroOptico,
+              historiaId
+            ]
+          );
+        }
+        break;
 
-      if (lensometrias.length === 0) {
-      // Crear nuevo registro de lensometría
-      await connection.query(
-          `INSERT INTO Lensometria (
-          HistorialID, OjoDerechoEsfera, OjoDerechoCilindro, OjoDerechoEje,
-          OjoIzquierdoEsfera, OjoIzquierdoCilindro, OjoIzquierdoEje,
-          TipoBifocalMultifocalID, ADD, DistanciaRango, CentroOptico
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-          historiaId,
-          datos.ojoDerechoEsfera,
-          datos.ojoDerechoCilindro,
-          datos.ojoDerechoEje,
-          datos.ojoIzquierdoEsfera,
-          datos.ojoIzquierdoCilindro,
-          datos.ojoIzquierdoEje,
-          datos.tipoBifocalMultifocalID,
-          datos.add,
-          datos.distanciaRango,
-          datos.centroOptico
-          ]
+    case 'binocularidad':
+      const {
+        binocularidad, // datos para tabla Binocularidad
+        forias,        // datos para tabla Forias
+        vergencias,    // datos para tabla Vergencias
+        metodoGrafico  // datos para tabla MetodoGrafico
+      } = datos;
+    
+      // Tabla Binocularidad
+      const [binocularidadExiste] = await connection.query(
+        'SELECT ID FROM Binocularidad WHERE HistorialID = ?',
+        [historiaId]
       );
+      if (binocularidadExiste.length === 0) {
+        await connection.query(
+          `INSERT INTO Binocularidad (HistorialID, PPC, ARN, ARP, Donders, Sheards, HabAcomLente, HabAcomDificultad,
+            OjoDerechoAmpAcomCm, OjoDerechoAmpAcomD, OjoIzquierdoAmpAcomCm, OjoIzquierdoAmpAcomD,
+            AmbosOjosAmpAcomCm, AmbosOjosAmpAcomD)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [historiaId, binocularidad.PPC, binocularidad.ARN, binocularidad.ARP, binocularidad.Donders, binocularidad.Sheards,
+            binocularidad.HabAcomLente, binocularidad.HabAcomDificultad,
+            binocularidad.OjoDerechoAmpAcomCm, binocularidad.OjoDerechoAmpAcomD,
+            binocularidad.OjoIzquierdoAmpAcomCm, binocularidad.OjoIzquierdoAmpAcomD,
+            binocularidad.AmbosOjosAmpAcomCm, binocularidad.AmbosOjosAmpAcomD]
+        );
       } else {
-      // Actualizar registro de lensometría existente
-      await connection.query(
-          `UPDATE Lensometria SET
-          OjoDerechoEsfera = ?,
-          OjoDerechoCilindro = ?,
-          OjoDerechoEje = ?,
-          OjoIzquierdoEsfera = ?,
-          OjoIzquierdoCilindro = ?,
-          OjoIzquierdoEje = ?,
-          TipoBifocalMultifocalID = ?,
-          ADD = ?,
-          DistanciaRango = ?,
-          CentroOptico = ?
-          WHERE HistorialID = ?`,
-          [
-          datos.ojoDerechoEsfera,
-          datos.ojoDerechoCilindro,
-          datos.ojoDerechoEje,
-          datos.ojoIzquierdoEsfera,
-          datos.ojoIzquierdoCilindro,
-          datos.ojoIzquierdoEje,
-          datos.tipoBifocalMultifocalID,
-          datos.add,
-          datos.distanciaRango,
-          datos.centroOptico,
-          historiaId
-          ]
-      );
+        await connection.query(
+          `UPDATE Binocularidad SET PPC = ?, ARN = ?, ARP = ?, Donders = ?, Sheards = ?, HabAcomLente = ?, HabAcomDificultad = ?,
+            OjoDerechoAmpAcomCm = ?, OjoDerechoAmpAcomD = ?, OjoIzquierdoAmpAcomCm = ?, OjoIzquierdoAmpAcomD = ?,
+            AmbosOjosAmpAcomCm = ?, AmbosOjosAmpAcomD = ?
+            WHERE HistorialID = ?`,
+          [binocularidad.PPC, binocularidad.ARN, binocularidad.ARP, binocularidad.Donders, binocularidad.Sheards,
+            binocularidad.HabAcomLente, binocularidad.HabAcomDificultad,
+            binocularidad.OjoDerechoAmpAcomCm, binocularidad.OjoDerechoAmpAcomD,
+            binocularidad.OjoIzquierdoAmpAcomCm, binocularidad.OjoIzquierdoAmpAcomD,
+            binocularidad.AmbosOjosAmpAcomCm, binocularidad.AmbosOjosAmpAcomD,
+            historiaId]
+        );
       }
+    
+      // Tabla Forias
+      await connection.query('DELETE FROM Forias WHERE HistorialID = ?', [historiaId]);
+      await connection.query(
+        `INSERT INTO Forias (HistorialID, HorizontalesLejos, HorizontalesCerca, VerticalLejos, VerticalCerca,
+            MetodoMedicionID, CAA, CAACalculada, CAAMedida)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [historiaId, forias.HorizontalesLejos, forias.HorizontalesCerca, forias.VerticalLejos, forias.VerticalCerca,
+          forias.MetodoMedicionID, forias.CAA, forias.CAACalculada, forias.CAAMedida]
+      );
+    
+      // Tabla Vergencias
+      await connection.query('DELETE FROM Vergencias WHERE HistorialID = ?', [historiaId]);
+      await connection.query(
+        `INSERT INTO Vergencias (HistorialID, PositivasLejosBorroso, PositivasLejosRuptura, PositivasLejosRecuperacion,
+          PositivasCercaBorroso, PositivasCercaRuptura, PositivasCercaRecuperacion,
+          NegativasLejosBorroso, NegativasLejosRuptura, NegativasLejosRecuperacion,
+          NegativasCercaBorroso, NegativasCercaRuptura, NegativasCercaRecuperacion,
+          SupravergenciasLejosRuptura, SupravergenciasLejosRecuperacion,
+          SupravergenciasCercaRuptura, SupravergenciasCercaRecuperacion,
+          InfravergenciasLejosRuptura, InfravergenciasLejosRecuperacion,
+          InfravergenciasCercaRuptura, InfravergenciasCercaRecuperacion)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [historiaId,
+          vergencias.PositivasLejosBorroso, vergencias.PositivasLejosRuptura, vergencias.PositivasLejosRecuperacion,
+          vergencias.PositivasCercaBorroso, vergencias.PositivasCercaRuptura, vergencias.PositivasCercaRecuperacion,
+          vergencias.NegativasLejosBorroso, vergencias.NegativasLejosRuptura, vergencias.NegativasLejosRecuperacion,
+          vergencias.NegativasCercaBorroso, vergencias.NegativasCercaRuptura, vergencias.NegativasCercaRecuperacion,
+          vergencias.SupravergenciasLejosRuptura, vergencias.SupravergenciasLejosRecuperacion,
+          vergencias.SupravergenciasCercaRuptura, vergencias.SupravergenciasCercaRecuperacion,
+          vergencias.InfravergenciasLejosRuptura, vergencias.InfravergenciasLejosRecuperacion,
+          vergencias.InfravergenciasCercaRuptura, vergencias.InfravergenciasCercaRecuperacion]
+      );
+    
+      // Tabla MetodoGrafico
+      await connection.query('DELETE FROM MetodoGrafico WHERE HistorialID = ?', [historiaId]);
+      await connection.query(
+        `INSERT INTO MetodoGrafico (HistorialID, IntegracionBinocular, TipoID, VisionEstereoscopica, TipoVisionID, ImagenID)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+        [historiaId, metodoGrafico.IntegracionBinocular, metodoGrafico.TipoID,
+          metodoGrafico.VisionEstereoscopica, metodoGrafico.TipoVisionID, metodoGrafico.ImagenID]
+      );
+    
       break;
-
+      
   case 'diagnostico':
       // Verificar si ya existe un diagnóstico para esta historia
       const [diagnosticos] = await connection.query(

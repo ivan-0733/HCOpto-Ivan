@@ -46,60 +46,60 @@ const validateFile = (file) => {
 
 // Guardar imagen con procesamiento básico
 const saveImage = async (file, options) => {
-  // Validaciones iniciales
-  await ensureUploadsDir();
-  validateFile(file);
+// Validaciones iniciales
+await ensureUploadsDir();
+validateFile(file);
 
-  const { alumnoId, pacienteId, estudio } = options;
-  if (!alumnoId || !pacienteId || !estudio) {
-      throw new Error('Faltan datos requeridos: alumnoId, pacienteId, estudio');
-  }
+const { alumnoId, pacienteId, estudio } = options;
+if (!alumnoId || !pacienteId || !estudio) {
+    throw new Error('Faltan datos requeridos: alumnoId, pacienteId, estudio');
+}
 
-  // Estructura de carpetas (relativa a UPLOAD_DIR)
-  const relativeDir = path.join(alumnoId.toString(), pacienteId.toString(), estudio);
-  const absoluteDir = path.join(UPLOAD_DIR, relativeDir);
-  
-  await fs.mkdir(absoluteDir, { recursive: true });
+// Estructura de carpetas (relativa a UPLOAD_DIR)
+const relativeDir = path.join(alumnoId.toString(), pacienteId.toString(), estudio);
+const absoluteDir = path.join(UPLOAD_DIR, relativeDir);
 
-  // Nombre de archivo único
-  const timestamp = Date.now();
-  const hash = crypto.randomBytes(4).toString('hex');
-  const extension = path.extname(file.originalname).toLowerCase() || '.jpg';
-  const filename = `${timestamp}-${hash}${extension}`;
-  const absolutePath = path.join(absoluteDir, filename);
+await fs.mkdir(absoluteDir, { recursive: true });
 
-  // Procesamiento de la imagen
-  const sharpInstance = file.buffer ? sharp(file.buffer) : sharp(file.path);
-  
-  await sharpInstance
-      .resize(1600, 1600, {
-          fit: 'inside',
-          withoutEnlargement: true
-      })
-      .jpeg({
-          quality: 80,
-          progressive: true
-      })
-      .toFile(absolutePath);
+// Nombre de archivo único
+const timestamp = Date.now();
+const hash = crypto.randomBytes(4).toString('hex');
+const extension = path.extname(file.originalname).toLowerCase() || '.jpg';
+const filename = `${timestamp}-${hash}${extension}`;
+const absolutePath = path.join(absoluteDir, filename);
 
-  // Limpieza de archivo temporal si existe
-  if (file.path && file.path !== absolutePath) {
-      await fs.unlink(file.path).catch(console.error);
-  }
+// Procesamiento de la imagen
+const sharpInstance = file.buffer ? sharp(file.buffer) : sharp(file.path);
 
-  // Estadísticas del archivo
-  const stats = await fs.stat(absolutePath);
+await sharpInstance
+    .resize(1600, 1600, {
+        fit: 'inside',
+        withoutEnlargement: true
+    })
+    .jpeg({
+        quality: 80,
+        progressive: true
+    })
+    .toFile(absolutePath);
 
-  return {
-      // Guardamos solo la ruta relativa (sin '/uploads/')
-      path: path.join(relativeDir, filename).replace(/\\/g, '/'),
-      filename,
-      estudio,
-      mimeType: file.mimetype,
-      originalName: file.originalname,
-      size: stats.size,
-      createdAt: new Date(timestamp).toISOString()
-  };
+// Limpieza de archivo temporal si existe
+if (file.path && file.path !== absolutePath) {
+    await fs.unlink(file.path).catch(console.error);
+}
+
+// Estadísticas del archivo
+const stats = await fs.stat(absolutePath);
+
+return {
+    // Guardamos solo la ruta relativa (sin '/uploads/')
+    path: path.join(relativeDir, filename).replace(/\\/g, '/'),
+    filename,
+    estudio,
+    mimeType: file.mimetype,
+    originalName: file.originalname,
+    size: stats.size,
+    createdAt: new Date(timestamp).toISOString()
+};
 };
 
 // Eliminar archivo de manera segura

@@ -773,71 +773,218 @@ private actualizarFormValues(): void {
 
 // Método para crear una nueva historia clínica
 crearNuevaHistoria(): void {
-// Validar el formulario de datos generales que es obligatorio para crear la historia
-if (!this.sectionForms['datos-generales']) {
-  this.error = 'No se puede crear la historia clínica.';
-  return;
-}
+  // Validar el formulario de datos generales que es obligatorio para crear la historia
+  if (!this.sectionForms['datos-generales']) {
+    this.error = 'No se puede crear la historia clínica.';
+    return;
+  }
 
-if (this.sectionForms['datos-generales'].invalid) {
-  this.error = 'Por favor, complete todos los campos obligatorios en Datos Generales antes de guardar.';
-  this.marcarFormularioComoTocado(this.sectionForms['datos-generales']);
-  this.currentSection = 'datos-generales'; // Asegurarse que el usuario vea la sección con errores
-  return;
-}
+  if (this.sectionForms['datos-generales'].invalid) {
+    this.error = 'Por favor, complete todos los campos obligatorios en Datos Generales antes de guardar.';
+    this.marcarFormularioComoTocado(this.sectionForms['datos-generales']);
+    this.currentSection = 'datos-generales'; // Asegurarse que el usuario vea la sección con errores
+    return;
+  }
 
-// También validamos el interrogatorio que es obligatorio
-if (this.sectionForms['interrogatorio'] && this.sectionForms['interrogatorio'].invalid) {
-  this.error = 'Por favor, complete todos los campos obligatorios en Interrogatorio antes de guardar.';
-  this.marcarFormularioComoTocado(this.sectionForms['interrogatorio']);
-  this.currentSection = 'interrogatorio'; // Cambiar a la sección con errores
-  return;
-}
+  // También validamos el interrogatorio que es obligatorio
+  if (this.sectionForms['interrogatorio'] && this.sectionForms['interrogatorio'].invalid) {
+    this.error = 'Por favor, complete todos los campos obligatorios en Interrogatorio antes de guardar.';
+    this.marcarFormularioComoTocado(this.sectionForms['interrogatorio']);
+    this.currentSection = 'interrogatorio'; // Cambiar a la sección con errores
+    return;
+  }
 
-this.submitting = true;
-this.error = '';
-this.success = '';
+  this.submitting = true;
+  this.error = '';
+  this.success = '';
 
-// Obtener los datos principales del formulario de datos generales
-const historiaData = this.formValues['datos-generales'];
+  // Obtener los datos principales del formulario de datos generales
+  const datosHistoria = this.formValues['datos-generales'];
 
-this.historiaClinicaService.crearHistoriaClinica(historiaData)
-  .pipe(
-    finalize(() => {
-      this.submitting = false;
-    })
-  )
-  .subscribe({
-    next: (response) => {
-      // Obtener el ID de la historia creada
-      const newHistoriaId = response.ID;
-      
-      if (newHistoriaId) {
-        this.onHistoriaCreated(newHistoriaId);
-        
-        // Ahora que tenemos un ID, actualizar las demás secciones
-        this.actualizarSeccionesAdicionales(newHistoriaId)
-          .then(() => {
-            this.success = 'Historia clínica creada correctamente.';
-            setTimeout(() => {
-              this.router.navigate(['/alumno/historias', newHistoriaId]);
-            }, 1500);
-          })
-          .catch(error => {
-            this.error = 'La historia clínica se creó pero hubo un problema al actualizar algunas secciones.';
-            console.error('Error actualizando secciones adicionales:', error);
-          });
-      } else {
-        console.error('No se pudo obtener el ID de la historia creada:', response);
-        this.error = 'Se creó la historia pero hubo un problema al obtener su identificador.';
+  // Guardar temporalmente las imágenes en base64 para subirlas después
+  const imagenesBase64 = {
+    metodoGrafico: this.formValues['metodo-grafico']?.imagenBase64 || this.imgPreview
+  };
+
+  // Preparar todas las secciones sin incluir datos base64 de imágenes (para evitar payload grande)
+  const secciones = {
+    interrogatorio: this.formValues['interrogatorio'],
+    // Estructurar agudeza visual correctamente
+    agudezaVisual: this.formValues['agudeza-visual'] ? [this.formValues['agudeza-visual']] : [],
+    lensometria: this.formValues['lensometria'],
+    
+    // Examen preliminar
+    alineacionOcular: this.formValues['alineacion-ocular'],
+    motilidad: this.formValues['motilidad'],
+    exploracionFisica: this.formValues['exploracion-fisica'],
+    viaPupilar: this.formValues['via-pupilar'],
+    
+    // Estado refractivo
+    estadoRefractivo: this.formValues['estado-refractivo'],
+    subjetivoCerca: this.formValues['subjetivo-cerca'],
+    
+    // Binocularidad - eliminamos imagenBase64 para evitar envío de datos grandes
+    binocularidad: this.formValues['binocularidad'],
+    forias: this.formValues['forias'],
+    vergencias: this.formValues['vergencias'],
+    metodoGrafico: { ...this.formValues['metodo-grafico'] },
+    
+    // Detección de alteraciones
+    gridAmsler: this.formValues['grid-amsler'],
+    tonometria: this.formValues['tonometria'],
+    paquimetria: this.formValues['paquimetria'],
+    campimetria: this.formValues['campimetria'],
+    biomicroscopia: this.formValues['biomicroscopia'],
+    oftalmoscopia: this.formValues['oftalmoscopia'],
+    
+    // Diagnostico y receta
+    diagnostico: this.formValues['diagnostico'],
+    planTratamiento: this.formValues['plan-tratamiento'],
+    pronostico: this.formValues['pronostico'],
+    recomendaciones: this.formValues['recomendaciones'],
+    recetaFinal: this.formValues['receta']
+  };
+
+  // Eliminar datos de base64 de las secciones
+  if (secciones.metodoGrafico && 'imagenBase64' in secciones.metodoGrafico) {
+    delete secciones.metodoGrafico.imagenBase64;
+  }
+
+  // Usar el nuevo método para crear toda la historia completa en una sola llamada
+  this.historiaClinicaService.crearHistoriaClinicaCompleta(datosHistoria, secciones)
+    .pipe(
+      finalize(() => {
+        this.submitting = false;
+      })
+    )
+    .subscribe({
+      next: (response) => {
+        // Obtener el ID de la historia creada
+        const newHistoriaId = response.data.historiaCreada.ID;
+
+        if (newHistoriaId) {
+          this.onHistoriaCreated(newHistoriaId);
+          this.success = 'Historia clínica creada correctamente.';
+          
+          // Marcar todas las secciones enviadas como completadas
+          for (const seccionKey in secciones) {
+            if (
+              Object.prototype.hasOwnProperty.call(secciones, seccionKey) && 
+              secciones[seccionKey as keyof typeof secciones] && 
+              typeof secciones[seccionKey as keyof typeof secciones] === 'object' && 
+              Object.keys(secciones[seccionKey as keyof typeof secciones]).length > 0
+            ) {
+              // Convertir nombre de sección a formato de sectionStatus
+              const statusKey = this.convertirNombreSeccionAStatusKey(seccionKey);
+              if (statusKey) {
+                this.sectionStatus[statusKey] = true;
+              }
+            }
+          }
+          
+          // Ahora subir las imágenes si existen
+          const promesasImagenes: Promise<void>[] = [];
+          
+          // Subir imagen de método gráfico si existe
+          if (imagenesBase64.metodoGrafico) {
+            promesasImagenes.push(
+              this.uploadBase64Image(
+                newHistoriaId, 
+                imagenesBase64.metodoGrafico, 
+                '12',  // Section ID for binocularidad
+                '2'    // Image type ID for metodo grafico
+              ).then(imageId => {
+                if (imageId) {
+                  // Update the section with the new image ID
+                  return new Promise<void>((resolve) => {
+                    this.historiaClinicaService.actualizarSeccion(
+                      newHistoriaId,
+                      'metodo-grafico',
+                      {
+                        ...this.formValues['metodo-grafico'],
+                        imagenID: imageId,
+                        imagenBase64: undefined
+                      }
+                    ).subscribe({
+                      next: () => {
+                        console.log('Sección metodoGrafico actualizada con ID de imagen:', imageId);
+                        resolve();
+                      },
+                      error: (err) => {
+                        console.error('Error al actualizar sección con ID de imagen:', err);
+                        resolve(); // Resolvemos para continuar el proceso
+                      }
+                    });
+                  });
+                }
+                // Añadido return explícito para el caso cuando imageId es null
+                return Promise.resolve();
+              })
+            );
+          }
+          
+          // Manejar otras imágenes aquí si es necesario...
+          
+          Promise.all(promesasImagenes)
+            .then(() => {
+              console.log('Todas las imágenes procesadas correctamente');
+              // Navegar a la historia recién creada
+              setTimeout(() => {
+                this.router.navigate(['/alumno/historias', newHistoriaId]);
+              }, 1500);
+            })
+            .catch(err => {
+              console.error('Error procesando imágenes:', err);
+              // Aún navegamos a la historia para que el usuario pueda continuar
+              this.success = 'Historia clínica creada correctamente, pero hubo problemas al subir algunas imágenes.';
+              setTimeout(() => {
+                this.router.navigate(['/alumno/historias', newHistoriaId]);
+              }, 1500);
+            });
+        } else {
+          console.error('No se pudo obtener el ID de la historia creada:', response);
+          this.error = 'Se creó la historia pero hubo un problema al obtener su identificador.';
+        }
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Error al crear la historia clínica. Por favor, intente nuevamente.';
+        console.error('Error al crear historia clínica:', error);
       }
-    },
-    error: (error) => {
-      this.error = error.error?.message || 'Error al crear la historia clínica. Por favor, intente nuevamente.';
-      console.error('Error al crear historia clínica:', error);
-    }
-  });
+    });
 }
+
+// Método auxiliar para convertir nombres de sección del formato API al formato del componente
+private convertirNombreSeccionAStatusKey(nombreSeccion: string): string | null {
+  const mapeo: { [key: string]: string } = {
+    'interrogatorio': 'interrogatorio',
+    'agudezaVisual': 'antecedente-visual',
+    'lensometria': 'antecedente-visual',
+    'alineacionOcular': 'examen-preliminar',
+    'motilidad': 'examen-preliminar',
+    'exploracionFisica': 'examen-preliminar',
+    'viaPupilar': 'examen-preliminar',
+    'estadoRefractivo': 'estado-refractivo',
+    'subjetivoCerca': 'estado-refractivo',
+    'binocularidad': 'binocularidad',
+    'forias': 'binocularidad',
+    'vergencias': 'binocularidad',
+    'metodoGrafico': 'binocularidad',
+    'gridAmsler': 'deteccion-alteraciones',
+    'tonometria': 'deteccion-alteraciones',
+    'paquimetria': 'deteccion-alteraciones',
+    'campimetria': 'deteccion-alteraciones',
+    'biomicroscopia': 'deteccion-alteraciones', 
+    'oftalmoscopia': 'deteccion-alteraciones',
+    'diagnostico': 'diagnostico',
+    'planTratamiento': 'diagnostico',
+    'pronostico': 'diagnostico',
+    'recomendaciones': 'diagnostico',
+    'recetaFinal': 'receta'
+  };
+  
+  return mapeo[nombreSeccion] || null;
+}
+
 
 private actualizarHistoriaCompleta(): void {
 if (!this.historiaId) {
@@ -1442,6 +1589,75 @@ onImageBase64Change(event: any): void {
       this.metodoGraficoForm.patchValue({ imagenBase64: event });
     }
   }
+}
+
+private uploadBase64Image(historiaId: number, base64String: string, seccionID: string, tipoImagenID: string): Promise<number | null> {
+  return new Promise((resolve, reject) => {
+    if (!base64String || !base64String.includes('base64')) {
+      console.warn('No hay imagen base64 válida para subir');
+      resolve(null);
+      return;
+    }
+    
+    try {
+      // Extract data part from base64 string
+      const arr = base64String.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      
+      const file = new File([u8arr], `metodo-grafico-${Date.now()}.png`, { type: mime });
+      
+      // Log para depuración
+      console.log('Tipo de archivo creado:', file.type);
+      console.log('Tamaño de archivo creado:', file.size, 'bytes');
+      
+      // Create FormData for upload
+      const formData = new FormData();
+      // IMPORTANTE: Usar exactamente el mismo nombre de campo que espera Multer
+      formData.append('file', file); // Debe coincidir con la configuración de Multer
+      formData.append('seccionID', seccionID);
+      formData.append('tipoImagenID', tipoImagenID);
+      
+      // Log para depuración
+      console.log(`Enviando imagen a historiaID=${historiaId}`);
+      
+      // Upload the image
+      this.historiaClinicaService.subirImagen(historiaId, formData)
+        .subscribe({
+          next: (response) => {
+            console.log('Respuesta completa de subir imagen:', response);
+            
+            // Extraer ID de imagen de la respuesta
+            const imageId = response.data?.imageId || 
+            response.data?.id || 
+            response.imageId || 
+            response.id;
+            
+            if (imageId) {
+              console.log('ID de imagen recuperado:', imageId);
+              resolve(imageId);
+            } else {
+              console.warn('No se encontró ID de imagen en la respuesta');
+              resolve(null);
+            }
+          },
+          error: (err) => {
+            console.error('Error al subir imagen:', err);
+            console.error('Detalles del error:', err.error || err.message);
+            resolve(null); // Resolver con null en caso de error para no interrumpir el flujo
+          }
+        });
+    } catch (error) {
+      console.error('Error al procesar imagen base64:', error);
+      resolve(null);
+    }
+  });
 }
 
 
