@@ -249,7 +249,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
     select, input {
       width: 100%;
-      padding: 0.6rem;
+      padding: 0.6rem 0.6rem 0.5rem;
       border: 1px solid $border-color; // Cambiado para soporte de tema
       border-radius: $border-radius;
       font-size: 0.95rem;
@@ -303,18 +303,44 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   background-color: $bg-primary; // Cambiado para soporte de tema
   border-radius: $border-radius;
   box-shadow: $box-shadow;
-  padding: 1.5rem;
   overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* Define column widths explicitly */
+.tabla-historias th,
+.tabla-historias td {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid $border-color;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Eliminar position: static y z-index: auto */
+}
+
+/* Fix for the Actions column border issue */
+.tabla-historias td.acciones {
+  display: table-cell; /* Forzar comportamiento normal de celda */
+}
+
+/* Ensure buttons in the actions column don't interfere with borders */
+.tabla-historias .btn-icon {
+  position: relative;
+  z-index: 2; /* Higher than the cell but not affecting borders */
 }
 
 .tabla-historias {
+  min-width: 1100px; /* Set a minimum width for the table */
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse !important; /* Fix for border issues */
+  border-spacing: 0; /* Maintain tight borders */
 
   th, td {
     padding: 1rem;
     text-align: center;
     border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
+    box-shadow: none !important;
   }
 
   th {
@@ -520,6 +546,18 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       flex: 1 1 100%; // En móvil, los filtros ocupan el ancho completo
     }
   }
+}
+
+/* Ajustar los botones para que estén horizontales */
+.tabla-historias .acciones .btn-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important; /* Reducir tamaño para que entren bien */
+  height: 40px !important;
+  margin: 0 12px !important;
+  position: static !important; /* Eliminar posicionamiento que causa problemas */
+  z-index: auto !important; /* Eliminar z-index personalizado */
 }
 
 // Paginación

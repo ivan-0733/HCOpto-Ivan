@@ -1,7 +1,7 @@
-// AlumnoDashboardComponent.ts - Con estadísticas por materia
+// AlumnoDashboardComponent.ts - Con estadísticas por materia y corrección de paginación
 
 import { Component, OnInit } from '@angular/core';
-import { Router, NavigationStart } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { HistoriaClinicaService, HistoriaClinica } from '../../services/historia-clinica.service';
 import { AlumnoService, Profesor, Perfil, Semestre, Consultorio, CatalogoItem, Paciente, PeriodoEscolar, MateriaAlumno } from '../../services/alumno.service';
 import { AuthService } from '../../services/auth.service';
@@ -64,25 +64,58 @@ export class AlumnoDashboardComponent implements OnInit {
   periodoEscolar: PeriodoEscolar | null = null;
   profesores: Profesor[] = [];
 
+  // Flag para saber si estamos regresando del detalle de una historia
+  regresandoDeHistoriaDetalle: boolean = false;
+
   constructor(
     private historiaClinicaService: HistoriaClinicaService,
     private alumnoService: AlumnoService,
     private authService: AuthService,
     private router: Router
   ) {
+    // Detectar el evento de inicio de navegación para limpiar filtros cuando corresponda
     this.router.events.pipe(
       filter(event => event instanceof NavigationStart)
     ).subscribe((event: NavigationStart) => {
-      // If navigating away from dashboard to a non-detail/edit page, clear filters
-      if (!event.url.includes('/historias/') &&
-          !event.url.includes('/dashboard')) {
+      // Clear filters when:
+      // 1. Navigating to a non-historia page AND non-dashboard page (like perfil or profesores)
+      // 2. OR when navigating to the "nueva" historia page
+      // Keep filters only when navigating to view or edit a specific historia
+      if (
+        (!event.url.includes('/historias/') &&
+         !event.url.includes('/dashboard') &&
+         !event.url.includes('/alumno/dashboard')) ||
+        event.url.includes('/historias/nueva')
+      ) {
+        console.log('Clearing saved filters due to navigation:', event.url);
         this.clearSavedFilters();
       }
+
+      // Detectar si estamos navegando de una historia al dashboard
+      if ((event.url.includes('/alumno/dashboard') || event.url.includes('/dashboard')) &&
+          (this.router.url.includes('/historias/') && !this.router.url.includes('/historias/nueva'))) {
+        console.log('Regresando del detalle de una historia al dashboard');
+        this.regresandoDeHistoriaDetalle = true;
+      }
     });
-   }
+
+    // También escuchar el evento NavigationEnd para asegurarnos de que las páginas se seleccionan correctamente
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      // Si estamos regresando al dashboard, asegurarnos de que se apliquen los filtros correctamente
+      if (this.regresandoDeHistoriaDetalle) {
+        console.log('NavigationEnd: Aplicando filtros después de regresar de historia');
+        this.regresandoDeHistoriaDetalle = false;
+      }
+    });
+  }
 
   ngOnInit(): void {
+    // Cargar filtros guardados desde localStorage
     this.loadSavedFilters();
+
+    // Ahora cargar datos
     this.cargarDatos();
   }
 
@@ -189,6 +222,9 @@ export class AlumnoDashboardComponent implements OnInit {
         // Calcular total de páginas
         this.calcularTotalPaginas();
 
+        // Aplicar los filtros guardados después de cargar las historias
+        this.loadSavedFilters(); // <- Añade esta línea
+
         // Calcular estadísticas para cada materia
         this.calcularEstadisticasPorMateria();
 
@@ -196,6 +232,14 @@ export class AlumnoDashboardComponent implements OnInit {
         if (this.estadisticas) {
           this.actualizarEstadisticas();
         }
+
+        // Asegurarse de que la página actual no sea mayor que el total de páginas
+        if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+          this.paginaActual = this.totalPaginas;
+        }
+
+        // Guardar los filtros actuales
+        this.saveFilters();
       },
       error: (error) => {
         this.error = 'Error al cargar historias clínicas. Por favor, intenta nuevamente.';
@@ -339,29 +383,56 @@ export class AlumnoDashboardComponent implements OnInit {
       paginaActual: this.paginaActual,
       registrosPorPagina: this.registrosPorPagina
     };
+    console.log('Guardando filtros en localStorage:', filters);
     localStorage.setItem('dashboard-filters', JSON.stringify(filters));
   }
 
-    // Method to load saved filters from localStorage
-    loadSavedFilters(): void {
-      const savedFilters = localStorage.getItem('dashboard-filters');
-      if (savedFilters) {
+  // Modificar el método loadSavedFilters para asegurar que se respeta la paginación
+  private loadSavedFilters(): void {
+    const savedFilters = localStorage.getItem('dashboard-filters');
+    if (savedFilters) {
+      try {
         const filters = JSON.parse(savedFilters);
+        console.log('Cargando filtros guardados:', filters);
+
+        // Cargar todos los filtros
         this.filtroEstado = filters.filtroEstado || 'todos';
         this.filtroPaciente = filters.filtroPaciente || '';
         this.ordenamiento = filters.ordenamiento || 'recientes';
         this.materiaSeleccionadaId = filters.materiaSeleccionadaId;
+
+        // Importante: asegurarse de cargar la paginación correctamente
         this.paginaActual = filters.paginaActual || 1;
         this.registrosPorPagina = filters.registrosPorPagina || 5;
+
+        // Recalcular las páginas basadas en los filtros cargados
+        setTimeout(() => {
+          this.calcularTotalPaginas();
+        }, 0);
+
+      } catch (error) {
+        console.error('Error al cargar filtros guardados:', error);
+        // Si hay un error al cargar los filtros, usar valores por defecto
+        this.clearSavedFilters();
       }
     }
-
-      // Method to clear saved filters
+  }
+  // Method to clear saved filters
   clearSavedFilters(): void {
+    console.log('Limpiando filtros guardados');
     localStorage.removeItem('dashboard-filters');
+    // Reiniciar valores por defecto
+    this.filtroEstado = 'todos';
+    this.filtroPaciente = '';
+    this.ordenamiento = 'recientes';
+    this.materiaSeleccionadaId = null;
+    this.paginaActual = 1;
+    this.registrosPorPagina = 5;
   }
 
   crearNuevaHistoria(): void {
+    // Clear filters before navigating to new history page
+    this.clearSavedFilters();
     this.router.navigate(['/alumno/historias/nueva']);
   }
 
@@ -470,6 +541,9 @@ export class AlumnoDashboardComponent implements OnInit {
 
     // Recalcular el total de páginas
     this.calcularTotalPaginas();
+
+    // Save filters when changing sort order
+    this.saveFilters();
   }
 
   ordenarHistorias(historias: HistoriaClinica[]): HistoriaClinica[] {
@@ -567,6 +641,14 @@ export class AlumnoDashboardComponent implements OnInit {
           new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime()
         );
     }
+    // Return the sorted histories
+    return historiasOrdenadas;
+  }
+
+  // And add this method to your component
+  onFiltroPacienteChange(): void {
+    this.resetearPaginacion();
+    this.saveFilters(); // Save filters when changing patient filter
   }
 
   obtenerClaseEstado(estado: string): string {
@@ -605,9 +687,14 @@ export class AlumnoDashboardComponent implements OnInit {
     const historiasVisibles = this.filtrarHistorias();
     this.totalPaginas = Math.ceil(historiasVisibles.length / this.registrosPorPagina);
 
-    // Si la página actual es mayor que el total de páginas, ir a la última página
-    if (this.paginaActual > this.totalPaginas) {
-      this.paginaActual = Math.max(1, this.totalPaginas);
+    // Asegurar que la página actual no exceda el nuevo total, pero solo si es necesario
+    if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+      this.paginaActual = this.totalPaginas;
+    }
+
+    // Si el total de páginas es 0 pero hay página actual, ajustar
+    if (this.totalPaginas === 0) {
+      this.paginaActual = 1;
     }
   }
 
