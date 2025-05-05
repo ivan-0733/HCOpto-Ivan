@@ -160,7 +160,7 @@ async obtenerMateriasAlumno(alumnoId) {
         ma.ID,
         ma.AlumnoInfoID,
         ma.MateriaProfesorID,
-        ma.PeriodoEscolarID,
+        mp.PeriodoEscolarID,
         m.Nombre AS NombreMateria,
         m.Codigo,
         m.Semestre,
@@ -168,12 +168,13 @@ async obtenerMateriasAlumno(alumnoId) {
         m.Descripcion,
         CONCAT(p.Nombre, ' ', p.ApellidoPaterno) AS NombreProfesor,
         pe.Codigo AS PeriodoEscolar,
-        ma.FechaInscripcion
+        ma.FechaInscripcion,
+        mp.Grupo
       FROM MateriasAlumno ma
       JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
       JOIN Materias m ON mp.MateriaID = m.ID
       JOIN ProfesoresInfo p ON mp.ProfesorInfoID = p.ID
-      JOIN PeriodosEscolares pe ON ma.PeriodoEscolarID = pe.ID
+      JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
       WHERE ma.AlumnoInfoID = ?
       AND pe.EsActual = TRUE
       ORDER BY m.Semestre, m.Nombre`,
@@ -205,20 +206,18 @@ async obtenerProfesoresAsignados(alumnoId) {
           u.NombreUsuario,
           u.CorreoElectronico,
           u.TelefonoCelular,
-          ma.FechaInscripcion AS FechaInicio
+          ma.FechaInscripcion AS FechaInicio,
+          mp.ID AS MateriaProfesorID
       FROM MateriasAlumno ma
       JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
       JOIN ProfesoresInfo p ON mp.ProfesorInfoID = p.ID
       JOIN Usuarios u ON p.UsuarioID = u.ID
-      JOIN PeriodosEscolares pe ON ma.PeriodoEscolarID = pe.ID
+      JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
       WHERE ma.AlumnoInfoID = ?
         AND pe.EsActual = TRUE
       ORDER BY ma.FechaInscripcion DESC`,
       [alumnoId]
     );
-
-    // Verificar que estamos obteniendo resultados
-    console.log(`Profesores recuperados para alumnoId=${alumnoId}:`, profesores);
 
     return profesores;
   } catch (error) {

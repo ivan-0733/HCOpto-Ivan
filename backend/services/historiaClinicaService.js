@@ -10,19 +10,26 @@ const historiaClinicaService = {
  * @returns {Promise<Array>} - Lista de historias clínicas
  */
 // En historiaClinicaService.js
+// En historiaClinicaService.js
 async obtenerHistoriasClinicasPorAlumno(alumnoId) {
   try {
+    // Modificar la consulta para incluir información de materia y grupo
     const [historias] = await db.query(
       `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
               p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
               p.CorreoElectronico, p.TelefonoCelular, p.Edad,
               cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
-              hc.ProfesorID
+              mp.ProfesorInfoID AS ProfesorID,
+              m.Nombre AS NombreMateria,
+              mp.Grupo AS GrupoMateria,
+              hc.MateriaProfesorID
       FROM HistorialesClinicos hc
           JOIN Pacientes p ON hc.PacienteID = p.ID
           JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
           JOIN Consultorios c ON hc.ConsultorioID = c.ID
           JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+          JOIN Materias m ON mp.MateriaID = m.ID
           WHERE hc.AlumnoID = ?
           ORDER BY hc.Fecha DESC`,
       [alumnoId]
@@ -46,6 +53,7 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
     console.log(`Obteniendo historia ID=${id} para alumnoId=${alumnoId}`);
 
     // Consulta única optimizada con todos los joins necesarios
+    // En obtenerHistoriaClinicaPorId
     const [historias] = await db.query(
       `SELECT
         hc.ID,
@@ -81,6 +89,10 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
         c.Nombre AS Consultorio,
         pe.Codigo AS PeriodoEscolar,
 
+        -- Datos de la materia y grupo (agregar estas líneas)
+        m.Nombre AS NombreMateria,
+        mp.Grupo AS GrupoMateria,
+
         -- Datos del Alumno desde AlumnosInfo
         a.Nombre AS AlumnoNombre,
         a.ApellidoPaterno AS AlumnoApellidoPaterno,
@@ -89,7 +101,11 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
         -- Datos del Profesor desde ProfesoresInfo
         pr.Nombre AS ProfesorNombre,
         pr.ApellidoPaterno AS ProfesorApellidoPaterno,
-        pr.ApellidoMaterno AS ProfesorApellidoMaterno
+        pr.ApellidoMaterno AS ProfesorApellidoMaterno,
+        pr.ID AS ProfesorID,
+
+        -- Información de relación
+        mp.ID AS MateriaProfesorID
 
         FROM HistorialesClinicos hc
         JOIN Pacientes p ON hc.PacienteID = p.ID
@@ -98,7 +114,9 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
         JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
         JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
         JOIN Usuarios ua ON a.UsuarioID = ua.ID
-        JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
+        JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+        JOIN Materias m ON mp.MateriaID = m.ID
+        JOIN ProfesoresInfo pr ON mp.ProfesorInfoID = pr.ID
         JOIN Usuarios up ON pr.UsuarioID = up.ID
 
         WHERE hc.ID = ? AND hc.AlumnoID = ?;`,
@@ -262,13 +280,13 @@ try {
     // 2. Crear la historia clínica
     const [resultHistoria] = await connection.query(
       `INSERT INTO HistorialesClinicos (
-          PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
+          PacienteID, AlumnoID, MateriaProfesorID, Fecha, EstadoID,
           Archivado, ConsultorioID, PeriodoEscolarID
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
           pacienteId,
           datosHistoria.alumnoID,
-          datosHistoria.profesorID,
+          datosHistoria.materiaProfesorID, // Cambio de profesorID a materiaProfesorID
           datosHistoria.fecha || new Date(),
           datosHistoria.estadoID || 43, // Por defecto "En proceso"
           datosHistoria.archivado || false,

@@ -44,11 +44,13 @@ export interface MateriaAlumno {
   EjeFormativo?: string;     // Este necesitamos verificar
   Descripcion?: string;      // Este necesitamos verificar
   PeriodoEscolar?: string;   // También aparece en la respuesta
+  Grupo?: string;     // Add this property to fix the error
 }
 
 // Corregir la interfaz Profesor en alumno.service.ts
 export interface Profesor {
   ProfesorID: number;       // Cambiado de ProfesorInfoID a ProfesorID para coincidir con el backend
+  MateriaProfesorID: number; // Nuevo campo para la relación
   NumeroEmpleado: string;
   NombreUsuario: string;
   Nombre: string;

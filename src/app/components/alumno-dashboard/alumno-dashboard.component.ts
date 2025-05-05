@@ -1,7 +1,7 @@
 // AlumnoDashboardComponent.ts - Con estadísticas por materia
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationStart } from '@angular/router';
 import { HistoriaClinicaService, HistoriaClinica } from '../../services/historia-clinica.service';
 import { AlumnoService, Profesor, Perfil, Semestre, Consultorio, CatalogoItem, Paciente, PeriodoEscolar, MateriaAlumno } from '../../services/alumno.service';
 import { AuthService } from '../../services/auth.service';
@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 
 // Definir la interfaz para estadísticas
 export interface EstadisticasHistorias {
@@ -68,9 +69,20 @@ export class AlumnoDashboardComponent implements OnInit {
     private alumnoService: AlumnoService,
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationStart)
+    ).subscribe((event: NavigationStart) => {
+      // If navigating away from dashboard to a non-detail/edit page, clear filters
+      if (!event.url.includes('/historias/') &&
+          !event.url.includes('/dashboard')) {
+        this.clearSavedFilters();
+      }
+    });
+   }
 
   ngOnInit(): void {
+    this.loadSavedFilters();
     this.cargarDatos();
   }
 
@@ -106,18 +118,29 @@ export class AlumnoDashboardComponent implements OnInit {
         this.materias = materias;
         console.log('Materias cargadas:', materias);
 
-        // Preseleccionar la materia según la cantidad que tengamos
-        if (this.materias.length === 0) {
-          console.log('No hay materias asignadas');
-          this.materiaSeleccionadaId = null;
-        } else if (this.materias.length === 1) {
-          console.log('Una sola materia detectada, seleccionando automáticamente');
-          this.materiaSeleccionadaId = this.materias[0].ID;
+        // Only set a default if materiaSeleccionadaId isn't already set from localStorage
+        if (this.materiaSeleccionadaId === undefined) {
+          // Preseleccionar la materia según la cantidad que tengamos
+          if (this.materias.length === 0) {
+            console.log('No hay materias asignadas');
+            this.materiaSeleccionadaId = null;
+          } else if (this.materias.length === 1) {
+            console.log('Una sola materia detectada, seleccionando automáticamente');
+            this.materiaSeleccionadaId = this.materias[0].ID;
+          } else {
+            console.log('Múltiples materias detectadas, seleccionando "Todas las materias"');
+            this.materiaSeleccionadaId = null;
+          }
         } else {
-          console.log('Múltiples materias detectadas, seleccionando "Todas las materias"');
-          this.materiaSeleccionadaId = null;
-        }
+          console.log('Using saved materiaSeleccionadaId:', this.materiaSeleccionadaId);
 
+          // Validate that the selected materiaId still exists in loaded materias
+          if (this.materiaSeleccionadaId !== null &&
+              !this.materias.some(m => m.ID === this.materiaSeleccionadaId)) {
+            console.log('Saved materiaSeleccionadaId not found in loaded materias, resetting to null');
+            this.materiaSeleccionadaId = null;
+          }
+        }
         // Calcular el número de historias por materia
         this.calcularHistoriasPorMateria();
       },
@@ -153,8 +176,7 @@ export class AlumnoDashboardComponent implements OnInit {
           ID: historia.ID || 0, // Usar un valor predeterminado (como 0) si ID es undefined
           CorreoElectronico: historia.CorreoElectronico || undefined,
           TelefonoCelular: historia.TelefonoCelular || undefined,
-          Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined,
-          MateriaID: this.obtenerMateriaIdPorProfesor(historia.ProfesorID)
+          Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
         }));
         console.log('Historias cargadas:', this.historiasClinicas);
 
@@ -199,21 +221,16 @@ export class AlumnoDashboardComponent implements OnInit {
     });
   }
 
-  // Método para obtener el ID de materia basado en el profesor (simulación)
-  obtenerMateriaIdPorProfesor(profesorId: number): number | undefined {
-    if (!profesorId || !this.profesores.length) return undefined;
+  // Método para obtener el MateriaProfesorID basado en el ID de materia
+  obtenerMateriaProfesorIdPorMateria(materiaId: number): number | undefined {
+    if (!materiaId || !this.materias.length) return undefined;
 
-    // Buscar un profesor que coincida con el ID
-    const profesor = this.profesores.find(p => p.ProfesorID === profesorId);
-    if (!profesor) return undefined;
+    // Buscar la materia que coincida con el ID
+    const materia = this.materias.find(m => m.ID === materiaId);
+    if (!materia) return undefined;
 
-    // Buscar una materia asociada a este profesor
-    const materia = this.materias.find(m => {
-      // Verificar si el nombre o ID del profesor coincide
-      return m.NombreProfesor && m.NombreProfesor.includes(profesor.Nombre);
-    });
-
-    return materia ? materia.ID : undefined;
+    // Devolver el MateriaProfesorID asociado
+    return materia.MateriaProfesorID;
   }
 
   // Método para calcular las estadísticas para cada materia
@@ -225,14 +242,14 @@ export class AlumnoDashboardComponent implements OnInit {
       // Crear una copia de las estadísticas originales para esta materia
       const estadisticasMateria = this.clonarEstadisticas(this.estadisticas!);
 
-      // Filtrar historias no archivadas de esta materia
+      // Filtrar historias por MateriaProfesorID en lugar de ID de la materia
       const historiasMateria = this.historiasClinicas.filter(h =>
-        !Boolean(h.Archivado) && h.ID === materia.ID
+        !Boolean(h.Archivado) && h.MateriaProfesorID === materia.MateriaProfesorID
       );
 
       // Filtrar historias ARCHIVADAS de esta materia
       const historiasArchivadasMateria = this.historiasClinicas.filter(h =>
-        Boolean(h.Archivado) && h.ID === materia.ID
+        Boolean(h.Archivado) && h.MateriaProfesorID === materia.MateriaProfesorID
       );
 
       // Actualizar estadísticas para esta materia
@@ -253,10 +270,6 @@ export class AlumnoDashboardComponent implements OnInit {
     this.actualizarEstadisticasMateria(estadisticasTodas, historiasTodas);
     estadisticasTodas.archivadas = historiasArchivadasTodas.length;
     this.estadisticasPorMateria.set(null, estadisticasTodas);
-
-    console.log('Estadísticas por materia calculadas:',
-      Array.from(this.estadisticasPorMateria.entries()).map(([id, stats]) =>
-        `ID: ${id}, Total: ${stats.total}, Archivadas: ${stats.archivadas}`));
   }
 
   // Método para clonar las estadísticas
@@ -303,9 +316,9 @@ export class AlumnoDashboardComponent implements OnInit {
     // Para cada materia, contar historias no archivadas
     this.materias.forEach(materia => {
       const count = this.historiasClinicas.filter(historia => {
-        // Verificar si el ID coincide y no está archivada
+        // Verificar si el MateriaProfesorID coincide y no está archivada
         const estaArchivado = Boolean(historia.Archivado);
-        return historia.ID === materia.ID && !estaArchivado;
+        return historia.MateriaProfesorID === materia.MateriaProfesorID && !estaArchivado;
       }).length;
 
       // Guardar el conteo en el mapa
@@ -317,24 +330,58 @@ export class AlumnoDashboardComponent implements OnInit {
         `ID: ${id}, Count: ${count}`));
   }
 
+  saveFilters(): void {
+    const filters = {
+      filtroEstado: this.filtroEstado,
+      filtroPaciente: this.filtroPaciente,
+      ordenamiento: this.ordenamiento,
+      materiaSeleccionadaId: this.materiaSeleccionadaId,
+      paginaActual: this.paginaActual,
+      registrosPorPagina: this.registrosPorPagina
+    };
+    localStorage.setItem('dashboard-filters', JSON.stringify(filters));
+  }
+
+    // Method to load saved filters from localStorage
+    loadSavedFilters(): void {
+      const savedFilters = localStorage.getItem('dashboard-filters');
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        this.filtroEstado = filters.filtroEstado || 'todos';
+        this.filtroPaciente = filters.filtroPaciente || '';
+        this.ordenamiento = filters.ordenamiento || 'recientes';
+        this.materiaSeleccionadaId = filters.materiaSeleccionadaId;
+        this.paginaActual = filters.paginaActual || 1;
+        this.registrosPorPagina = filters.registrosPorPagina || 5;
+      }
+    }
+
+      // Method to clear saved filters
+  clearSavedFilters(): void {
+    localStorage.removeItem('dashboard-filters');
+  }
+
   crearNuevaHistoria(): void {
     this.router.navigate(['/alumno/historias/nueva']);
   }
 
   verHistoria(id: number): void {
-    // Navegar a la página de detalle de historia clínica
+    // Save filters before navigating
+    this.saveFilters();
     this.router.navigate(['/alumno/historias', id]);
   }
 
   editarHistoria(id: number): void {
+    // Save filters before navigating
+    this.saveFilters();
     this.router.navigate(['/alumno/historias', id, 'editar']);
   }
 
-  // Método para resetear la paginación cuando cambian los filtros
+  // Also update methods like these to save filters:
   resetearPaginacion(): void {
-    this.registrosPorPagina = 5;
     this.paginaActual = 1;
     this.calcularTotalPaginas();
+    this.saveFilters();
   }
 
   // Método para filtrar historias por materia
@@ -358,12 +405,15 @@ export class AlumnoDashboardComponent implements OnInit {
 
       // FILTRADO POR MATERIA - APLICAR EN TODOS LOS CASOS (ARCHIVADOS Y NO ARCHIVADOS)
       if (this.materiaSeleccionadaId !== null) {
-        // Debug para ver si el ID existe en las historias
-        console.log(`Filtrando por materia ${this.materiaSeleccionadaId}, historia ID:`, historia.ID);
+        // Debug para ver si el MateriaProfesorID existe en las historias
+        console.log(`Filtrando por materia ID ${this.materiaSeleccionadaId}, historia MateriaProfesorID:`, historia.MateriaProfesorID);
 
-        // Si la historia no tiene ID o es diferente a la seleccionada, excluirla
-        if (historia.ID === undefined || historia.ID === null ||
-            historia.ID !== this.materiaSeleccionadaId) {
+        // Obtener el MateriaProfesorID asociado a esta materia seleccionada
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        console.log(`MateriaProfesorID para materia ${this.materiaSeleccionadaId}:`, materiaProfesorID);
+
+        // Si no se encuentra la relación o el MateriaProfesorID de la historia es diferente, excluirla
+        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
           return false;
         }
       }
@@ -386,19 +436,22 @@ export class AlumnoDashboardComponent implements OnInit {
     return this.ordenarHistorias(historiasFiltradas);
   }
 
-  // Aplicar filtro por materia seleccionada
+  // Modify existing filter methods to save state
   aplicarFiltroMateria(materiaId: number | null): void {
     console.log(`Aplicando filtro de materia: ${materiaId}`);
     this.materiaSeleccionadaId = materiaId;
 
-    // Actualizar las estadísticas basadas en la materia seleccionada
+    // Update the statistics based on the selected materia
     this.actualizarEstadisticas();
 
-    // Resetear paginación al cambiar de materia
+    // Reset pagination when changing materia
     this.resetearPaginacion();
 
-    // Resetear filtro de paciente para una mejor experiencia de usuario
+    // Reset patient filter for a better user experience
     this.filtroPaciente = '';
+
+    // Save filters to localStorage
+    this.saveFilters();
   }
 
   // Método para obtener número de historias por materia
@@ -569,14 +622,17 @@ export class AlumnoDashboardComponent implements OnInit {
   irAPagina(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginas) {
       this.paginaActual = pagina;
+      this.saveFilters();
     }
   }
 
   cambiarRegistrosPorPagina(): void {
-    // Volver a la primera página cuando se cambia el número de registros por página
+    // Reset to the first page when changing the number of records per page
     this.paginaActual = 1;
-    // Recalcular el total de páginas
+    // Recalculate the total pages
     this.calcularTotalPaginas();
+    // Save filters
+    this.saveFilters();
   }
 
   // Método para obtener el número de historias no archivadas (de la materia seleccionada)
@@ -589,9 +645,10 @@ export class AlumnoDashboardComponent implements OnInit {
       const estaArchivado = Boolean(historia.Archivado);
       if (estaArchivado) return false;
 
-      // Si hay una materia seleccionada, filtrar por ella
+      // Si hay una materia seleccionada, filtrar por ella usando MateriaProfesorID
       if (this.materiaSeleccionadaId !== null) {
-        return historia.ID === this.materiaSeleccionadaId;
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        return historia.MateriaProfesorID === materiaProfesorID;
       }
 
       // Si no hay materia seleccionada, incluir todas las no archivadas
@@ -609,9 +666,10 @@ export class AlumnoDashboardComponent implements OnInit {
       const estaArchivado = Boolean(historia.Archivado);
       if (estaArchivado || historia.Estado !== 'Finalizado') return false;
 
-      // Si hay una materia seleccionada, filtrar por ella
+      // Si hay una materia seleccionada, filtrar por ella usando MateriaProfesorID
       if (this.materiaSeleccionadaId !== null) {
-        return historia.ID === this.materiaSeleccionadaId;
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        return historia.MateriaProfesorID === materiaProfesorID;
       }
 
       // Si no hay materia seleccionada, incluir todas las finalizadas no archivadas
@@ -619,18 +677,20 @@ export class AlumnoDashboardComponent implements OnInit {
     }).length;
   }
 
-  // Método para aplicar filtro al hacer click en una card
   aplicarFiltroCard(estado: string): void {
-    // Actualizar el filtro de estado
+    // Update the status filter
     this.filtroEstado = estado;
 
-    // Resetear la paginación
+    // Reset pagination
     this.resetearPaginacion();
 
-    // Resetear el filtro de paciente
+    // Reset the patient filter
     this.filtroPaciente = '';
 
-    // Opcional: hacer scroll hacia la tabla para que el usuario vea los resultados
+    // Save filters to localStorage
+    this.saveFilters();
+
+    // Optional: scroll to the table for the user to see the results
     setTimeout(() => {
       const tablaElement = document.querySelector('.tabla-container');
       if (tablaElement) {

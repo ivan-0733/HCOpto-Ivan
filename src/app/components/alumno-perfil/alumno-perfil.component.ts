@@ -145,6 +145,7 @@ export class AlumnoPerfilComponent implements OnInit {
     this.alumnoService.obtenerMaterias().subscribe({
       next: (materias) => {
         this.numeroMaterias = materias.length;
+        console.log('Materias cargadas:', materias);
       },
       error: (error) => {
         console.error('Error al cargar materias:', error);

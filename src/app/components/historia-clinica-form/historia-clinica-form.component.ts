@@ -35,6 +35,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
   generos: CatalogoItem[] = [];
   estadosCiviles: CatalogoItem[] = [];
   escolaridades: CatalogoItem[] = [];
+  materias: MateriaAlumno[] = [];
 
   // Estado del formulario
   loading = false;
@@ -104,7 +105,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
   initForms(): void {
     // Formulario para la historia clínica
     this.historiaForm = this.formBuilder.group({
-      profesorID: ['', Validators.required],
+      materiaProfesorID: ['', Validators.required], // Cambiar profesorID por materiaProfesorID
       consultorioID: ['', Validators.required],
       periodoEscolarID: ['', Validators.required], // Cambiar semestreID por periodoEscolarID
       fecha: [new Date().toISOString().split('T')[0], Validators.required],
@@ -142,6 +143,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
     // Cargar datos iniciales en paralelo
     forkJoin({
       profesores: this.alumnoService.obtenerProfesoresAsignados(),
+      materias: this.alumnoService.obtenerMaterias(), // Add this line
       consultorios: this.alumnoService.obtenerConsultorios(),
       periodoEscolar: this.alumnoService.obtenerPeriodoEscolarActual(),
       generos: this.alumnoService.obtenerCatalogo('GENERO'),
@@ -154,6 +156,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
     ).subscribe({
       next: (result) => {
         this.profesores = result.profesores;
+        this.materias = result.materias; // Add this line
         this.consultorios = result.consultorios;
         this.periodoEscolar = result.periodoEscolar;
         this.generos = result.generos;
@@ -191,7 +194,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
 
         // Llenar el formulario con los datos de la historia clínica
         this.historiaForm.patchValue({
-          profesorID: historia.ProfesorID,
+          materiaProfesorID: historia.MateriaProfesorID, // Use MateriaProfesorID instead of ProfesorID
           consultorioID: historia.ConsultorioID,
           periodoEscolarID: historia.PeriodoEscolarID,
           fecha: new Date(historia.Fecha).toISOString().split('T')[0],
@@ -269,6 +272,14 @@ export class HistoriaClinicaFormComponent implements OnInit {
     this.success = '';
 
     const historiaData = this.historiaForm.value;
+
+    if (historiaData.profesorID && !historiaData.materiaProfesorID) {
+      const profesor = this.profesores.find(p => p.ProfesorID == historiaData.profesorID);
+      if (profesor) {
+        historiaData.materiaProfesorID = profesor.MateriaProfesorID;
+      }
+    }
+
     let action: Observable<any>;
 
     if (this.isEditing && this.historiaId) {

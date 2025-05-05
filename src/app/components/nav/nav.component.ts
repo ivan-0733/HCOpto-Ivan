@@ -164,11 +164,13 @@ cargarDatosAlumno(): void {
 
   closeMenu(): void {
     this.isCollapsed = true;
-    this.menuHeight = '0px'; // Resetear altura al cerrar
-    // No cerramos el selector de tema al cerrar el menú
+    this.menuHeight = '0px'; // Reset height when closing
+    // Don't close the theme selector when closing the menu
   }
 
   logout(): void {
+    // Clear dashboard filters
+    localStorage.removeItem('dashboard-filters');
     this.authService.logout();
   }
 
@@ -210,5 +212,11 @@ cargarDatosAlumno(): void {
   // Verificar si el usuario está autenticado
   get isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
+  }
+
+  // Add to nav.component.ts
+  clearFiltersAndCloseMenu(): void {
+    localStorage.removeItem('dashboard-filters');
+    this.closeMenu();
   }
 }

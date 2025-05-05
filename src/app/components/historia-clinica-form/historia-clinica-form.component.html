@@ -76,19 +76,18 @@
       <div class="form-section" *ngIf="currentTab === 'datos-generales'">
         <h2>Información General</h2>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="profesorID">Profesor Asignado *</label>
-            <select id="profesorID" formControlName="profesorID" [ngClass]="{'is-invalid': historiaForm.get('profesorID')?.invalid && historiaForm.get('profesorID')?.touched}">
-              <option value="">Selecciona un profesor</option>
-              <option *ngFor="let profesor of profesores" [value]="profesor.ProfesorID">
-                {{ profesor.NombreUsuario }} ({{ profesor.NumeroEmpleado }})
-              </option>
-            </select>
-            <div class="invalid-feedback" *ngIf="historiaForm.get('profesorID')?.invalid && historiaForm.get('profesorID')?.touched">
-              Por favor, selecciona un profesor.
-            </div>
+        <div class="form-group">
+          <label for="materiaProfesorID">Materia y Grupo *</label>
+          <select id="materiaProfesorID" formControlName="materiaProfesorID" [ngClass]="{'is-invalid': historiaForm.get('materiaProfesorID')?.invalid && historiaForm.get('materiaProfesorID')?.touched}">
+            <option value="">Selecciona una materia</option>
+            <option *ngFor="let materia of materias" [value]="materia.MateriaProfesorID">
+              {{ materia.NombreMateria }} - Grupo {{ materia.Grupo }} (Prof. {{ materia.NombreProfesor }})
+            </option>
+          </select>
+          <div class="invalid-feedback" *ngIf="historiaForm.get('materiaProfesorID')?.invalid && historiaForm.get('materiaProfesorID')?.touched">
+            Por favor, selecciona una materia.
           </div>
+        </div>
 
           <div class="form-group">
             <label for="consultorioID">Consultorio *</label>
@@ -126,7 +125,6 @@
               Por favor, selecciona una fecha válida.
             </div>
           </div>
-        </div>
 
         <h2>Paciente</h2>
 

@@ -27,13 +27,17 @@
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/alumno/profesores" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+          <a routerLink="/alumno/profesores" routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}"
+             (click)="clearFiltersAndCloseMenu()">
             <i class="material-icons">event</i>
             <span>Mi Semestre</span>
           </a>
         </li>
         <li class="nav-item">
-          <a routerLink="/alumno/perfil" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
+          <a routerLink="/alumno/perfil" routerLinkActive="active"
+             [routerLinkActiveOptions]="{exact: true}"
+             (click)="clearFiltersAndCloseMenu()">
             <i class="material-icons">person_outline</i>
             <span>Mi Perfil</span>
           </a>
