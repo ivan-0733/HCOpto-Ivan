@@ -46,6 +46,31 @@ loginAlumno: catchAsync(async (req, res) => {
     }
   }
 
+  // Verificar si la cuenta está activa (agregar esta sección)
+  const cuentaActiva = await authService.verificarCuentaActiva(boleta);
+  if (!cuentaActiva) {
+    return res.status(401).json({
+      status: 'error',
+      message: 'Cuenta desactivada. Por favor, contacte al administrador.'
+    });
+  }
+
+  if (!correoCorresponde) {
+    // Verificar si el correo existe pero con otra boleta
+    const existeCorreo = await authService.verificarExistenciaCorreo(correo);
+    if (existeCorreo) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'El correo no corresponde a esta boleta'
+      });
+    } else {
+      return res.status(401).json({
+        status: 'error',
+        message: 'El correo electrónico ingresado no existe en el sistema'
+      });
+    }
+  }
+
   // Verificar la contraseña
   const passwordCorrecta = await authService.verificarPasswordAlumno(boleta, correo, password);
   if (!passwordCorrecta) {

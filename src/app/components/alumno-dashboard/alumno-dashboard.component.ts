@@ -550,15 +550,11 @@ export class AlumnoDashboardComponent implements OnInit {
     console.log(`Aplicando filtro de materia: ${materiaId}`);
     this.materiaSeleccionadaId = materiaId;
 
-    // Para materias históricas, cambiar automáticamente al filtro "Archivado"
-    if (materiaId !== null) {
-      const materia = this.todasLasMaterias.find(m => m.ID === materiaId);
-      if (materia && !materia.EsPeriodoActual) {
-        this.filtroEstado = 'Archivado';
-      }
-    }
+    // Always reset to show all histories ("todos") when changing materia
+    this.filtroEstado = 'todos';
 
-    // Update the statistics based on the selected materia
+    // For historical subjects, we no longer change to "Archivado" automatically
+    // We still update statistics based on selected materia
     this.actualizarEstadisticas();
 
     // Reset pagination when changing materia
