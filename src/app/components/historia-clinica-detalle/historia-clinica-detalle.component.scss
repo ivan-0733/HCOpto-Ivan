@@ -38,22 +38,24 @@
 
         &.estado-proceso {
           background-color: rgba($warning, 0.15);
-          color: darken($warning, 15%);
+          color: $warning-dark;
         }
 
         &.estado-revision {
           background-color: rgba($info, 0.15);
-          color: darken($info, 25%);
+          color: $info-dark;
         }
 
         &.estado-correccion {
           background-color: rgba($danger, 0.15);
-          color: darken($danger, 10%);
+          // Fix: Don't use darken with CSS variables
+          color: $danger;
         }
 
         &.estado-finalizado {
           background-color: rgba($success, 0.15);
-          color: darken($success, 10%);
+          // Fix: Don't use darken with CSS variables
+          color: $success-dark;
         }
       }
     }

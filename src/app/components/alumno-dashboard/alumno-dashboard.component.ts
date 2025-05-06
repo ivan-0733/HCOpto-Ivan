@@ -1,14 +1,15 @@
-// AlumnoDashboardComponent.ts - Con estadísticas por profesor
+// AlumnoDashboardComponent.ts - Con estadísticas por materia y corrección de paginación
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { HistoriaClinicaService, HistoriaClinica } from '../../services/historia-clinica.service';
-import { AlumnoService, Perfil, Profesor } from '../../services/alumno.service';
+import { AlumnoService, Profesor, Perfil, Semestre, Consultorio, CatalogoItem, Paciente, PeriodoEscolar, MateriaAlumno } from '../../services/alumno.service';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 
 // Definir la interfaz para estadísticas
 export interface EstadisticasHistorias {
@@ -33,7 +34,7 @@ export interface EstadisticasHistorias {
 export class AlumnoDashboardComponent implements OnInit {
   historiasClinicas: HistoriaClinica[] = [];
   estadisticas: EstadisticasHistorias | null = null;
-  estadisticasPorProfesor: Map<number | null, EstadisticasHistorias> = new Map(); // Para almacenar estadísticas por profesor
+  estadisticasPorMateria: Map<number | null, EstadisticasHistorias> = new Map(); // Para almacenar estadísticas por materia
   perfil: Perfil | null = null;
   loading = true;
   error = '';
@@ -53,21 +54,68 @@ export class AlumnoDashboardComponent implements OnInit {
   // Para usar Math en el template
   Math = Math;
 
-  // Propiedades para filtrado de profesores
-  profesores: Profesor[] = [];
-  profesorSeleccionadoId: number | null = null;
+  // Propiedades para filtrado de materias
+  materias: MateriaAlumno[] = [];
+  materiaSeleccionadaId: number | null = null;
 
-  // Map para almacenar conteo de historias por profesor
-  historiasPorProfesor: Map<number, number> = new Map();
+  // Map para almacenar conteo de historias por materia
+  historiasPorMateria: Map<number, number> = new Map();
+
+  periodoEscolar: PeriodoEscolar | null = null;
+  profesores: Profesor[] = [];
+
+  // Flag para saber si estamos regresando del detalle de una historia
+  regresandoDeHistoriaDetalle: boolean = false;
 
   constructor(
     private historiaClinicaService: HistoriaClinicaService,
     private alumnoService: AlumnoService,
     private authService: AuthService,
     private router: Router
-  ) { }
+  ) {
+    // Detectar el evento de inicio de navegación para limpiar filtros cuando corresponda
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationStart)
+    ).subscribe((event: NavigationStart) => {
+      // Clear filters when:
+      // 1. Navigating to a non-historia page AND non-dashboard page (like perfil or profesores)
+      // 2. OR when navigating to the "nueva" historia page
+      // Keep filters only when navigating to view or edit a specific historia
+      if (
+        (!event.url.includes('/historias/') &&
+         !event.url.includes('/dashboard') &&
+         !event.url.includes('/alumno/dashboard')) ||
+        event.url.includes('/historias/nueva')
+      ) {
+        console.log('Clearing saved filters due to navigation:', event.url);
+        this.clearSavedFilters();
+      }
+
+      // Detectar si estamos navegando de una historia al dashboard
+      if ((event.url.includes('/alumno/dashboard') || event.url.includes('/dashboard')) &&
+          (this.router.url.includes('/historias/') && !this.router.url.includes('/historias/nueva'))) {
+        console.log('Regresando del detalle de una historia al dashboard');
+        this.regresandoDeHistoriaDetalle = true;
+      }
+    });
+
+    // También escuchar el evento NavigationEnd para asegurarnos de que las páginas se seleccionan correctamente
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      // Si estamos regresando al dashboard, asegurarnos de que se apliquen los filtros correctamente
+      if (this.regresandoDeHistoriaDetalle) {
+        console.log('NavigationEnd: Aplicando filtros después de regresar de historia');
+        this.regresandoDeHistoriaDetalle = false;
+      }
+    });
+  }
 
   ngOnInit(): void {
+    // Cargar filtros guardados desde localStorage
+    this.loadSavedFilters();
+
+    // Ahora cargar datos
     this.cargarDatos();
   }
 
@@ -86,19 +134,59 @@ export class AlumnoDashboardComponent implements OnInit {
       }
     });
 
-    // Cargar profesores asignados al alumno
+    // Cargar período escolar actual en lugar de semestre
+    this.alumnoService.obtenerPeriodoEscolarActual().subscribe({
+      next: (periodo) => {
+        this.periodoEscolar = periodo;
+        console.log('Período escolar cargado:', periodo);
+      },
+      error: (error) => {
+        console.error('Error al cargar período escolar:', error);
+      }
+    });
+
+    // Cargar materias del alumno
+    this.alumnoService.obtenerMaterias().subscribe({
+      next: (materias) => {
+        this.materias = materias;
+        console.log('Materias cargadas:', materias);
+
+        // Only set a default if materiaSeleccionadaId isn't already set from localStorage
+        if (this.materiaSeleccionadaId === undefined) {
+          // Preseleccionar la materia según la cantidad que tengamos
+          if (this.materias.length === 0) {
+            console.log('No hay materias asignadas');
+            this.materiaSeleccionadaId = null;
+          } else if (this.materias.length === 1) {
+            console.log('Una sola materia detectada, seleccionando automáticamente');
+            this.materiaSeleccionadaId = this.materias[0].ID;
+          } else {
+            console.log('Múltiples materias detectadas, seleccionando "Todas las materias"');
+            this.materiaSeleccionadaId = null;
+          }
+        } else {
+          console.log('Using saved materiaSeleccionadaId:', this.materiaSeleccionadaId);
+
+          // Validate that the selected materiaId still exists in loaded materias
+          if (this.materiaSeleccionadaId !== null &&
+              !this.materias.some(m => m.ID === this.materiaSeleccionadaId)) {
+            console.log('Saved materiaSeleccionadaId not found in loaded materias, resetting to null');
+            this.materiaSeleccionadaId = null;
+          }
+        }
+        // Calcular el número de historias por materia
+        this.calcularHistoriasPorMateria();
+      },
+      error: (error) => {
+        console.error('Error al cargar materias:', error);
+      }
+    });
+
+    // Cargar profesores para tener la referencia
     this.alumnoService.obtenerProfesoresAsignados().subscribe({
       next: (profesores) => {
         this.profesores = profesores;
         console.log('Profesores cargados:', profesores);
-
-        // Si solo hay un profesor, pre-seleccionarlo
-        if (this.profesores.length === 1) {
-          this.profesorSeleccionadoId = this.profesores[0].ProfesorID;
-        } else {
-          // Por defecto, seleccionar "Todos los profesores"
-          this.profesorSeleccionadoId = null;
-        }
       },
       error: (error) => {
         console.error('Error al cargar profesores:', error);
@@ -118,14 +206,15 @@ export class AlumnoDashboardComponent implements OnInit {
         // las propiedades esperadas, incluso si son undefined
         this.historiasClinicas = historias.map(historia => ({
           ...historia,
+          ID: historia.ID || 0, // Usar un valor predeterminado (como 0) si ID es undefined
           CorreoElectronico: historia.CorreoElectronico || undefined,
           TelefonoCelular: historia.TelefonoCelular || undefined,
           Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
         }));
         console.log('Historias cargadas:', this.historiasClinicas);
 
-        // Calcular el número de historias por profesor
-        this.calcularHistoriasPorProfesor();
+        // Calcular el número de historias por materia
+        this.calcularHistoriasPorMateria();
 
         // Aplicar ordenamiento inicial
         this.aplicarOrdenamiento();
@@ -133,13 +222,24 @@ export class AlumnoDashboardComponent implements OnInit {
         // Calcular total de páginas
         this.calcularTotalPaginas();
 
-        // Calcular estadísticas para cada profesor
-        this.calcularEstadisticasPorProfesor();
+        // Aplicar los filtros guardados después de cargar las historias
+        this.loadSavedFilters(); // <- Añade esta línea
+
+        // Calcular estadísticas para cada materia
+        this.calcularEstadisticasPorMateria();
 
         // Actualizamos las estadísticas al cargar las historias
         if (this.estadisticas) {
           this.actualizarEstadisticas();
         }
+
+        // Asegurarse de que la página actual no sea mayor que el total de páginas
+        if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+          this.paginaActual = this.totalPaginas;
+        }
+
+        // Guardar los filtros actuales
+        this.saveFilters();
       },
       error: (error) => {
         this.error = 'Error al cargar historias clínicas. Por favor, intenta nuevamente.';
@@ -155,7 +255,7 @@ export class AlumnoDashboardComponent implements OnInit {
 
         // Si las historias ya se cargaron, actualizar las estadísticas
         if (this.historiasClinicas.length > 0) {
-          this.calcularEstadisticasPorProfesor();
+          this.calcularEstadisticasPorMateria();
           this.actualizarEstadisticas();
         }
       },
@@ -165,49 +265,56 @@ export class AlumnoDashboardComponent implements OnInit {
     });
   }
 
-// Método para calcular las estadísticas para cada profesor
-calcularEstadisticasPorProfesor(): void {
-  if (!this.estadisticas || !this.historiasClinicas.length) return;
+  // Método para obtener el MateriaProfesorID basado en el ID de materia
+  obtenerMateriaProfesorIdPorMateria(materiaId: number): number | undefined {
+    if (!materiaId || !this.materias.length) return undefined;
 
-  // Inicializar estadísticas para todos los profesores
-  this.profesores.forEach(profesor => {
-    // Crear una copia de las estadísticas originales para este profesor
-    const estadisticasProfesor = this.clonarEstadisticas(this.estadisticas!);
+    // Buscar la materia que coincida con el ID
+    const materia = this.materias.find(m => m.ID === materiaId);
+    if (!materia) return undefined;
 
-    // Filtrar historias no archivadas de este profesor
-    const historiasProfesor = this.historiasClinicas.filter(h =>
-      !Boolean(h.Archivado) && h.ProfesorID === profesor.ProfesorID
-    );
+    // Devolver el MateriaProfesorID asociado
+    return materia.MateriaProfesorID;
+  }
 
-    // Filtrar historias ARCHIVADAS de este profesor
-    const historiasArchivadasProfesor = this.historiasClinicas.filter(h =>
-      Boolean(h.Archivado) && h.ProfesorID === profesor.ProfesorID
-    );
+  // Método para calcular las estadísticas para cada materia
+  calcularEstadisticasPorMateria(): void {
+    if (!this.estadisticas || !this.historiasClinicas.length) return;
 
-    // Actualizar estadísticas para este profesor
-    this.actualizarEstadisticasProfesor(estadisticasProfesor, historiasProfesor);
+    // Inicializar estadísticas para todas las materias
+    this.materias.forEach(materia => {
+      // Crear una copia de las estadísticas originales para esta materia
+      const estadisticasMateria = this.clonarEstadisticas(this.estadisticas!);
 
-    // Asignar el conteo de archivadas específico del profesor
-    estadisticasProfesor.archivadas = historiasArchivadasProfesor.length;
+      // Filtrar historias por MateriaProfesorID en lugar de ID de la materia
+      const historiasMateria = this.historiasClinicas.filter(h =>
+        !Boolean(h.Archivado) && h.MateriaProfesorID === materia.MateriaProfesorID
+      );
 
-    // Guardar estadísticas actualizadas para este profesor
-    this.estadisticasPorProfesor.set(profesor.ProfesorID, estadisticasProfesor);
-  });
+      // Filtrar historias ARCHIVADAS de esta materia
+      const historiasArchivadasMateria = this.historiasClinicas.filter(h =>
+        Boolean(h.Archivado) && h.MateriaProfesorID === materia.MateriaProfesorID
+      );
 
-  // También calcular estadísticas para "todos los profesores" (null)
-  const estadisticasTodos = this.clonarEstadisticas(this.estadisticas!);
-  const historiasTodos = this.historiasClinicas.filter(h => !Boolean(h.Archivado));
-  const historiasArchivadasTodos = this.historiasClinicas.filter(h => Boolean(h.Archivado));
+      // Actualizar estadísticas para esta materia
+      this.actualizarEstadisticasMateria(estadisticasMateria, historiasMateria);
 
-  this.actualizarEstadisticasProfesor(estadisticasTodos, historiasTodos);
-  estadisticasTodos.archivadas = historiasArchivadasTodos.length;
-  this.estadisticasPorProfesor.set(null, estadisticasTodos);
+      // Asignar el conteo de archivadas específico de la materia
+      estadisticasMateria.archivadas = historiasArchivadasMateria.length;
 
-  console.log('Estadísticas por profesor calculadas:',
-    Array.from(this.estadisticasPorProfesor.entries()).map(([id, stats]) =>
-      `ProfesorID: ${id}, Total: ${stats.total}, Archivadas: ${stats.archivadas}`));
-}
+      // Guardar estadísticas actualizadas para esta materia
+      this.estadisticasPorMateria.set(materia.ID, estadisticasMateria);
+    });
 
+    // También calcular estadísticas para "todas las materias" (null)
+    const estadisticasTodas = this.clonarEstadisticas(this.estadisticas!);
+    const historiasTodas = this.historiasClinicas.filter(h => !Boolean(h.Archivado));
+    const historiasArchivadasTodas = this.historiasClinicas.filter(h => Boolean(h.Archivado));
+
+    this.actualizarEstadisticasMateria(estadisticasTodas, historiasTodas);
+    estadisticasTodas.archivadas = historiasArchivadasTodas.length;
+    this.estadisticasPorMateria.set(null, estadisticasTodas);
+  }
 
   // Método para clonar las estadísticas
   clonarEstadisticas(estadisticas: EstadisticasHistorias): EstadisticasHistorias {
@@ -225,8 +332,8 @@ calcularEstadisticasPorProfesor(): void {
     return clon;
   }
 
-  // Método para actualizar las estadísticas para un profesor específico
-  actualizarEstadisticasProfesor(estadisticas: EstadisticasHistorias, historias: HistoriaClinica[]): void {
+  // Método para actualizar las estadísticas para una materia específica
+  actualizarEstadisticasMateria(estadisticas: EstadisticasHistorias, historias: HistoriaClinica[]): void {
     // Actualizar el total
     estadisticas.total = historias.length;
 
@@ -240,54 +347,115 @@ calcularEstadisticasPorProfesor(): void {
     // Actualizar conteo por semestre si existe
     if (estadisticas.porSemestre) {
       estadisticas.porSemestre.forEach((semestreItem: { semestre: string; cantidad: number; }) => {
-        semestreItem.cantidad = historias.filter(h => h.Semestre === semestreItem.semestre).length;
+        semestreItem.cantidad = historias.filter(h => h.PeriodoEscolar === semestreItem.semestre).length;
       });
     }
   }
 
-  // Método para calcular cuántas historias tiene cada profesor
-  calcularHistoriasPorProfesor(): void {
+  // Método para calcular cuántas historias tiene cada materia
+  calcularHistoriasPorMateria(): void {
     // Reiniciar el mapa
-    this.historiasPorProfesor = new Map();
+    this.historiasPorMateria = new Map();
 
-    // Para cada profesor, contar historias no archivadas
-    this.profesores.forEach(profesor => {
+    // Para cada materia, contar historias no archivadas
+    this.materias.forEach(materia => {
       const count = this.historiasClinicas.filter(historia => {
-        // Verificar si el ProfesorID coincide y no está archivada
+        // Verificar si el MateriaProfesorID coincide y no está archivada
         const estaArchivado = Boolean(historia.Archivado);
-        return historia.ProfesorID === profesor.ProfesorID && !estaArchivado;
+        return historia.MateriaProfesorID === materia.MateriaProfesorID && !estaArchivado;
       }).length;
 
       // Guardar el conteo en el mapa
-      this.historiasPorProfesor.set(profesor.ProfesorID, count);
+      this.historiasPorMateria.set(materia.ID, count);
     });
 
-    console.log('Historias por profesor calculadas:',
-      Array.from(this.historiasPorProfesor.entries()).map(([id, count]) =>
-        `ProfesorID: ${id}, Count: ${count}`));
+    console.log('Historias por materia calculadas:',
+      Array.from(this.historiasPorMateria.entries()).map(([id, count]) =>
+        `ID: ${id}, Count: ${count}`));
+  }
+
+  saveFilters(): void {
+    const filters = {
+      filtroEstado: this.filtroEstado,
+      filtroPaciente: this.filtroPaciente,
+      ordenamiento: this.ordenamiento,
+      materiaSeleccionadaId: this.materiaSeleccionadaId,
+      paginaActual: this.paginaActual,
+      registrosPorPagina: this.registrosPorPagina
+    };
+    console.log('Guardando filtros en localStorage:', filters);
+    localStorage.setItem('dashboard-filters', JSON.stringify(filters));
+  }
+
+  // Modificar el método loadSavedFilters para asegurar que se respeta la paginación
+  private loadSavedFilters(): void {
+    const savedFilters = localStorage.getItem('dashboard-filters');
+    if (savedFilters) {
+      try {
+        const filters = JSON.parse(savedFilters);
+        console.log('Cargando filtros guardados:', filters);
+
+        // Cargar todos los filtros
+        this.filtroEstado = filters.filtroEstado || 'todos';
+        this.filtroPaciente = filters.filtroPaciente || '';
+        this.ordenamiento = filters.ordenamiento || 'recientes';
+        this.materiaSeleccionadaId = filters.materiaSeleccionadaId;
+
+        // Importante: asegurarse de cargar la paginación correctamente
+        this.paginaActual = filters.paginaActual || 1;
+        this.registrosPorPagina = filters.registrosPorPagina || 5;
+
+        // Recalcular las páginas basadas en los filtros cargados
+        setTimeout(() => {
+          this.calcularTotalPaginas();
+        }, 0);
+
+      } catch (error) {
+        console.error('Error al cargar filtros guardados:', error);
+        // Si hay un error al cargar los filtros, usar valores por defecto
+        this.clearSavedFilters();
+      }
+    }
+  }
+  // Method to clear saved filters
+  clearSavedFilters(): void {
+    console.log('Limpiando filtros guardados');
+    localStorage.removeItem('dashboard-filters');
+    // Reiniciar valores por defecto
+    this.filtroEstado = 'todos';
+    this.filtroPaciente = '';
+    this.ordenamiento = 'recientes';
+    this.materiaSeleccionadaId = null;
+    this.paginaActual = 1;
+    this.registrosPorPagina = 5;
   }
 
   crearNuevaHistoria(): void {
+    // Clear filters before navigating to new history page
+    this.clearSavedFilters();
     this.router.navigate(['/alumno/historias/nueva']);
   }
 
   verHistoria(id: number): void {
-    // Navegar a la página de detalle de historia clínica
+    // Save filters before navigating
+    this.saveFilters();
     this.router.navigate(['/alumno/historias', id]);
   }
 
   editarHistoria(id: number): void {
+    // Save filters before navigating
+    this.saveFilters();
     this.router.navigate(['/alumno/historias', id, 'editar']);
   }
 
-  // Método para resetear la paginación cuando cambian los filtros
+  // Also update methods like these to save filters:
   resetearPaginacion(): void {
-    this.registrosPorPagina = 5;
     this.paginaActual = 1;
     this.calcularTotalPaginas();
+    this.saveFilters();
   }
 
-  // Método para filtrar historias por profesor
+  // Método para filtrar historias por materia
   filtrarHistorias(): HistoriaClinica[] {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
@@ -306,14 +474,17 @@ calcularEstadisticasPorProfesor(): void {
       // Comprobar si está archivado
       const estaArchivado = Boolean(historia.Archivado);
 
-      // FILTRADO POR PROFESOR - APLICAR EN TODOS LOS CASOS (ARCHIVADOS Y NO ARCHIVADOS)
-      if (this.profesorSeleccionadoId !== null) {
-        // Debug para ver si el ProfesorID existe en las historias
-        console.log(`Filtrando por profesor ${this.profesorSeleccionadoId}, historia ProfesorID:`, historia.ProfesorID);
+      // FILTRADO POR MATERIA - APLICAR EN TODOS LOS CASOS (ARCHIVADOS Y NO ARCHIVADOS)
+      if (this.materiaSeleccionadaId !== null) {
+        // Debug para ver si el MateriaProfesorID existe en las historias
+        console.log(`Filtrando por materia ID ${this.materiaSeleccionadaId}, historia MateriaProfesorID:`, historia.MateriaProfesorID);
 
-        // Si la historia no tiene ProfesorID o es diferente al seleccionado, excluirla
-        if (historia.ProfesorID === undefined || historia.ProfesorID === null ||
-            historia.ProfesorID !== this.profesorSeleccionadoId) {
+        // Obtener el MateriaProfesorID asociado a esta materia seleccionada
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        console.log(`MateriaProfesorID para materia ${this.materiaSeleccionadaId}:`, materiaProfesorID);
+
+        // Si no se encuentra la relación o el MateriaProfesorID de la historia es diferente, excluirla
+        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
           return false;
         }
       }
@@ -336,35 +507,28 @@ calcularEstadisticasPorProfesor(): void {
     return this.ordenarHistorias(historiasFiltradas);
   }
 
-  // Obtener solo los primeros dos profesores para la primera fila
-  obtenerPrimerosDos(): Profesor[] {
-    return this.profesores.slice(0, 2);
-  }
+  // Modify existing filter methods to save state
+  aplicarFiltroMateria(materiaId: number | null): void {
+    console.log(`Aplicando filtro de materia: ${materiaId}`);
+    this.materiaSeleccionadaId = materiaId;
 
-  // Obtener los profesores restantes después de los primeros dos
-  obtenerProfesoresAdicionales(): Profesor[] {
-    return this.profesores.slice(2);
-  }
-
-  // Aplicar filtro por profesor seleccionado
-  aplicarFiltroProfesor(profesorId: number | null): void {
-    console.log(`Aplicando filtro de profesor: ${profesorId}`);
-    this.profesorSeleccionadoId = profesorId;
-
-    // Actualizar las estadísticas basadas en el profesor seleccionado
+    // Update the statistics based on the selected materia
     this.actualizarEstadisticas();
 
-    // Resetear paginación al cambiar de profesor
+    // Reset pagination when changing materia
     this.resetearPaginacion();
 
-    // Resetear filtro de paciente para una mejor experiencia de usuario
+    // Reset patient filter for a better user experience
     this.filtroPaciente = '';
+
+    // Save filters to localStorage
+    this.saveFilters();
   }
 
-  // Método para obtener número de historias por profesor
-  obtenerHistoriasPorProfesor(profesorId: number): number {
+  // Método para obtener número de historias por materia
+  obtenerHistoriasPorMateria(materiaId: number): number {
     // Usar el mapa calculado previamente
-    return this.historiasPorProfesor.get(profesorId) || 0;
+    return this.historiasPorMateria.get(materiaId) || 0;
   }
 
   aplicarOrdenamiento(): void {
@@ -377,6 +541,9 @@ calcularEstadisticasPorProfesor(): void {
 
     // Recalcular el total de páginas
     this.calcularTotalPaginas();
+
+    // Save filters when changing sort order
+    this.saveFilters();
   }
 
   ordenarHistorias(historias: HistoriaClinica[]): HistoriaClinica[] {
@@ -433,15 +600,15 @@ calcularEstadisticasPorProfesor(): void {
         });
 
       case 'semestre-reciente':
-        // Ordenar por semestre descendente (más reciente primero)
+        // Ordenar por periodo escolar descendente (más reciente primero)
         return historiasOrdenadas.sort((a, b) => {
-          // Manejar casos donde el semestre no existe o tiene formato inválido
-          if (!a.Semestre) return 1; // Mover valores vacíos al final
-          if (!b.Semestre) return -1;
+          // Manejar casos donde el periodo escolar no existe o tiene formato inválido
+          if (!a.PeriodoEscolar) return 1; // Mover valores vacíos al final
+          if (!b.PeriodoEscolar) return -1;
 
-          // Dividir el semestre en año y periodo
-          const [yearA, periodA] = a.Semestre.split('-').map(part => parseInt(part));
-          const [yearB, periodB] = b.Semestre.split('-').map(part => parseInt(part));
+          // Dividir el periodo en año y periodo
+          const [yearA, periodA] = a.PeriodoEscolar.split('/').map(part => parseInt(part));
+          const [yearB, periodB] = b.PeriodoEscolar.split('/').map(part => parseInt(part));
 
           // Comparar primero por año (descendente)
           if (yearA !== yearB) return yearB - yearA;
@@ -451,15 +618,15 @@ calcularEstadisticasPorProfesor(): void {
         });
 
       case 'semestre-antiguo':
-        // Ordenar por semestre ascendente (más antiguo primero)
+        // Ordenar por periodo escolar ascendente (más antiguo primero)
         return historiasOrdenadas.sort((a, b) => {
-          // Manejar casos donde el semestre no existe o tiene formato inválido
-          if (!a.Semestre) return 1; // Mover valores vacíos al final
-          if (!b.Semestre) return -1;
+          // Manejar casos donde el periodo escolar no existe o tiene formato inválido
+          if (!a.PeriodoEscolar) return 1; // Mover valores vacíos al final
+          if (!b.PeriodoEscolar) return -1;
 
-          // Dividir el semestre en año y periodo
-          const [yearA, periodA] = a.Semestre.split('-').map(part => parseInt(part));
-          const [yearB, periodB] = b.Semestre.split('-').map(part => parseInt(part));
+          // Dividir el periodo en año y periodo
+          const [yearA, periodA] = a.PeriodoEscolar.split('/').map(part => parseInt(part));
+          const [yearB, periodB] = b.PeriodoEscolar.split('/').map(part => parseInt(part));
 
           // Comparar primero por año (ascendente)
           if (yearA !== yearB) return yearA - yearB;
@@ -474,6 +641,14 @@ calcularEstadisticasPorProfesor(): void {
           new Date(b.Fecha).getTime() - new Date(a.Fecha).getTime()
         );
     }
+    // Return the sorted histories
+    return historiasOrdenadas;
+  }
+
+  // And add this method to your component
+  onFiltroPacienteChange(): void {
+    this.resetearPaginacion();
+    this.saveFilters(); // Save filters when changing patient filter
   }
 
   obtenerClaseEstado(estado: string): string {
@@ -493,17 +668,17 @@ calcularEstadisticasPorProfesor(): void {
     }
   }
 
-  // Método para actualizar las estadísticas según el profesor seleccionado
+  // Método para actualizar las estadísticas según la materia seleccionada
   actualizarEstadisticas(): void {
-    if (!this.estadisticas || !this.estadisticasPorProfesor.size) return;
+    if (!this.estadisticas || !this.estadisticasPorMateria.size) return;
 
-    // Obtener las estadísticas correspondientes al profesor seleccionado o todas
-    const estadisticasActuales = this.estadisticasPorProfesor.get(this.profesorSeleccionadoId);
+    // Obtener las estadísticas correspondientes a la materia seleccionada o todas
+    const estadisticasActuales = this.estadisticasPorMateria.get(this.materiaSeleccionadaId);
 
     if (estadisticasActuales) {
       // Actualiza las estadísticas mostradas en el dashboard
       this.estadisticas = estadisticasActuales;
-      console.log(`Estadísticas actualizadas para profesor ID ${this.profesorSeleccionadoId}:`, this.estadisticas);
+      console.log(`Estadísticas actualizadas para materia ID ${this.materiaSeleccionadaId}:`, this.estadisticas);
     }
   }
 
@@ -512,9 +687,14 @@ calcularEstadisticasPorProfesor(): void {
     const historiasVisibles = this.filtrarHistorias();
     this.totalPaginas = Math.ceil(historiasVisibles.length / this.registrosPorPagina);
 
-    // Si la página actual es mayor que el total de páginas, ir a la última página
-    if (this.paginaActual > this.totalPaginas) {
-      this.paginaActual = Math.max(1, this.totalPaginas);
+    // Asegurar que la página actual no exceda el nuevo total, pero solo si es necesario
+    if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+      this.paginaActual = this.totalPaginas;
+    }
+
+    // Si el total de páginas es 0 pero hay página actual, ajustar
+    if (this.totalPaginas === 0) {
+      this.paginaActual = 1;
     }
   }
 
@@ -529,68 +709,75 @@ calcularEstadisticasPorProfesor(): void {
   irAPagina(pagina: number): void {
     if (pagina >= 1 && pagina <= this.totalPaginas) {
       this.paginaActual = pagina;
+      this.saveFilters();
     }
   }
 
   cambiarRegistrosPorPagina(): void {
-    // Volver a la primera página cuando se cambia el número de registros por página
+    // Reset to the first page when changing the number of records per page
     this.paginaActual = 1;
-    // Recalcular el total de páginas
+    // Recalculate the total pages
     this.calcularTotalPaginas();
+    // Save filters
+    this.saveFilters();
   }
 
-  // Método para obtener el número de historias no archivadas (del profesor seleccionado)
+  // Método para obtener el número de historias no archivadas (de la materia seleccionada)
   obtenerHistoriasNoArchivadas(): number {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return 0;
 
-    // Contar las historias que NO están archivadas (y coinciden con el profesor seleccionado si hay uno)
+    // Contar las historias que NO están archivadas (y coinciden con la materia seleccionada si hay una)
     return this.historiasClinicas.filter(historia => {
       // Comprobar si NO está archivado
       const estaArchivado = Boolean(historia.Archivado);
       if (estaArchivado) return false;
 
-      // Si hay un profesor seleccionado, filtrar por él
-      if (this.profesorSeleccionadoId !== null) {
-        return historia.ProfesorID === this.profesorSeleccionadoId;
+      // Si hay una materia seleccionada, filtrar por ella usando MateriaProfesorID
+      if (this.materiaSeleccionadaId !== null) {
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        return historia.MateriaProfesorID === materiaProfesorID;
       }
 
-      // Si no hay profesor seleccionado, incluir todas las no archivadas
+      // Si no hay materia seleccionada, incluir todas las no archivadas
       return true;
     }).length;
   }
 
-  // Método para obtener historias finalizadas no archivadas (del profesor seleccionado)
+  // Método para obtener historias finalizadas no archivadas (de la materia seleccionada)
   obtenerFinalizadasNoArchivadas(): number {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return 0;
 
-    // Contar las historias que están finalizadas pero NO archivadas (y coinciden con el profesor seleccionado si hay uno)
+    // Contar las historias que están finalizadas pero NO archivadas (y coinciden con la materia seleccionada si hay una)
     return this.historiasClinicas.filter(historia => {
       // Comprobar si NO está archivado
       const estaArchivado = Boolean(historia.Archivado);
       if (estaArchivado || historia.Estado !== 'Finalizado') return false;
 
-      // Si hay un profesor seleccionado, filtrar por él
-      if (this.profesorSeleccionadoId !== null) {
-        return historia.ProfesorID === this.profesorSeleccionadoId;
+      // Si hay una materia seleccionada, filtrar por ella usando MateriaProfesorID
+      if (this.materiaSeleccionadaId !== null) {
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        return historia.MateriaProfesorID === materiaProfesorID;
       }
 
-      // Si no hay profesor seleccionado, incluir todas las finalizadas no archivadas
+      // Si no hay materia seleccionada, incluir todas las finalizadas no archivadas
       return true;
     }).length;
   }
 
-  // Método para aplicar filtro al hacer click en una card
   aplicarFiltroCard(estado: string): void {
-    // Actualizar el filtro de estado
+    // Update the status filter
     this.filtroEstado = estado;
 
-    // Resetear la paginación
+    // Reset pagination
     this.resetearPaginacion();
 
-    // Resetear el filtro de paciente
+    // Reset the patient filter
     this.filtroPaciente = '';
 
-    // Opcional: hacer scroll hacia la tabla para que el usuario vea los resultados
+    // Save filters to localStorage
+    this.saveFilters();
+
+    // Optional: scroll to the table for the user to see the results
     setTimeout(() => {
       const tablaElement = document.querySelector('.tabla-container');
       if (tablaElement) {

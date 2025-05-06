@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { AuthService, AuthCredentials } from '../../services/auth.service';
 import { first } from 'rxjs/operators';
+import { ThemeService } from '../../services/theme.service'; // Añadir importación del servicio
 
 @Component({
   selector: 'app-login',
@@ -16,33 +17,35 @@ import { first } from 'rxjs/operators';
     RouterModule
   ]
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent implements OnInit, OnDestroy { // Añadir OnDestroy
   loginForm!: FormGroup;
   loading = false;
   submitted = false;
   returnUrl: string = '/';
   error: string = '';
-  selectedRole: string = 'alumno'; // Por defecto
+  selectedRole: string = 'alumno';
   currentYear: number = new Date().getFullYear();
 
   constructor(
     private formBuilder: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private themeService: ThemeService // Inyectar el servicio
   ) {
-    // Redirigir si ya está logueado
     if (this.authService.currentUserValue) {
       this.redirectBasedOnRole();
     }
   }
 
   ngOnInit() {
-    // Inicializar formulario basado en 'alumno' por defecto
+    this.themeService.setTemporaryTheme('system'); // Aplicar tema del sistema
     this.updateFormFields();
-
-    // Obtener url de retorno de los parámetros de la ruta si existe
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+  }
+
+  ngOnDestroy(): void { // Añadir ciclo de vida OnDestroy
+    this.themeService.clearTemporaryTheme(); // Restaurar tema original
   }
 
   // Cambiar la estructura del formulario según el rol seleccionado

@@ -21,8 +21,8 @@ router.post('/verificar-password', alumnoController.verificarPassword);
 // Rutas para obtener profesores asignados
 router.get('/profesores', alumnoController.obtenerProfesoresAsignados);
 
-// Rutas para obtener información del semestre actual
-router.get('/semestre-actual', alumnoController.obtenerSemestreActual);
+// Cambiar ruta de semestre-actual a periodo-actual
+router.get('/periodo-actual', alumnoController.obtenerPeriodoEscolar);
 
 // Rutas para obtener consultorios
 router.get('/consultorios', alumnoController.obtenerConsultorios);
@@ -32,5 +32,8 @@ router.get('/catalogos/:tipo', alumnoController.obtenerCatalogo);
 
 // Ruta para buscar pacientes
 router.get('/pacientes/buscar', alumnoController.buscarPacientes);
+
+// Añadir ruta para materias
+router.get('/materias', alumnoController.obtenerMaterias);
 
 module.exports = router;

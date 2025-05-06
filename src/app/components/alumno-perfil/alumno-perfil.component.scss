@@ -1,11 +1,19 @@
 @import '../../styles/variables';
 
+// Variables adicionales para tema oscuro
+$dark-bg-card: #2a2a2a; // Fondo gris para cards en modo oscuro
+$dark-selected-bg: #1e1e1e; // Fondo más oscuro para elementos seleccionados
+$light-selected-bg: #f0f0f0; // Fondo gris claro para elementos seleccionados en modo claro
+$hover-bg-light: #f0f0f0; // Fondo para hover en modo claro
+$hover-bg-dark: #1e1e1e; // Fondo para hover en modo oscuro
+$accent-color-dark2: $ipn-guinda-light;
+
 .perfil-container {
   padding: 1.5rem;
-  background-color: $ipn-white;
+  background-color: $bg-primary; // Cambiado para soporte de tema
   min-height: calc(100vh - $nav-height);
-  max-width: 1200px; // límite de ancho
-  margin: 0 auto;     // centra el contenedor
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .content-header {
@@ -37,8 +45,8 @@
   margin: 2rem auto;
   max-width: 600px;
   text-align: center;
-  background-color: $ipn-white;
-  color: $ipn-guinda-dark;
+  background-color: $bg-primary; // Cambiado para soporte de tema
+  color: $text-primary; // Cambiado para soporte de tema
   border-radius: $border-radius;
   box-shadow: $box-shadow-sm;
 
@@ -80,14 +88,14 @@
   display: flex;
   align-items: center;
   padding: 1rem;
-  background-color: rgba($success, 0.1);
-  color: $success;
+  background-color: #dff6ea; /* fondo claro, suave basado en #2ecc71 */
+  color: #27ae60;            /* texto verde fuerte */
   border-radius: $border-radius;
   margin-bottom: 1.5rem;
 
   i {
     font-size: 1.5rem;
-    margin-right: 0.75rem;
+    margin-right: 0.25rem;
   }
 
   p {
@@ -108,7 +116,7 @@
 
 .perfil-content {
   width: 100%;
-  background-color: $ipn-white;
+  background-color: $bg-primary; // Cambiado para soporte de tema
   border-radius: $border-radius;
   box-shadow: $box-shadow-sm;
   overflow: hidden;
@@ -119,7 +127,7 @@
   align-items: center;
   padding: 1.5rem;
   background-color: $ipn-guinda;
-  border-bottom: 1px solid $ipn-gray-dark;
+  border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
 
   .perfil-avatar {
     width: 5rem;
@@ -127,7 +135,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: $ipn-white;
+    background-color: $bg-primary; // Cambiado para soporte de tema
     border-radius: 50%;
     box-shadow: $box-shadow-sm;
     margin-right: 1.5rem;
@@ -145,7 +153,7 @@
       margin: 0 0 0.25rem;
       font-size: 1.5rem;
       font-weight: 700;
-      color: $ipn-white;
+      color: $ipn-secondary; // Cambiado a color IPN blanco
       margin-bottom: 0.75rem;
     }
 
@@ -153,18 +161,19 @@
       margin: 0.25rem 0;
       display: flex;
       align-items: center;
-      color: $ipn-gray-dark;
+      color: rgba(#fff, 0.5);
 
       &.boleta {
         font-weight: 600;
-        color: $ipn-white;
+        color: $ipn-secondary; // Cambiado a color IPN blanco
       }
 
+      // Busca la clase .semestre-badge en tu archivo SCSS y reemplázala con:
       .semestre-badge {
         margin-left: 0.5rem;
         padding: 0.2rem 0.5rem;
-        background-color: rgba($ipn-white, 0.2);
-        color: $ipn-white;
+        background-color: rgba(#fff, 0.2);
+        color: #fff !important;
         font-weight: 600;
         font-size: 0.8rem;
         border-radius: 0.6rem;
@@ -178,41 +187,37 @@
       align-items: center;
       padding: 0.75rem 1.25rem;
       background-color: $ipn-guinda-light;
-      color: white;
+      color: $ipn-secondary; // Cambiado a color IPN blanco
       font-weight: 600;
       border: none;
       border-radius: $border-radius;
       cursor: pointer;
       transition: background-color 0.2s;
 
-      i {
-        margin-right: 0.5rem;
-      }
-
       &:hover {
-        background-color: darken($ipn-guinda, 5%);
+        background-color: $ipn-guinda-dark;
       }
     }
   }
 }
 
-// Estilos para mensajes de error
+// Estilos para mensajes de error - Mantenidos para ser consistentes en ambos temas
 .error-message {
-  background-color: #fff0f0;
-  border-left: 4px solid #ff3333;
-  color: #cc0000;
+  background-color: rgba($danger, 0.05); // Cambiado para soporte de tema
+  border-left: 4px solid $danger;
+  color: $danger;
   padding: 12px 15px;
   margin-bottom: 20px;
-  border-radius: 4px;
+  border-radius: $border-radius;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 10px;
   max-width: 100%;
   overflow: hidden;
-
-  // Animación de aparición
   animation: errorAppear 0.3s ease-in;
+  background-color: rgba(220, 220, 220, 0.25);
+  font-size: 1rem;
 }
 
 @keyframes errorAppear {
@@ -230,7 +235,7 @@
   display: flex;
   align-items: flex-start;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(204, 0, 0, 0.1);
+  border-bottom: 1px solid rgba($danger, 0.1);
 
   &:last-child {
     border-bottom: none;
@@ -243,7 +248,7 @@
 }
 
 .error-icon {
-  color: #ff3333;
+  color: $danger;
   font-size: 20px;
   margin-right: 10px;
   flex-shrink: 0;
@@ -252,7 +257,7 @@
 .error-message span {
   flex: 1;
   line-height: 1.4;
-  font-size: 0.9rem;
+  font-size: 1rem;
   word-break: break-word;
 }
 
@@ -262,31 +267,20 @@
 
 .perfil-form {
   padding: 1.5rem;
-  border-bottom: 1px solid $ipn-gray-dark;
+  border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
 
   .form-section {
     margin-top: 0.1rem;
     margin-bottom: 1.8rem;
-    background-color: white;
+    background-color: $bg-primary; // Cambiado para soporte de tema
     border-radius: $border-radius;
     padding: 1.5rem 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    overflow: hidden; // Asegura que nada se salga del contenedor
+    overflow: hidden;
 
     &.password-section {
       background-color: rgba($ipn-guinda, 0.03);
       border-left: 4px solid $ipn-guinda;
-
-      // Estilos específicos para la sección de errores de contraseña
-      .error-message {
-        margin-bottom: 15px;
-        background-color: rgba(255, 0, 0, 0.05);
-      }
-    }
-
-    // Estilos para errores de información personal en form-section
-    .error-message {
-      margin-bottom: 15px;
     }
   }
 
@@ -295,7 +289,7 @@
     align-items: center;
     font-size: 1.2rem;
     font-weight: 600;
-    color: $ipn-guinda-dark;
+    color: $text-primary; // Cambiado para soporte de tema
     margin: 0 0 1.25rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid rgba($ipn-guinda, 0.2);
@@ -309,62 +303,66 @@
 
   .password-info {
     display: flex;
-    align-items: center; // Cambiado de flex-start a center para alinear verticalmente
-    background-color: rgba($ipn-guinda, 0.08);
+    align-items: center;
     padding: 1rem;
     border-radius: $border-radius;
     margin-bottom: 1.5rem;
     font-size: 1rem;
+    background-color: rgba(220, 220, 220, 0.25);
+    border-left: 4px solid $ipn-guinda;
 
     .info-icon {
       color: $ipn-guinda;
-      margin-right: 0.75rem;
+      margin-right: 0.55rem;
       font-size: 1.25rem;
-      line-height: 1; // Añadido para consistencia en la altura de línea
+      line-height: 1;
     }
 
     p {
       margin: 0;
-      color: black;
-      line-height: 1.4; // Añadido para mejor legibilidad y alineación
+      color: $text-primary; // Cambiado para soporte de tema
+      line-height: 1.4;
     }
   }
 
-  // Reemplazo de la estructura en grid por estructura vertical
+
   .password-form-horizontal {
     width: 100%;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 0rem;
+    gap: 1rem; /* Reducido desde 0rem para dar un mínimo espacio pero mantenerlo compacto */
     justify-content: space-between;
+    margin-right: 0; /* Asegura que no haya margen extra a la derecha */
+    padding-right: 0; /* Asegura que no haya padding extra a la derecha */
 
     .form-group {
       flex: 1;
-      min-width: 200px; // Establece un ancho mínimo para evitar que se comprima demasiado
-      max-width: calc(33% - 2rem);
+      min-width: 200px;
+      /* Modificado para que los elementos ocupen mayor espacio horizontal */
+      max-width: calc(33.33% - 0.3rem); /* Reducido el espacio entre elementos */
+      margin-right: 0; /* Elimina el margen derecho para alinear con password-info */
 
-      // Asegura que los mensajes de error no desbordan
       .invalid-feedback {
         font-size: 0.85rem;
         color: $danger;
         margin-top: 0.5rem;
         display: flex;
-        align-items: center; // Alinea verticalmente
-        gap: 2rem;
+        align-items: center;
+        gap: 0.5rem; /* Reducido desde 2rem para ser más compacto */
+        margin-left: 0.1rem;
 
         &:before {
           content: "error";
           font-family: 'Material Icons';
           font-size: 1rem;
           display: inline-flex;
-          align-items: center; // Asegura que el ícono también esté alineado verticalmente
+          align-items: center;
         }
       }
     }
   }
 
-  // Ajustar el ancho de los inputs para que se ajusten mejor en la fila
   .password-input-container {
     position: relative;
     display: flex;
@@ -373,20 +371,23 @@
     input {
       width: 100%;
       padding: 0.75rem;
-      padding-right: 70px; /* Espacio para los dos iconos */
+      padding-right: 70px;
+      color: $text-primary; // Cambiado para soporte de tema
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      border: 1px solid $border-color; // Cambiado para soporte de tema
     }
 
     .password-icon {
       position: absolute;
-      right: 40px;
-      color: #999;
+      right: 10px;
+      color: $text-secondary; // Cambiado para soporte de tema
       cursor: default;
     }
 
     .password-toggle {
       position: absolute;
       right: 10px;
-      color: #666;
+      color: $text-secondary; // Cambiado para soporte de tema
       cursor: pointer;
       transition: color 0.2s ease;
 
@@ -396,25 +397,22 @@
     }
 
     .match-icon {
-      color: #28a745; /* Color verde para contraseñas que coinciden */
+      color: $success;
     }
   }
 
-  /* Estilos para cuando el input está activo/enfocado */
   .password-input-container:focus-within {
     .password-toggle {
       color: $ipn-guinda;
     }
   }
 
-  /* Estilos para cuando se muestra la contraseña */
   .password-input-container.show-password {
     .password-icon {
       color: $ipn-guinda;
     }
   }
 
-  /* Asegurar que los iconos de Material tengan el tamaño correcto */
   .material-icons.password-toggle,
   .material-icons.password-icon {
     font-size: 20px;
@@ -423,16 +421,15 @@
 
   .password-requirements {
     width: calc(100% - 3rem);
-    margin: 1.5rem auto 0;
     background-color: rgba($ipn-guinda, 0.05);
     border-radius: $border-radius;
-    padding: 1.5rem;
+    padding: 1rem;
     flex-basis: 100%;
 
     h4 {
       margin: 0 0 0.75rem;
       font-size: 1rem;
-      color: $ipn-guinda-dark;
+      color: $text-primary; // Cambiado para soporte de tema
       font-weight: 600;
     }
 
@@ -444,9 +441,8 @@
       li {
         display: flex;
         align-items: center;
-        margin-bottom: 0.5rem;
         font-size: 0.9rem;
-        color: black;
+        color: $text-primary; // Cambiado para soporte de tema
         line-height: 1.4;
         transition: color 0.3s ease;
 
@@ -459,8 +455,6 @@
         }
 
         &.requirement-met {
-          //color: $success;
-
           i {
             color: $success;
           }
@@ -483,17 +477,18 @@
       font-size: 0.9rem;
       font-weight: 600;
       margin-bottom: 0.5rem;
-      color: black; // Cambiado a negro
+      color: $text-primary; // Cambiado para soporte de tema
     }
 
     input {
       width: 100%;
       padding: 0.75rem;
       font-size: 1rem;
-      border: 1px solid $ipn-gray-dark;
+      border: 1px solid $border-color; // Cambiado para soporte de tema
       border-radius: $border-radius;
       transition: all 0.2s;
-      color: black; // Asegura que el texto del input sea negro
+      color: $text-primary; // Cambiado para soporte de tema
+      background-color: $bg-primary; // Cambiado para soporte de tema
 
       &:focus {
         outline: none;
@@ -513,6 +508,7 @@
       margin-top: 0.5rem;
       display: flex;
       align-items: center;
+      margin-left: 0.1rem;
 
       &:before {
         content: "error";
@@ -529,7 +525,7 @@
     gap: 0.75rem;
     margin-top: 2rem;
     padding-top: 1.5rem;
-    border-top: 1px solid $ipn-gray-dark;
+    border-top: 1px solid $border-color; // Cambiado para soporte de tema
 
     button {
       display: inline-flex;
@@ -540,17 +536,13 @@
       cursor: pointer;
       transition: all 0.2s;
 
-      i {
-        margin-right: 0.5rem;
-      }
-
       &.btn-primary {
         background-color: $ipn-guinda;
-        color: white;
+        color: $ipn-secondary; // Cambiado a color IPN blanco
         border: none;
 
         &:hover:not(:disabled) {
-          background-color: darken($ipn-guinda, 5%);
+          background-color: $ipn-guinda-dark;
         }
 
         &:disabled {
@@ -561,11 +553,11 @@
 
       &.btn-secondary {
         background-color: transparent;
-        color: $ipn-guinda-dark;
-        border: 1px solid $ipn-gray-dark;
+        color: $text-primary; // Cambiado para soporte de tema
+        border: 1px solid $border-color; // Cambiado para soporte de tema
 
         &:hover {
-          background-color: $ipn-gray;
+          background-color: rgba($ipn-guinda, 0.1); // Cambiado para soporte de tema
         }
       }
     }
@@ -574,12 +566,13 @@
 
 .readonly-field {
   padding: 0.5rem;
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
+  background-color: rgba($text-secondary, 0.05); // Cambiado para soporte de tema
+  border: 1px solid $border-color; // Cambiado para soporte de tema
   border-radius: 4px;
   min-height: 38px;
   display: flex;
   align-items: center;
+  color: $text-primary; // Cambiado para soporte de tema
 }
 
 .full-width {
@@ -590,9 +583,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-right: 0; // importante para evitar overflow
+  margin-right: 0;
   margin-left: 0;
-  max-width: 100%; // asegura que no se pase del contenedor
+  max-width: 100%;
 
   .form-group {
     flex: 1;
@@ -614,15 +607,15 @@
     h3 {
       font-size: 1.1rem;
       font-weight: 600;
-      color: $ipn-guinda-dark;
+      color: $ipn-guinda; // Cambiado para soporte de tema
       margin: 0 0 1rem;
       padding-bottom: 0.5rem;
-      border-bottom: 1px solid $ipn-gray-dark;
+      border-bottom: 1px solid $ipn-guinda; // Cambiado para soporte de tema
     }
 
     .info-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr); // Exactamente 4 columnas de igual tamaño
+      grid-template-columns: repeat(4, 1fr);
       gap: 1.25rem;
 
       .info-item {
@@ -630,14 +623,14 @@
           display: block;
           font-size: 0.85rem;
           font-weight: 600;
-          color: black;
+          color: $text-secondary; // Cambiado para soporte de tema
           margin-bottom: 0.25rem;
         }
 
         p {
           margin: 0;
           font-weight: 500;
-          color: black;
+          color: $text-primary; // Cambiado para soporte de tema
 
           .status-badge {
             display: inline-flex;
@@ -720,5 +713,169 @@
 
   .error-alert {
     padding: 6px 0;
+  }
+}
+
+// Añadido: Estilos específicos para el modo oscuro
+:host-context(.dark-theme) {
+
+  .perfil-form{
+    background-color: $dark-bg-card;
+  }
+
+  .perfil-basic-info p {
+    color: #c0c0c0; // Mantener el mismo color que en modo claro
+  }
+
+  .perfil-content,
+  .form-section {
+    background-color: #3a3a3a; // Usar la variable de fondo oscuro para cards
+
+    &.password-section{
+      background-color: #3a3a3a;
+    }
+  }
+
+  .success-message{
+    background-color: rgba(46, 204, 113, 0.15); // #2ecc71 con opacidad
+    color: #6effb2; // versión más clara de #2ecc71
+  }
+
+  // Campos de formulario
+  .form-group {
+    input, select {
+      background-color: $dark-bg-card;
+      border-color: $border-color;
+      color: $text-primary;
+
+      &:focus {
+        border-color: $ipn-guinda-light;
+      }
+    }
+
+    label {
+      color: $text-primary;
+    }
+  }
+
+  // Secciones de perfil
+  .perfil-header {
+    .perfil-avatar {
+      background-color: #fff;
+
+      i {
+        color: $ipn-guinda;
+      }
+    }
+  }
+
+  // Campos de solo lectura
+  .readonly-field {
+    background-color: $dark-selected-bg;
+    border-color: $border-color;
+    color: $text-primary;
+  }
+
+  .password-info{
+    background-color: #4a4a4a;
+    border-left: 4px solid $ipn-guinda;
+  }
+  .password-requirements {
+    background-color: rgba($ipn-guinda, 0.1);
+
+    p, li {
+      color: $text-primary;
+    }
+  }
+
+  // Contenedores de carga y error
+  .loading-container,
+  .error-container {
+    background-color: $dark-bg-card;
+  }
+
+  // Mensajes de error
+  .error-message {
+    background-color: #4a4a4a;
+  }
+
+  // Iconos y acentos
+  .section-title i,
+  .info-icon,
+  .password-requirements li i:not(.requirement-met i),
+  .password-toggle:hover,
+  .password-info .info-icon {
+    color: $ipn-guinda-light;
+  }
+
+  // Botones
+  .btn-primary {
+    &:hover:not(:disabled) {
+      background-color: $ipn-guinda-light;
+    }
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: $text-primary;
+    border-color: $border-color;
+
+    &:hover {
+      background-color: $dark-selected-bg;
+    }
+  }
+
+  .estado-badge{
+    color: black;
+  }
+
+  // Títulos y textos
+  .perfil-details .info-item p {
+    color: $text-primary;
+  }
+
+  .perfil-details{
+    background-color: $dark-bg-card;
+  }
+
+  .info-section h3 {
+    border-bottom: 1px solid $accent-color-dark2 !important; // Línea más clara para el modo oscuro
+    color: $accent-color-dark2 !important;
+  }
+
+  .perfil-details .info-item label {
+    color: $text-secondary;
+  }
+}
+.content-header i {
+  color: $accent-color-dark2;
+}
+
+.header-title h1 {
+  color: $accent-color-dark2 !important;
+}
+
+// Agregar al final de alumno-perfil.component.scss
+.estado-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #fff;
+
+  &.estado-finalizado {
+    background-color: $success;
+  }
+
+  &.estado-correccion {
+    background-color: $danger;
+  }
+
+  &.estado-proceso {
+    background-color: $warning;
+  }
+
+  &.estado-revision {
+    background-color: $info;
   }
 }

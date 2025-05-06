@@ -237,14 +237,32 @@
             <p>{{ perfil.NumeroBoleta }}</p>
           </div>
           <div class="info-item">
-            <label>Semestre Actual:</label>
-            <p>{{ semestreTexto }}</p>
+            <label>Materias Inscritas:</label>
+            <p>{{ numeroMaterias ?? 'N/A' }}</p>
+          </div>
+          <div class="info-item">
+            <label>Profesores Asignados:</label>
+            <p>{{ profesoresUnicos ?? 'N/A' }}</p>
           </div>
           <div class="info-item">
             <label>Estado de Cuenta:</label>
-            <p><span class="status-badge" [ngClass]="perfil.EstaActivo ? 'active' : 'inactive'">
-              {{ perfil.EstaActivo ? 'Activo' : 'Inactivo' }}
-            </span></p>
+            <p>
+              <span class="estado-badge" [ngClass]="perfil.EstaActivo ? 'estado-finalizado' : 'estado-correccion'">
+                {{ perfil.EstaActivo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </p>
+          </div>
+          <div class="info-item">
+            <label>Periodo Actual:</label>
+            <p>{{ semestreTexto }}</p>
+          </div>
+          <div class="info-item">
+            <label>Inicio de Semestre:</label>
+            <p>{{ formatDate(fechaInicioPeriodo) }}</p>
+          </div>
+          <div class="info-item">
+            <label>Fin de Semestre:</label>
+            <p>{{ formatDate(fechaFinPeriodo) }}</p>
           </div>
         </div>
       </div>

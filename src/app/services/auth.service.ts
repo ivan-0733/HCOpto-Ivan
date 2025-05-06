@@ -1,11 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID } from '@angular/core';
 
 export interface AuthCredentials {
   boleta?: string;  // Para alumnos
@@ -38,11 +37,10 @@ export class AuthService {
   private apiUrl = environment.apiUrl;
   private currentUserSubject: BehaviorSubject<Usuario | null>;
   public currentUser: Observable<Usuario | null>;
-  private platformId = inject(PLATFORM_ID);
   private isBrowser: boolean;
 
   constructor(private http: HttpClient, private router: Router) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+    this.isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
     let storedUser = null;
 
     // Solo accede a localStorage si estamos en un navegador

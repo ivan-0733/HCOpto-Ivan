@@ -5,7 +5,7 @@ import { forkJoin, Observable, of } from 'rxjs';
 import { catchError, debounceTime, finalize, switchMap } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { HistoriaClinicaService, HistoriaClinicaDetalle } from '../../services/historia-clinica.service';
-import { AlumnoService, Profesor, Semestre, Consultorio, CatalogoItem, Paciente } from '../../services/alumno.service';
+import { AlumnoService, Profesor, Semestre, Consultorio, CatalogoItem, Paciente, PeriodoEscolar, MateriaAlumno } from '../../services/alumno.service';
 
 @Component({
   selector: 'app-historia-clinica-form',
@@ -45,6 +45,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
   generos: CatalogoItem[] = [];
   estadosCiviles: CatalogoItem[] = [];
   escolaridades: CatalogoItem[] = [];
+  materias: MateriaAlumno[] = [];
 
   // Estado del formulario
   loading = false;
@@ -57,6 +58,8 @@ export class HistoriaClinicaFormComponent implements OnInit {
   buscandoPacientes = false;
   mostrarResultadosBusqueda = false;
   pacienteSeleccionado: Paciente | null = null;
+
+  periodoEscolar: PeriodoEscolar | null = null;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -111,9 +114,9 @@ export class HistoriaClinicaFormComponent implements OnInit {
   initForms(): void {
     // Formulario para la historia clínica
     this.historiaForm = this.formBuilder.group({
-      profesorID: ['', Validators.required],
+      materiaProfesorID: ['', Validators.required], // Cambiar profesorID por materiaProfesorID
       consultorioID: ['', Validators.required],
-      semestreID: ['', Validators.required],
+      periodoEscolarID: ['', Validators.required], // Cambiar semestreID por periodoEscolarID
       fecha: [new Date().toISOString().split('T')[0], Validators.required],
       paciente: this.formBuilder.group({
         id: [''],
@@ -149,8 +152,9 @@ export class HistoriaClinicaFormComponent implements OnInit {
     // Cargar datos iniciales en paralelo
     forkJoin({
       profesores: this.alumnoService.obtenerProfesoresAsignados(),
+      materias: this.alumnoService.obtenerMaterias(), // Add this line
       consultorios: this.alumnoService.obtenerConsultorios(),
-      semestreActual: this.alumnoService.obtenerSemestreActual(),
+      periodoEscolar: this.alumnoService.obtenerPeriodoEscolarActual(),
       generos: this.alumnoService.obtenerCatalogo('GENERO'),
       estadosCiviles: this.alumnoService.obtenerCatalogo('ESTADO_CIVIL'),
       escolaridades: this.alumnoService.obtenerCatalogo('ESCOLARIDAD')
@@ -161,15 +165,16 @@ export class HistoriaClinicaFormComponent implements OnInit {
     ).subscribe({
       next: (result) => {
         this.profesores = result.profesores;
+        this.materias = result.materias; // Add this line
         this.consultorios = result.consultorios;
-        this.semestreActual = result.semestreActual;
+        this.periodoEscolar = result.periodoEscolar;
         this.generos = result.generos;
         this.estadosCiviles = result.estadosCiviles;
         this.escolaridades = result.escolaridades;
 
         // Seleccionar valores por defecto
-        if (this.semestreActual) {
-          this.historiaForm.patchValue({ semestreID: this.semestreActual.ID });
+        if (this.periodoEscolar) {
+          this.historiaForm.patchValue({ periodoEscolarID: this.periodoEscolar.ID });
         }
 
         if (this.profesores.length === 1) {
@@ -198,9 +203,9 @@ export class HistoriaClinicaFormComponent implements OnInit {
 
         // Llenar el formulario con los datos de la historia clínica
         this.historiaForm.patchValue({
-          profesorID: historia.ProfesorID,
+          materiaProfesorID: historia.MateriaProfesorID, // Use MateriaProfesorID instead of ProfesorID
           consultorioID: historia.ConsultorioID,
-          semestreID: historia.SemestreID,
+          periodoEscolarID: historia.PeriodoEscolarID,
           fecha: new Date(historia.Fecha).toISOString().split('T')[0],
           paciente: {
             id: historia.PacienteID,
@@ -276,6 +281,14 @@ export class HistoriaClinicaFormComponent implements OnInit {
     this.success = '';
 
     const historiaData = this.historiaForm.value;
+
+    if (historiaData.profesorID && !historiaData.materiaProfesorID) {
+      const profesor = this.profesores.find(p => p.ProfesorID == historiaData.profesorID);
+      if (profesor) {
+        historiaData.materiaProfesorID = profesor.MateriaProfesorID;
+      }
+    }
+
     let action: Observable<any>;
 
     if (this.isEditing && this.historiaId) {
