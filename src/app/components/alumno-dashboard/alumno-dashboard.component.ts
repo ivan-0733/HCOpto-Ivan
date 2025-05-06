@@ -206,7 +206,7 @@ export class AlumnoDashboardComponent implements OnInit {
         // las propiedades esperadas, incluso si son undefined
         this.historiasClinicas = historias.map(historia => ({
           ...historia,
-          ID: historia.ID || 0, // Usar un valor predeterminado (como 0) si ID es undefined
+          ID: historia.ID || 0,
           CorreoElectronico: historia.CorreoElectronico || undefined,
           TelefonoCelular: historia.TelefonoCelular || undefined,
           Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
@@ -219,9 +219,6 @@ export class AlumnoDashboardComponent implements OnInit {
         // Aplicar ordenamiento inicial
         this.aplicarOrdenamiento();
 
-        // Calcular total de páginas
-        this.calcularTotalPaginas();
-
         // Aplicar los filtros guardados después de cargar las historias
         this.loadSavedFilters(); // <- Añade esta línea
 
@@ -232,6 +229,9 @@ export class AlumnoDashboardComponent implements OnInit {
         if (this.estadisticas) {
           this.actualizarEstadisticas();
         }
+
+        // Calcular total de páginas
+        this.calcularTotalPaginas();
 
         // Asegurarse de que la página actual no sea mayor que el total de páginas
         if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
@@ -405,7 +405,7 @@ export class AlumnoDashboardComponent implements OnInit {
         this.paginaActual = filters.paginaActual || 1;
         this.registrosPorPagina = filters.registrosPorPagina || 5;
 
-        // Recalcular las páginas basadas en los filtros cargados
+         // Recalcular las páginas basadas en los filtros cargados
         setTimeout(() => {
           this.calcularTotalPaginas();
         }, 0);
@@ -417,6 +417,7 @@ export class AlumnoDashboardComponent implements OnInit {
       }
     }
   }
+
   // Method to clear saved filters
   clearSavedFilters(): void {
     console.log('Limpiando filtros guardados');
@@ -685,17 +686,22 @@ export class AlumnoDashboardComponent implements OnInit {
   // Métodos de paginación
   calcularTotalPaginas(): void {
     const historiasVisibles = this.filtrarHistorias();
+    const oldTotalPages = this.totalPaginas;
     this.totalPaginas = Math.ceil(historiasVisibles.length / this.registrosPorPagina);
 
-    // Asegurar que la página actual no exceda el nuevo total, pero solo si es necesario
+    // Only adjust page if it's higher than the new total and there are actually pages
     if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+      console.log(`Adjusting page from ${this.paginaActual} to ${this.totalPaginas} because total pages changed from ${oldTotalPages}`);
       this.paginaActual = this.totalPaginas;
     }
 
-    // Si el total de páginas es 0 pero hay página actual, ajustar
+    // If total pages is 0 but there's a current page, adjust
     if (this.totalPaginas === 0) {
       this.paginaActual = 1;
     }
+
+    // Save the updated pagination state
+    this.saveFilters();
   }
 
   obtenerHistoriasPaginaActual(): HistoriaClinica[] {

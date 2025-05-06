@@ -566,7 +566,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1.5rem;
+  margin-top: 0rem;
   padding: 1rem;
   background-color: rgba($ipn-guinda, 0.05); // Cambiado para soporte de tema
   border-radius: $border-radius;
@@ -652,10 +652,16 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   .paginacion-container {
     flex-direction: column;
     gap: 1rem;
-    align-items: flex-start;
+    align-items: center; // Cambiado de flex-start a center
+
+    .paginacion-info,
+    .paginacion-selector {
+      align-self: center; // Centrar estos elementos
+      text-align: center; // Asegurar que el texto esté centrado
+    }
 
     .paginacion-botones {
-      align-self: center;
+      align-self: center; // Ya estaba así, mantenemos
     }
   }
 
@@ -672,7 +678,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       margin-right: 0; // Eliminar el margen lateral
       margin-bottom: 1rem; // Añadir espacio abajo del icono
     }
-}
+  }
 }
 
 .materias-cards-container {
