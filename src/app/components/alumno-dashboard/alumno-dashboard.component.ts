@@ -374,6 +374,24 @@ export class AlumnoDashboardComponent implements OnInit {
         `ID: ${id}, Count: ${count}`));
   }
 
+  // Método para obtener solo los estados con valores mayores que cero
+  obtenerEstadosConValores(): { estado: string; cantidad: number; }[] {
+    if (!this.estadisticas || !this.estadisticas.porEstado) return [];
+
+    // Para estados normales, usar la cantidad directa
+    const estadosFiltrados = this.estadisticas.porEstado.filter(estado => {
+      if (estado.estado === 'Finalizado') {
+        // Para el estado "Finalizado", usar el método especializado
+        return this.obtenerFinalizadasNoArchivadas() > 0;
+      } else {
+        // Para otros estados, usar la cantidad en las estadísticas
+        return estado.cantidad > 0;
+      }
+    });
+
+    return estadosFiltrados;
+  }
+
   saveFilters(): void {
     const filters = {
       filtroEstado: this.filtroEstado,
@@ -771,7 +789,28 @@ export class AlumnoDashboardComponent implements OnInit {
   }
 
   aplicarFiltroCard(estado: string): void {
-    // Update the status filter
+    // Verificar si el estado tiene valores antes de aplicar el filtro
+    if (estado === 'todos' && this.obtenerHistoriasNoArchivadas() === 0) {
+      return; // No hacer nada si no hay historias no archivadas
+    }
+
+    if (estado === 'Archivado' && (!this.estadisticas || this.estadisticas.archivadas === 0)) {
+      return; // No hacer nada si no hay historias archivadas
+    }
+
+    if (estado !== 'todos' && estado !== 'Archivado') {
+      // Para estados específicos (En proceso, Revisión, etc.)
+      const estadoEncontrado = this.estadisticas?.porEstado?.find(e => e.estado === estado);
+      const cantidadEstado = estado === 'Finalizado'
+        ? this.obtenerFinalizadasNoArchivadas()
+        : estadoEncontrado?.cantidad || 0;
+
+      if (cantidadEstado === 0) {
+        return; // No hacer nada si no hay historias en este estado
+      }
+    }
+
+    // Si llegamos aquí, podemos aplicar el filtro
     this.filtroEstado = estado;
 
     // Reset pagination

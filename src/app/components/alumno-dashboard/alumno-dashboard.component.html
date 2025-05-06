@@ -42,7 +42,9 @@
 
   <!-- Modificar la parte de las tarjetas de estadísticas -->
   <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
+    <!-- Tarjeta de total (siempre visible si hay historias) -->
     <div class="stat-card total"
+        *ngIf="obtenerHistoriasNoArchivadas() > 0"
         (click)="aplicarFiltroCard('todos')"
         [ngClass]="{'selected': filtroEstado === 'todos'}">
       <div class="stat-card-icon">
@@ -54,7 +56,9 @@
       </div>
     </div>
 
+    <!-- Tarjeta de archivadas (solo visible si hay historias archivadas) -->
     <div class="stat-card archivadas"
+        *ngIf="estadisticas.archivadas > 0"
         (click)="aplicarFiltroCard('Archivado')"
         [ngClass]="{'selected': filtroEstado === 'Archivado'}">
       <div class="stat-card-icon">
@@ -66,8 +70,9 @@
       </div>
     </div>
 
+    <!-- Tarjetas por estado (solo visible si hay historias en ese estado) -->
     <div class="stat-card por-estado"
-        *ngFor="let estado of estadisticas.porEstado"
+        *ngFor="let estado of obtenerEstadosConValores()"
         (click)="aplicarFiltroCard(estado.estado)"
         [ngClass]="{'selected': filtroEstado === estado.estado}">
       <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
@@ -75,7 +80,6 @@
       </div>
       <div class="stat-card-content">
         <h3>{{ estado.estado }}</h3>
-        <!-- Usar el método personalizado solo para estado "Finalizado" -->
         <p class="stat-value" *ngIf="estado.estado !== 'Finalizado'">{{ estado.cantidad }}</p>
         <p class="stat-value" *ngIf="estado.estado === 'Finalizado'">{{ obtenerFinalizadasNoArchivadas() }}</p>
       </div>
@@ -111,12 +115,16 @@
       id="filtroEstado"
       [(ngModel)]="filtroEstado"
       (ngModelChange)="resetearPaginacion()">
-      <option value="todos">Todos los estados</option>
-      <option value="Archivado">Archivados</option>
-      <option value="Finalizado">Finalizado</option>
-      <option value="En proceso">En proceso</option>
-      <option value="Revisión">Revisión</option>
-      <option value="Corrección">Corrección</option>
+      <!-- Siempre mostrar la opción "Todos" si hay historias no archivadas -->
+      <option value="todos" *ngIf="obtenerHistoriasNoArchivadas() > 0">Todos los estados</option>
+
+      <!-- Solo mostrar "Archivados" si hay historias archivadas -->
+      <option value="Archivado" *ngIf="estadisticas && estadisticas.archivadas > 0">Archivados</option>
+
+      <!-- Mostrar solo los estados que tienen valores -->
+      <option *ngFor="let estado of obtenerEstadosConValores()" [value]="estado.estado">
+        {{ estado.estado }}
+      </option>
     </select>
   </div>
 

@@ -16,26 +16,31 @@ $accent-color-dark2: $ipn-guinda-light;
   margin: 0 auto;
 }
 
+// Header
 .content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 
   .header-title {
     h1 {
+      font-size: 1.8rem;
+      color: $ipn-guinda; // Cambiado a color IPN
+      margin: 0;
       display: flex;
       align-items: center;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: $ipn-guinda;
-      margin: 0;
 
       i {
-        color: $ipn-guinda;
-        margin-right: 0.75rem;
+        margin-right: 0rem;
+        color: $ipn-guinda; // Cambiado a color IPN
       }
     }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
   }
 }
 
@@ -723,6 +728,10 @@ $accent-color-dark2: $ipn-guinda-light;
     background-color: $dark-bg-card;
   }
 
+  .header-title h1 {
+    color: $accent-color-dark2 !important; // Color para modo oscuro
+  }
+
   .perfil-basic-info p {
     color: #c0c0c0; // Mantener el mismo color que en modo claro
   }
@@ -846,13 +855,6 @@ $accent-color-dark2: $ipn-guinda-light;
   .perfil-details .info-item label {
     color: $text-secondary;
   }
-}
-.content-header i {
-  color: $accent-color-dark2;
-}
-
-.header-title h1 {
-  color: $accent-color-dark2 !important;
 }
 
 // Agregar al final de alumno-perfil.component.scss
