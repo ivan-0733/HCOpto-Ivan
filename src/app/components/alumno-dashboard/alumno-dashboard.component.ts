@@ -36,6 +36,8 @@ export class AlumnoDashboardComponent implements OnInit {
   estadisticas: EstadisticasHistorias | null = null;
   estadisticasPorMateria: Map<number | null, EstadisticasHistorias> = new Map(); // Para almacenar estadísticas por materia
   perfil: Perfil | null = null;
+  todasLasMaterias: MateriaAlumno[] = []; // Todas las materias (actuales e históricas)
+  mostrarMateriasHistoricas: boolean = false; // Para controlar la visualización
   loading = true;
   error = '';
 
@@ -149,7 +151,7 @@ export class AlumnoDashboardComponent implements OnInit {
     this.alumnoService.obtenerMaterias().subscribe({
       next: (materias) => {
         this.materias = materias;
-        console.log('Materias cargadas:', materias);
+        console.log('Materias del periodo actual cargadas:', materias);
 
         // Only set a default if materiaSeleccionadaId isn't already set from localStorage
         if (this.materiaSeleccionadaId === undefined) {
@@ -179,6 +181,17 @@ export class AlumnoDashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error al cargar materias:', error);
+      }
+    });
+
+    // Ahora también cargar TODAS las materias (actuales e históricas)
+    this.alumnoService.obtenerTodasMaterias().subscribe({
+      next: (materias) => {
+        this.todasLasMaterias = materias;
+        console.log('Todas las materias cargadas (incluidas históricas):', materias);
+      },
+      error: (error) => {
+        console.error('Error al cargar todas las materias:', error);
       }
     });
 
@@ -265,12 +278,17 @@ export class AlumnoDashboardComponent implements OnInit {
     });
   }
 
-  // Método para obtener el MateriaProfesorID basado en el ID de materia
   obtenerMateriaProfesorIdPorMateria(materiaId: number): number | undefined {
-    if (!materiaId || !this.materias.length) return undefined;
+    if (!materiaId) return undefined;
 
-    // Buscar la materia que coincida con el ID
-    const materia = this.materias.find(m => m.ID === materiaId);
+    // Buscar primero en las materias del periodo actual
+    let materia = this.materias.find(m => m.ID === materiaId);
+
+    // Si no se encuentra y estamos mostrando materias históricas, buscar en todas
+    if (!materia && this.mostrarMateriasHistoricas) {
+      materia = this.todasLasMaterias.find(m => m.ID === materiaId);
+    }
+
     if (!materia) return undefined;
 
     // Devolver el MateriaProfesorID asociado
@@ -474,7 +492,6 @@ export class AlumnoDashboardComponent implements OnInit {
     this.saveFilters();
   }
 
-  // Método para filtrar historias por materia
   filtrarHistorias(): HistoriaClinica[] {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
@@ -493,29 +510,31 @@ export class AlumnoDashboardComponent implements OnInit {
       // Comprobar si está archivado
       const estaArchivado = Boolean(historia.Archivado);
 
-      // FILTRADO POR MATERIA - APLICAR EN TODOS LOS CASOS (ARCHIVADOS Y NO ARCHIVADOS)
-      if (this.materiaSeleccionadaId !== null) {
-        // Debug para ver si el MateriaProfesorID existe en las historias
-        console.log(`Filtrando por materia ID ${this.materiaSeleccionadaId}, historia MateriaProfesorID:`, historia.MateriaProfesorID);
-
-        // Obtener el MateriaProfesorID asociado a esta materia seleccionada
-        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
-        console.log(`MateriaProfesorID para materia ${this.materiaSeleccionadaId}:`, materiaProfesorID);
-
-        // Si no se encuentra la relación o el MateriaProfesorID de la historia es diferente, excluirla
-        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
-          return false;
-        }
-      }
-
-      // Filtro específico para "Archivado"
+      // Si el filtro es de archivadas, mostrar todas independientemente del periodo
       if (this.filtroEstado === 'Archivado') {
+        // Si hay una materia seleccionada específica (no "Todas las materias")
+        if (this.materiaSeleccionadaId !== null) {
+          // Buscar la materia en todas las materias (incluidas históricas)
+          const materiaEncontrada = this.todasLasMaterias.find(m => m.ID === this.materiaSeleccionadaId);
+          if (materiaEncontrada) {
+            return estaArchivado && historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
+          }
+        }
+        // Si no hay materia seleccionada o no se encontró, mostrar todas las archivadas
         return estaArchivado;
       }
 
       // Para los demás filtros, no mostrar historias archivadas
       if (estaArchivado) {
         return false;
+      }
+
+      // FILTRADO POR MATERIA - SOLO PARA MATERIAS DEL PERIODO ACTUAL
+      if (this.materiaSeleccionadaId !== null) {
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
+          return false;
+        }
       }
 
       // Filtrar por estado
@@ -530,6 +549,14 @@ export class AlumnoDashboardComponent implements OnInit {
   aplicarFiltroMateria(materiaId: number | null): void {
     console.log(`Aplicando filtro de materia: ${materiaId}`);
     this.materiaSeleccionadaId = materiaId;
+
+    // Para materias históricas, cambiar automáticamente al filtro "Archivado"
+    if (materiaId !== null) {
+      const materia = this.todasLasMaterias.find(m => m.ID === materiaId);
+      if (materia && !materia.EsPeriodoActual) {
+        this.filtroEstado = 'Archivado';
+      }
+    }
 
     // Update the statistics based on the selected materia
     this.actualizarEstadisticas();

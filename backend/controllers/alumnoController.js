@@ -66,6 +66,21 @@ const alumnoController = {
   }),
 
   /**
+   * Obtener todas las materias del alumno (incluyendo las de periodos anteriores)
+   */
+  obtenerTodasMaterias: catchAsync(async (req, res) => {
+    const alumnoId = req.usuario.AlumnoInfoID;
+
+    const materias = await alumnoService.obtenerTodasMateriasAlumno(alumnoId);
+
+    res.status(200).json({
+      status: 'success',
+      results: materias.length,
+      data: materias
+    });
+  }),
+
+  /**
    * Obtener profesores asignados al alumno
    */
   obtenerProfesoresAsignados: catchAsync(async (req, res) => {

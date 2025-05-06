@@ -18,6 +18,9 @@ router.patch('/password', alumnoController.actualizarPassword);
 // Ruta para verificar contraseña - USAR SOLO UNA VEZ
 router.post('/verificar-password', alumnoController.verificarPassword);
 
+// Añadir esta nueva ruta en alumnoRoutes.js
+router.get('/todas-materias', alumnoController.obtenerTodasMaterias);
+
 // Rutas para obtener profesores asignados
 router.get('/profesores', alumnoController.obtenerProfesoresAsignados);
 
