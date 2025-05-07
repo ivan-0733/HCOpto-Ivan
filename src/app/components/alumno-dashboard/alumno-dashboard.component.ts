@@ -38,6 +38,7 @@ export class AlumnoDashboardComponent implements OnInit {
   perfil: Perfil | null = null;
   todasLasMaterias: MateriaAlumno[] = []; // Todas las materias (actuales e históricas)
   mostrarMateriasHistoricas: boolean = false; // Para controlar la visualización
+  filtroMateriaArchivada: number | null = null;
   loading = true;
   error = '';
 
@@ -334,6 +335,72 @@ export class AlumnoDashboardComponent implements OnInit {
     this.estadisticasPorMateria.set(null, estadisticasTodas);
   }
 
+  // 2. Método para obtener las materias con historias archivadas
+  obtenerMateriasConHistoriasArchivadas(): any[] {
+    if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
+
+    // Obtener todas las historias archivadas
+    const historiasArchivadas = this.historiasClinicas.filter(h => Boolean(h.Archivado));
+
+    // Crear un Map para almacenar materias únicas por MateriaProfesorID
+    const materiasMap = new Map<number, any>();
+
+    // Obtener el periodo actual
+    const periodoActual = this.periodoEscolar?.Codigo || '';
+
+    // Recorrer todas las historias archivadas para encontrar sus materias
+    historiasArchivadas.forEach(historia => {
+      // Si esta materia ya fue agregada, omitirla
+      if (materiasMap.has(historia.MateriaProfesorID)) return;
+
+      // Buscar información adicional de la materia en todasLasMaterias
+      const materiaInfo = this.todasLasMaterias.find(m => m.MateriaProfesorID === historia.MateriaProfesorID);
+
+      // Verificar si el periodo de esta historia es el actual
+      const esActual = historia.PeriodoEscolar === periodoActual;
+
+      // Crear un objeto con los datos de la materia
+      const materiaData = {
+        MateriaProfesorID: historia.MateriaProfesorID,
+        NombreMateria: historia.NombreMateria || 'Materia desconocida',
+        Grupo: historia.GrupoMateria || '',
+        PeriodoEscolar: historia.PeriodoEscolar || '',
+        // Incluir el semestre (si está disponible)
+        Semestre: materiaInfo?.Semestre || 'N/A',
+        // Añadir la bandera que indica si es el periodo actual
+        EsPeriodoActual: esActual
+      };
+
+      // Añadir la materia al mapa
+      materiasMap.set(historia.MateriaProfesorID, materiaData);
+    });
+
+    // Convertir el mapa a array y ordenar: primero el periodo actual, luego por periodo descendente
+    return Array.from(materiasMap.values()).sort((a, b) => {
+      // Si uno es actual y el otro no, el actual va primero
+      if (a.EsPeriodoActual && !b.EsPeriodoActual) return -1;
+      if (!a.EsPeriodoActual && b.EsPeriodoActual) return 1;
+
+      // Si ambos son actuales o ambos no son actuales, ordenar por periodo descendente
+      const comparaPeriodo = b.PeriodoEscolar.localeCompare(a.PeriodoEscolar);
+      if (comparaPeriodo !== 0) return comparaPeriodo;
+
+      // Si el período es el mismo, ordenar por nombre de materia
+      return a.NombreMateria.localeCompare(b.NombreMateria);
+    });
+  }
+
+  // 3. Método para aplicar el filtro de materia archivada
+  aplicarFiltroMateriaArchivada(): void {
+    console.log(`Aplicando filtro de materia archivada: ${this.filtroMateriaArchivada}`);
+
+    // Resetear paginación
+    this.resetearPaginacion();
+
+    // Guardar filtros en localStorage
+    this.saveFilters();
+  }
+
   // Método para clonar las estadísticas
   clonarEstadisticas(estadisticas: EstadisticasHistorias): EstadisticasHistorias {
     const clon = { ...estadisticas };
@@ -417,7 +484,8 @@ export class AlumnoDashboardComponent implements OnInit {
       ordenamiento: this.ordenamiento,
       materiaSeleccionadaId: this.materiaSeleccionadaId,
       paginaActual: this.paginaActual,
-      registrosPorPagina: this.registrosPorPagina
+      registrosPorPagina: this.registrosPorPagina,
+      filtroMateriaArchivada: this.filtroMateriaArchivada
     };
     console.log('Guardando filtros en localStorage:', filters);
     localStorage.setItem('dashboard-filters', JSON.stringify(filters));
@@ -436,6 +504,7 @@ export class AlumnoDashboardComponent implements OnInit {
         this.filtroPaciente = filters.filtroPaciente || '';
         this.ordenamiento = filters.ordenamiento || 'recientes';
         this.materiaSeleccionadaId = filters.materiaSeleccionadaId;
+        this.filtroMateriaArchivada = filters.filtroMateriaArchivada;
 
         // Importante: asegurarse de cargar la paginación correctamente
         this.paginaActual = filters.paginaActual || 1;
@@ -465,6 +534,7 @@ export class AlumnoDashboardComponent implements OnInit {
     this.materiaSeleccionadaId = null;
     this.paginaActual = 1;
     this.registrosPorPagina = 5;
+    this.filtroMateriaArchivada = null;
   }
 
   crearNuevaHistoria(): void {
@@ -512,16 +582,24 @@ export class AlumnoDashboardComponent implements OnInit {
 
       // Si el filtro es de archivadas, mostrar todas independientemente del periodo
       if (this.filtroEstado === 'Archivado') {
+        // Si no está archivada, no mostrarla
+        if (!estaArchivado) return false;
+
         // Si hay una materia seleccionada específica (no "Todas las materias")
         if (this.materiaSeleccionadaId !== null) {
           // Buscar la materia en todas las materias (incluidas históricas)
           const materiaEncontrada = this.todasLasMaterias.find(m => m.ID === this.materiaSeleccionadaId);
           if (materiaEncontrada) {
-            return estaArchivado && historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
+            return historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
           }
         }
-        // Si no hay materia seleccionada o no se encontró, mostrar todas las archivadas
-        return estaArchivado;
+        // Si está activo el filtro de materia archivada específica
+        else if (this.filtroMateriaArchivada !== null) {
+          return historia.MateriaProfesorID === this.filtroMateriaArchivada;
+        }
+
+        // Si no hay filtro de materia, mostrar todas las archivadas
+        return true;
       }
 
       // Para los demás filtros, no mostrar historias archivadas

@@ -96,20 +96,6 @@
 <div class="filtros-container">
 
   <div class="filtro">
-    <label for="filtroPaciente">Buscar paciente:</label>
-    <div class="input-with-icon">
-      <i class="fas fa-search"></i>
-      <input
-        type="text"
-        id="filtroPaciente"
-        [(ngModel)]="filtroPaciente"
-        placeholder="Nombre del paciente"
-        (ngModelChange)="onFiltroPacienteChange()"
-      >
-    </div>
-  </div>
-
-  <div class="filtro">
     <label for="filtroEstado">Filtrar por estado:</label>
     <select
       id="filtroEstado"
@@ -124,6 +110,20 @@
       <!-- Mostrar solo los estados que tienen valores -->
       <option *ngFor="let estado of obtenerEstadosConValores()" [value]="estado.estado">
         {{ estado.estado }}
+      </option>
+    </select>
+  </div>
+
+  <div class="filtro" *ngIf="filtroEstado === 'Archivado' && materiaSeleccionadaId === null">
+    <label for="filtroMateriaArchivada">Filtrar por materia:</label>
+    <select
+      id="filtroMateriaArchivada"
+      [(ngModel)]="filtroMateriaArchivada"
+      (ngModelChange)="aplicarFiltroMateriaArchivada()">
+      <option [ngValue]="null">Todas las materias</option>
+      <option *ngFor="let materia of obtenerMateriasConHistoriasArchivadas()" [ngValue]="materia.MateriaProfesorID">
+        {{ materia.NombreMateria }} ({{ materia.Semestre }}° Semestre |
+        {{ materia.EsPeriodoActual ? 'Periodo actual: ' : 'Periodo: ' }}{{ materia.PeriodoEscolar }})
       </option>
     </select>
   </div>
@@ -143,6 +143,20 @@
       <option value="semestre-reciente">Semestre (más reciente primero)</option>
       <option value="semestre-antiguo">Semestre (más antiguo primero)</option>
     </select>
+  </div>
+
+  <div class="filtro">
+    <label for="filtroPaciente">Buscar paciente:</label>
+    <div class="input-with-icon">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        id="filtroPaciente"
+        [(ngModel)]="filtroPaciente"
+        placeholder="Nombre del paciente"
+        (ngModelChange)="onFiltroPacienteChange()"
+      >
+    </div>
   </div>
 </div>
 
