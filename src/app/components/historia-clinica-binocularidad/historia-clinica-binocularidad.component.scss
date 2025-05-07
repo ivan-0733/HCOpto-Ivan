@@ -46,7 +46,7 @@
 
   .form-content {
     .form-section {
-      background-color: $bg-light;
+      background-color: $bg-primary;
       border-radius: $border-radius;
       padding: $spacing-md;
       margin-bottom: $spacing-lg;
@@ -368,9 +368,9 @@
   }
 
   .success-message {
-    background-color: lighten($success, 40%);
-    color: darken($success, 10%);
-    border-left: 4px solid $success;
+    background-color: lighten($light-success, 40%);
+    color: darken($light-success, 10%);
+    border-left: 4px solid $light-success;
   }
 
   // Utilitarios para spinner

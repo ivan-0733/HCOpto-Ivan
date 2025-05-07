@@ -16,13 +16,18 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
       `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
               p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
               p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-              cg.Valor AS Estado, c.Nombre AS Consultorio, s.Nombre AS Semestre,
-              hc.ProfesorID  -- Asegurarse de incluir ProfesorID desde la tabla HistorialesClinicos
+              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
+              mp.ProfesorInfoID AS ProfesorID,
+              m.Nombre AS NombreMateria,
+              mp.Grupo AS GrupoMateria,
+              hc.MateriaProfesorID
       FROM HistorialesClinicos hc
           JOIN Pacientes p ON hc.PacienteID = p.ID
           JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
           JOIN Consultorios c ON hc.ConsultorioID = c.ID
-          JOIN Semestres s ON hc.SemestreID = s.ID
+          JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+          JOIN Materias m ON mp.MateriaID = m.ID
           WHERE hc.AlumnoID = ?
           ORDER BY hc.Fecha DESC`,
       [alumnoId]
@@ -82,7 +87,12 @@ try {
 
         -- Consultorio y semestre
         c.Nombre AS Consultorio,
-        s.Nombre AS Semestre,
+        pe.Codigo AS PeriodoEscolar,
+
+        -- Datos de la materia y grupo
+        m.Nombre AS NombreMateria,
+        mp.Grupo AS GrupoMateria,
+        mp.ID AS MateriaProfesorID,
 
         -- Datos del Alumno desde AlumnosInfo
         a.Nombre AS AlumnoNombre,
@@ -92,19 +102,22 @@ try {
         -- Datos del Profesor desde ProfesoresInfo
         pr.Nombre AS ProfesorNombre,
         pr.ApellidoPaterno AS ProfesorApellidoPaterno,
-        pr.ApellidoMaterno AS ProfesorApellidoMaterno
+        pr.ApellidoMaterno AS ProfesorApellidoMaterno,
+        pr.ID AS ProfesorID
 
         FROM HistorialesClinicos hc
         JOIN Pacientes p ON hc.PacienteID = p.ID
         JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
         JOIN Consultorios c ON hc.ConsultorioID = c.ID
-        JOIN Semestres s ON hc.SemestreID = s.ID
+        JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
         JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
         JOIN Usuarios ua ON a.UsuarioID = ua.ID
-        JOIN ProfesoresInfo pr ON hc.ProfesorID = pr.ID
+        JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+        JOIN Materias m ON mp.MateriaID = m.ID
+        JOIN ProfesoresInfo pr ON mp.ProfesorInfoID = pr.ID
         JOIN Usuarios up ON pr.UsuarioID = up.ID
 
-        WHERE hc.ID = ? AND hc.AlumnoID = ?;`,
+        WHERE hc.ID = ? AND hc.AlumnoID = ?`,
       [id, alumnoId]
     );
 
@@ -266,18 +279,18 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     
     const [historiaResult] = await connection.query(
       `INSERT INTO HistorialesClinicos (
-        PacienteID, AlumnoID, ProfesorID, Fecha, EstadoID,
-        Archivado, ConsultorioID, SemestreID, CreadoEn
+        PacienteID, AlumnoID, MateriaProfesorID, Fecha, EstadoID,
+        Archivado, ConsultorioID, PeriodoEscolarID, CreadoEn
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         pacienteId,
         datosHistoria.alumnoID,
-        datosHistoria.profesorID,
+        datosHistoria.MateriaProfesorID || datosHistoria.materiaProfesorID, // Comprueba ambas variantes
         datosHistoria.fecha || new Date(),
         estadoId,
         false,
         datosHistoria.consultorioID,
-        datosHistoria.semestreID,
+        datosHistoria.PeriodoEscolarID || datosHistoria.periodoEscolarID, 
       ]
     );
 

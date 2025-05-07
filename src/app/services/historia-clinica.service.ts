@@ -11,17 +11,20 @@ export interface HistoriaClinica {
   FechaArchivado: string | null;
   EstadoID: number;
   PacienteID: number;
-  ProfesorID: number; // Mantener para compatibilidad
-  MateriaProfesorID: number; // Agregar este campo para la relación correcta
+  ProfesorID: number;
   Nombre: string;
   ApellidoPaterno: string;
   ApellidoMaterno: string | null;
   Edad?: number;
   Estado: string;
   Consultorio: string;
-  PeriodoEscolar: string; // Changed from Semestre
+  PeriodoEscolar: string;  // Added this property
   CorreoElectronico?: string;
   TelefonoCelular?: string;
+  MateriaProfesorID: number;  // Added this property
+  NombreMateria: string;      // Added this property
+  GrupoMateria: string;       // Added this property
+  PeriodoEscolarID?: number;  // Added this property
 
   AlumnoNombre: string;
   AlumnoApellidoPaterno: string;
@@ -30,15 +33,12 @@ export interface HistoriaClinica {
   ProfesorNombre: string;
   ProfesorApellidoPaterno: string;
   ProfesorApellidoMaterno: string | null;
-
-  NombreMateria: string;
-  GrupoMateria: string;
 }
 
 export interface HistoriaClinicaDetalle extends HistoriaClinica {
   ProfesorID: number;
   ConsultorioID: number;
-  PeriodoEscolarID: number; // Cambiar SemestreID por PeriodoEscolarID
+  SemestreID: number;
   GeneroID: number;
   EstadoCivilID: number;
   EscolaridadID: number;
@@ -52,7 +52,6 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   CorreoElectronico: string;
   TelefonoCelular: string;
   Telefono: string;
-  MateriaProfesorID: number; // Nuevo campo
 
   // Propiedades existentes
   interrogatorio?: any;

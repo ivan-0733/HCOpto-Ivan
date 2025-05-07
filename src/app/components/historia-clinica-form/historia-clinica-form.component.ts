@@ -152,7 +152,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
     // Cargar datos iniciales en paralelo
     forkJoin({
       profesores: this.alumnoService.obtenerProfesoresAsignados(),
-      materias: this.alumnoService.obtenerMaterias(), // Add this line
+      materias: this.alumnoService.obtenerMaterias(), 
       consultorios: this.alumnoService.obtenerConsultorios(),
       periodoEscolar: this.alumnoService.obtenerPeriodoEscolarActual(),
       generos: this.alumnoService.obtenerCatalogo('GENERO'),
@@ -178,7 +178,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
         }
 
         if (this.profesores.length === 1) {
-          this.historiaForm.patchValue({ profesorID: this.profesores[0].ProfesorID });
+          this.historiaForm.patchValue({ MateriaProfesorID: this.profesores[0].MateriaProfesorID });
         }
       },
       error: (error) => {
@@ -271,38 +271,54 @@ export class HistoriaClinicaFormComponent implements OnInit {
 
   onSubmit(): void {
     if (this.historiaForm.invalid) {
-      // Marcar todos los campos como tocados para mostrar errores
+      // Mark all fields as touched to show errors
       this.markFormGroupTouched(this.historiaForm);
       return;
     }
-
+  
     this.submitting = true;
     this.error = '';
     this.success = '';
-
-    const historiaData = this.historiaForm.value;
-
-    if (historiaData.profesorID && !historiaData.materiaProfesorID) {
-      const profesor = this.profesores.find(p => p.ProfesorID == historiaData.profesorID);
-      if (profesor) {
-        historiaData.materiaProfesorID = profesor.MateriaProfesorID;
+  
+    // Get a copy of the form data to modify
+    const historiaData = { ...this.historiaForm.value };
+  
+    // Find the selected materia to add the NombreMateria field
+    if (historiaData.materiaProfesorID) {
+      const selectedMateria = this.materias.find(m => m.MateriaProfesorID == historiaData.materiaProfesorID);
+      if (selectedMateria) {
+        // Add the required NombreMateria field
+        historiaData.NombreMateria = selectedMateria.NombreMateria;
+        console.log('Adding NombreMateria:', historiaData.NombreMateria);
       }
     }
-
+  
+    // Ensure PeriodoEscolarID is set correctly
+    // Use the actual ID from the periodoEscolar object if it exists
+    if (this.periodoEscolar && (!historiaData.periodoEscolarID || historiaData.periodoEscolarID === '')) {
+      historiaData.PeriodoEscolarID = this.periodoEscolar.ID;
+      console.log('Setting PeriodoEscolarID to:', historiaData.PeriodoEscolarID);
+    } else if (historiaData.periodoEscolarID) {
+      // If it's already set in lowercase, make sure it's also set in uppercase
+      historiaData.PeriodoEscolarID = historiaData.periodoEscolarID;
+    }
+  
+    console.log('Sending data to server:', historiaData);
+  
     let action: Observable<any>;
-
+  
     if (this.isEditing && this.historiaId) {
-      // Actualizar historia clínica existente
+      // Update existing history
       action = this.historiaClinicaService.actualizarSeccion(
         this.historiaId,
         'datos-generales',
         historiaData
       );
     } else {
-      // Crear nueva historia clínica
+      // Create new history
       action = this.historiaClinicaService.crearHistoriaClinica(historiaData);
     }
-
+  
     action.pipe(
       finalize(() => {
         this.submitting = false;
@@ -312,18 +328,18 @@ export class HistoriaClinicaFormComponent implements OnInit {
         this.success = this.isEditing
           ? 'Historia clínica actualizada correctamente.'
           : 'Historia clínica creada correctamente.';
-
-        // Emitir eventos para el componente padre
+  
+        // Emit events to parent component
         if (this.isEditing) {
           this.completed.emit(true);
         } else {
-          // Obtener el ID de la historia creada
+          // Get ID of created history
           const newHistoriaId = response.data.ID;
           this.historiaCreated.emit(newHistoriaId);
           this.completed.emit(true);
         }
-
-        // Después de un breve retraso, pasar a la siguiente sección
+  
+        // After a brief delay, move to next section
         setTimeout(() => {
           this.nextSection.emit();
         }, 1500);

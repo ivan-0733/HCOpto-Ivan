@@ -78,9 +78,9 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
       message: 'El formato de datosHistoria es incorrecto'
     });
   }
-
+  
   // 4. Validar campos obligatorios
-  const camposRequeridos = ['profesorID', 'consultorioID', 'semestreID'];
+  const camposRequeridos = ['NombreMateria', 'PeriodoEscolarID'];
   const faltantes = camposRequeridos.filter(campo => !datosHistoria[campo]);
   
   if (faltantes.length > 0) {
@@ -108,6 +108,10 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
 
   // 6. Asignar alumnoID (seguridad)
   datosHistoria.alumnoID = alumnoId;
+
+  if (datosHistoria.materiaProfesorID) {
+    datosHistoria.MateriaProfesorID = datosHistoria.materiaProfesorID;
+  }
 
   // 7. Log para depuración (opcional)
   console.log('Datos recibidos para crear historia:', {

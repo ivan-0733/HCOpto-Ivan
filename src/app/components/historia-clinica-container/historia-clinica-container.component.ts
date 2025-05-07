@@ -799,7 +799,27 @@ crearNuevaHistoria(): void {
   this.success = '';
 
   // Obtener los datos principales del formulario de datos generales
-  const datosHistoria = this.formValues['datos-generales'];
+  const datosHistoria = {...this.formValues['datos-generales']};
+
+  // Asignar un valor para NombreMateria
+  datosHistoria.NombreMateria = "Materia Seleccionada";
+
+
+  // Asegurar que PeriodoEscolarID esté establecido correctamente
+  if (datosHistoria.periodoEscolarID) {
+    // Asegurarse de que exista tanto en minúsculas como en mayúsculas
+    datosHistoria.PeriodoEscolarID = datosHistoria.periodoEscolarID;
+  } else {
+    // Si no hay un periodo escolar ID, mostrar un error
+    this.error = 'Por favor, seleccione un período escolar antes de guardar.';
+    this.marcarFormularioComoTocado(this.sectionForms['datos-generales']);
+    this.currentSection = 'datos-generales';
+    this.submitting = false;
+    return;
+  }
+
+  // Log para depuración
+  console.log('Datos a enviar al servidor:', datosHistoria);
 
   // Guardar temporalmente las imágenes en base64 para subirlas después
   const imagenesBase64 = {
@@ -917,13 +937,10 @@ crearNuevaHistoria(): void {
                     });
                   });
                 }
-                // Añadido return explícito para el caso cuando imageId es null
                 return Promise.resolve();
               })
             );
           }
-          
-          // Manejar otras imágenes aquí si es necesario...
           
           Promise.all(promesasImagenes)
             .then(() => {
