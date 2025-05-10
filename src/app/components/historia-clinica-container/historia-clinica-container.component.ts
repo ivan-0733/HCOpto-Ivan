@@ -363,35 +363,31 @@ onBinocularidadFormReady(form: FormGroup): void {
     // Restaurar valores previos si existen
     if (this.formValues['metodo-grafico']) {
       form.patchValue(this.formValues['metodo-grafico']);
-    } 
-     // Restaurar la imagen si existe
-      if (this.formValues['metodo-grafico'].imagenBase64) {
+      
+      // Restaurar la imagen si existe (con verificación null)
+      if (this.formValues['metodo-grafico'] && this.formValues['metodo-grafico'].imagenBase64) {
         this.imgPreview = this.formValues['metodo-grafico'].imagenBase64;
       }
     }
 
+    // Verificar si ya tenemos una imagen preview
     if (this.imgPreview) {
       // Podríamos necesitar un pequeño retraso para asegurar que el componente hijo esté listo
       setTimeout(() => {
         this.onImageBase64Change(this.imgPreview);
       }, 100);
-
-    if (this.formValues['metodo-grafico']?.imagenBase64) {
-      this.imgPreview = this.formValues['metodo-grafico'].imagenBase64;
-    } else {
-      this.imgPreview = null;
     }
     
     // Suscribirse a cambios en el formulario para guardar, incluyendo la imagen base64
     form.valueChanges.subscribe(values => {
       this.formValues['metodo-grafico'] = {
         ...values,
-        imagenBase64: this.imgPreview || this.formValues['metodo-grafico']?.imagenBase64 
+        imagenBase64: this.imgPreview || (this.formValues['metodo-grafico'] ? this.formValues['metodo-grafico'].imagenBase64 : null)
       };
     });
-    
   }
 }
+
 
 // Métodos para recibir los formularios de alteraciones
 onDeteccionAlteracionesFormReady(form: FormGroup): void {
@@ -690,8 +686,9 @@ private actualizarFormValues(): void {
 
   // Actualizar agudeza visual - asegurar que se capture el valor actual
   if (this.agudezaVisualForm) {
+    // Simplemente usar el valor del formulario directamente
     this.formValues['agudeza-visual'] = this.agudezaVisualForm.value;
-    console.log('Valores actualizados de agudeza visual:', this.agudezaVisualForm.value);
+    console.log('Valores actualizados de agudeza visual:', this.formValues['agudeza-visual']);
   }
 
   // Actualizar lensometría - asegurar que se capture el valor actual
@@ -830,7 +827,8 @@ crearNuevaHistoria(): void {
   const secciones = {
     interrogatorio: this.formValues['interrogatorio'],
     // Estructurar agudeza visual correctamente
-    agudezaVisual: this.formValues['agudeza-visual'] ? [this.formValues['agudeza-visual']] : [],
+    agudezaVisual: this.formValues['agudeza-visual'] ? 
+    this.convertirFormDataAAgudezaVisual(this.formValues['agudeza-visual']) : [],
     lensometria: this.formValues['lensometria'],
     
     // Examen preliminar
@@ -1125,21 +1123,17 @@ if (this.formValues['interrogatorio']) {
 if (this.formValues['agudeza-visual']) {
   const agudezaVisualData = this.formValues['agudeza-visual'];
   
-  // Verificar si hay datos para enviar
-  if (Object.values(agudezaVisualData).some(val => val !== '' && val !== null && val !== undefined)) {
-    // Crear un array para conformar con el formato que espera la API
-    const agudezaVisualArray = [agudezaVisualData];
-    promesas.push(
-      this.convertirObservableAPromise(
-        this.historiaClinicaService.actualizarSeccion(
-          historiaId, 
-          'agudeza-visual', 
-          { agudezaVisual: agudezaVisualArray }
-        )
+  // Enviar los datos tal como vienen, asumiendo que ya están en la estructura correcta
+  promesas.push(
+    this.convertirObservableAPromise(
+      this.historiaClinicaService.actualizarSeccion(
+        historiaId, 
+        'agudeza-visual', 
+        { agudezaVisual: agudezaVisualData }
       )
-    );
-    this.sectionStatus['antecedente-visual'] = true;
-  }
+    )
+  );
+  this.sectionStatus['antecedente-visual'] = true;
 }
 
 // Actualizar lensometría si hay datos
@@ -1677,7 +1671,6 @@ private uploadBase64Image(historiaId: number, base64String: string, seccionID: s
   });
 }
 
-
 private convertirObservableAPromise<T>(observable: Observable<T>): Promise<T> {
 return new Promise<T>((resolve, reject) => {
   observable.subscribe({
@@ -1685,6 +1678,79 @@ return new Promise<T>((resolve, reject) => {
     error: (error) => reject(error)
   });
 });
+}
+
+// Añadir este método a historia-clinica-container.component.ts
+private convertirFormDataAAgudezaVisual(formData: any): any[] {
+  // Crear un array con los diferentes tipos de medición
+  return [
+    // 1. SIN_RX_LEJOS
+    {
+      tipoMedicion: 'SIN_RX_LEJOS',
+      ojoDerechoSnellen: formData.sinRxLejosODSnellen || null,
+      ojoIzquierdoSnellen: formData.sinRxLejosOISnellen || null,
+      ambosOjosSnellen: formData.sinRxLejosAOSnellen || null,
+      ojoDerechoMetros: formData.sinRxLejosODMetros || null,
+      ojoIzquierdoMetros: formData.sinRxLejosOIMetros || null,
+      ambosOjosMetros: formData.sinRxLejosAOMetros || null,
+      ojoDerechoDecimal: formData.sinRxLejosODDecimal || null,
+      ojoIzquierdoDecimal: formData.sinRxLejosOIDecimal || null,
+      ambosOjosDecimal: formData.sinRxLejosAODecimal || null,
+      ojoDerechoMAR: formData.sinRxLejosODMAR || null,
+      ojoIzquierdoMAR: formData.sinRxLejosOIMAR || null,
+      ambosOjosMAR: formData.sinRxLejosAOMAR || null
+    },
+    // 2. CON_RX_ANTERIOR_LEJOS
+    {
+      tipoMedicion: 'CON_RX_ANTERIOR_LEJOS',
+      ojoDerechoSnellen: formData.conRxLejosODSnellen || null,
+      ojoIzquierdoSnellen: formData.conRxLejosOISnellen || null,
+      ambosOjosSnellen: formData.conRxLejosAOSnellen || null,
+      ojoDerechoMetros: formData.conRxLejosODMetros || null,
+      ojoIzquierdoMetros: formData.conRxLejosOIMetros || null,
+      ambosOjosMetros: formData.conRxLejosAOMetros || null,
+      ojoDerechoDecimal: formData.conRxLejosODDecimal || null,
+      ojoIzquierdoDecimal: formData.conRxLejosOIDecimal || null,
+      ambosOjosDecimal: formData.conRxLejosAODecimal || null,
+      ojoDerechoMAR: formData.conRxLejosODMAR || null,
+      ojoIzquierdoMAR: formData.conRxLejosOIMAR || null,
+      ambosOjosMAR: formData.conRxLejosAOMAR || null
+    },
+    // 3. SIN_RX_CERCA
+    {
+      tipoMedicion: 'SIN_RX_CERCA',
+      ojoDerechoM: formData.sinRxCercaODM || null,
+      ojoIzquierdoM: formData.sinRxCercaOIM || null,
+      ambosOjosM: formData.sinRxCercaAOM || null,
+      ojoDerechoJeager: formData.sinRxCercaODJeager || null,
+      ojoIzquierdoJeager: formData.sinRxCercaOIJeager || null,
+      ambosOjosJeager: formData.sinRxCercaAOJeager || null,
+      ojoDerechoPuntos: formData.sinRxCercaODPuntos || null,
+      ojoIzquierdoPuntos: formData.sinRxCercaOIPuntos || null,
+      ambosOjosPuntos: formData.sinRxCercaAOPuntos || null
+    },
+    // 4. CON_RX_ANTERIOR_CERCA
+    {
+      tipoMedicion: 'CON_RX_ANTERIOR_CERCA',
+      ojoDerechoM: formData.conRxCercaODM || null,
+      ojoIzquierdoM: formData.conRxCercaOIM || null,
+      ambosOjosM: formData.conRxCercaAOM || null,
+      ojoDerechoJeager: formData.conRxCercaODJeager || null,
+      ojoIzquierdoJeager: formData.conRxCercaOIJeager || null,
+      ambosOjosJeager: formData.conRxCercaAOJeager || null,
+      ojoDerechoPuntos: formData.conRxCercaODPuntos || null,
+      ojoIzquierdoPuntos: formData.conRxCercaOIPuntos || null,
+      ambosOjosPuntos: formData.conRxCercaAOPuntos || null
+    },
+    // 5. CAP_VISUAL (Capacidad Visual)
+    {
+      tipoMedicion: 'CAP_VISUAL',
+      diametroMM: formData.diametroMM || null,
+      capacidadVisualOD: formData.capacidadVisualOD || null,
+      capacidadVisualOI: formData.capacidadVisualOI || null,
+      capacidadVisualAO: formData.capacidadVisualAO || null
+    }
+  ];
 }
 
 // Método para cancelar la edición

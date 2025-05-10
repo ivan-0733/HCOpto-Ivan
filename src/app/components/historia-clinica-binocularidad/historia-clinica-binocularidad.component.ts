@@ -219,19 +219,16 @@ guardarBinocularidad(): void {
   this.error = '';
   this.success = '';
 
-  // Actualizar el formulario con la imagen actual si existe
-  if (this.imgPreview && this.metodoGraficoForm) {
-    this.metodoGraficoForm.patchValue({ 
-      imagenBase64: this.imgPreview 
-    });
-  }
-
   // Preparar los datos para enviar en el formato correcto
   const payload = {
     binocularidad: this.binocularidadForm.value,
     forias: this.foriasForm.value,
     vergencias: this.vergenciasForm.value,
-    metodoGrafico: this.metodoGraficoForm.value
+    metodoGrafico: {
+      ...this.metodoGraficoForm.value,
+      // Importante: NO incluir la imagen base64 en el payload para evitar payload muy grande
+      imagenBase64: undefined 
+    }
   };
 
   console.log('Enviando datos de binocularidad:', payload);
@@ -244,7 +241,7 @@ guardarBinocularidad(): void {
         this.success = 'Binocularidad guardada correctamente.';
         this.completed.emit(true);
         
-        // Si hay una imagen para subir
+        // Si hay una imagen para subir y no hay un ID de imagen existente
         if (this.imgPreview && !this.metodoGraficoForm.value.imagenID) {
           this.subirImagen();
         } else if (!this.hideButtons) {
@@ -258,6 +255,7 @@ guardarBinocularidad(): void {
       }
     });
 }
+
 
   // Método para manejar la selección de imagen
   onImageSelected(event: Event): void {
@@ -303,60 +301,88 @@ guardarBinocularidad(): void {
     }
   }
 
-  subirImagen(): void {
-    if (!this.historiaId || !this.imgPreview) return;
-    
-    let formData = new FormData();
-    
-    // Convertir base64 a File
-    const file = this.base64ToFile(this.imgPreview, 'metodo-grafico.png');
-    if (!file) {
-      console.error('No se pudo convertir la imagen base64 a File');
-      return;
-    }
+subirImagen(): void {
+  if (!this.historiaId || !this.imgPreview) return;
   
-    formData.append('file', file);
-    formData.append('seccionID', '12'); // ID de la sección de binocularidad
-    formData.append('tipoImagenID', '2'); // ID para método gráfico
+  let formData = new FormData();
   
-    this.historiaService.subirImagen(this.historiaId, formData)
-      .subscribe({
-        next: (response) => {
-          if (response && response.imageId) {
-            // Actualizar el método gráfico con el ID de la imagen
-            const updateData = {
-              metodoGrafico: {
-                ...this.metodoGraficoForm.value,
-                imagenID: response.imageId
-              }
-            };
+  // Convertir base64 a File
+  const file = this.base64ToFile(this.imgPreview, 'metodo-grafico.png');
+  if (!file) {
+    console.error('No se pudo convertir la imagen base64 a File');
+    return;
+  }
+
+  // Asegurarse de usar el nombre de campo correcto que espera el backend
+  formData.append('file', file);
+  formData.append('seccionID', '12'); // ID de la sección de binocularidad
+  formData.append('tipoImagenID', '2'); // ID para método gráfico
+
+  console.log('Subiendo imagen para historia:', this.historiaId);
   
-            this.historiaService.actualizarSeccion(this.historiaId!, 'binocularidad', updateData)
-              .subscribe({
-                next: () => {
-                  console.log('Imagen asociada correctamente al método gráfico');
-                  if (!this.hideButtons) {
-                    setTimeout(() => this.nextSection.emit(), 1500);
-                  }
-                },
-                error: (updateErr) => {
-                  console.error('Error al asociar imagen:', updateErr);
-                  if (!this.hideButtons) {
-                    setTimeout(() => this.nextSection.emit(), 1500);
-                  }
+  this.historiaService.subirImagen(this.historiaId, formData)
+    .subscribe({
+      next: (response) => {
+        console.log('Respuesta completa de subir imagen:', response);
+        
+        // Extraer ID de imagen de la respuesta
+        const imageId = response.data?.imageId || 
+                        response.data?.id || 
+                        response.imageId || 
+                        response.id;
+        
+        if (imageId) {
+          console.log('ID de imagen recuperado:', imageId);
+          
+          // IMPORTANTE: Actualizar correctamente metodoGrafico con el ID de la imagen
+          const updateData = {
+            metodoGrafico: {
+              ...this.metodoGraficoForm.value,
+              imagenID: imageId
+            }
+          };
+
+          this.historiaService.actualizarSeccion(this.historiaId!, 'binocularidad', updateData)
+            .subscribe({
+              next: () => {
+                console.log('Imagen asociada correctamente al método gráfico con ID:', imageId);
+                
+                // Actualizar el formulario local con el nuevo ID
+                this.metodoGraficoForm.patchValue({
+                  imagenID: imageId
+                });
+                
+                if (!this.hideButtons) {
+                  setTimeout(() => this.nextSection.emit(), 1500);
                 }
-              });
-          }
-        },
-        error: (error) => {
-          console.error('Error al subir imagen:', error);
-          this.error = 'La binocularidad se guardó pero hubo un error al subir la imagen.';
+              },
+              error: (updateErr) => {
+                console.error('Error al asociar imagen:', updateErr);
+                console.error('Detalles del error:', updateErr.error || updateErr.message);
+                
+                if (!this.hideButtons) {
+                  setTimeout(() => this.nextSection.emit(), 1500);
+                }
+              }
+            });
+        } else {
+          console.warn('No se encontró ID de imagen en la respuesta');
           if (!this.hideButtons) {
             setTimeout(() => this.nextSection.emit(), 1500);
           }
         }
-      });
-  }
+      },
+      error: (error) => {
+        console.error('Error al subir imagen:', error);
+        console.error('Detalles del error:', error.error || error.message);
+        this.error = 'La binocularidad se guardó pero hubo un error al subir la imagen.';
+        
+        if (!this.hideButtons) {
+          setTimeout(() => this.nextSection.emit(), 1500);
+        }
+      }
+    });
+}
 
   actualizarImagenMetodoGrafico(imageId: number): void {
     if (!this.historiaId) return;

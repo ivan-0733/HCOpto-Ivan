@@ -1437,6 +1437,41 @@ try {
 },
 
 /**
+ * Actualiza la sección de Método Gráfico con un ID de imagen
+ * @param {number} historiaId - ID de la historia clínica
+ * @param {number} imagenId - ID de la imagen subida
+ * @returns {Promise<boolean>} - true si la actualización fue exitosa
+ */
+async actualizarMetodoGraficoConImagen(historiaId, imagenId) {
+  try {
+    // Verificar si ya existe un registro de método gráfico para esta historia
+    const [metodoGrafico] = await db.query(
+      'SELECT ID FROM MetodoGrafico WHERE HistorialID = ?',
+      [historiaId]
+    );
+
+    if (metodoGrafico.length === 0) {
+      // Crear nueva entrada si no existe
+      await db.query(
+        `INSERT INTO MetodoGrafico (HistorialID, ImagenID) VALUES (?, ?)`,
+        [historiaId, imagenId]
+      );
+    } else {
+      // Actualizar la entrada existente
+      await db.query(
+        `UPDATE MetodoGrafico SET ImagenID = ? WHERE HistorialID = ?`,
+        [imagenId, historiaId]
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error al actualizar método gráfico con imagen:', error);
+    throw error;
+  }
+},
+
+/**
  * Obtiene estadísticas de historias clínicas por alumno
  * @param {number} alumnoId - ID del alumno
  * @returns {Promise<Object>} - Estadísticas de historias clínicas
@@ -1514,5 +1549,6 @@ try {
 }
 }
 };
+
 
 module.exports = historiaClinicaService;

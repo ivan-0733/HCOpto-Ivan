@@ -58,7 +58,7 @@ loadHistoriaClinica(): void {
         console.log('Historia cargada correctamente:', historia);
 
         // Cargar imágenes de método gráfico si están disponibles por ID
-        if (historia.metodoGrafico && historia.metodoGrafico.imagenID && !historia.metodoGrafico.imagenBase64) {
+        if (historia.metodoGrafico && historia.metodoGrafico.imagenID) {
           this.cargarImagenMetodoGrafico(historia.metodoGrafico.imagenID);
         }
       },
@@ -95,6 +95,7 @@ cargarImagenMetodoGrafico(imagenID: number): void {
       }
     });
 }
+
 
 changeTab(tab: string): void {
   this.currentTab = tab;
@@ -410,6 +411,55 @@ cargarImagenBase64(imagenID: number): void {
       },
       error: (error) => {
         console.error('Error al cargar imagen:', error);
+      }
+    });
+}
+
+onImageError(event: Event): void {
+  const imgElement = event.target as HTMLImageElement;
+  
+  // Marcar como error
+  imgElement.classList.add('image-error');
+  
+  // Cambiar a una imagen de placeholder
+  imgElement.src = 'assets/images/image-not-found.png';
+  
+  // Actualizar el caption
+  const caption = imgElement.nextElementSibling;
+  if (caption && caption.classList.contains('image-caption')) {
+    caption.textContent = 'Error al cargar la imagen';
+  }
+  
+  console.error('Error al cargar la imagen desde URL');
+}
+
+private getBlobAsBase64(url: string): Promise<string> {
+  return fetch(url)
+    .then(response => response.blob())
+    .then(blob => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    });
+}
+
+recargarImagen(imagenID: number): void {
+  if (!imagenID) return;
+  
+  this.loading = true;
+  this.historiaClinicaService.obtenerImagenBase64(imagenID)
+    .pipe(finalize(() => this.loading = false))
+    .subscribe({
+      next: (base64) => {
+        if (this.historia && this.historia.metodoGrafico) {
+          this.historia.metodoGrafico.imagenBase64 = base64;
+        }
+      },
+      error: (error) => {
+        this.error = 'No se pudo cargar la imagen. ' + error.message;
       }
     });
 }

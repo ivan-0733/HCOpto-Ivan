@@ -72,198 +72,212 @@ const upload = multer({
 
 //Controlador para manejar la subida de imágenes
 const uploadHistoriaClinicaImage = async (req, res) => {
-    console.log('Inicio de uploadHistoriaClinicaImage');
+console.log('Inicio de uploadHistoriaClinicaImage');
+
+try {
+// Verificar si hay un archivo
+if (!req.file) {
+    console.warn('No se recibió ningún archivo');
+    return res.status(400).json({
+    status: 'error',
+    message: 'No se ha recibido ningún archivo'
+    });
+}
+
+console.log('Archivo recibido:', {
+    nombre: req.file.originalname,
+    tipo: req.file.mimetype,
+    tamaño: req.file.size,
+    ruta: req.file.path
+});
+
+// Obtener datos necesarios
+const historiaID = req.params.id;
+const seccionID = req.body.seccionID;
+const tipoImagenID = req.body.tipoImagenID;
+
+console.log('Datos recibidos:', { historiaID, seccionID, tipoImagenID });
+
+if (!historiaID) {
+    return res.status(400).json({
+    status: 'error',
+    message: 'ID de historia clínica no proporcionado'
+    });
+}
+
+if (!seccionID || !tipoImagenID) {
+    return res.status(400).json({
+    status: 'error',
+    message: 'Sección ID y Tipo Imagen ID son requeridos'
+    });
+}
+
+// Verificación de permisos sobre la historia clínica
+console.log('Verificando permisos sobre historia clínica:', historiaID);
+let historia;
+try {
+    [historia] = await db.query(
+    `SELECT PacienteID FROM HistorialesClinicos 
+    WHERE ID = ? AND AlumnoID = ?`,
+    [historiaID, req.usuario.AlumnoInfoID]
+    );
+    console.log('Resultado de verificación:', historia);
+} catch (dbError) {
+    console.error('Error en consulta de verificación:', dbError);
+    return res.status(500).json({
+    status: 'error',
+    code: 'DB_ERROR',
+    message: 'Error al verificar permisos sobre la historia clínica',
+    details: dbError.message
+    });
+}
+
+if (!historia?.length) {
+    console.warn('Acceso no autorizado a historia clínica', {
+    historiaID,
+    alumnoId: req.usuario.AlumnoInfoID
+    });
+    return res.status(403).json({
+    status: 'error',
+    code: 'FORBIDDEN_ACCESS',
+    message: 'No tienes permiso para modificar esta historia clínica o no existe'
+    });
+}
+
+// Determinar tipo de estudio
+console.log('Determinando tipo de estudio para sección:', seccionID);
+const getEstudioType = (sectionId) => {
+    const sectionMap = {
+    '7': STUDY_TYPES.GRID_AMSLER,
+    '9': STUDY_TYPES.CAMPIMETRIA,
+    '10': STUDY_TYPES.ALTERACIONES,
+    '11': STUDY_TYPES.ALTERACIONES,
+    '12': STUDY_TYPES.BINOCULARIDAD
+    };
+    return sectionMap[sectionId] || STUDY_TYPES.GENERAL;
+};
+
+const estudio = getEstudioType(seccionID);
+const pacienteId = historia[0].PacienteID;
+const alumnoId = req.usuario.AlumnoInfoID;
+
+console.log('Datos para guardar imagen:', {
+    estudio,
+    pacienteId,
+    alumnoId
+});
+
+// Procesar y guardar la imagen
+let result;
+try {
+    console.log('Iniciando guardado de imagen...');
+    result = await fileManager.saveImage(req.file, {
+    alumnoId,
+    pacienteId,
+    estudio,
+    originalName: req.file.originalname,
+    mimeType: req.file.mimetype
+    });
+    console.log('Resultado de guardado:', result);
+} catch (saveError) {
+    console.error('Error al guardar imagen:', saveError);
+    return res.status(500).json({
+    status: 'error',
+    code: 'FILE_SAVE_ERROR',
+    message: 'Error al guardar la imagen en el sistema',
+    details: saveError.message
+    });
+}
+
+// Registrar en base de datos
+let imageId;
+try {
+    console.log('Registrando imagen en base de datos...');
+    const [insertResult] = await db.query(
+    `INSERT INTO Imagenes 
+    (Ruta, Nombre, HistorialID, PacienteID, Tipo, FechaSubida, TamanoBytesH, TamanoBytesV, SeccionID, TipoImagenID)
+    VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)`,
+    [
+        result.path,                // Ruta
+        result.filename,            // Nombre (usando filename como nombre)
+        historiaID,                 // HistorialID
+        pacienteId,                 // PacienteID
+        req.file.mimetype,          // Tipo
+        req.file.size,              // TamanoBytesH 
+        0,                          // TamanoBytesV 
+        seccionID,                  // SeccionID
+        tipoImagenID                // TipoImagenID
+    ]
+    );
+
+    imageId = insertResult.insertId;
+    console.log('ID de imagen insertado:', imageId);
+
+    // Si es una imagen para Método Gráfico (seccionID = 12), actualizamos directamente
+    if (seccionID === '12') {
+    console.log('Actualizando directamente Método Gráfico con ID de imagen:', imageId);
     
-    try {
-        // Verificar si hay un archivo (debe ser procesado por el middleware de Multer en la ruta)
-        if (!req.file) {
-            console.warn('No se recibió ningún archivo');
-            return res.status(400).json({
-                status: 'error',
-                message: 'No se ha recibido ningún archivo'
-            });
-        }
-        
-        console.log('Archivo recibido:', {
-            nombre: req.file.originalname,
-            tipo: req.file.mimetype,
-            tamaño: req.file.size,
-            ruta: req.file.path
-        });
-        
-        // Obtener datos necesarios
-        const historiaID = req.params.id;
-        const seccionID = req.body.seccionID;
-        const tipoImagenID = req.body.tipoImagenID;
-        
-        console.log('Datos recibidos:', { historiaID, seccionID, tipoImagenID });
-        
-        if (!historiaID) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'ID de historia clínica no proporcionado'
-            });
-        }
-        
-        if (!seccionID || !tipoImagenID) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Sección ID y Tipo Imagen ID son requeridos'
-            });
-        }
-        
-        // // OPCIÓN SIMPLE: Para pruebas, solo devolver éxito
-        // return res.status(200).json({
-        //     status: 'success',
-        //     message: 'Archivo subido correctamente',
-        //     data: {
-        //         historiaID,
-        //         seccionID,
-        //         tipoImagenID,
-        //         filename: req.file.filename,
-        //         path: req.file.path,
-        //         size: req.file.size,
-        //         mimetype: req.file.mimetype
-        //     }
-        // });
-        // Verificación de permisos sobre la historia clínica
-        console.log('Verificando permisos sobre historia clínica:', historiaID);
-        let historia;
-        try {
-            [historia] = await db.query(
-                `SELECT PacienteID FROM HistorialesClinicos 
-                WHERE ID = ? AND AlumnoID = ?`,
-                [historiaID, req.usuario.AlumnoInfoID]
-            );
-            console.log('Resultado de verificación:', historia);
-        } catch (dbError) {
-            console.error('Error en consulta de verificación:', dbError);
-            return res.status(500).json({
-                status: 'error',
-                code: 'DB_ERROR',
-                message: 'Error al verificar permisos sobre la historia clínica',
-                details: dbError.message
-            });
-        }
+    // Verificar si existe un registro para esta historia
+    const [metodoGrafico] = await db.query(
+        'SELECT ID FROM MetodoGrafico WHERE HistorialID = ?',
+        [historiaID]
+    );
 
-        if (!historia?.length) {
-            console.warn('Acceso no autorizado a historia clínica', {
-                historiaID,
-                alumnoId: req.usuario.AlumnoInfoID
-            });
-            return res.status(403).json({
-                status: 'error',
-                code: 'FORBIDDEN_ACCESS',
-                message: 'No tienes permiso para modificar esta historia clínica o no existe'
-            });
-        }
-
-        // Determinar tipo de estudio
-        console.log('Determinando tipo de estudio para sección:', seccionID);
-        const getEstudioType = (sectionId) => {
-            const sectionMap = {
-                '7': STUDY_TYPES.GRID_AMSLER,
-                '9': STUDY_TYPES.CAMPIMETRIA,
-                '10': STUDY_TYPES.ALTERACIONES,
-                '11': STUDY_TYPES.ALTERACIONES,
-                '12': STUDY_TYPES.BINOCULARIDAD
-            };
-            return sectionMap[sectionId] || STUDY_TYPES.GENERAL;
-        };
-
-        const estudio = getEstudioType(seccionID);
-        const pacienteId = historia[0].PacienteID;
-        const alumnoId = req.usuario.AlumnoInfoID;
-
-        console.log('Datos para guardar imagen:', {
-            estudio,
-            pacienteId,
-            alumnoId
-        });
-
-        // Procesar y guardar la imagen
-        let result;
-        try {
-            console.log('Iniciando guardado de imagen...');
-            result = await fileManager.saveImage(req.file, {
-                alumnoId,
-                pacienteId,
-                estudio,
-                originalName: req.file.originalname,
-                mimeType: req.file.mimetype
-            });
-            console.log('Resultado de guardado:', result);
-        } catch (saveError) {
-            console.error('Error al guardar imagen:', saveError);
-            return res.status(500).json({
-                status: 'error',
-                code: 'FILE_SAVE_ERROR',
-                message: 'Error al guardar la imagen en el sistema',
-                details: saveError.message
-            });
-        }
-
-        // Registrar en base de datos
-        let imageId;
-        try {
-            console.log('Registrando imagen en base de datos...');
-            const [insertResult] = await db.query(
-                `INSERT INTO Imagenes 
-                (Ruta, Nombre, HistorialID, PacienteID, Tipo, FechaSubida, TamanoBytesH, TamanoBytesV, SeccionID, TipoImagenID)
-                VALUES (?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)`,
-                [
-                    result.path,                // Ruta
-                    result.filename,            // Nombre (usando filename como nombre)
-                    historiaID,                 // HistorialID
-                    pacienteId,                 // PacienteID
-                    req.file.mimetype,          // Tipo
-                    req.file.size,              // TamanoBytesH 
-                    0,                          // TamanoBytesV 
-                    seccionID,                  // SeccionID
-                    tipoImagenID                // TipoImagenID
-                ]
-            );
-
-            imageId = insertResult.insertId;
-            console.log('ID de imagen insertado:', imageId);
-        } catch (dbError) {
-            console.error('Error al insertar en BD:', dbError);
-            console.log('Intentando eliminar archivo guardado...');
-            await fileManager.deleteFile(result.path).catch(err => {
-                console.error('Error al eliminar archivo después de fallo en BD:', err);
-            });
-            return res.status(500).json({
-                status: 'error',
-                code: 'DB_INSERT_ERROR',
-                message: 'Error al registrar la imagen en la base de datos',
-                details: dbError.message
-            });
-        }
-
-        // Respuesta exitosa
-        console.log('Imagen subida y registrada exitosamente:', { imageId });
-        return res.status(201).json({
-            status: 'success',
-            message: 'Imagen subida y registrada correctamente',
-            data: {
-                imageId,
-                path: result.path,
-                filename: result.filename,
-                estudio,
-                mimeType: req.file.mimetype,
-                size: req.file.size,
-                createdAt: new Date().toISOString()
-            }
-        });
-        
-    } catch (error) {
-        console.error('Error en uploadHistoriaClinicaImage:', error);
-        return res.status(500).json({
-            status: 'error',
-            message: 'Error al procesar la solicitud',
-            error: error.message
-        });
+    if (metodoGrafico.length === 0) {
+        // Crear nuevo registro con la referencia a la imagen
+        await db.query(
+        `INSERT INTO MetodoGrafico (HistorialID, ImagenID) VALUES (?, ?)`,
+        [historiaID, imageId]
+        );
+        console.log('Creado nuevo registro en MetodoGrafico con ImagenID:', imageId);
+    } else {
+        // Actualizar el registro existente
+        await db.query(
+        `UPDATE MetodoGrafico SET ImagenID = ? WHERE HistorialID = ?`,
+        [imageId, historiaID]
+        );
+        console.log('Actualizado registro existente en MetodoGrafico con ImagenID:', imageId);
     }
+    }
+    
+} catch (dbError) {
+    console.error('Error al insertar en BD:', dbError);
+    console.log('Intentando eliminar archivo guardado...');
+    await fileManager.deleteFile(result.path).catch(err => {
+    console.error('Error al eliminar archivo después de fallo en BD:', err);
+    });
+    return res.status(500).json({
+    status: 'error',
+    code: 'DB_INSERT_ERROR',
+    message: 'Error al registrar la imagen en la base de datos',
+    details: dbError.message
+    });
+}
+
+// Respuesta exitosa
+console.log('Imagen subida y registrada exitosamente:', { imageId });
+return res.status(201).json({
+    status: 'success',
+    message: 'Imagen subida y registrada correctamente',
+    data: {
+    imageId,
+    path: result.path,
+    filename: result.filename,
+    estudio,
+    mimeType: req.file.mimetype,
+    size: req.file.size,
+    createdAt: new Date().toISOString()
+    }
+});
+
+} catch (error) {
+console.error('Error en uploadHistoriaClinicaImage:', error);
+return res.status(500).json({
+    status: 'error',
+    message: 'Error al procesar la solicitud',
+    error: error.message
+});
+}
 };
 
 // Controlador para obtener una imagen por su ID (en uploadController.js)

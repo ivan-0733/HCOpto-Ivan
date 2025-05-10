@@ -81,6 +81,9 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       sinRxLejosODMAR: [''],
       sinRxLejosOIMAR: [''],
       sinRxLejosAOMAR: [''],
+      sinRxLejosODDecimal: [''],
+      sinRxLejosOIDecimal: [''],
+      sinRxLejosAODecimal: [''],
       
       // Con RX Anterior Lejos
       conRxLejosODSnellen: [''],
@@ -92,6 +95,9 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       conRxLejosODMAR: [''],
       conRxLejosOIMAR: [''],
       conRxLejosAOMAR: [''],
+      conRxLejosODDecimal: [''],
+      conRxLejosOIDecimal: [''],
+      conRxLejosAODecimal: [''],
       
       // Sin RX Cerca
       sinRxCercaODM: [''],
@@ -120,9 +126,6 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       capacidadVisualOI: [''],
       capacidadVisualAO: [''],
       diametroMM: [''],
-      
-      // Hidden field to keep the original tipoMedicion
-      tipoMedicion: ['SIN_RX_LEJOS']
     });
 
     // Formulario de Lensometría
@@ -143,74 +146,76 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
   prepareAgudezaVisualData(): any[] {
     const formData = this.agudezaVisual.value;
     
-    // Crear un array para los diferentes tipos de medición
+    // Crear un array con los diferentes tipos de medición
+    // Ya no filtramos elementos vacíos para que siempre se envíen los 5 tipos
     return [
       // 1. SIN_RX_LEJOS
       {
         tipoMedicion: 'SIN_RX_LEJOS',
-        ojoDerechoSnellen: formData.sinRxLejosODSnellen,
-        ojoIzquierdoSnellen: formData.sinRxLejosOISnellen,
-        ambosOjosSnellen: formData.sinRxLejosAOSnellen,
-        ojoDerechoMetros: formData.sinRxLejosODMetros,
-        ojoIzquierdoMetros: formData.sinRxLejosOIMetros,
-        ambosOjosMetros: formData.sinRxLejosAOMetros,
-        ojoDerechoMAR: formData.sinRxLejosODMAR,
-        ojoIzquierdoMAR: formData.sinRxLejosOIMAR,
-        ambosOjosMAR: formData.sinRxLejosAOMAR
+        ojoDerechoSnellen: formData.sinRxLejosODSnellen || '',
+        ojoIzquierdoSnellen: formData.sinRxLejosOISnellen || '',
+        ambosOjosSnellen: formData.sinRxLejosAOSnellen || '',
+        ojoDerechoMetros: formData.sinRxLejosODMetros || '',
+        ojoIzquierdoMetros: formData.sinRxLejosOIMetros || '',
+        ambosOjosMetros: formData.sinRxLejosAOMetros || '',
+        ojoDerechoDecimal: formData.sinRxLejosODDecimal || '',
+        ojoIzquierdoDecimal: formData.sinRxLejosOIDecimal || '',
+        ambosOjosDecimal: formData.sinRxLejosAODecimal || '',
+        ojoDerechoMAR: formData.sinRxLejosODMAR || '',
+        ojoIzquierdoMAR: formData.sinRxLejosOIMAR || '',
+        ambosOjosMAR: formData.sinRxLejosAOMAR || ''
       },
       // 2. CON_RX_ANTERIOR_LEJOS 
       {
         tipoMedicion: 'CON_RX_ANTERIOR_LEJOS',
-        ojoDerechoSnellen: formData.conRxLejosODSnellen,
-        ojoIzquierdoSnellen: formData.conRxLejosOISnellen,
-        ambosOjosSnellen: formData.conRxLejosAOSnellen,
-        ojoDerechoMetros: formData.conRxLejosODMetros,
-        ojoIzquierdoMetros: formData.conRxLejosOIMetros,
-        ambosOjosMetros: formData.conRxLejosAOMetros,
-        ojoDerechoMAR: formData.conRxLejosODMAR,
-        ojoIzquierdoMAR: formData.conRxLejosOIMAR,
-        ambosOjosMAR: formData.conRxLejosAOMAR
+        ojoDerechoSnellen: formData.conRxLejosODSnellen || '',
+        ojoIzquierdoSnellen: formData.conRxLejosOISnellen || '',
+        ambosOjosSnellen: formData.conRxLejosAOSnellen || '',
+        ojoDerechoMetros: formData.conRxLejosODMetros || '',
+        ojoIzquierdoMetros: formData.conRxLejosOIMetros || '',
+        ambosOjosMetros: formData.conRxLejosAOMetros || '',
+        ojoDerechoDecimal: formData.conRxLejosODDecimal || '',
+        ojoIzquierdoDecimal: formData.conRxLejosOIDecimal || '',
+        ambosOjosDecimal: formData.conRxLejosAODecimal || '',
+        ojoDerechoMAR: formData.conRxLejosODMAR || '',
+        ojoIzquierdoMAR: formData.conRxLejosOIMAR || '',
+        ambosOjosMAR: formData.conRxLejosAOMAR || ''
       },
       // 3. SIN_RX_CERCA
       {
         tipoMedicion: 'SIN_RX_CERCA',
-        ojoDerechoM: formData.sinRxCercaODM,
-        ojoIzquierdoM: formData.sinRxCercaOIM,
-        ambosOjosM: formData.sinRxCercaAOM,
-        ojoDerechoJeager: formData.sinRxCercaODJeager,
-        ojoIzquierdoJeager: formData.sinRxCercaOIJeager,
-        ambosOjosJeager: formData.sinRxCercaAOJeager,
-        ojoDerechoPuntos: formData.sinRxCercaODPuntos,
-        ojoIzquierdoPuntos: formData.sinRxCercaOIPuntos,
-        ambosOjosPuntos: formData.sinRxCercaAOPuntos
+        ojoDerechoM: formData.sinRxCercaODM || '',
+        ojoIzquierdoM: formData.sinRxCercaOIM || '',
+        ambosOjosM: formData.sinRxCercaAOM || '',
+        ojoDerechoJeager: formData.sinRxCercaODJeager || '',
+        ojoIzquierdoJeager: formData.sinRxCercaOIJeager || '',
+        ambosOjosJeager: formData.sinRxCercaAOJeager || '',
+        ojoDerechoPuntos: formData.sinRxCercaODPuntos || '',
+        ojoIzquierdoPuntos: formData.sinRxCercaOIPuntos || '',
+        ambosOjosPuntos: formData.sinRxCercaAOPuntos || ''
       },
       // 4. CON_RX_ANTERIOR_CERCA
       {
         tipoMedicion: 'CON_RX_ANTERIOR_CERCA',
-        ojoDerechoM: formData.conRxCercaODM,
-        ojoIzquierdoM: formData.conRxCercaOIM,
-        ambosOjosM: formData.conRxCercaAOM,
-        ojoDerechoJeager: formData.conRxCercaODJeager,
-        ojoIzquierdoJeager: formData.conRxCercaOIJeager,
-        ambosOjosJeager: formData.conRxCercaAOJeager,
-        ojoDerechoPuntos: formData.conRxCercaODPuntos,
-        ojoIzquierdoPuntos: formData.conRxCercaOIPuntos,
-        ambosOjosPuntos: formData.conRxCercaAOPuntos
+        ojoDerechoM: formData.conRxCercaODM || '',
+        ojoIzquierdoM: formData.conRxCercaOIM || '',
+        ambosOjosM: formData.conRxCercaAOM || '',
+        ojoDerechoJeager: formData.conRxCercaODJeager || '',
+        ojoIzquierdoJeager: formData.conRxCercaOIJeager || '',
+        ambosOjosJeager: formData.conRxCercaAOJeager || '',
+        ojoDerechoPuntos: formData.conRxCercaODPuntos || '',
+        ojoIzquierdoPuntos: formData.conRxCercaOIPuntos || '',
+        ambosOjosPuntos: formData.conRxCercaAOPuntos || ''
       },
       // 5. CAP_VISUAL (Capacidad Visual)
       {
         tipoMedicion: 'CAP_VISUAL',
-        diametroMM: formData.diametroMM,
-        capacidadVisualOD: formData.capacidadVisualOD,
-        capacidadVisualOI: formData.capacidadVisualOI,
-        capacidadVisualAO: formData.capacidadVisualAO
+        diametroMM: formData.diametroMM || '',
+        capacidadVisualOD: formData.capacidadVisualOD || '',
+        capacidadVisualOI: formData.capacidadVisualOI || '',
+        capacidadVisualAO: formData.capacidadVisualAO || ''
       }
-    ].filter(item => {
-      // Solo incluir los tipos que tengan al menos un valor
-      return Object.values(item).some(val => 
-        val !== null && val !== undefined && val !== ''
-      );
-    });
+    ];
   }
 
   cargarDatosExistentes(): void {
@@ -238,6 +243,9 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
                   sinRxLejosODMetros: agudeza.OjoDerechoMetros || agudeza.ojoDerechoMetros || '',
                   sinRxLejosOIMetros: agudeza.OjoIzquierdoMetros || agudeza.ojoIzquierdoMetros || '',
                   sinRxLejosAOMetros: agudeza.AmbosOjosMetros || agudeza.ambosOjosMetros || '',
+                  sinRxLejosODDecimal: agudeza.OjoDerechoDecimal || agudeza.ojoDerechoDecimal || '',
+                  sinRxLejosOIDecimal: agudeza.OjoIzquierdoDecimal || agudeza.ojoIzquierdoDecimal || '',
+                  sinRxLejosAODecimal: agudeza.AmbosOjosDecimal || agudeza.ambosOjosDecimal || '',
                   sinRxLejosODMAR: agudeza.OjoDerechoMAR || agudeza.ojoDerechoMAR || '',
                   sinRxLejosOIMAR: agudeza.OjoIzquierdoMAR || agudeza.ojoIzquierdoMAR || '',
                   sinRxLejosAOMAR: agudeza.AmbosOjosMAR || agudeza.ambosOjosMAR || ''
@@ -250,6 +258,9 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
                   conRxLejosODMetros: agudeza.OjoDerechoMetros || agudeza.ojoDerechoMetros || '',
                   conRxLejosOIMetros: agudeza.OjoIzquierdoMetros || agudeza.ojoIzquierdoMetros || '',
                   conRxLejosAOMetros: agudeza.AmbosOjosMetros || agudeza.ambosOjosMetros || '',
+                  conRxLejosODDecimal: agudeza.OjoDerechoDecimal || agudeza.ojoDerechoDecimal || '',
+                  conRxLejosOIDecimal: agudeza.OjoIzquierdoDecimal || agudeza.ojoIzquierdoDecimal || '',
+                  conRxLejosAODecimal: agudeza.AmbosOjosDecimal || agudeza.ambosOjosDecimal || '',
                   conRxLejosODMAR: agudeza.OjoDerechoMAR || agudeza.ojoDerechoMAR || '',
                   conRxLejosOIMAR: agudeza.OjoIzquierdoMAR || agudeza.ojoIzquierdoMAR || '',
                   conRxLejosAOMAR: agudeza.AmbosOjosMAR || agudeza.ambosOjosMAR || ''
@@ -325,8 +336,6 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
   }
 
   getAgudezaData(): any {
-    return {
-      agudezaVisual: this.prepareAgudezaVisualData()
-    };
+    return this.prepareAgudezaVisualData();
   }
 }
