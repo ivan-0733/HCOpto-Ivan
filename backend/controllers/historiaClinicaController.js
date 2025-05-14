@@ -45,25 +45,6 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
   });
 }),
 
-/**
- * Crear una nueva historia clínica
- */
-// crearHistoriaClinica: catchAsync(async (req, res) => {
-// const alumnoId = req.usuario.AlumnoInfoID;
-
-// const datosHistoria = {
-//     ...req.body,
-//     alumnoID: alumnoId
-// };
-
-// const nuevaHistoria = await historiaClinicaService.crearHistoriaClinica(datosHistoria);
-
-// res.status(201).json({
-//     status: 'success',
-//     data: nuevaHistoria
-// });
-// }),
-
 crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
   // 1. Obtener ID del alumno desde el token
   const alumnoId = req.usuario.AlumnoInfoID;
@@ -151,14 +132,6 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
     });
   }
 }),
-
-// obtenerPlantillaHistoriaClinica: catchAsync(async (req, res) => {
-//     res.status(200).json({
-//     status: 'success',
-//     data: plantilla
-//     });
-// }),
-
 
 /**
  * Actualizar una sección específica de una historia clínica

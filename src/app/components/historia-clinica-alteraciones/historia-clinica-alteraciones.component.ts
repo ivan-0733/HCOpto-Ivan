@@ -41,20 +41,9 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
   error = '';
   success = '';
 
-  // Manejo de imágenes
+  // Manejo de imágenes (solo para campimetría y oftalmoscopía)
   imagenPreviews: {[key: string]: string | null} = {
-    gridAmslerOD: null,
-    gridAmslerOI: null,
-    campimetriaOD: null,
-    campimetriaOI: null,
-    
-    biomicroscopiaOD1: null,
-    biomicroscopiaOI1: null,
-    biomicroscopiaOD2: null,
-    biomicroscopiaOI2: null,
-    biomicroscopiaOD3: null,
-    biomicroscopiaOI3: null,
-
+    campimetria: null,
     oftalmoscopiaOD: null,
     oftalmoscopiaOI: null
   };
@@ -89,7 +78,7 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     // Inicializar las vistas previas de imágenes si se proporcionan
     if (this.initialImagenPreviews) {
       Object.keys(this.initialImagenPreviews).forEach(key => {
-        if (this.initialImagenPreviews[key]) {
+        if (this.initialImagenPreviews[key] && this.imagenPreviews.hasOwnProperty(key)) {
           this.imagenPreviews[key] = this.initialImagenPreviews[key];
           this.actualizarFormularioConImagen(key, this.initialImagenPreviews[key]);
         }
@@ -108,7 +97,7 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     if (changes['initialImagenPreviews'] && changes['initialImagenPreviews'].currentValue) {
       Object.keys(changes['initialImagenPreviews'].currentValue).forEach(key => {
         const newValue = changes['initialImagenPreviews'].currentValue[key];
-        if (newValue && this.imagenPreviews[key] !== newValue) {
+        if (newValue && this.imagenPreviews.hasOwnProperty(key) && this.imagenPreviews[key] !== newValue) {
           this.imagenPreviews[key] = newValue;
           this.actualizarFormularioConImagen(key, newValue);
         }
@@ -117,17 +106,13 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
   }
 
   private initForms(): void {
-    // Formulario de Grid de Amsler
+    // Formulario de Grid de Amsler (sin imágenes)
     this.gridAmslerForm = this.fb.group({
       numeroCartilla: [''],
       ojoDerechoSensibilidadContraste: [''],
       ojoIzquierdoSensibilidadContraste: [''],
       ojoDerechoVisionCromatica: [''],
-      ojoIzquierdoVisionCromatica: [''],
-      ojoDerechoImagenID: [null],
-      ojoIzquierdoImagenID: [null],
-      ojoDerechoImagenBase64: [null], // Campo para base64
-      ojoIzquierdoImagenBase64: [null] // Campo para base64
+      ojoIzquierdoVisionCromatica: ['']
     });
   
     // Formulario de Tonometría
@@ -148,18 +133,16 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       ojoIzquierdoPIOCorregida: [null]
     });
   
-    // Formulario de Campimetría
+    // Formulario de Campimetría (con una imagen)
     this.campimetriaForm = this.fb.group({
       distancia: [null],
       tamanoColorIndice: [''],
       tamanoColorPuntoFijacion: [''],
-      ojoDerechoImagenID: [null],
-      ojoIzquierdoImagenID: [null],
-      ojoDerechoImagenBase64: [null], // Campo para base64
-      ojoIzquierdoImagenBase64: [null] // Campo para base64
+      imagenID: [null],        // ID de la imagen en la BD
+      imagenBase64: [null]     // Base64 de la imagen para previsualización
     });
   
-    // Formulario de Biomicroscopía (simplificado por brevedad)
+    // Formulario de Biomicroscopía (sin imágenes)
     this.biomicroscopiaForm = this.fb.group({
       ojoDerechoPestanas: [''],
       ojoIzquierdoPestanas: [''],
@@ -190,25 +173,10 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       ojoDerechoIris: [''],
       ojoIzquierdoIris: [''],
       ojoDerechoCristalino: [''],
-      ojoIzquierdoCristalino: [''],
-      // IDs de imagen
-      ojoDerechoImagenID: [null],
-      ojoIzquierdoImagenID: [null],
-      ojoDerechoImagenID2: [null],
-      ojoIzquierdoImagenID2: [null],
-      ojoDerechoImagenID3: [null],
-      ojoIzquierdoImagenID3: [null],  
-      // Imágenes en base64
-        // Imágenes en base64
-      ojoDerechoImagenBase64: [null],
-      ojoIzquierdoImagenBase64: [null],
-      ojoDerechoImagenBase64_2: [null],
-      ojoIzquierdoImagenBase64_2: [null],
-      ojoDerechoImagenBase64_3: [null],
-      ojoIzquierdoImagenBase64_3: [null]
+      ojoIzquierdoCristalino: ['']
     });
   
-    // Formulario de Oftalmoscopía (simplificado por brevedad)
+    // Formulario de Oftalmoscopía (con imágenes)
     this.oftalmoscopiaForm = this.fb.group({
       ojoDerechoPapila: [''],
       ojoIzquierdoPapila: [''],
@@ -248,17 +216,15 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (historia) => {
-          // Cargar datos de Grid de Amsler
+          // Cargar datos de Grid de Amsler (sin imágenes)
           if (historia.gridAmsler) {
-            this.gridAmslerForm.patchValue(historia.gridAmsler);
-            
-            // Configurar previsualizaciones de imágenes si existen
-            if (historia.gridAmsler.ojoDerechoImagenBase64) {
-              this.imagenPreviews['gridAmslerOD'] = historia.gridAmsler.ojoDerechoImagenBase64;
-            }
-            if (historia.gridAmsler.ojoIzquierdoImagenBase64) {
-              this.imagenPreviews['gridAmslerOI'] = historia.gridAmsler.ojoIzquierdoImagenBase64;
-            }
+            this.gridAmslerForm.patchValue({
+              numeroCartilla: historia.gridAmsler.numeroCartilla,
+              ojoDerechoSensibilidadContraste: historia.gridAmsler.ojoDerechoSensibilidadContraste,
+              ojoIzquierdoSensibilidadContraste: historia.gridAmsler.ojoIzquierdoSensibilidadContraste,
+              ojoDerechoVisionCromatica: historia.gridAmsler.ojoDerechoVisionCromatica,
+              ojoIzquierdoVisionCromatica: historia.gridAmsler.ojoIzquierdoVisionCromatica
+            });
           }
 
           // Cargar datos de Tonometría
@@ -271,62 +237,46 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
             this.paquimetriaForm.patchValue(historia.paquimetria);
           }
 
-          // Cargar datos de Campimetría
+          // Cargar datos de Campimetría (con imagen)
           if (historia.campimetria) {
-            this.campimetriaForm.patchValue(historia.campimetria);
+            this.campimetriaForm.patchValue({
+              distancia: historia.campimetria.distancia,
+              tamanoColorIndice: historia.campimetria.tamanoColorIndice,
+              tamanoColorPuntoFijacion: historia.campimetria.tamanoColorPuntoFijacion,
+              imagenID: historia.campimetria.imagenID
+            });
             
-            if (historia.campimetria.ojoDerechoImagenBase64) {
-              this.imagenPreviews['campimetriaOD'] = historia.campimetria.ojoDerechoImagenBase64;
+            // Si hay base64, actualizar la previsualización
+            if (historia.campimetria.imagenBase64) {
+              this.imagenPreviews['campimetria'] = historia.campimetria.imagenBase64;
             }
-            if (historia.campimetria.ojoIzquierdoImagenBase64) {
-              this.imagenPreviews['campimetriaOI'] = historia.campimetria.ojoIzquierdoImagenBase64;
+            // Si hay ID de imagen pero no base64, intentar cargar la imagen
+            else if (historia.campimetria.imagenID) {
+              this.cargarImagenDesdeServidor(historia.campimetria.imagenID, 'campimetria');
             }
           }
 
-         // Cargar datos de Biomicroscopía
+         // Cargar datos de Biomicroscopía (sin imágenes)
         if (historia.biomicroscopia) {
           this.biomicroscopiaForm.patchValue(historia.biomicroscopia);
-          
-          // Primera imagen OD
-          if (historia.biomicroscopia.ojoDerechoImagenBase64) {
-            this.imagenPreviews['biomicroscopiaOD1'] = historia.biomicroscopia.ojoDerechoImagenBase64;
-          }
-          
-          // Primera imagen OI
-          if (historia.biomicroscopia.ojoIzquierdoImagenBase64) {
-            this.imagenPreviews['biomicroscopiaOI1'] = historia.biomicroscopia.ojoIzquierdoImagenBase64;
-          }
-          
-          // Segunda imagen OD
-          if (historia.biomicroscopia.ojoDerechoImagenBase64_2) {
-            this.imagenPreviews['biomicroscopiaOD2'] = historia.biomicroscopia.ojoDerechoImagenBase64_2;
-          }
-          
-          // Segunda imagen OI
-          if (historia.biomicroscopia.ojoIzquierdoImagenBase64_2) {
-            this.imagenPreviews['biomicroscopiaOI2'] = historia.biomicroscopia.ojoIzquierdoImagenBase64_2;
-          }
-          
-          // Tercera imagen OD
-          if (historia.biomicroscopia.ojoDerechoImagenBase64_3) {
-            this.imagenPreviews['biomicroscopiaOD3'] = historia.biomicroscopia.ojoDerechoImagenBase64_3;
-          }
-          
-          // Tercera imagen OI
-          if (historia.biomicroscopia.ojoIzquierdoImagenBase64_3) {
-            this.imagenPreviews['biomicroscopiaOI3'] = historia.biomicroscopia.ojoIzquierdoImagenBase64_3;
-          }
         }
 
-          // Cargar datos de Oftalmoscopía
+          // Cargar datos de Oftalmoscopía (con imágenes)
           if (historia.oftalmoscopia) {
             this.oftalmoscopiaForm.patchValue(historia.oftalmoscopia);
             
             if (historia.oftalmoscopia.ojoDerechoImagenBase64) {
               this.imagenPreviews['oftalmoscopiaOD'] = historia.oftalmoscopia.ojoDerechoImagenBase64;
+            } 
+            else if (historia.oftalmoscopia.ojoDerechoImagenID) {
+              this.cargarImagenDesdeServidor(historia.oftalmoscopia.ojoDerechoImagenID, 'oftalmoscopiaOD');
             }
+
             if (historia.oftalmoscopia.ojoIzquierdoImagenBase64) {
               this.imagenPreviews['oftalmoscopiaOI'] = historia.oftalmoscopia.ojoIzquierdoImagenBase64;
+            }
+            else if (historia.oftalmoscopia.ojoIzquierdoImagenID) {
+              this.cargarImagenDesdeServidor(historia.oftalmoscopia.ojoIzquierdoImagenID, 'oftalmoscopiaOI');
             }
           }
 
@@ -348,41 +298,43 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       });
   }
 
-  // // Método para manejar la selección de imágenes
-  // onImageSelected(event: Event, imageType: string): void {
-  //   const input = event.target as HTMLInputElement;
-  //   if (input.files && input.files[0]) {
-  //     const file = input.files[0];
-      
-  //     // Guardar referencia al archivo
-  //     this.selectedFiles[imageType] = file;
-      
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       // Almacenar la previsualización
-  //       const base64 = reader.result as string;
-  //       this.imagenPreviews[imageType] = base64;
-        
-  //       // Actualizar el formulario correspondiente
-  //       this.actualizarFormularioConImagen(imageType, base64);
-        
-  //       // Emitir al componente padre
-  //       this.imageBase64Change.emit({
-  //         base64: base64,
-  //         imageType: imageType
-  //       });
-        
-  //       // Emitir información del archivo
-  //       this.fileSelected.emit({
-  //         file: file,
-  //         fileName: file.name,
-  //         imageType: imageType
-  //       });
-  //     };
-  //     reader.readAsDataURL(file);
-  //   }
-  // }
+  // Método para cargar una imagen desde el servidor usando su ID
+  cargarImagenDesdeServidor(imagenID: number, tipoImagen: string): void {
+    if (!imagenID) return;
+    
+    this.historiaService.obtenerImagenBase64(imagenID)
+      .subscribe({
+        next: (base64) => {
+          if (base64 && typeof base64 === 'string') {
+            // Asegurar que la cadena tenga el formato correcto de base64
+            if (!base64.startsWith('data:image')) {
+              base64 = `data:image/png;base64,${base64}`;
+            }
+            
+            // Actualizar la vista previa
+            this.imagenPreviews[tipoImagen] = base64;
+            
+            // Emitir el cambio para que el componente padre lo sepa
+            this.imageBase64Change.emit({
+              base64: this.imagenPreviews[tipoImagen],
+              imageType: tipoImagen
+            });
+            
+            // Actualizar el formulario correspondiente
+            this.actualizarFormularioConImagen(tipoImagen, base64);
+            
+            console.log(`Imagen de ${tipoImagen} cargada correctamente`);
+          } else {
+            console.error(`La respuesta no contiene datos válidos de imagen para ${tipoImagen}`);
+          }
+        },
+        error: (error) => {
+          console.error(`Error al cargar la imagen de ${tipoImagen}:`, error);
+        }
+      });
+  }
 
+  // Método para manejar la selección de imágenes
   onImageSelected(event: Event, imageType: string): void {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) {
@@ -416,7 +368,7 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
         const base64 = reader.result as string;
         this.imagenPreviews[imageType] = base64;
         
-        // Actualizar el formulario correspondiente solo para previsualización
+        // Actualizar el formulario correspondiente
         this.actualizarFormularioConImagen(imageType, base64);
         
         // Emitir al componente padre para coordinar previsualizaciones
@@ -447,7 +399,6 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     reader.readAsDataURL(file);
   }
   
-
   guardarDeteccionAlteraciones(): void {
     if (!this.historiaId) {
       this.error = 'No se ha podido identificar la historia clínica.';
@@ -493,26 +444,9 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
 
   // Método para actualizar todos los formularios con las imágenes actuales
   private actualizarFormulariosConImagenesActuales(): void {
-    // Grid de Amsler
-    this.gridAmslerForm.patchValue({
-      ojoDerechoImagenBase64: this.imagenPreviews['gridAmslerOD'],
-      ojoIzquierdoImagenBase64: this.imagenPreviews['gridAmslerOI']
-    });
-
-    // Campimetría
+    // Campimetría (una sola imagen)
     this.campimetriaForm.patchValue({
-      ojoDerechoImagenBase64: this.imagenPreviews['campimetriaOD'],
-      ojoIzquierdoImagenBase64: this.imagenPreviews['campimetriaOI']
-    });
-
-    // Biomicroscopía
-    this.biomicroscopiaForm.patchValue({
-      ojoDerechoImagenBase64: this.imagenPreviews['biomicroscopiaOD1'],
-      ojoIzquierdoImagenBase64: this.imagenPreviews['biomicroscopiaOI1'],
-      ojoDerechoImagenBase64_2: this.imagenPreviews['biomicroscopiaOD2'],
-      ojoIzquierdoImagenBase64_2: this.imagenPreviews['biomicroscopiaOI2'],
-      ojoDerechoImagenBase64_3: this.imagenPreviews['biomicroscopiaOD3'],
-      ojoIzquierdoImagenBase64_3: this.imagenPreviews['biomicroscopiaOI3']
+      imagenBase64: this.imagenPreviews['campimetria']
     });
 
     // Oftalmoscopía
@@ -521,20 +455,6 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       ojoIzquierdoImagenBase64: this.imagenPreviews['oftalmoscopiaOI']
     });
   }
-
-  // // Método asíncrono para subir todas las imágenes
-  // private async subirImagenes(): Promise<void> {
-  //   const promises: Promise<void>[] = [];
-    
-  //   Object.keys(this.selectedFiles).forEach(imageType => {
-  //     const file = this.selectedFiles[imageType];
-  //     if (file) {
-  //       promises.push(this.subirImagen(imageType, file));
-  //     }
-  //   });
-    
-  //   await Promise.all(promises);
-  // }
 
   private async subirImagenes(): Promise<void> {
     if (!this.historiaId || Object.keys(this.selectedFiles).length === 0) {
@@ -545,7 +465,6 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     this.error = '';
     this.success = '';
   
-    // Cambiamos el tipo de las promesas a Promise<any> para mayor flexibilidad
     const promises: Promise<any>[] = [];
     const errores: string[] = [];
     const exitos: string[] = [];
@@ -553,17 +472,16 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     Object.keys(this.selectedFiles).forEach(imageType => {
       const file = this.selectedFiles[imageType];
       if (file) {
-        // Aseguramos que cada promise resuelva a void explícitamente
         promises.push(
           this.subirImagen(imageType, file)
             .then((result) => {
               exitos.push(imageType);
-              return; // Aseguramos retorno void explícito
+              return;
             })
             .catch((error: unknown) => {
               const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
               errores.push(`${imageType}: ${errorMessage}`);
-              return; // Aseguramos retorno void explícito
+              return;
             })
         );
       }
@@ -589,44 +507,52 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
   }
   
   // Método para subir una imagen específica
-  private async subirImagen(imageType: string, file: File): Promise<void> {
-    if (!this.historiaId) return;
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('seccionID', this.getSeccionIdByImageType(imageType));
-    formData.append('tipoImagenID', this.getTipoImagenIdByImageType(imageType));
-    
-    return new Promise<void>((resolve, reject) => {
-      this.historiaService.subirImagen(this.historiaId!, formData)
-        .subscribe({
-          next: (response: {imageId?: number}) => {
-            if (response && response.imageId) {
-              this.actualizarImagenId(response.imageId, imageType);
-            }
-            resolve();
-          },
-          error: (error: any) => {
-            console.error(`Error al subir imagen ${imageType}:`, error);
-            reject(error);
-          }
-        });
-    });
+private async subirImagen(imageType: string, file: File): Promise<void> {
+  if (!this.historiaId) return;
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  // Asignar la sección y tipo de imagen correcto según el tipo
+  if (imageType === 'campimetria') {
+    formData.append('seccionID', '9');  // ID para sección Campimetría
+    formData.append('tipoImagenID', '3'); // ID para tipo Campimetría
+  } else if (imageType === 'oftalmoscopiaOD' || imageType === 'oftalmoscopiaOI') {
+    formData.append('seccionID', '11'); // ID para sección Oftalmoscopía
+    formData.append('tipoImagenID', '5'); // ID para tipo Oftalmoscopía
+  } else {
+    console.error('Tipo de imagen no reconocido:', imageType);
+    return Promise.reject('Tipo de imagen no válido');
   }
+  
+  return new Promise<void>((resolve, reject) => {
+    this.historiaService.subirImagen(this.historiaId!, formData)
+      .subscribe({
+        next: (response: {imageId?: number}) => {
+          if (response && response.imageId) {
+            // Actualizar el ID de imagen en el formulario correspondiente
+            this.actualizarImagenId(response.imageId, imageType);
+            resolve();
+          } else {
+            console.warn('No se obtuvo ID de imagen en la respuesta');
+            resolve();
+          }
+        },
+        error: (error: any) => {
+          console.error(`Error al subir imagen ${imageType}:`, error);
+          reject(error);
+        }
+      });
+  });
+}
+
+
 
   // Obtener sección ID según el tipo de imagen
   private getSeccionIdByImageType(imageType: string): string {
     switch (imageType) {
-      case 'gridAmslerOD':
-      case 'gridAmslerOI':
-        return '7'; // ID de sección Grid de Amsler
-      case 'campimetriaOD':
-      case 'campimetriaOI':
+      case 'campimetria':
         return '9'; // ID de sección Campimetría
-      case 'biomicroscopiaImg1':
-      case 'biomicroscopiaImg2':
-      case 'biomicroscopiaImg3':
-        return '10'; // ID de sección Biomicroscopía
       case 'oftalmoscopiaOD':
       case 'oftalmoscopiaOI':
         return '11'; // ID de sección Oftalmoscopía
@@ -638,16 +564,8 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
   // Obtener tipo de imagen ID según el tipo de imagen
   private getTipoImagenIdByImageType(imageType: string): string {
     switch (imageType) {
-      case 'gridAmslerOD':
-      case 'gridAmslerOI':
-        return '1'; // Tipo Grid Amsler
-      case 'campimetriaOD':
-      case 'campimetriaOI':
+      case 'campimetria':
         return '3'; // Tipo Campimetría
-      case 'biomicroscopiaImg1':
-      case 'biomicroscopiaImg2':
-      case 'biomicroscopiaImg3':
-        return '4'; // Tipo Biomicroscopía
       case 'oftalmoscopiaOD':
       case 'oftalmoscopiaOI':
         return '5'; // Tipo Oftalmoscopía
@@ -659,36 +577,9 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
   // Actualizar el ID de imagen en el formulario correspondiente
   private actualizarImagenId(imageId: number, imageType: string): void {
     switch (imageType) {
-      case 'gridAmslerOD':
-        this.gridAmslerForm.patchValue({ ojoDerechoImagenID: imageId });
+      case 'campimetria':
+        this.campimetriaForm.patchValue({ imagenID: imageId });
         break;
-      case 'gridAmslerOI':
-        this.gridAmslerForm.patchValue({ ojoIzquierdoImagenID: imageId });
-        break;
-      case 'campimetriaOD':
-        this.campimetriaForm.patchValue({ ojoDerechoImagenID: imageId });
-        break;
-      case 'campimetriaOI':
-        this.campimetriaForm.patchValue({ ojoIzquierdoImagenID: imageId });
-        break;
-        case 'biomicroscopiaOD1':
-      this.biomicroscopiaForm.patchValue({ ojoDerechoImagenID: imageId });
-      break;
-    case 'biomicroscopiaOI1':
-      this.biomicroscopiaForm.patchValue({ ojoIzquierdoImagenID: imageId });
-      break;
-    case 'biomicroscopiaOD2':
-      this.biomicroscopiaForm.patchValue({ ojoDerechoImagenID2: imageId });
-      break;
-    case 'biomicroscopiaOI2':
-      this.biomicroscopiaForm.patchValue({ ojoIzquierdoImagenID2: imageId });
-      break;
-    case 'biomicroscopiaOD3':
-      this.biomicroscopiaForm.patchValue({ ojoDerechoImagenID3: imageId });
-      break;
-    case 'biomicroscopiaOI3':
-      this.biomicroscopiaForm.patchValue({ ojoIzquierdoImagenID3: imageId });
-      break;
       case 'oftalmoscopiaOD':
         this.oftalmoscopiaForm.patchValue({ ojoDerechoImagenID: imageId });
         break;
@@ -728,7 +619,6 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
     switch (seccionName) {
       case 'grid-amsler': return this.gridAmslerForm;
       case 'tonometria': return this.tonometriaForm;
-      case 'paquimetria': return this.paquimetriaForm;
       case 'campimetria': return this.campimetriaForm;
       case 'biomicroscopia': return this.biomicroscopiaForm;
       case 'oftalmoscopia': return this.oftalmoscopiaForm;
@@ -739,67 +629,12 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
   private actualizarFormularioConImagen(imageType: string, base64: string | null): void {
     // Determinar qué formulario y qué campo actualizar según el tipo de imagen
     switch (imageType) {
-      case 'gridAmslerOD':
-        this.gridAmslerForm.patchValue({ 
-          ojoDerechoImagenBase64: base64,
-          ojoDerechoImagenID: null // Resetear el ID si se cambia la imagen
-        });
-        break;
-      case 'gridAmslerOI':
-        this.gridAmslerForm.patchValue({ 
-          ojoIzquierdoImagenBase64: base64,
-          ojoIzquierdoImagenID: null
-        });
-        break;
-      case 'campimetriaOD':
+      case 'campimetria':
         this.campimetriaForm.patchValue({ 
-          ojoDerechoImagenBase64: base64,
-          ojoDerechoImagenID: null
+          imagenBase64: base64,
+          imagenID: null
         });
         break;
-      case 'campimetriaOI':
-        this.campimetriaForm.patchValue({ 
-          ojoIzquierdoImagenBase64: base64,
-          ojoIzquierdoImagenID: null
-        });
-        break;
-          
-    case 'biomicroscopiaOD1':
-      this.biomicroscopiaForm.patchValue({ 
-        ojoDerechoImagenBase64: base64,
-        ojoDerechoImagenID: null
-      });
-      break;
-    case 'biomicroscopiaOI1':
-      this.biomicroscopiaForm.patchValue({ 
-        ojoIzquierdoImagenBase64: base64,
-        ojoIzquierdoImagenID: null
-      });
-      break;
-    case 'biomicroscopiaOD2':
-      this.biomicroscopiaForm.patchValue({ 
-        ojoDerechoImagenBase64_2: base64,
-        ojoDerechoImagenID2: null
-      });
-      break;
-    case 'biomicroscopiaOI2':
-      this.biomicroscopiaForm.patchValue({ 
-        ojoIzquierdoImagenBase64_2: base64,
-        ojoIzquierdoImagenID2: null
-      });
-      break;
-    case 'biomicroscopiaOD3':
-      this.biomicroscopiaForm.patchValue({ 
-        ojoDerechoImagenBase64_3: base64,
-        ojoDerechoImagenID3: null
-      });
-      break;
-    case 'biomicroscopiaOI3':
-      this.biomicroscopiaForm.patchValue({ 
-        ojoIzquierdoImagenBase64_3: base64,
-        ojoIzquierdoImagenID3: null
-      });
-      break;
       case 'oftalmoscopiaOD':
         this.oftalmoscopiaForm.patchValue({ 
           ojoDerechoImagenBase64: base64,
@@ -814,6 +649,71 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
         break;
     }
   }
+
+  actualizarSeccionConImagen(imageType: string, imageId: number): void {
+  if (!this.historiaId) return;
+  
+  let seccionData = {};
+  
+  if (imageType === 'campimetria') {
+    seccionData = {
+      ...this.campimetriaForm.value,
+      imagenID: imageId
+    };
+    
+    this.historiaService.actualizarSeccion(this.historiaId, 'campimetria', seccionData)
+      .subscribe({
+        next: () => console.log('Imagen actualizada en campimetría'),
+        error: (err) => console.error('Error al actualizar imagen en campimetría:', err)
+      });
+  } 
+  else if (imageType === 'oftalmoscopiaOD') {
+    seccionData = {
+      ...this.oftalmoscopiaForm.value,
+      ojoDerechoImagenID: imageId
+    };
+    
+    this.historiaService.actualizarSeccion(this.historiaId, 'oftalmoscopia', seccionData)
+      .subscribe({
+        next: () => console.log('Imagen OD actualizada en oftalmoscopía'),
+        error: (err) => console.error('Error al actualizar imagen OD en oftalmoscopía:', err)
+      });
+  }
+  else if (imageType === 'oftalmoscopiaOI') {
+    seccionData = {
+      ...this.oftalmoscopiaForm.value,
+      ojoIzquierdoImagenID: imageId
+    };
+    
+    this.historiaService.actualizarSeccion(this.historiaId, 'oftalmoscopia', seccionData)
+      .subscribe({
+        next: () => console.log('Imagen OI actualizada en oftalmoscopía'),
+        error: (err) => console.error('Error al actualizar imagen OI en oftalmoscopía:', err)
+      });
+  }
+}
+
+base64ToFile(base64String: string, filename: string = 'imagen.png'): File | null {
+  if (!base64String) return null;
+  
+  try {
+    // Extraer la parte de datos del string base64
+    const arr = base64String.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    
+    return new File([u8arr], filename, { type: mime });
+  } catch (error) {
+    console.error('Error al convertir base64 a File:', error);
+    return null;
+  }
+}
 
 
   // Método para eliminar una imagen

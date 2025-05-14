@@ -668,20 +668,17 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.gridAmsler) {
       await connection.query(
         `INSERT INTO GridAmsler (
-          HistorialID, NumeroCartilla, OjoDerechoSensibilidadContraste, OjoIzquierdoSensibilidadContraste,
-          OjoDerechoVisionCromatica, OjoIzquierdoVisionCromatica, OjoDerechoImagenID, OjoIzquierdoImagenID
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          historiaID,
-          secciones.gridAmsler.numeroCartilla || null,
-          secciones.gridAmsler.ojoDerechoSensibilidadContraste || null,
-          secciones.gridAmsler.ojoIzquierdoSensibilidadContraste || null,
-          secciones.gridAmsler.ojoDerechoVisionCromatica || null,
-          secciones.gridAmsler.ojoIzquierdoVision || null,
-          secciones.gridAmsler.ojoIzquierdoVisionCromatica || null,
-          secciones.gridAmsler.ojoDerechoImagenID || null,
-          secciones.gridAmsler.ojoIzquierdoImagenID || null
-        ]
+      HistorialID, NumeroCartilla, OjoDerechoSensibilidadContraste, OjoIzquierdoSensibilidadContraste,
+      OjoDerechoVisionCromatica, OjoIzquierdoVisionCromatica
+    ) VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      historiaID,
+      secciones.gridAmsler.numeroCartilla || null,
+      secciones.gridAmsler.ojoDerechoSensibilidadContraste || null,
+      secciones.gridAmsler.ojoIzquierdoSensibilidadContraste || null,
+      secciones.gridAmsler.ojoDerechoVisionCromatica || null,
+      secciones.gridAmsler.ojoIzquierdoVisionCromatica || null
+    ]
       );
     }
 
@@ -723,17 +720,15 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.campimetria) {
       await connection.query(
         `INSERT INTO Campimetria (
-          HistorialID, Distancia, TamanoColorIndice, TamanoColorPuntoFijacion,
-          OjoDerechoImagenID, OjoIzquierdoImagenID
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          historiaID,
-          secciones.campimetria.distancia || null,
-          secciones.campimetria.tamanoColorIndice || null,
-          secciones.campimetria.tamanoColorPuntoFijacion || null,
-          secciones.campimetria.ojoDerechoImagenID || null,
-          secciones.campimetria.ojoIzquierdoImagenID || null
-        ]
+      HistorialID, Distancia, TamanoColorIndice, TamanoColorPuntoFijacion, ImagenID
+    ) VALUES (?, ?, ?, ?, ?)`,
+      [
+        historiaID,
+        secciones.campimetria.distancia || null,
+        secciones.campimetria.tamanoColorIndice || null,
+        secciones.campimetria.tamanoColorPuntoFijacion || null,
+        secciones.campimetria.imagenID || null  // Un solo campo para la imagen
+      ]
       );
     }
       
@@ -748,11 +743,10 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           OjoDerechoConjuntivaBulbar, OjoIzquierdoConjuntivaBulbar, OjoDerechoFondoSaco, OjoIzquierdoFondoSaco,
           OjoDerechoLimbo, OjoIzquierdoLimbo, OjoDerechoCorneaBiomicroscopia, OjoIzquierdoCorneaBiomicroscopia,
           OjoDerechoCamaraAnterior, OjoIzquierdoCamaraAnterior, OjoDerechoIris, OjoIzquierdoIris,
-          OjoDerechoCristalino, OjoIzquierdoCristalino, OjoDerechoImagenID, OjoIzquierdoImagenID,
-          OjoDerechoImagenID2, OjoIzquierdoImagenID2, OjoDerechoImagenID3, OjoIzquierdoImagenID3
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          OjoDerechoCristalino, OjoIzquierdoCristalino
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          historiaID,
+          historiaID, 
           secciones.biomicroscopia.ojoDerechoPestanas || null,
           secciones.biomicroscopia.ojoIzquierdoPestanas || null,
           secciones.biomicroscopia.ojoDerechoParpadosIndice || null,
@@ -782,13 +776,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           secciones.biomicroscopia.ojoDerechoIris || null,
           secciones.biomicroscopia.ojoIzquierdoIris || null,
           secciones.biomicroscopia.ojoDerechoCristalino || null,
-          secciones.biomicroscopia.ojoIzquierdoCristalino || null,
-          secciones.biomicroscopia.ojoDerechoImagenID || null,
-          secciones.biomicroscopia.ojoIzquierdoImagenID || null,
-          secciones.biomicroscopia.ojoDerechoImagenID2 || null,
-          secciones.biomicroscopia.ojoIzquierdoImagenID2 || null,
-          secciones.biomicroscopia.ojoDerechoImagenID3 || null,
-          secciones.biomicroscopia.ojoIzquierdoImagenID3 || null
+          secciones.biomicroscopia.ojoIzquierdoCristalino || null
         ]
       );
     }
@@ -1009,11 +997,11 @@ try {
       break;
 
   case 'agudezaVisual':
-      // Eliminar registros existentes para esta historia
-      await connection.query(
-      'DELETE FROM AgudezaVisual WHERE HistorialID = ?',
-      [historiaId]
-      );
+      //checar si existen 
+      const [agudezaVisuals] = await connection.query(
+          'SELECT ID FROM agudezaVisual WHERE HistorialID = ?',
+          [historiaId]
+        );
 
       // Insertar nuevos registros de agudeza visual
       for (const agudeza of datos) {
@@ -1200,7 +1188,366 @@ try {
           metodoGrafico.VisionEstereoscopica, metodoGrafico.TipoVisionID, metodoGrafico.ImagenID]
       );
     
-      break;
+      case 'deteccion-alteraciones':
+  const {
+    gridAmsler,        // datos para tabla GridAmsler
+    tonometria,        // datos para tabla Tonometria
+    paquimetria,       // datos para tabla Paquimetria
+    campimetria,       // datos para tabla Campimetria
+    biomicroscopia,    // datos para tabla Biomicroscopia
+    oftalmoscopia      // datos para tabla Oftalmoscopia
+  } = datos;
+
+  // 1. GridAmsler - Ya no tiene campos de imagen
+  const [gridExiste] = await connection.query(
+    'SELECT ID FROM GridAmsler WHERE HistorialID = ?',
+    [historiaId]
+  );
+  
+  if (gridExiste.length === 0) {
+    await connection.query(
+      `INSERT INTO GridAmsler (
+        HistorialID, NumeroCartilla, OjoDerechoSensibilidadContraste, OjoIzquierdoSensibilidadContraste,
+        OjoDerechoVisionCromatica, OjoIzquierdoVisionCromatica
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        historiaId,
+        gridAmsler.numeroCartilla || null,
+        gridAmsler.ojoDerechoSensibilidadContraste || null,
+        gridAmsler.ojoIzquierdoSensibilidadContraste || null,
+        gridAmsler.ojoDerechoVisionCromatica || null,
+        gridAmsler.ojoIzquierdoVisionCromatica || null
+      ]
+    );
+  } else {
+    await connection.query(
+      `UPDATE GridAmsler SET
+        NumeroCartilla = ?,
+        OjoDerechoSensibilidadContraste = ?,
+        OjoIzquierdoSensibilidadContraste = ?,
+        OjoDerechoVisionCromatica = ?,
+        OjoIzquierdoVisionCromatica = ?
+      WHERE HistorialID = ?`,
+      [
+        gridAmsler.numeroCartilla || null,
+        gridAmsler.ojoDerechoSensibilidadContraste || null,
+        gridAmsler.ojoIzquierdoSensibilidadContraste || null,
+        gridAmsler.ojoDerechoVisionCromatica || null,
+        gridAmsler.ojoIzquierdoVisionCromatica || null,
+        historiaId
+      ]
+    );
+  }
+
+  // 2. Tonometría
+  const [tonometriaExiste] = await connection.query(
+    'SELECT ID FROM Tonometria WHERE HistorialID = ?',
+    [historiaId]
+  );
+  
+  if (tonometriaExiste.length === 0) {
+    await connection.query(
+      `INSERT INTO Tonometria (
+        HistorialID, MetodoAnestesico, Fecha, Hora, OjoDerecho, OjoIzquierdo, TipoID
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        historiaId,
+        tonometria.metodoAnestesico || null,
+        tonometria.fecha || null,
+        tonometria.hora || null,
+        tonometria.ojoDerecho || null,
+        tonometria.ojoIzquierdo || null,
+        tonometria.tipoID || null
+      ]
+    );
+  } else {
+    await connection.query(
+      `UPDATE Tonometria SET
+        MetodoAnestesico = ?,
+        Fecha = ?,
+        Hora = ?,
+        OjoDerecho = ?,
+        OjoIzquierdo = ?,
+        TipoID = ?
+      WHERE HistorialID = ?`,
+      [
+        tonometria.metodoAnestesico || null,
+        tonometria.fecha || null,
+        tonometria.hora || null,
+        tonometria.ojoDerecho || null,
+        tonometria.ojoIzquierdo || null,
+        tonometria.tipoID || null,
+        historiaId
+      ]
+    );
+  }
+
+  // 3. Paquimetría
+  const [paquimetriaExiste] = await connection.query(
+    'SELECT ID FROM Paquimetria WHERE HistorialID = ?',
+    [historiaId]
+  );
+  
+  if (paquimetriaExiste.length === 0) {
+    await connection.query(
+      `INSERT INTO Paquimetria (
+        HistorialID, OjoDerechoCCT, OjoIzquierdoCCT, OjoDerechoPIOCorregida, OjoIzquierdoPIOCorregida
+      ) VALUES (?, ?, ?, ?, ?)`,
+      [
+        historiaId,
+        paquimetria.ojoDerechoCCT || null,
+        paquimetria.ojoIzquierdoCCT || null,
+        paquimetria.ojoDerechoPIOCorregida || null,
+        paquimetria.ojoIzquierdoPIOCorregida || null
+      ]
+    );
+  } else {
+    await connection.query(
+      `UPDATE Paquimetria SET
+        OjoDerechoCCT = ?,
+        OjoIzquierdoCCT = ?,
+        OjoDerechoPIOCorregida = ?,
+        OjoIzquierdoPIOCorregida = ?
+      WHERE HistorialID = ?`,
+      [
+        paquimetria.ojoDerechoCCT || null,
+        paquimetria.ojoIzquierdoCCT || null,
+        paquimetria.ojoDerechoPIOCorregida || null,
+        paquimetria.ojoIzquierdoPIOCorregida || null,
+        historiaId
+      ]
+    );
+  }
+
+  // 4. Campimetría - Tiene una sola imagen ahora
+  const [campimetriaExiste] = await connection.query(
+    'SELECT ID FROM Campimetria WHERE HistorialID = ?',
+    [historiaId]
+  );
+  
+  if (campimetriaExiste.length === 0) {
+    await connection.query(
+      `INSERT INTO Campimetria (
+        HistorialID, Distancia, TamanoColorIndice, TamanoColorPuntoFijacion, ImagenID
+      ) VALUES (?, ?, ?, ?, ?)`,
+      [
+        historiaId,
+        campimetria.distancia || null,
+        campimetria.tamanoColorIndice || null,
+        campimetria.tamanoColorPuntoFijacion || null,
+        campimetria.imagenID || null
+      ]
+    );
+  } else {
+    await connection.query(
+      `UPDATE Campimetria SET
+        Distancia = ?,
+        TamanoColorIndice = ?,
+        TamanoColorPuntoFijacion = ?,
+        ImagenID = ?
+      WHERE HistorialID = ?`,
+      [
+        campimetria.distancia || null,
+        campimetria.tamanoColorIndice || null,
+        campimetria.tamanoColorPuntoFijacion || null,
+        campimetria.imagenID || null,
+        historiaId
+      ]
+    );
+  }
+
+  // 5. Biomicroscopía - Ya no tiene campos de imagen
+  const [biomicroscopiaExiste] = await connection.query(
+    'SELECT ID FROM Biomicroscopia WHERE HistorialID = ?',
+    [historiaId]
+  );
+  
+  if (biomicroscopiaExiste.length === 0) {
+    await connection.query(
+      `INSERT INTO Biomicroscopia (
+        HistorialID, OjoDerechoPestanas, OjoIzquierdoPestanas, OjoDerechoParpadosIndice, OjoIzquierdoParpadosIndice,
+        OjoDerechoBordePalpebral, OjoIzquierdoBordePalpebral, OjoDerechoLineaGris, OjoIzquierdoLineaGris,
+        OjoDerechoCantoExterno, OjoIzquierdoCantoExterno, OjoDerechoCantoInterno, OjoIzquierdoCantoInterno,
+        OjoDerechoPuntosLagrimales, OjoIzquierdoPuntosLagrimales, OjoDerechoConjuntivaTarsal, OjoIzquierdoConjuntivaTarsal,
+        OjoDerechoConjuntivaBulbar, OjoIzquierdoConjuntivaBulbar, OjoDerechoFondoSaco, OjoIzquierdoFondoSaco,
+        OjoDerechoLimbo, OjoIzquierdoLimbo, OjoDerechoCorneaBiomicroscopia, OjoIzquierdoCorneaBiomicroscopia,
+        OjoDerechoCamaraAnterior, OjoIzquierdoCamaraAnterior, OjoDerechoIris, OjoIzquierdoIris,
+        OjoDerechoCristalino, OjoIzquierdoCristalino
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        historiaId,
+        biomicroscopia.ojoDerechoPestanas || null,
+        biomicroscopia.ojoIzquierdoPestanas || null,
+        biomicroscopia.ojoDerechoParpadosIndice || null,
+        biomicroscopia.ojoIzquierdoParpadosIndice || null,
+        biomicroscopia.ojoDerechoBordePalpebral || null,
+        biomicroscopia.ojoIzquierdoBordePalpebral || null,
+        biomicroscopia.ojoDerechoLineaGris || null,
+        biomicroscopia.ojoIzquierdoLineaGris || null,
+        biomicroscopia.ojoDerechoCantoExterno || null,
+        biomicroscopia.ojoIzquierdoCantoExterno || null,
+        biomicroscopia.ojoDerechoCantoInterno || null,
+        biomicroscopia.ojoIzquierdoCantoInterno || null,
+        biomicroscopia.ojoDerechoPuntosLagrimales || null,
+        biomicroscopia.ojoIzquierdoPuntosLagrimales || null,
+        biomicroscopia.ojoDerechoConjuntivaTarsal || null,
+        biomicroscopia.ojoIzquierdoConjuntivaTarsal || null,
+        biomicroscopia.ojoDerechoConjuntivaBulbar || null,
+        biomicroscopia.ojoIzquierdoConjuntivaBulbar || null,
+        biomicroscopia.ojoDerechoFondoSaco || null,
+        biomicroscopia.ojoIzquierdoFondoSaco || null,
+        biomicroscopia.ojoDerechoLimbo || null,
+        biomicroscopia.ojoIzquierdoLimbo || null,
+        biomicroscopia.ojoDerechoCorneaBiomicroscopia || null,
+        biomicroscopia.ojoIzquierdoCorneaBiomicroscopia || null,
+        biomicroscopia.ojoDerechoCamaraAnterior || null,
+        biomicroscopia.ojoIzquierdoCamaraAnterior || null,
+        biomicroscopia.ojoDerechoIris || null,
+        biomicroscopia.ojoIzquierdoIris || null,
+        biomicroscopia.ojoDerechoCristalino || null,
+        biomicroscopia.ojoIzquierdoCristalino || null
+      ]
+    );
+  } else {
+    await connection.query(
+      `UPDATE Biomicroscopia SET
+        OjoDerechoPestanas = ?, OjoIzquierdoPestanas = ?,
+        OjoDerechoParpadosIndice = ?, OjoIzquierdoParpadosIndice = ?,
+        OjoDerechoBordePalpebral = ?, OjoIzquierdoBordePalpebral = ?,
+        OjoDerechoLineaGris = ?, OjoIzquierdoLineaGris = ?,
+        OjoDerechoCantoExterno = ?, OjoIzquierdoCantoExterno = ?,
+        OjoDerechoCantoInterno = ?, OjoIzquierdoCantoInterno = ?,
+        OjoDerechoPuntosLagrimales = ?, OjoIzquierdoPuntosLagrimales = ?,
+        OjoDerechoConjuntivaTarsal = ?, OjoIzquierdoConjuntivaTarsal = ?,
+        OjoDerechoConjuntivaBulbar = ?, OjoIzquierdoConjuntivaBulbar = ?,
+        OjoDerechoFondoSaco = ?, OjoIzquierdoFondoSaco = ?,
+        OjoDerechoLimbo = ?, OjoIzquierdoLimbo = ?,
+        OjoDerechoCorneaBiomicroscopia = ?, OjoIzquierdoCorneaBiomicroscopia = ?,
+        OjoDerechoCamaraAnterior = ?, OjoIzquierdoCamaraAnterior = ?,
+        OjoDerechoIris = ?, OjoIzquierdoIris = ?,
+        OjoDerechoCristalino = ?, OjoIzquierdoCristalino = ?
+      WHERE HistorialID = ?`,
+      [
+        biomicroscopia.ojoDerechoPestanas || null,
+        biomicroscopia.ojoIzquierdoPestanas || null,
+        biomicroscopia.ojoDerechoParpadosIndice || null,
+        biomicroscopia.ojoIzquierdoParpadosIndice || null,
+        biomicroscopia.ojoDerechoBordePalpebral || null,
+        biomicroscopia.ojoIzquierdoBordePalpebral || null,
+        biomicroscopia.ojoDerechoLineaGris || null,
+        biomicroscopia.ojoIzquierdoLineaGris || null,
+        biomicroscopia.ojoDerechoCantoExterno || null,
+        biomicroscopia.ojoIzquierdoCantoExterno || null,
+        biomicroscopia.ojoDerechoCantoInterno || null,
+        biomicroscopia.ojoIzquierdoCantoInterno || null,
+        biomicroscopia.ojoDerechoPuntosLagrimales || null,
+        biomicroscopia.ojoIzquierdoPuntosLagrimales || null,
+        biomicroscopia.ojoDerechoConjuntivaTarsal || null,
+        biomicroscopia.ojoIzquierdoConjuntivaTarsal || null,
+        biomicroscopia.ojoDerechoConjuntivaBulbar || null,
+        biomicroscopia.ojoIzquierdoConjuntivaBulbar || null,
+        biomicroscopia.ojoDerechoFondoSaco || null,
+        biomicroscopia.ojoIzquierdoFondoSaco || null,
+        biomicroscopia.ojoDerechoLimbo || null,
+        biomicroscopia.ojoIzquierdoLimbo || null,
+        biomicroscopia.ojoDerechoCorneaBiomicroscopia || null,
+        biomicroscopia.ojoIzquierdoCorneaBiomicroscopia || null,
+        biomicroscopia.ojoDerechoCamaraAnterior || null,
+        biomicroscopia.ojoIzquierdoCamaraAnterior || null,
+        biomicroscopia.ojoDerechoIris || null,
+        biomicroscopia.ojoIzquierdoIris || null,
+        biomicroscopia.ojoDerechoCristalino || null,
+        biomicroscopia.ojoIzquierdoCristalino || null,
+        historiaId
+      ]
+    );
+  }
+
+  // 6. Oftalmoscopía - Mantiene los dos campos de imagen
+  const [oftalmoscopiaExiste] = await connection.query(
+    'SELECT ID FROM Oftalmoscopia WHERE HistorialID = ?',
+    [historiaId]
+  );
+  
+  if (oftalmoscopiaExiste.length === 0) {
+    await connection.query(
+      `INSERT INTO Oftalmoscopia (
+        HistorialID, OjoDerechoPapila, OjoIzquierdoPapila, OjoDerechoExcavacion, OjoIzquierdoExcavacion,
+        OjoDerechoRadio, OjoIzquierdoRadio, OjoDerechoProfundidad, OjoIzquierdoProfundidad,
+        OjoDerechoVasos, OjoIzquierdoVasos, OjoDerechoRELAV, OjoIzquierdoRELAV,
+        OjoDerechoMacula, OjoIzquierdoMacula, OjoDerechoReflejo, OjoIzquierdoReflejo,
+        OjoDerechoRetinaPeriferica, OjoIzquierdoRetinaPeriferica, OjoDerechoISNT, OjoIzquierdoISNT,
+        OjoDerechoImagenID, OjoIzquierdoImagenID
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        historiaId,
+        oftalmoscopia.ojoDerechoPapila || null,
+        oftalmoscopia.ojoIzquierdoPapila || null,
+        oftalmoscopia.ojoDerechoExcavacion || null,
+        oftalmoscopia.ojoIzquierdoExcavacion || null,
+        oftalmoscopia.ojoDerechoRadio || null,
+        oftalmoscopia.ojoIzquierdoRadio || null,
+        oftalmoscopia.ojoDerechoProfundidad || null,
+        oftalmoscopia.ojoIzquierdoProfundidad || null,
+        oftalmoscopia.ojoDerechoVasos || null,
+        oftalmoscopia.ojoIzquierdoVasos || null,
+        oftalmoscopia.ojoDerechoRELAV || null,
+        oftalmoscopia.ojoIzquierdoRELAV || null,
+        oftalmoscopia.ojoDerechoMacula || null,
+        oftalmoscopia.ojoIzquierdoMacula || null,
+        oftalmoscopia.ojoDerechoReflejo || null,
+        oftalmoscopia.ojoIzquierdoReflejo || null,
+        oftalmoscopia.ojoDerechoRetinaPeriferica || null,
+        oftalmoscopia.ojoIzquierdoRetinaPeriferica || null,
+        oftalmoscopia.ojoDerechoISNT || null,
+        oftalmoscopia.ojoIzquierdoISNT || null,
+        oftalmoscopia.ojoDerechoImagenID || null,
+        oftalmoscopia.ojoIzquierdoImagenID || null
+      ]
+    );
+  } else {
+    await connection.query(
+      `UPDATE Oftalmoscopia SET
+        OjoDerechoPapila = ?, OjoIzquierdoPapila = ?,
+        OjoDerechoExcavacion = ?, OjoIzquierdoExcavacion = ?,
+        OjoDerechoRadio = ?, OjoIzquierdoRadio = ?,
+        OjoDerechoProfundidad = ?, OjoIzquierdoProfundidad = ?,
+        OjoDerechoVasos = ?, OjoIzquierdoVasos = ?,
+        OjoDerechoRELAV = ?, OjoIzquierdoRELAV = ?,
+        OjoDerechoMacula = ?, OjoIzquierdoMacula = ?,
+        OjoDerechoReflejo = ?, OjoIzquierdoReflejo = ?,
+        OjoDerechoRetinaPeriferica = ?, OjoIzquierdoRetinaPeriferica = ?,
+        OjoDerechoISNT = ?, OjoIzquierdoISNT = ?,
+        OjoDerechoImagenID = ?, OjoIzquierdoImagenID = ?
+      WHERE HistorialID = ?`,
+      [
+        oftalmoscopia.ojoDerechoPapila || null,
+        oftalmoscopia.ojoIzquierdoPapila || null,
+        oftalmoscopia.ojoDerechoExcavacion || null,
+        oftalmoscopia.ojoIzquierdoExcavacion || null,
+        oftalmoscopia.ojoDerechoRadio || null,
+        oftalmoscopia.ojoIzquierdoRadio || null,
+        oftalmoscopia.ojoDerechoProfundidad || null,
+        oftalmoscopia.ojoIzquierdoProfundidad || null,
+        oftalmoscopia.ojoDerechoVasos || null,
+        oftalmoscopia.ojoIzquierdoVasos || null,
+        oftalmoscopia.ojoDerechoRELAV || null,
+        oftalmoscopia.ojoIzquierdoRELAV || null,
+        oftalmoscopia.ojoDerechoMacula || null,
+        oftalmoscopia.ojoIzquierdoMacula || null,
+        oftalmoscopia.ojoDerechoReflejo || null,
+        oftalmoscopia.ojoIzquierdoReflejo || null,
+        oftalmoscopia.ojoDerechoRetinaPeriferica || null,
+        oftalmoscopia.ojoIzquierdoRetinaPeriferica || null,
+        oftalmoscopia.ojoDerechoISNT || null,
+        oftalmoscopia.ojoIzquierdoISNT || null,
+        oftalmoscopia.ojoDerechoImagenID || null,
+        oftalmoscopia.ojoIzquierdoImagenID || null,
+        historiaId
+      ]
+    );
+  }
+    break;
       
   case 'diagnostico':
       // Verificar si ya existe un diagnóstico para esta historia
@@ -1354,7 +1701,6 @@ try {
       }
       break;
 
-  // Otras secciones pueden ser implementadas de manera similar
 
   default:
       throw new Error(`Sección no válida: ${seccion}`);

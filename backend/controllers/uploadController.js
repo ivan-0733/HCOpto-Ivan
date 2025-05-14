@@ -19,30 +19,6 @@ try {
     console.log('Creando directorio de uploads:', error);
 }
 
-// // Cambiar a diskStorage para mayor estabilidad
-// const storage = multer.diskStorage({
-//     destination: function (req, file, cb) {
-//         cb(null, uploadDir);
-//     },
-//     filename: function (req, file, cb) {
-//         cb(null, Date.now() + '-' + file.originalname);
-//     }
-// });
-
-// // Configuración global de Multer
-// const upload = multer({
-//     storage: storage,
-//     limits: { fileSize: fileManager.MAX_FILE_SIZE || 10 * 1024 * 1024 }, // 10MB por defecto si no está definido
-//     fileFilter: (req, file, cb) => {
-//         console.log(`Validando tipo de archivo: ${file.mimetype}`);
-//         if (fileManager.ALLOWED_TYPES && fileManager.ALLOWED_TYPES.includes(file.mimetype)) {
-//             cb(null, true);
-//         } else {
-//             console.warn(`Tipo de archivo no permitido: ${file.mimetype}`);
-//             cb(new Error('Solo se permiten imágenes JPG/PNG'), false);
-//         }
-//     }
-// });
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -148,11 +124,9 @@ if (!historia?.length) {
 console.log('Determinando tipo de estudio para sección:', seccionID);
 const getEstudioType = (sectionId) => {
     const sectionMap = {
-    '7': STUDY_TYPES.GRID_AMSLER,
     '9': STUDY_TYPES.CAMPIMETRIA,
-    '10': STUDY_TYPES.ALTERACIONES,
-    '11': STUDY_TYPES.ALTERACIONES,
-    '12': STUDY_TYPES.BINOCULARIDAD
+    '11': STUDY_TYPES.ALTERACIONES,  // Mantener para Oftalmoscopía
+    '12': STUDY_TYPES.BINOCULARIDAD  // Mantener para Binocularidad
     };
     return sectionMap[sectionId] || STUDY_TYPES.GENERAL;
 };
@@ -239,6 +213,60 @@ try {
         console.log('Actualizado registro existente en MetodoGrafico con ImagenID:', imageId);
     }
     }
+    //si es una imagen para campimetria
+        if (seccionID === '9') {
+    console.log('Actualizando directamente Campimetría con ID de imagen:', imageId);
+    
+    // Verificar si existe un registro para esta historia
+    const [campimetria] = await db.query(
+        'SELECT ID FROM Campimetria WHERE HistorialID = ?',
+        [historiaID]
+    );
+
+    if (campimetria.length === 0) {
+        // Crear nuevo registro con la referencia a la imagen
+        await db.query(
+        `INSERT INTO Campimetria (HistorialID, ImagenID) VALUES (?, ?)`,
+        [historiaID, imageId]
+        );
+        console.log('Creado nuevo registro en Campimetria con ImagenID:', imageId);
+    } else {
+        // Actualizar el registro existente
+        await db.query(
+        `UPDATE Campimetria SET ImagenID = ? WHERE HistorialID = ?`,
+        [imageId, historiaID]
+        );
+        console.log('Actualizado registro existente en Campimetria con ImagenID:', imageId);
+    }
+    }
+
+    //si es una imagen para oftalmoscopia
+        if (seccionID === '11') {
+    console.log('Actualizando directamente Campimetría con ID de imagen:', imageId);
+    
+    // Verificar si existe un registro para esta historia
+    const [campimetria] = await db.query(
+        'SELECT ID FROM Oftalmoscopia WHERE HistorialID = ?',
+        [historiaID]
+    );
+
+    if (campimetria.length === 0) {
+        // Crear nuevo registro con la referencia a la imagen
+        await db.query(
+        `INSERT INTO Oftalmoscopia (HistorialID, ImagenID) VALUES (?, ?)`,
+        [historiaID, imageId]
+        );
+        console.log('Creado nuevo registro en Oftalmoscopia con ImagenID:', imageId);
+    } else {
+        // Actualizar el registro existente
+        await db.query(
+        `UPDATE Oftalmoscopia SET ImagenID = ? WHERE HistorialID = ?`,
+        [imageId, historiaID]
+        );
+        console.log('Actualizado registro existente en Oftalmoscopia con ImagenID:', imageId);
+    }
+    }
+
     
 } catch (dbError) {
     console.error('Error al insertar en BD:', dbError);

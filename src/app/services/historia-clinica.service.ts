@@ -230,10 +230,6 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoIzquierdoSensibilidadContraste?: string;
     ojoDerechoVisionCromatica?: string;
     ojoIzquierdoVisionCromatica?: string;
-    ojoDerechoImagenID?: number;
-    ojoIzquierdoImagenID?: number;
-    ojoDerechoImagenBase64?: string;
-    ojoIzquierdoImagenBase64?: string;
   };
   
   tonometria?: {
@@ -256,10 +252,8 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     distancia?: number;
     tamanoColorIndice?: string;
     tamanoColorPuntoFijacion?: string;
-    ojoDerechoImagenID?: number;
-    ojoIzquierdoImagenID?: number;
-    ojoDerechoImagenBase64?: string;
-    ojoIzquierdoImagenBase64?: string;
+    imagenID?: number;
+    imagenBase64?: string;
   };
   
   biomicroscopia?: {

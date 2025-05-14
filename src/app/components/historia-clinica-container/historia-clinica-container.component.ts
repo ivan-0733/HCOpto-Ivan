@@ -820,7 +820,8 @@ crearNuevaHistoria(): void {
 
   // Guardar temporalmente las imágenes en base64 para subirlas después
   const imagenesBase64 = {
-    metodoGrafico: this.formValues['metodo-grafico']?.imagenBase64 || this.imgPreview
+    metodoGrafico: this.formValues['metodo-grafico']?.imagenBase64 || this.imgPreview,
+    campimetria: this.formValues['campimetria']?.imagenBase64 || this.imgPreview
   };
 
   // Preparar todas las secciones sin incluir datos base64 de imágenes (para evitar payload grande)
@@ -866,6 +867,10 @@ crearNuevaHistoria(): void {
   // Eliminar datos de base64 de las secciones
   if (secciones.metodoGrafico && 'imagenBase64' in secciones.metodoGrafico) {
     delete secciones.metodoGrafico.imagenBase64;
+  }
+
+  if (secciones.campimetria && 'imagenBase64' in secciones.campimetria) {
+    delete secciones.campimetria.imagenBase64;
   }
 
   // Usar el nuevo método para crear toda la historia completa en una sola llamada
@@ -939,6 +944,42 @@ crearNuevaHistoria(): void {
               })
             );
           }
+
+          if (imagenesBase64.campimetria) {
+          promesasImagenes.push(
+            this.uploadBase64Image(
+              newHistoriaId, 
+              imagenesBase64.campimetria, 
+              '9',  // Section ID for campimetría
+              '3'   // Image type ID for campimetría
+            ).then(imageId => {
+              if (imageId) {
+                // Actualizar la sección con el nuevo ID de imagen
+                return new Promise<void>((resolve) => {
+                  this.historiaClinicaService.actualizarSeccion(
+                    newHistoriaId, 
+                    'campimetria',
+                    {
+                      ...this.formValues['campimetria'],
+                      imagenID: imageId,
+                      imagenBase64: undefined
+                    }
+                  ).subscribe({
+                    next: () => {
+                      console.log('Sección campimetría actualizada con ID de imagen:', imageId);
+                      resolve();
+                    },
+                    error: (err) => {
+                      console.error('Error al actualizar sección campimetría con ID de imagen:', err);
+                      resolve(); // Resolvemos para continuar el proceso
+                    }
+                  });
+                });
+              }
+              return Promise.resolve();
+            })
+          );
+        }
           
           Promise.all(promesasImagenes)
             .then(() => {

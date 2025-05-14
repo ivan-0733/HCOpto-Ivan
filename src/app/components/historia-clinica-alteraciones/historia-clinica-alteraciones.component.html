@@ -31,61 +31,28 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoSensibilidadContraste">OD Sensibilidad al Contraste</label>
-            <input type="text" id="ojoDerechoSensibilidadContraste" formControlName="ojoDerechoSensibilidadContraste" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoSensibilidadContraste">OI Sensibilidad al Contraste</label>
-            <input type="text" id="ojoIzquierdoSensibilidadContraste" formControlName="ojoIzquierdoSensibilidadContraste" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoVisionCromatica">OD Visión Cromática</label>
-            <input type="text" id="ojoDerechoVisionCromatica" formControlName="ojoDerechoVisionCromatica" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoVisionCromatica">OI Visión Cromática</label>
-            <input type="text" id="ojoIzquierdoVisionCromatica" formControlName="ojoIzquierdoVisionCromatica" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoImagen">Imagen OD</label>
-            <div class="custom-file">
-              <input type="file" id="ojoDerechoImagen" (change)="onImageSelected($event, 'gridAmslerOD')">
-              
-              <!-- Muestra la imagen previsualizada si existe -->
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['gridAmslerOD']">
-                <img [src]="imagenPreviews['gridAmslerOD']" alt="Previsualización OD" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <!-- Botón para eliminar la imagen -->
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('gridAmslerOD')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoImagen">Imagen OI</label>
-            <div class="custom-file">
-              <input type="file" id="ojoIzquierdoImagen" (change)="onImageSelected($event, 'gridAmslerOI')">
-              
-              <!-- Muestra la imagen previsualizada si existe -->
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['gridAmslerOI']">
-                <img [src]="imagenPreviews['gridAmslerOI']" alt="Previsualización OI" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <!-- Botón para eliminar la imagen -->
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('gridAmslerOI')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Sensibilidad al Contraste</strong></td>
+                <td><input type="text" formControlName="ojoDerechoSensibilidadContraste" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoSensibilidadContraste" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Visión Cromática</strong></td>
+                <td><input type="text" formControlName="ojoDerechoVisionCromatica" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoVisionCromatica" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </form>
     </div>
@@ -109,22 +76,28 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group col-md-4">
-            <label for="tipoID">Tipo de Tonometría</label>
-            <select id="tipoID" formControlName="tipoID" class="form-control">
-              <option [ngValue]="null">Seleccione un tipo</option>
-              <option *ngFor="let tipo of tiposTonometria" [value]="tipo.ID">{{ tipo.Valor }}</option>
-            </select>
-          </div>
-          <div class="form-group col-md-4">
-            <label for="ojoDerecho">Valor OD (mmHg)</label>
-            <input type="number" step="0.1" id="ojoDerecho" formControlName="ojoDerecho" class="form-control">
-          </div>
-          <div class="form-group col-md-4">
-            <label for="ojoIzquierdo">Valor OI (mmHg)</label>
-            <input type="number" step="0.1" id="ojoIzquierdo" formControlName="ojoIzquierdo" class="form-control">
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Tipo de Tonometría</th>
+                <th>Valor OD (mmHg)</th>
+                <th>Valor OI (mmHg)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <select formControlName="tipoID" class="form-control">
+                    <option [ngValue]="null">Seleccione un tipo</option>
+                    <option *ngFor="let tipo of tiposTonometria" [value]="tipo.ID">{{ tipo.Valor }}</option>
+                  </select>
+                </td>
+                <td><input type="number" step="0.1" formControlName="ojoDerecho" class="form-control"></td>
+                <td><input type="number" step="0.1" formControlName="ojoIzquierdo" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </form>
     </div>
@@ -133,23 +106,28 @@
     <div class="form-section">
       <h3>Paquimetría</h3>
       <form [formGroup]="paquimetriaForm">
-        <div class="form-row">
-          <div class="form-group col-md-3">
-            <label for="ojoDerechoCCT">OD CCT (μm)</label>
-            <input type="number" id="ojoDerechoCCT" formControlName="ojoDerechoCCT" class="form-control">
-          </div>
-          <div class="form-group col-md-3">
-            <label for="ojoIzquierdoCCT">OI CCT (μm)</label>
-            <input type="number" id="ojoIzquierdoCCT" formControlName="ojoIzquierdoCCT" class="form-control">
-          </div>
-          <div class="form-group col-md-3">
-            <label for="ojoDerechoPIOCorregida">OD PIO Corregida</label>
-            <input type="number" step="0.1" id="ojoDerechoPIOCorregida" formControlName="ojoDerechoPIOCorregida" class="form-control">
-          </div>
-          <div class="form-group col-md-3">
-            <label for="ojoIzquierdoPIOCorregida">OI PIO Corregida</label>
-            <input type="number" step="0.1" id="ojoIzquierdoPIOCorregida" formControlName="ojoIzquierdoPIOCorregida" class="form-control">
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CCT (μm)</strong></td>
+                <td><input type="number" formControlName="ojoDerechoCCT" class="form-control"></td>
+                <td><input type="number" formControlName="ojoIzquierdoCCT" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>PIO Corregida</strong></td>
+                <td><input type="number" step="0.1" formControlName="ojoDerechoPIOCorregida" class="form-control"></td>
+                <td><input type="number" step="0.1" formControlName="ojoIzquierdoPIOCorregida" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </form>
     </div>
@@ -158,45 +136,40 @@
     <div class="form-section">
       <h3>Campimetría</h3>
       <form [formGroup]="campimetriaForm">
-        <div class="form-row">
-          <div class="form-group col-md-4">
-            <label for="distancia">Distancia (cm)</label>
-            <input type="number" id="distancia" formControlName="distancia" class="form-control">
-          </div>
-          <div class="form-group col-md-4">
-            <label for="tamanoColorIndice">Tamaño/Color Índice</label>
-            <input type="text" id="tamanoColorIndice" formControlName="tamanoColorIndice" class="form-control">
-          </div>
-          <div class="form-group col-md-4">
-            <label for="tamanoColorPuntoFijacion">Tamaño/Color Punto Fijación</label>
-            <input type="text" id="tamanoColorPuntoFijacion" formControlName="tamanoColorPuntoFijacion" class="form-control">
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Distancia (cm)</strong></td>
+                <td><input type="number" formControlName="distancia" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Tamaño/Color Índice</strong></td>
+                <td><input type="text" formControlName="tamanoColorIndice" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Tamaño/Color Punto Fijación</strong></td>
+                <td><input type="text" formControlName="tamanoColorPuntoFijacion" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         
         <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoImagenCampimetria">Imagen OD</label>
+          <div class="form-group col-md-12">
+            <label>Imagen de Campimetría</label>
             <div class="custom-file">
-              <input type="file" id="ojoDerechoImagenCampimetria" (change)="onImageSelected($event, 'campimetriaOD')">
+              <input type="file" (change)="onImageSelected($event, 'campimetria')">
               
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['campimetriaOD']">
-                <img [src]="imagenPreviews['campimetriaOD']" alt="Previsualización OD" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('campimetriaOD')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoImagenCampimetria">Imagen OI</label>
-            <div class="custom-file">
-              <input type="file" id="ojoIzquierdoImagenCampimetria" (change)="onImageSelected($event, 'campimetriaOI')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['campimetriaOI']">
-                <img [src]="imagenPreviews['campimetriaOI']" alt="Previsualización OI" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('campimetriaOI')">
+              <div class="image-preview mt-2" *ngIf="imagenPreviews['campimetria']">
+                <img [src]="imagenPreviews['campimetria']" alt="Previsualización Campimetría" class="img-thumbnail">
+                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('campimetria')">
                   <i class="fas fa-trash"></i> Eliminar
                 </button>
               </div>
@@ -211,265 +184,123 @@
       <h3>Biomicroscopía</h3>
       <form [formGroup]="biomicroscopiaForm">
         <h4>Anexos</h4>
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoPestanas">OD Pestañas</label>
-            <input type="text" id="ojoDerechoPestanas" formControlName="ojoDerechoPestanas" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoPestanas">OI Pestañas</label>
-            <input type="text" id="ojoIzquierdoPestanas" formControlName="ojoIzquierdoPestanas" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoParpadosIndice">OD Párpados/Índice</label>
-            <input type="text" id="ojoDerechoParpadosIndice" formControlName="ojoDerechoParpadosIndice" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoParpadosIndice">OI Párpados/Índice</label>
-            <input type="text" id="ojoIzquierdoParpadosIndice" formControlName="ojoIzquierdoParpadosIndice" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoBordePalpebral">OD Borde Palpebral</label>
-            <input type="text" id="ojoDerechoBordePalpebral" formControlName="ojoDerechoBordePalpebral" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoBordePalpebral">OI Borde Palpebral</label>
-            <input type="text" id="ojoIzquierdoBordePalpebral" formControlName="ojoIzquierdoBordePalpebral" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoLineaGris">OD Línea Gris</label>
-            <input type="text" id="ojoDerechoLineaGris" formControlName="ojoDerechoLineaGris" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoLineaGris">OI Línea Gris</label>
-            <input type="text" id="ojoIzquierdoLineaGris" formControlName="ojoIzquierdoLineaGris" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoCantoExterno">OD Canto Externo</label>
-            <input type="text" id="ojoDerechoCantoExterno" formControlName="ojoDerechoCantoExterno" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoCantoExterno">OI Canto Externo</label>
-            <input type="text" id="ojoIzquierdoCantoExterno" formControlName="ojoIzquierdoCantoExterno" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoCantoInterno">OD Canto Interno</label>
-            <input type="text" id="ojoDerechoCantoInterno" formControlName="ojoDerechoCantoInterno" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoCantoInterno">OI Canto Interno</label>
-            <input type="text" id="ojoIzquierdoCantoInterno" formControlName="ojoIzquierdoCantoInterno" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoPuntosLagrimales">OD Puntos Lagrimales</label>
-            <input type="text" id="ojoDerechoPuntosLagrimales" formControlName="ojoDerechoPuntosLagrimales" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoPuntosLagrimales">OI Puntos Lagrimales</label>
-            <input type="text" id="ojoIzquierdoPuntosLagrimales" formControlName="ojoIzquierdoPuntosLagrimales" class="form-control">
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Pestañas</strong></td>
+                <td><input type="text" formControlName="ojoDerechoPestanas" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoPestanas" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Párpados/Índice</strong></td>
+                <td><input type="text" formControlName="ojoDerechoParpadosIndice" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoParpadosIndice" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Borde Palpebral</strong></td>
+                <td><input type="text" formControlName="ojoDerechoBordePalpebral" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoBordePalpebral" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Línea Gris</strong></td>
+                <td><input type="text" formControlName="ojoDerechoLineaGris" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoLineaGris" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Canto Externo</strong></td>
+                <td><input type="text" formControlName="ojoDerechoCantoExterno" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoCantoExterno" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Canto Interno</strong></td>
+                <td><input type="text" formControlName="ojoDerechoCantoInterno" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoCantoInterno" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Puntos Lagrimales</strong></td>
+                <td><input type="text" formControlName="ojoDerechoPuntosLagrimales" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoPuntosLagrimales" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <h4>Conjuntiva</h4>
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoConjuntivaTarsal">OD Conjuntiva Tarsal</label>
-            <input type="text" id="ojoDerechoConjuntivaTarsal" formControlName="ojoDerechoConjuntivaTarsal" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoConjuntivaTarsal">OI Conjuntiva Tarsal</label>
-            <input type="text" id="ojoIzquierdoConjuntivaTarsal" formControlName="ojoIzquierdoConjuntivaTarsal" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoConjuntivaBulbar">OD Conjuntiva Bulbar</label>
-            <input type="text" id="ojoDerechoConjuntivaBulbar" formControlName="ojoDerechoConjuntivaBulbar" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoConjuntivaBulbar">OI Conjuntiva Bulbar</label>
-            <input type="text" id="ojoIzquierdoConjuntivaBulbar" formControlName="ojoIzquierdoConjuntivaBulbar" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoFondoSaco">OD Fondo de Saco</label>
-            <input type="text" id="ojoDerechoFondoSaco" formControlName="ojoDerechoFondoSaco" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoFondoSaco">OI Fondo de Saco</label>
-            <input type="text" id="ojoIzquierdoFondoSaco" formControlName="ojoIzquierdoFondoSaco" class="form-control">
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Conjuntiva Tarsal</strong></td>
+                <td><input type="text" formControlName="ojoDerechoConjuntivaTarsal" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoConjuntivaTarsal" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Conjuntiva Bulbar</strong></td>
+                <td><input type="text" formControlName="ojoDerechoConjuntivaBulbar" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoConjuntivaBulbar" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Fondo de Saco</strong></td>
+                <td><input type="text" formControlName="ojoDerechoFondoSaco" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoFondoSaco" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <h4>Córnea y Segmento Anterior</h4>
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoLimbo">OD Limbo</label>
-            <input type="text" id="ojoDerechoLimbo" formControlName="ojoDerechoLimbo" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoLimbo">OI Limbo</label>
-            <input type="text" id="ojoIzquierdoLimbo" formControlName="ojoIzquierdoLimbo" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoCorneaBiomicroscopia">OD Córnea</label>
-            <input type="text" id="ojoDerechoCorneaBiomicroscopia" formControlName="ojoDerechoCorneaBiomicroscopia" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoCorneaBiomicroscopia">OI Córnea</label>
-            <input type="text" id="ojoIzquierdoCorneaBiomicroscopia" formControlName="ojoIzquierdoCorneaBiomicroscopia" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoCamaraAnterior">OD Cámara Anterior</label>
-            <input type="text" id="ojoDerechoCamaraAnterior" formControlName="ojoDerechoCamaraAnterior" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoCamaraAnterior">OI Cámara Anterior</label>
-            <input type="text" id="ojoIzquierdoCamaraAnterior" formControlName="ojoIzquierdoCamaraAnterior" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoIris">OD Iris</label>
-            <input type="text" id="ojoDerechoIris" formControlName="ojoDerechoIris" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoIris">OI Iris</label>
-            <input type="text" id="ojoIzquierdoIris" formControlName="ojoIzquierdoIris" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoCristalino">OD Cristalino</label>
-            <input type="text" id="ojoDerechoCristalino" formControlName="ojoDerechoCristalino" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoCristalino">OI Cristalino</label>
-            <input type="text" id="ojoIzquierdoCristalino" formControlName="ojoIzquierdoCristalino" class="form-control">
-          </div>
-        </div>
-
-        <!-- Imágenes de Biomicroscopía - Ojo Derecho -->
-        <h4>Imágenes Ojo Derecho (OD)</h4>
-        <div class="form-row">
-          <div class="form-group col-md-4">
-            <label>Imagen OD 1</label>
-            <div class="custom-file">
-              <input type="file" id="biomicroscopiaOD1" (change)="onImageSelected($event, 'biomicroscopiaOD1')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['biomicroscopiaOD1']">
-                <img [src]="imagenPreviews['biomicroscopiaOD1']" alt="Biomicroscopía OD 1" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('biomicroscopiaOD1')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group col-md-4">
-            <label>Imagen OD 2</label>
-            <div class="custom-file">
-              <input type="file" id="biomicroscopiaOD2" (change)="onImageSelected($event, 'biomicroscopiaOD2')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['biomicroscopiaOD2']">
-                <img [src]="imagenPreviews['biomicroscopiaOD2']" alt="Biomicroscopía OD 2" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('biomicroscopiaOD2')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group col-md-4">
-            <label>Imagen OD 3</label>
-            <div class="custom-file">
-              <input type="file" id="biomicroscopiaOD3" (change)="onImageSelected($event, 'biomicroscopiaOD3')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['biomicroscopiaOD3']">
-                <img [src]="imagenPreviews['biomicroscopiaOD3']" alt="Biomicroscopía OD 3" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('biomicroscopiaOD3')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Imágenes de Biomicroscopía - Ojo Izquierdo -->
-        <h4>Imágenes Ojo Izquierdo (OI)</h4>
-        <div class="form-row">
-          <div class="form-group col-md-4">
-            <label>Imagen OI 1</label>
-            <div class="custom-file">
-              <input type="file" id="biomicroscopiaOI1" (change)="onImageSelected($event, 'biomicroscopiaOI1')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['biomicroscopiaOI1']">
-                <img [src]="imagenPreviews['biomicroscopiaOI1']" alt="Biomicroscopía OI 1" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('biomicroscopiaOI1')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group col-md-4">
-            <label>Imagen OI 2</label>
-            <div class="custom-file">
-              <input type="file" id="biomicroscopiaOI2" (change)="onImageSelected($event, 'biomicroscopiaOI2')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['biomicroscopiaOI2']">
-                <img [src]="imagenPreviews['biomicroscopiaOI2']" alt="Biomicroscopía OI 2" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('biomicroscopiaOI2')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="form-group col-md-4">
-            <label>Imagen OI 3</label>
-            <div class="custom-file">
-              <input type="file" id="biomicroscopiaOI3" (change)="onImageSelected($event, 'biomicroscopiaOI3')">
-              
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['biomicroscopiaOI3']">
-                <img [src]="imagenPreviews['biomicroscopiaOI3']" alt="Biomicroscopía OI 3" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-                
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('biomicroscopiaOI3')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Limbo</strong></td>
+                <td><input type="text" formControlName="ojoDerechoLimbo" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoLimbo" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Córnea</strong></td>
+                <td><input type="text" formControlName="ojoDerechoCorneaBiomicroscopia" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoCorneaBiomicroscopia" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Cámara Anterior</strong></td>
+                <td><input type="text" formControlName="ojoDerechoCamaraAnterior" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoCamaraAnterior" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Iris</strong></td>
+                <td><input type="text" formControlName="ojoDerechoIris" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoIris" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Cristalino</strong></td>
+                <td><input type="text" formControlName="ojoDerechoCristalino" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoCristalino" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </form>
     </div>
@@ -478,36 +309,62 @@
     <div class="form-section">
       <h3>Oftalmoscopía</h3>
       <form [formGroup]="oftalmoscopiaForm">
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoPapila">OD Papila</label>
-            <input type="text" id="ojoDerechoPapila" formControlName="ojoDerechoPapila" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoPapila">OI Papila</label>
-            <input type="text" id="ojoIzquierdoPapila" formControlName="ojoIzquierdoPapila" class="form-control">
-          </div>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th>Parámetro</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Papila</strong></td>
+                <td><input type="text" formControlName="ojoDerechoPapila" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoPapila" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Excavación</strong></td>
+                <td><input type="text" formControlName="ojoDerechoExcavacion" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoExcavacion" class="form-control"></td>
+              </tr>
+              <tr>
+                <td><strong>Radio</strong></td>
+                <td><input type="text" formControlName="ojoDerechoRadio" class="form-control"></td>
+                <td><input type="text" formControlName="ojoIzquierdoRadio" class="form-control"></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
+        <!-- Imágenes de Oftalmoscopía -->
         <div class="form-row">
           <div class="form-group col-md-6">
-            <label for="ojoDerechoExcavacion">OD Excavación</label>
-            <input type="text" id="ojoDerechoExcavacion" formControlName="ojoDerechoExcavacion" class="form-control">
+            <label>Imagen Ojo Derecho (OD)</label>
+            <div class="custom-file">
+              <input type="file" (change)="onImageSelected($event, 'oftalmoscopiaOD')">
+              
+              <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOD']">
+                <img [src]="imagenPreviews['oftalmoscopiaOD']" alt="Oftalmoscopía OD" class="img-thumbnail">
+                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOD')">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </div>
+            </div>
           </div>
           <div class="form-group col-md-6">
-            <label for="ojoIzquierdoExcavacion">OI Excavación</label>
-            <input type="text" id="ojoIzquierdoExcavacion" formControlName="ojoIzquierdoExcavacion" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="ojoDerechoRadio">OD Radio</label>
-            <input type="text" id="ojoDerechoRadio" formControlName="ojoDerechoRadio" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="ojoIzquierdoRadio">OI Radio</label>
-            <input type="text" id="ojoIzquierdoRadio" formControlName="ojoIzquierdoRadio" class="form-control">
+            <label>Imagen Ojo Izquierdo (OI)</label>
+            <div class="custom-file">
+              <input type="file" (change)="onImageSelected($event, 'oftalmoscopiaOI')">
+              
+              <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOI']">
+                <img [src]="imagenPreviews['oftalmoscopiaOI']" alt="Oftalmoscopía OI" class="img-thumbnail">
+                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOI')">
+                  <i class="fas fa-trash"></i> Eliminar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </form>
