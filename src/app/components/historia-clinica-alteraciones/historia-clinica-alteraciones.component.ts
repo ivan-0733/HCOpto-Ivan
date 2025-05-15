@@ -517,21 +517,39 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
   if (imageType === 'campimetria') {
     formData.append('seccionID', '9');  // ID para sección Campimetría
     formData.append('tipoImagenID', '3'); // ID para tipo Campimetría
-  } else if (imageType === 'oftalmoscopiaOD' || imageType === 'oftalmoscopiaOI') {
+  } else if (imageType === 'oftalmoscopiaOD') {
     formData.append('seccionID', '11'); // ID para sección Oftalmoscopía
     formData.append('tipoImagenID', '5'); // ID para tipo Oftalmoscopía
+    formData.append('esOjoDerecho', 'true'); // Añadir parámetro para indicar que es el ojo derecho
+  } else if (imageType === 'oftalmoscopiaOI') {
+    formData.append('seccionID', '11'); // ID para sección Oftalmoscopía
+    formData.append('tipoImagenID', '5'); // ID para tipo Oftalmoscopía
+    formData.append('esOjoDerecho', 'false'); // Añadir parámetro para indicar que es el ojo izquierdo
   } else {
     console.error('Tipo de imagen no reconocido:', imageType);
     return Promise.reject('Tipo de imagen no válido');
   }
   
+  console.log(`Enviando imagen de ${imageType} con formData:`, {
+    seccionID: formData.get('seccionID'),
+    tipoImagenID: formData.get('tipoImagenID'),
+    esOjoDerecho: formData.get('esOjoDerecho'),
+    file: file.name
+  });
+  
   return new Promise<void>((resolve, reject) => {
     this.historiaService.subirImagen(this.historiaId!, formData)
       .subscribe({
-        next: (response: {imageId?: number}) => {
-          if (response && response.imageId) {
+        next: (response: {imageId?: number, data?: any}) => {
+          const imageId = response.imageId || (response.data ? response.data.imageId : null);
+          console.log(`Respuesta de subida de ${imageType}:`, response);
+          
+          if (imageId) {
             // Actualizar el ID de imagen en el formulario correspondiente
-            this.actualizarImagenId(response.imageId, imageType);
+            this.actualizarImagenId(imageId, imageType);
+            
+            // Actualizar la sección con el nuevo ID de imagen
+            this.actualizarSeccionConImagen(imageType, imageId);
             resolve();
           } else {
             console.warn('No se obtuvo ID de imagen en la respuesta');
@@ -576,31 +594,20 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
 
   // Actualizar el ID de imagen en el formulario correspondiente
   private actualizarImagenId(imageId: number, imageType: string): void {
-    switch (imageType) {
-      case 'campimetria':
-        this.campimetriaForm.patchValue({ imagenID: imageId });
-        break;
-      case 'oftalmoscopiaOD':
-        this.oftalmoscopiaForm.patchValue({ ojoDerechoImagenID: imageId });
-        break;
-      case 'oftalmoscopiaOI':
-        this.oftalmoscopiaForm.patchValue({ ojoIzquierdoImagenID: imageId });
-        break;
-    }
-
-    // Actualizar la sección correspondiente
-    const seccionId = this.getSeccionIdByImageType(imageType);
-    const seccionNombre = this.getSeccionNameById(seccionId);
-    
-    if (seccionNombre) {
-      const formData = this.getFormBySeccionName(seccionNombre).value;
-      this.historiaService.actualizarSeccion(this.historiaId!, seccionNombre, formData)
-        .subscribe({
-          next: () => console.log(`Imagen ${imageType} actualizada en sección ${seccionNombre}`),
-          error: (err) => console.error(`Error al actualizar imagen en sección ${seccionNombre}:`, err)
-        });
-    }
+  switch (imageType) {
+    case 'campimetria':
+      this.campimetriaForm.patchValue({ imagenID: imageId });
+      break;
+    case 'oftalmoscopiaOD':
+      console.log('Actualizando formulario de oftalmoscopía con OD imageId:', imageId);
+      this.oftalmoscopiaForm.patchValue({ ojoDerechoImagenID: imageId });
+      break;
+    case 'oftalmoscopiaOI':
+      console.log('Actualizando formulario de oftalmoscopía con OI imageId:', imageId);
+      this.oftalmoscopiaForm.patchValue({ ojoIzquierdoImagenID: imageId });
+      break;
   }
+}
 
   // Obtener nombre de sección por ID
   private getSeccionNameById(seccionId: string): string {
@@ -650,7 +657,8 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
     }
   }
 
-  actualizarSeccionConImagen(imageType: string, imageId: number): void {
+// Actualización del método actualizarSeccionConImagen para asegurar actualización correcta
+actualizarSeccionConImagen(imageType: string, imageId: number): void {
   if (!this.historiaId) return;
   
   let seccionData = {};
@@ -670,9 +678,11 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
   else if (imageType === 'oftalmoscopiaOD') {
     seccionData = {
       ...this.oftalmoscopiaForm.value,
-      ojoDerechoImagenID: imageId
+      ojoDerechoImagenID: imageId,
+      ojoDerechoImagenBase64: null // Importante: limpiar la versión base64
     };
     
+    console.log('Actualizando oftalmoscopía OD con imageId:', imageId);
     this.historiaService.actualizarSeccion(this.historiaId, 'oftalmoscopia', seccionData)
       .subscribe({
         next: () => console.log('Imagen OD actualizada en oftalmoscopía'),
@@ -682,9 +692,11 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
   else if (imageType === 'oftalmoscopiaOI') {
     seccionData = {
       ...this.oftalmoscopiaForm.value,
-      ojoIzquierdoImagenID: imageId
+      ojoIzquierdoImagenID: imageId,
+      ojoIzquierdoImagenBase64: null // Importante: limpiar la versión base64
     };
     
+    console.log('Actualizando oftalmoscopía OI con imageId:', imageId);
     this.historiaService.actualizarSeccion(this.historiaId, 'oftalmoscopia', seccionData)
       .subscribe({
         next: () => console.log('Imagen OI actualizada en oftalmoscopía'),

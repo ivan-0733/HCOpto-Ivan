@@ -307,63 +307,106 @@
 
     <!-- Sección de Oftalmoscopía -->
     <div class="form-section">
-      <h3>Oftalmoscopía</h3>
-      <form [formGroup]="oftalmoscopiaForm">
-        <div class="table-responsive">
-          <table class="table-agudeza">
-            <thead>
-              <tr>
-                <th>Parámetro</th>
-                <th>OD</th>
-                <th>OI</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Papila</strong></td>
-                <td><input type="text" formControlName="ojoDerechoPapila" class="form-control"></td>
-                <td><input type="text" formControlName="ojoIzquierdoPapila" class="form-control"></td>
-              </tr>
-              <tr>
-                <td><strong>Excavación</strong></td>
-                <td><input type="text" formControlName="ojoDerechoExcavacion" class="form-control"></td>
-                <td><input type="text" formControlName="ojoIzquierdoExcavacion" class="form-control"></td>
-              </tr>
-              <tr>
-                <td><strong>Radio</strong></td>
-                <td><input type="text" formControlName="ojoDerechoRadio" class="form-control"></td>
-                <td><input type="text" formControlName="ojoIzquierdoRadio" class="form-control"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+  <h3>Oftalmoscopía</h3>
+  <form [formGroup]="oftalmoscopiaForm">
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th>Parámetro</th>
+            <th>OD</th>
+            <th>OI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Campos existentes -->
+          <tr>
+            <td><strong>Papila</strong></td>
+            <td><input type="text" formControlName="ojoDerechoPapila" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoPapila" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>Excavación</strong></td>
+            <td><input type="text" formControlName="ojoDerechoExcavacion" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoExcavacion" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>Radio</strong></td>
+            <td><input type="text" formControlName="ojoDerechoRadio" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoRadio" class="form-control"></td>
+          </tr>
+          
+          <!-- Campos adicionales -->
+          <tr>
+            <td><strong>Profundidad</strong></td>
+            <td><input type="text" formControlName="ojoDerechoProfundidad" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoProfundidad" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>Vasos</strong></td>
+            <td><input type="text" formControlName="ojoDerechoVasos" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoVasos" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>RELAV</strong></td>
+            <td><input type="text" formControlName="ojoDerechoRELAV" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoRELAV" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>Mácula</strong></td>
+            <td><input type="text" formControlName="ojoDerechoMacula" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoMacula" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>Reflejo</strong></td>
+            <td><input type="text" formControlName="ojoDerechoReflejo" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoReflejo" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>Retina Periférica</strong></td>
+            <td><input type="text" formControlName="ojoDerechoRetinaPeriferica" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoRetinaPeriferica" class="form-control"></td>
+          </tr>
+          <tr>
+            <td><strong>ISNT</strong></td>
+            <td><input type="text" formControlName="ojoDerechoISNT" class="form-control"></td>
+            <td><input type="text" formControlName="ojoIzquierdoISNT" class="form-control"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
         <!-- Imágenes de Oftalmoscopía -->
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label>Imagen Ojo Derecho (OD)</label>
-            <div class="custom-file">
-              <input type="file" (change)="onImageSelected($event, 'oftalmoscopiaOD')">
+      <!-- Para oftalmoscopía OD -->
+        <div class="form-group">
+          <label>Imagen Ojo Derecho</label>
+          <div class="custom-file">
+            <input type="file" id="oftalmoscopiaODImage" 
+                  (change)="onImageSelected($event, 'oftalmoscopiaOD')">
+            
+            <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOD']">
+              <img [src]="imagenPreviews['oftalmoscopiaOD']" alt="Ojo Derecho" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
               
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOD']">
-                <img [src]="imagenPreviews['oftalmoscopiaOD']" alt="Oftalmoscopía OD" class="img-thumbnail">
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOD')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
+              <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOD')">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
             </div>
           </div>
-          <div class="form-group col-md-6">
-            <label>Imagen Ojo Izquierdo (OI)</label>
-            <div class="custom-file">
-              <input type="file" (change)="onImageSelected($event, 'oftalmoscopiaOI')">
+        </div>
+
+        <!-- Para oftalmoscopía OI -->
+        <div class="form-group">
+          <label>Imagen Ojo Izquierdo</label>
+          <div class="custom-file">
+            <input type="file" id="oftalmoscopiaOIImage" 
+                  (change)="onImageSelected($event, 'oftalmoscopiaOI')">
+            
+            <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOI']">
+              <img [src]="imagenPreviews['oftalmoscopiaOI']" alt="Ojo Izquierdo" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
               
-              <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOI']">
-                <img [src]="imagenPreviews['oftalmoscopiaOI']" alt="Oftalmoscopía OI" class="img-thumbnail">
-                <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOI')">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
-              </div>
+              <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOI')">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
             </div>
           </div>
         </div>

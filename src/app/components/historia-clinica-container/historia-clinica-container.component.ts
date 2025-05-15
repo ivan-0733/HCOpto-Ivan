@@ -821,7 +821,9 @@ crearNuevaHistoria(): void {
   // Guardar temporalmente las imágenes en base64 para subirlas después
   const imagenesBase64 = {
     metodoGrafico: this.formValues['metodo-grafico']?.imagenBase64 || this.imgPreview,
-    campimetria: this.formValues['campimetria']?.imagenBase64 || this.imgPreview
+    campimetria: this.formValues['campimetria']?.imagenBase64 || this.imgPreview,
+    oftalmoscopiaOD: this.formValues['oftalmoscopia']?.ojoDerechoImagenBase64,
+    oftalmoscopiaOI: this.formValues['oftalmoscopia']?.ojoIzquierdoImagenBase64
   };
 
   // Preparar todas las secciones sin incluir datos base64 de imágenes (para evitar payload grande)
@@ -980,6 +982,84 @@ crearNuevaHistoria(): void {
             })
           );
         }
+
+        if (imagenesBase64.oftalmoscopiaOD) {
+        promesasImagenes.push(
+          this.uploadBase64Image(
+            newHistoriaId, 
+            imagenesBase64.oftalmoscopiaOD, 
+            '11',  // Section ID for oftalmoscopía
+            '5',   // Image type ID for oftalmoscopía
+            true   // Es ojo derecho
+          ).then(imageId => {
+            if (imageId) {
+              // Update the section with the new image ID
+              return new Promise<void>((resolve) => {
+                const datosOftalmoscopia = {
+                  ...this.formValues['oftalmoscopia'],
+                  ojoDerechoImagenID: imageId,
+                  ojoDerechoImagenBase64: undefined
+                };
+                
+                this.historiaClinicaService.actualizarSeccion(
+                  newHistoriaId,
+                  'oftalmoscopia',
+                  datosOftalmoscopia
+                ).subscribe({
+                  next: () => {
+                    console.log('Sección oftalmoscopía OD actualizada con ID de imagen:', imageId);
+                    resolve();
+                  },
+                  error: (err) => {
+                    console.error('Error al actualizar oftalmoscopía OD con ID de imagen:', err);
+                    resolve(); // Resolvemos para continuar el proceso
+                  }
+                });
+              });
+            }
+            return Promise.resolve();
+          })
+        );
+      }
+
+        if (imagenesBase64.oftalmoscopiaOI) {
+        promesasImagenes.push(
+          this.uploadBase64Image(
+            newHistoriaId, 
+            imagenesBase64.oftalmoscopiaOI, 
+            '11',  // Section ID for oftalmoscopía
+            '5',   // Image type ID for oftalmoscopía
+            false  // Es ojo izquierdo
+          ).then(imageId => {
+            if (imageId) {
+              // Update the section with the new image ID
+              return new Promise<void>((resolve) => {
+                const datosOftalmoscopia = {
+                  ...this.formValues['oftalmoscopia'],
+                  ojoIzquierdoImagenID: imageId,
+                  ojoIzquierdoImagenBase64: undefined
+                };
+                
+                this.historiaClinicaService.actualizarSeccion(
+                  newHistoriaId,
+                  'oftalmoscopia',
+                  datosOftalmoscopia
+                ).subscribe({
+                  next: () => {
+                    console.log('Sección oftalmoscopía OI actualizada con ID de imagen:', imageId);
+                    resolve();
+                  },
+                  error: (err) => {
+                    console.error('Error al actualizar oftalmoscopía OI con ID de imagen:', err);
+                    resolve(); // Resolvemos para continuar el proceso
+                  }
+                });
+              });
+            }
+            return Promise.resolve();
+          })
+        );
+      }
           
           Promise.all(promesasImagenes)
             .then(() => {
@@ -1643,7 +1723,7 @@ onImageBase64Change(event: any): void {
   }
 }
 
-private uploadBase64Image(historiaId: number, base64String: string, seccionID: string, tipoImagenID: string): Promise<number | null> {
+private uploadBase64Image(historiaId: number, base64String: string, seccionID: string, tipoImagenID: string, esOjoDerecho?: boolean): Promise<number | null> {
   return new Promise((resolve, reject) => {
     if (!base64String || !base64String.includes('base64')) {
       console.warn('No hay imagen base64 válida para subir');
@@ -1663,21 +1743,26 @@ private uploadBase64Image(historiaId: number, base64String: string, seccionID: s
         u8arr[n] = bstr.charCodeAt(n);
       }
       
-      const file = new File([u8arr], `metodo-grafico-${Date.now()}.png`, { type: mime });
+      const fileName = seccionID === '11' 
+        ? `oftalmoscopia-${esOjoDerecho ? 'OD' : 'OI'}-${Date.now()}.png` 
+        : `seccion-${seccionID}-${Date.now()}.png`;
+        
+      const file = new File([u8arr], fileName, { type: mime });
       
       // Log para depuración
-      console.log('Tipo de archivo creado:', file.type);
-      console.log('Tamaño de archivo creado:', file.size, 'bytes');
+      console.log(`Tipo de archivo creado: ${file.type}, tamaño: ${file.size} bytes, nombre: ${fileName}`);
       
       // Create FormData for upload
       const formData = new FormData();
-      // IMPORTANTE: Usar exactamente el mismo nombre de campo que espera Multer
-      formData.append('file', file); // Debe coincidir con la configuración de Multer
+      formData.append('file', file);
       formData.append('seccionID', seccionID);
       formData.append('tipoImagenID', tipoImagenID);
       
-      // Log para depuración
-      console.log(`Enviando imagen a historiaID=${historiaId}`);
+      // Si es oftalmoscopía, añadir el parámetro esOjoDerecho
+      if (seccionID === '11' && typeof esOjoDerecho !== 'undefined') {
+        formData.append('esOjoDerecho', esOjoDerecho ? 'true' : 'false');
+        console.log(`Subiendo imagen de oftalmoscopía para ojo ${esOjoDerecho ? 'derecho' : 'izquierdo'}`);
+      }
       
       // Upload the image
       this.historiaClinicaService.subirImagen(historiaId, formData)
@@ -1687,15 +1772,15 @@ private uploadBase64Image(historiaId: number, base64String: string, seccionID: s
             
             // Extraer ID de imagen de la respuesta
             const imageId = response.data?.imageId || 
-            response.data?.id || 
-            response.imageId || 
-            response.id;
+              response.data?.id || 
+              response.imageId || 
+              response.id;
             
             if (imageId) {
               console.log('ID de imagen recuperado:', imageId);
               resolve(imageId);
             } else {
-              console.warn('No se encontró ID de imagen en la respuesta');
+              console.warn('No se encontró ID de imagen en la respuesta', response);
               resolve(null);
             }
           },

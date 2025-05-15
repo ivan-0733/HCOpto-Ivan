@@ -241,31 +241,61 @@ try {
     }
 
     //si es una imagen para oftalmoscopia
-        if (seccionID === '11') {
-    console.log('Actualizando directamente Campimetría con ID de imagen:', imageId);
-    
-    // Verificar si existe un registro para esta historia
-    const [campimetria] = await db.query(
-        'SELECT ID FROM Oftalmoscopia WHERE HistorialID = ?',
-        [historiaID]
-    );
+    if (seccionID === '11') {
+    // 1. Validación estricta del parámetro
+    if (req.body.esOjoDerecho === undefined) {
+        console.error('Falta parámetro esOjoDerecho para oftalmoscopía');
+        return res.status(400).json({
+            status: 'error',
+            message: 'Se requiere especificar ojo (esOjoDerecho: true/false)'
+        });
+    }
 
-    if (campimetria.length === 0) {
-        // Crear nuevo registro con la referencia a la imagen
-        await db.query(
-        `INSERT INTO Oftalmoscopia (HistorialID, ImagenID) VALUES (?, ?)`,
-        [historiaID, imageId]
-        );
-        console.log('Creado nuevo registro en Oftalmoscopia con ImagenID:', imageId);
-    } else {
-        // Actualizar el registro existente
-        await db.query(
-        `UPDATE Oftalmoscopia SET ImagenID = ? WHERE HistorialID = ?`,
-        [imageId, historiaID]
-        );
-        console.log('Actualizado registro existente en Oftalmoscopia con ImagenID:', imageId);
+    if (typeof req.body.esOjoDerecho !== 'string' || 
+        !['true', 'false'].includes(req.body.esOjoDerecho.toLowerCase())) {
+        console.error('Valor inválido para esOjoDerecho:', req.body.esOjoDerecho);
+        return res.status(400).json({
+            status: 'error',
+            message: 'esOjoDerecho debe ser "true" o "false"'
+        });
     }
+
+    const esOjoDerecho = req.body.esOjoDerecho.toLowerCase() === 'true';
+    const columna = esOjoDerecho ? 'OjoDerechoImagenID' : 'OjoIzquierdoImagenID';
+    
+    try {
+        // 2. Verificar existencia del registro
+        const [oftalmoscopia] = await db.query(
+            'SELECT ID FROM Oftalmoscopia WHERE HistorialID = ?',
+            [historiaID]
+        );
+
+        // 3. Ejecutar la operación sin transacción o usar la conexión correctamente
+        if (!oftalmoscopia || oftalmoscopia.length === 0) {
+            // Crear nuevo registro
+            await db.query(
+                `INSERT INTO Oftalmoscopia (HistorialID, ${columna}) VALUES (?, ?)`,
+                [historiaID, imageId]
+            );
+            console.log(`Nuevo registro creado con ${columna}: ${imageId}`);
+        } else {
+            // Actualizar registro existente
+            await db.query(
+                `UPDATE Oftalmoscopia SET ${columna} = ? WHERE HistorialID = ?`,
+                [imageId, historiaID]
+            );
+            console.log(`Actualizado ${columna} a ${imageId}`);
+        }
+        
+    } catch (error) {
+        console.error('Error en operación de oftalmoscopía:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error al actualizar oftalmoscopía',
+            details: error.message
+        });
     }
+}
 
     
 } catch (dbError) {
