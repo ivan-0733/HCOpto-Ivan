@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormGroup } from '@angular/forms';
+import { FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { HistoriaClinicaService } from '../../services/historia-clinica.service';
@@ -481,60 +481,115 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
   }
 }
 
+// onDiagnosticoFormReady(form: FormGroup): void {
+//   // Verify which form we're receiving based on its structure
+//   if (form.contains('ojoDerechoRefractivo')) {
+//     this.diagnosticoForm = form;
+//     console.log('Form diagnóstico recibido:', form);
+    
+//     // Restore previous values if they exist
+//     if (this.formValues['diagnostico']) {
+//       form.patchValue(this.formValues['diagnostico']);
+//     }
+    
+//     // Subscribe to form changes to save them
+//     form.valueChanges.subscribe(values => {
+//       this.formValues['diagnostico'] = values;
+//     });
+//   } 
+//   else if (form.contains('descripcion') && !this.planTratamientoForm) {
+//     this.planTratamientoForm = form;
+//     console.log('Form plan tratamiento recibido:', form);
+    
+//     // Restore previous values if they exist
+//     if (this.formValues['plan-tratamiento']) {
+//       form.patchValue(this.formValues['plan-tratamiento']);
+//     }
+    
+//     // Subscribe to form changes to save them
+//     form.valueChanges.subscribe(values => {
+//       this.formValues['plan-tratamiento'] = values;
+//     });
+//   }
+//   else if (form.contains('descripcion') && !this.pronosticoForm) {
+//     this.pronosticoForm = form;
+//     console.log('Form pronóstico recibido:', form);
+    
+//     // Restore previous values if they exist
+//     if (this.formValues['pronostico']) {
+//       form.patchValue(this.formValues['pronostico']);
+//     }
+    
+//     // Subscribe to form changes to save them
+//     form.valueChanges.subscribe(values => {
+//       this.formValues['pronostico'] = values;
+//     });
+//   }
+//   else if (form.contains('descripcion') && !this.recomendacionesForm) {
+//     this.recomendacionesForm = form;
+//     console.log('Form recomendaciones recibido:', form);
+    
+//     // Restore previous values if they exist
+//     if (this.formValues['recomendaciones']) {
+//       form.patchValue(this.formValues['recomendaciones']);
+//     }
+    
+//     // Subscribe to form changes to save them
+//     form.valueChanges.subscribe(values => {
+//       this.formValues['recomendaciones'] = values;
+//     });
+//   }
+// }
+
 onDiagnosticoFormReady(form: FormGroup): void {
-  // Verify which form we're receiving based on its structure
+  // 1. Identificar diagnóstico por campos únicos
   if (form.contains('ojoDerechoRefractivo')) {
     this.diagnosticoForm = form;
-    console.log('Form diagnóstico recibido:', form);
+    console.log('Formulario de diagnóstico registrado');
     
-    // Restore previous values if they exist
     if (this.formValues['diagnostico']) {
       form.patchValue(this.formValues['diagnostico']);
     }
     
-    // Subscribe to form changes to save them
     form.valueChanges.subscribe(values => {
       this.formValues['diagnostico'] = values;
     });
   } 
-  else if (form.contains('descripcion') && !this.planTratamientoForm) {
+  // 2. Identificar Plan de Tratamiento (es el único con Validators.required)
+  else if (form.contains('descripcion') && form.get('descripcion')?.hasValidator(Validators.required)) {
     this.planTratamientoForm = form;
-    console.log('Form plan tratamiento recibido:', form);
+    console.log('Formulario de plan de tratamiento registrado');
     
-    // Restore previous values if they exist
     if (this.formValues['plan-tratamiento']) {
       form.patchValue(this.formValues['plan-tratamiento']);
     }
     
-    // Subscribe to form changes to save them
     form.valueChanges.subscribe(values => {
       this.formValues['plan-tratamiento'] = values;
     });
   }
+  // 3. Identificar Pronóstico (sin validadores requeridos)
   else if (form.contains('descripcion') && !this.pronosticoForm) {
     this.pronosticoForm = form;
-    console.log('Form pronóstico recibido:', form);
+    console.log('Formulario de pronóstico registrado');
     
-    // Restore previous values if they exist
     if (this.formValues['pronostico']) {
       form.patchValue(this.formValues['pronostico']);
     }
     
-    // Subscribe to form changes to save them
     form.valueChanges.subscribe(values => {
       this.formValues['pronostico'] = values;
     });
   }
-  else if (form.contains('descripcion') && !this.recomendacionesForm) {
+  // 4. Identificar Recomendaciones (último formulario restante)
+  else if (form.contains('descripcion')) {
     this.recomendacionesForm = form;
-    console.log('Form recomendaciones recibido:', form);
+    console.log('Formulario de recomendaciones registrado');
     
-    // Restore previous values if they exist
     if (this.formValues['recomendaciones']) {
       form.patchValue(this.formValues['recomendaciones']);
     }
     
-    // Subscribe to form changes to save them
     form.valueChanges.subscribe(values => {
       this.formValues['recomendaciones'] = values;
     });
@@ -2133,7 +2188,6 @@ changeSection(section: string): void {
       }
       break;
 
-      
       case 'deteccion-alteraciones':
         if (this.gridAmslerForm) {
           this.formValues['grid-amsler'] = this.gridAmslerForm.value;
@@ -2153,11 +2207,26 @@ changeSection(section: string): void {
         if (this.oftalmoscopiaForm) {
           this.formValues['oftalmoscopia'] = this.oftalmoscopiaForm.value;
         }
-        
         // Guardar el estado actual de las imágenes
         this.formValues['imagen-previews-deteccion'] = { ...this.imagenPreviewsDeteccion };
         break;
-    }
+    
+      case 'diagnostico':
+        if (this.diagnosticoForm) {
+          this.formValues['diagnostico'] = this.diagnosticoForm.value;
+        }
+        if (this.planTratamientoForm) {
+          this.formValues['plan-tratamiento'] = this.planTratamientoForm.value;
+        }
+        if (this.pronosticoForm) {
+          this.formValues['pronostico'] = this.pronosticoForm.value;
+        }
+        if (this.recomendacionesForm) {
+          this.formValues['recomendaciones'] = this.recomendacionesForm.value;
+        }
+        break;
+
+      }
 
   // Cambiar a la nueva sección
   this.currentSection = section;

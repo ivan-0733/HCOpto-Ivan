@@ -82,7 +82,8 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
 
     // Formulario de Recomendaciones
     this.recomendacionesForm = this.fb.group({
-      descripcion: ['']
+      descripcion: [''],
+      proximaCita: ['']
     });
   }
 
@@ -126,7 +127,8 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
           // Cargar datos de recomendaciones
           if (historia.recomendaciones) {
             this.recomendacionesForm.patchValue({
-              descripcion: historia.recomendaciones.Descripcion || ''
+              descripcion: historia.recomendaciones.Descripcion || '',
+              proximaCita: historia.recomendaciones.ProximaCita || ''
             });
           }
           
@@ -239,6 +241,6 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
   }
   
   getRecomendacionesData(): any {
-    return this.recomendacionesForm.value;
+  return this.recomendacionesForm.value;
   }
 }

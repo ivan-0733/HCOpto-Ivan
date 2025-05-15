@@ -860,9 +860,9 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     // Recomendaciones
     if (secciones.recomendaciones) {
       await connection.query(
-        `INSERT INTO Recomendaciones (HistorialID, Descripcion)
-        VALUES (?, ?)`,
-        [historiaID, secciones.recomendaciones.descripcion || null]
+        `INSERT INTO Recomendaciones (HistorialID, Descripcion, ProximaCita)
+        VALUES (?, ?, ?)`,
+        [historiaID, secciones.recomendaciones.descripcion || null, secciones.recomendaciones.proximaCita || null]
       );
     }
 
@@ -1189,14 +1189,14 @@ try {
       );
     
       case 'deteccion-alteraciones':
-  const {
-    gridAmsler,        // datos para tabla GridAmsler
-    tonometria,        // datos para tabla Tonometria
-    paquimetria,       // datos para tabla Paquimetria
-    campimetria,       // datos para tabla Campimetria
-    biomicroscopia,    // datos para tabla Biomicroscopia
-    oftalmoscopia      // datos para tabla Oftalmoscopia
-  } = datos;
+      const {
+        gridAmsler,        // datos para tabla GridAmsler
+        tonometria,        // datos para tabla Tonometria
+        paquimetria,       // datos para tabla Paquimetria
+        campimetria,       // datos para tabla Campimetria
+        biomicroscopia,    // datos para tabla Biomicroscopia
+        oftalmoscopia      // datos para tabla Oftalmoscopia
+      } = datos;
 
   // 1. GridAmsler - Ya no tiene campos de imagen
   const [gridExiste] = await connection.query(
@@ -1596,7 +1596,30 @@ try {
       );
       }
       break;
+    
+case 'recomendaciones':
+  // Verificar si ya existen recomendaciones para esta historia
+  const [recomendaciones] = await connection.query(
+    'SELECT ID FROM Recomendaciones WHERE HistorialID = ?',
+    [historiaId]
+  );
 
+  if (recomendaciones.length === 0) {
+    // Crear nuevas recomendaciones
+    await connection.query(
+      `INSERT INTO Recomendaciones (HistorialID, Descripcion, ProximaCita)
+      VALUES (?, ?, ?)`,
+      [historiaId, datos.descripcion, datos.proximaCita]
+    );
+  } else {
+    // Actualizar recomendaciones existentes
+    await connection.query(
+      `UPDATE Recomendaciones SET Descripcion = ?, ProximaCita = ? WHERE HistorialID = ?`,
+      [datos.descripcion, datos.proximaCita, historiaId]
+    );
+  }
+  break;
+  
   case 'planTratamiento':
       // Verificar si ya existe un plan de tratamiento para esta historia
       const [planes] = await connection.query(
