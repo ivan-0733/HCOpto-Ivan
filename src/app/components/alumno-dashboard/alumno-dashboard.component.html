@@ -11,7 +11,7 @@
   </header>
 
   <!-- Cards de materias -->
-  <div class="materias-cards" *ngIf="materias && materias.length > 0">
+  <div class="materias-cards" *ngIf="materias && materias.length > 0 && !error">
     <div class="materias-cards-container">
       <!-- Card para "Todas las materias" (solo se muestra si hay más de una materia) -->
       <div class="materia-card" *ngIf="materias.length > 1"
@@ -41,7 +41,7 @@
   </div>
 
   <!-- Modificar la parte de las tarjetas de estadísticas -->
-  <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
+  <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado && !error">
     <!-- Tarjeta de total (siempre visible si hay historias) -->
     <div class="stat-card total"
         *ngIf="obtenerHistoriasNoArchivadas() > 0"
@@ -86,15 +86,24 @@
     </div>
   </div>
 
+  <!-- Error state - este debe mostrarse siempre que haya un error -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
+
   <!-- Mensaje de ayuda -->
   <div class="help-message" *ngIf="!loading && !error && historiasClinicas && historiasClinicas.length > 0">
     <i class="material-icons info-icon">info</i>
     <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas</p>
   </div>
 
-<!-- Filtros -->
-<div class="filtros-container">
-
+<!-- Filtros - solo se muestran cuando no hay error -->
+<div class="filtros-container" *ngIf="!error">
   <div class="filtro">
     <label for="filtroEstado">Filtrar por estado:</label>
     <select
@@ -160,20 +169,11 @@
   </div>
 </div>
 
-<!-- Tabla de historias clínicas -->
-<div class="tabla-container">
+<!-- Tabla de historias clínicas - Ocultar cuando hay un error -->
+<div class="tabla-container" *ngIf="!error">
   <div class="loading-container" *ngIf="loading">
     <div class="spinner"></div>
     <p>Cargando historias clínicas...</p>
-  </div>
-
-  <div class="error-container" *ngIf="error">
-    <i class="fas fa-exclamation-triangle"></i>
-    <p>{{ error }}</p>
-    <button class="btn-retry" (click)="cargarDatos()">
-      <i class="fas fa-sync-alt"></i>
-      Reintentar
-    </button>
   </div>
 
   <div class="empty-container" *ngIf="!loading && !error && filtrarHistorias().length === 0">
@@ -241,7 +241,7 @@
       </tbody>
     </table>
 
-    <!-- Controles de paginación -->
+    <!-- Controles de paginación - solo se muestran si no hay error -->
     <div class="paginacion-container">
       <div class="paginacion-info">
         Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -

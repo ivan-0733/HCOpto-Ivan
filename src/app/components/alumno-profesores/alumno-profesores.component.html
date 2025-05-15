@@ -9,7 +9,7 @@
     </div>
   </header>
 
-  <!-- Error state -->
+  <!-- Error state para Materias -->
   <div class="error-container" *ngIf="error">
     <i class="fas fa-exclamation-triangle"></i>
     <p>{{ error }}</p>
@@ -77,6 +77,16 @@
       </h1>
     </div>
   </header>
+
+  <!-- Error state para Profesores -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>Error al cargar profesores. Por favor, intenta nuevamente.</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
 
 <!-- Professors list -->
 <div class="profesores-list" *ngIf="!loading && !error && profesores.length > 0">

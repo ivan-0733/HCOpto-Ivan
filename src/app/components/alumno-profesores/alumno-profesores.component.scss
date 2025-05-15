@@ -61,7 +61,7 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
 .error-container,
 .empty-container {
   padding: 3rem;
-  margin: 2rem auto;
+  margin: 2rem auto 0rem;
   max-width: 600px;
   text-align: center;
   background-color: $ipn-white;
@@ -81,7 +81,7 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
 
   i {
     font-size: 3rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0rem;
     display: block;
   }
 
@@ -312,7 +312,6 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   font-weight: 600;
   font-size: 0.95rem;
@@ -377,10 +376,11 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   }
 
   .error-container {
-    color: $danger-light;
+    color: $danger;
+    border-color: $danger;
 
     i {
-      color: $danger-light;
+      color: $danger;
     }
   }
 
@@ -435,11 +435,11 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   }
 
   .btn-retry {
-    border-color: $danger-light;
-    color: $danger-light;
+    border-color: $danger;
+    color: $danger;
 
     &:hover {
-      background-color: rgba($danger-light, 0.15);
+      background-color: rgba($danger, 0.15);
     }
   }
 }
