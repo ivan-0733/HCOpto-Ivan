@@ -13,6 +13,7 @@ import { EstadoRefractivoComponent } from '../historia-clinica-estado-refractivo
 import { BinocularidadComponent } from '../historia-clinica-binocularidad/historia-clinica-binocularidad.component';
 import { DeteccionAlteracionesComponent } from '../historia-clinica-alteraciones/historia-clinica-alteraciones.component';
 import { DiagnosticoComponent } from '../historia-clinica-diagnostico/historia-clinica-diagnostico.component';
+import { RecetaFinalComponent } from '../historia-clinica-receta-final/historia-clinica-receta-final.component';
 import { forkJoin } from 'rxjs';
 import { TitleCaseSectionPipe } from '../../pipes/title-case-section.pipe';
 
@@ -32,7 +33,8 @@ EstadoRefractivoComponent,
 TitleCaseSectionPipe,
 BinocularidadComponent,
 DeteccionAlteracionesComponent,
-DiagnosticoComponent
+DiagnosticoComponent, 
+RecetaFinalComponent
 ]
 })
 
@@ -127,6 +129,9 @@ diagnosticoForm: FormGroup | null = null;
 planTratamientoForm: FormGroup | null = null;
 pronosticoForm: FormGroup | null = null;
 recomendacionesForm: FormGroup | null = null;
+
+//formulario para receta final 
+recetaFinalForm: FormGroup | null = null;
 
 // Almacén para los valores de los formularios (persistencia entre navegaciones)
 formValues: {[key: string]: any} = {
@@ -536,6 +541,21 @@ onDiagnosticoFormReady(form: FormGroup): void {
   }
 }
 
+onRecetaFinalFormReady(form: FormGroup): void {
+  this.recetaFinalForm = form;
+  console.log('Formulario de receta final recibido:', form);
+  
+  // Restaurar valores previos si existen
+  if (this.formValues['receta']) {
+    form.patchValue(this.formValues['receta']);
+  }
+  
+  // Suscribirse a cambios en el formulario para guardar
+  form.valueChanges.subscribe(values => {
+    this.formValues['receta'] = values;
+  });
+}
+
 // Suscribirse a cambios en el formulario para guardar los valores mientras se editan
 private subscribeToFormChanges(sectionName: string, form: FormGroup): void {
 form.valueChanges.subscribe(values => {
@@ -849,7 +869,11 @@ private actualizarFormValues(): void {
   if (this.recomendacionesForm) {
     this.formValues['recomendaciones'] = this.recomendacionesForm.value;
   }
-  
+
+  //actualizar receta final 
+  if (this.recetaFinalForm) {
+  this.formValues['receta'] = this.recetaFinalForm.value;
+  }
 }
 
 

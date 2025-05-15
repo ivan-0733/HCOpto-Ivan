@@ -874,7 +874,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           OjoDerechoPrisma, OjoDerechoEjePrisma, OjoIzquierdoEsfera,
           OjoIzquierdoCilindro, OjoIzquierdoEje, OjoIzquierdoPrisma,
           OjoIzquierdoEjePrisma, Tratamiento, TipoID, DIP,
-          ADD, Material, Observaciones
+          valorADD, Material, Observaciones
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           historiaID,
@@ -891,7 +891,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           secciones.recetaFinal.tratamiento || null,
           secciones.recetaFinal.tipoID || null,
           secciones.recetaFinal.dip || null,
-          secciones.recetaFinal.add || null,
+          secciones.recetaFinal.valorADD || null,
           secciones.recetaFinal.material || null,
           secciones.recetaFinal.observaciones || null
         ]

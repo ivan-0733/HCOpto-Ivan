@@ -235,13 +235,15 @@
 
     <!-- Sección de Receta Final -->
     <div *ngIf="currentSection === 'receta'" class="tab-pane">
-      <div class="placeholder-section">
-        <i class="fas fa-prescription"></i>
-        <h3>Receta Final</h3>
-        <p>Receta final y observaciones</p>
-      </div>
-    </div>
+    <app-receta-final
+      [historiaId]="historiaId!"
+      [hideButtons]="true"
+      (completed)="onSectionCompleted('receta', $event)"
+      (formReady)="onRecetaFinalFormReady($event)"
+      (nextSection)="onNextSection()"
+    ></app-receta-final>
   </div>
+</div>
 
   <!-- Barra de progreso -->
   <div class="progress-bar">

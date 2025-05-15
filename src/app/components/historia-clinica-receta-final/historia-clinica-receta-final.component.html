@@ -1,0 +1,146 @@
+<div class="receta-final-container">
+  <h2>Receta Final</h2>
+  <p class="info-text">Registre los valores finales de la receta y observaciones adicionales.</p>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error && !hideButtons" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success && !hideButtons" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!loading" class="form-content">
+    <!-- Sección de Receta Final -->
+    <div class="form-section">
+      <h3>Receta</h3>
+      <form [formGroup]="recetaForm">
+        <!-- Tabla principal de receta (Esfera, Cilindro, Eje, Prisma) -->
+        <div class="table-responsive">
+          <table class="table-receta">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Esfera</th>
+                <th>Cilindro</th>
+                <th>Eje</th>
+                <th>Prisma</th>
+                <th>Eje Prisma</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>OD</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoEsfera" class="form-control" placeholder="+0.00">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoCilindro" class="form-control" placeholder="-0.00">
+                </td>
+                <td>
+                  <input type="number" formControlName="ojoDerechoEje" class="form-control" min="0" max="180" placeholder="0-180">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoDerechoPrisma" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="ojoDerechoEjePrisma" class="form-control">
+                </td>
+              </tr>
+              <tr>
+                <td><strong>OI</strong></td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoEsfera" class="form-control" placeholder="+0.00">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoCilindro" class="form-control" placeholder="-0.00">
+                </td>
+                <td>
+                  <input type="number" formControlName="ojoIzquierdoEje" class="form-control" min="0" max="180" placeholder="0-180">
+                </td>
+                <td>
+                  <input type="text" formControlName="ojoIzquierdoPrisma" class="form-control">
+                </td>
+                <td>
+                  <input type="number" formControlName="ojoIzquierdoEjePrisma" class="form-control">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Información adicional de la receta -->
+        <div class="form-row mt-4">
+          <div class="form-group col-md-4">
+            <label for="tipoID">Tipo de Lente</label>
+            <select id="tipoID" formControlName="tipoID" class="form-control">
+              <option [ngValue]="null">Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposLente" [ngValue]="tipo.ID">{{ tipo.Valor }}</option>
+            </select>
+          </div>
+
+          <div class="form-group col-md-4">
+            <label for="dip">DIP (mm)</label>
+            <input type="text" id="dip" formControlName="dip" class="form-control" placeholder="Ej: 62/60">
+          </div>
+
+          <div class="form-group col-md-4">
+            <label for="valorADD">ADD</label>
+            <input type="text" id="valorADD" formControlName="valorADD" class="form-control" placeholder="+0.00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-md-6">
+            <label for="tratamiento">Tratamiento</label>
+            <input type="text" id="tratamiento" formControlName="tratamiento" class="form-control">
+          </div>
+
+          <div class="form-group col-md-6">
+            <label for="material">Material</label>
+            <input type="text" id="material" formControlName="material" class="form-control" 
+              placeholder="CR-39, Policarbonato, Trivex, etc.">
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="form-section-observaciones">
+          <div class="table-responsive">
+            <table class="table-receta">
+              <thead>
+                <tr>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <textarea id="observaciones" formControlName="observaciones" class="form-control" rows="4"></textarea>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Botones de acción - Solo se muestran si hideButtons es false -->
+    <div class="form-actions" *ngIf="!hideButtons">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="btn-primary" [disabled]="submitting" (click)="guardarRecetaFinal()">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+        Guardar Receta Final
+      </button>
+    </div>
+  </div>
+</div>
