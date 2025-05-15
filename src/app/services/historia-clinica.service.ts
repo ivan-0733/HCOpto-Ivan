@@ -61,6 +61,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   planTratamiento?: any;
   pronostico?: any;
   recetaFinal?: any;
+  recomendaciones?: any;
   comentarios?: any[];
   
   // Nuevas propiedades para examen preliminar

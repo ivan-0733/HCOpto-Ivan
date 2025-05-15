@@ -1,0 +1,123 @@
+<div class="diagnostico-container">
+  <h2>Diagnóstico y Plan de Tratamiento</h2>
+  <p class="info-text">Registre el diagnóstico, plan de tratamiento, pronóstico y recomendaciones para el paciente.</p>
+
+  <!-- Mensajes de error y éxito -->
+  <div *ngIf="error && !hideButtons" class="error-message">
+    <i class="fas fa-exclamation-triangle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success && !hideButtons" class="success-message">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <!-- Indicador de carga -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
+  </div>
+
+  <div *ngIf="!loading" class="form-content">
+    <!-- Sección de Diagnóstico -->
+     <div class="form-section">
+      <h3>Diagnóstico</h3>
+      <form [formGroup]="diagnosticoForm">
+        <div class="table-responsive">
+          <table class="table-diagnostico">
+            <thead>
+              <tr>
+                <th>Tipo de Diagnóstico</th>
+                <th>OD</th>
+                <th>OI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Refractivo</strong></td>
+                <td>
+                  <textarea id="ojoDerechoRefractivo" formControlName="ojoDerechoRefractivo" class="form-control" rows="3"></textarea>
+                </td>
+                <td>
+                  <textarea id="ojoIzquierdoRefractivo" formControlName="ojoIzquierdoRefractivo" class="form-control" rows="3"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Patológico</strong></td>
+                <td>
+                  <textarea id="ojoDerechoPatologico" formControlName="ojoDerechoPatologico" class="form-control" rows="3"></textarea>
+                </td>
+                <td>
+                  <textarea id="ojoIzquierdoPatologico" formControlName="ojoIzquierdoPatologico" class="form-control" rows="3"></textarea>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-row mt-4">
+          <div class="form-group col-md-6">
+            <label for="binocular">Diagnóstico Binocular</label>
+            <textarea id="binocular" formControlName="binocular" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group col-md-6">
+            <label for="sensorial">Diagnóstico Sensorial</label>
+            <textarea id="sensorial" formControlName="sensorial" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Plan de Tratamiento -->
+    <div class="form-section">
+      <h3>Plan de Tratamiento</h3>
+      <form [formGroup]="planTratamientoForm">
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="planDescripcion">Descripción del Plan de Tratamiento <span class="required-marker">*</span></label>
+            <textarea id="planDescripcion" formControlName="descripcion" class="form-control" rows="5" required></textarea>
+            <div *ngIf="planTratamientoForm.get('descripcion')?.invalid && (planTratamientoForm.get('descripcion')?.dirty || planTratamientoForm.get('descripcion')?.touched)" class="invalid-feedback">
+              El plan de tratamiento es obligatorio
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Pronóstico -->
+    <div class="form-section">
+      <h3>Pronóstico</h3>
+      <form [formGroup]="pronosticoForm">
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="pronosticoDescripcion">Descripción del Pronóstico</label>
+            <textarea id="pronosticoDescripcion" formControlName="descripcion" class="form-control" rows="4"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sección de Recomendaciones -->
+    <div class="form-section">
+      <h3>Recomendaciones</h3>
+      <form [formGroup]="recomendacionesForm">
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="recomendacionesDescripcion">Descripción de las Recomendaciones</label>
+            <textarea id="recomendacionesDescripcion" formControlName="descripcion" class="form-control" rows="4"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Botones de acción - Solo se muestran si hideButtons es false -->
+    <div class="form-actions" *ngIf="!hideButtons">
+      <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
+      <button type="button" class="btn-primary" [disabled]="submitting || planTratamientoForm.invalid" (click)="guardarDiagnostico()">
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
+        Guardar Diagnóstico
+      </button>
+    </div>
+  </div>
+</div>

@@ -224,11 +224,13 @@
 
     <!-- Sección de Diagnóstico -->
     <div *ngIf="currentSection === 'diagnostico'" class="tab-pane">
-      <div class="placeholder-section">
-        <i class="fas fa-stethoscope"></i>
-        <h3>Diagnóstico</h3>
-        <p>Diagnóstico, plan de tratamiento, pronóstico, recomendaciones y próxima cita</p>
-      </div>
+      <app-diagnostico
+        [historiaId]="historiaId!"
+        [hideButtons]="true"
+        (completed)="onSectionCompleted('diagnostico', $event)"
+        (formReady)="onDiagnosticoFormReady($event)"
+        (nextSection)="onNextSection()"
+      ></app-diagnostico>
     </div>
 
     <!-- Sección de Receta Final -->
