@@ -16,26 +16,31 @@ $accent-color-dark2: $ipn-guinda-light;
   margin: 0 auto;
 }
 
+// Header
 .content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 
   .header-title {
     h1 {
+      font-size: 1.8rem;
+      color: $ipn-guinda; // Cambiado a color IPN
+      margin: 0;
       display: flex;
       align-items: center;
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: $ipn-guinda;
-      margin: 0;
 
       i {
-        color: $ipn-guinda;
-        margin-right: 0.75rem;
+        margin-right: 0rem;
+        color: $ipn-guinda; // Cambiado a color IPN
       }
     }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
   }
 }
 
@@ -201,6 +206,60 @@ $accent-color-dark2: $ipn-guinda-light;
   }
 }
 
+
+// Estados de carga, error y vacío
+.error-container{
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 400px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $ipn-guinda-dark;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 0rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    color: $ipn-gray-dark;
+  }
+
+  button {
+    margin-top: 1.5rem;
+  }
+}
+
+.loading-container {
+  i, .spinner {
+    color: $ipn-guinda; // Cambiado a color IPN
+  }
+}
+
+.error-container {
+  color: $danger;
+  border-color: $danger;
+}
+
 // Estilos para mensajes de error - Mantenidos para ser consistentes en ambos temas
 .error-message {
   background-color: rgba($danger, 0.05); // Cambiado para soporte de tema
@@ -329,18 +388,17 @@ $accent-color-dark2: $ipn-guinda-light;
   .password-form-horizontal {
     width: 100%;
     display: flex;
-    flex-direction: row;
     flex-wrap: wrap;
     gap: 1rem; /* Reducido desde 0rem para dar un mínimo espacio pero mantenerlo compacto */
-    justify-content: space-between;
+    justify-content: flex-start;
     margin-right: 0; /* Asegura que no haya margen extra a la derecha */
     padding-right: 0; /* Asegura que no haya padding extra a la derecha */
 
     .form-group {
-      flex: 1;
+      flex: 1 1 0;
       min-width: 200px;
-      /* Modificado para que los elementos ocupen mayor espacio horizontal */
       max-width: calc(33.33% - 0.3rem); /* Reducido el espacio entre elementos */
+      max-width: unset; /* Eliminamos el max-width restrictivo de 33.33% */
       margin-right: 0; /* Elimina el margen derecho para alinear con password-info */
 
       .invalid-feedback {
@@ -583,14 +641,13 @@ $accent-color-dark2: $ipn-guinda-light;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-right: 0;
-  margin-left: 0;
-  max-width: 100%;
+  margin-right: 0rem;
+  margin-left: 0.25rem;
+  width: calc(100% - 0.2rem); // Ajustamos el ancho para dejar 2rem de margen derecho
 
   .form-group {
-    flex: 1;
-    min-width: 250px;
-    max-width: calc(33.33% - 2rem);
+    flex: 1 1 0;
+    min-width: 200px; // Permite que los campos pasen a la siguiente fila cuando no hay suficiente espacio
   }
 }
 
@@ -660,7 +717,6 @@ $accent-color-dark2: $ipn-guinda-light;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
   padding: 0.75rem 1.25rem;
   font-weight: 600;
   font-size: 0.95rem;
@@ -690,20 +746,40 @@ $accent-color-dark2: $ipn-guinda-light;
 @media (max-width: 768px) {
   .form-row {
     flex-direction: column;
-    padding: 0 1rem;
+    padding: 0;
+    margin-right: 0; // Eliminamos este margen que estaba causando problemas
+    margin-left: 0.25rem;
+    width: calc(100% - 1.85rem); // Ajustamos el ancho para dejar 2rem de margen derecho
 
     .form-group {
       max-width: 100%;
+      margin-right: 0; // Aseguramos que los grupos no tengan margen derecho adicional
+    }
+  }
+
+  .perfil-container {
+    padding: 1.5rem 1.5rem 1.5rem 1.5rem; // Aseguramos padding uniforme
+  }
+
+  .perfil-form {
+    padding: 1.5rem 2rem 1.5rem 1.5rem; // Ajustamos el padding del formulario
+
+    .form-group {
+      margin-right: 0; // Removemos margen derecho de los grupos para evitar desbordamiento
+      width: 100%; // Aseguramos que ocupen todo el ancho disponible
     }
   }
 
   .password-form-horizontal {
     flex-direction: column;
-    padding: 0 1rem;
+    padding: 0 !important;
+    gap: 1rem;
+    width: 100%; // Aseguramos ancho completo
 
     .form-group {
-      width: 100%;
-      max-width: 100%;
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-right: 0 !important;
     }
   }
 
@@ -721,6 +797,10 @@ $accent-color-dark2: $ipn-guinda-light;
 
   .perfil-form{
     background-color: $dark-bg-card;
+  }
+
+  .header-title h1 {
+    color: $accent-color-dark2 !important; // Color para modo oscuro
   }
 
   .perfil-basic-info p {
@@ -803,9 +883,20 @@ $accent-color-dark2: $ipn-guinda-light;
   .section-title i,
   .info-icon,
   .password-requirements li i:not(.requirement-met i),
-  .password-toggle:hover,
   .password-info .info-icon {
     color: $ipn-guinda-light;
+  }
+
+  .password-input-container:focus-within {
+    .password-toggle {
+      color: $accent-color-dark2;
+    }
+  }
+
+  .password-toggle {
+    &:hover {
+      color: $accent-color-dark2 !important;
+    }
   }
 
   // Botones
@@ -846,13 +937,6 @@ $accent-color-dark2: $ipn-guinda-light;
   .perfil-details .info-item label {
     color: $text-secondary;
   }
-}
-.content-header i {
-  color: $accent-color-dark2;
-}
-
-.header-title h1 {
-  color: $accent-color-dark2 !important;
 }
 
 // Agregar al final de alumno-perfil.component.scss

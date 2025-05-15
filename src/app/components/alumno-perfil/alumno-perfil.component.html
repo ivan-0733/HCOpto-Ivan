@@ -1,4 +1,3 @@
-<!-- Modificación del formulario de perfil para mostrar todos los errores -->
 <div class="perfil-container">
   <!-- Header -->
   <header class="content-header">
@@ -8,6 +7,16 @@
       </h1>
     </div>
   </header>
+
+  <!-- Error state con el mismo formato que en otros componentes -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarPerfil()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
 
   <!-- Loading state -->
   <div class="loading-container" *ngIf="loading">
@@ -22,7 +31,7 @@
   </div>
 
   <!-- Profile content -->
-  <div class="perfil-content" *ngIf="!loading && perfil">
+  <div class="perfil-content" *ngIf="!loading && !error && perfil">
     <div class="perfil-header">
       <div class="perfil-avatar">
         <i class="material-icons" style="font-size: 75px;">person_outline</i>

@@ -11,7 +11,7 @@
   </header>
 
   <!-- Cards de materias -->
-  <div class="materias-cards" *ngIf="materias && materias.length > 0">
+  <div class="materias-cards" *ngIf="materias && materias.length > 0 && !error">
     <div class="materias-cards-container">
       <!-- Card para "Todas las materias" (solo se muestra si hay más de una materia) -->
       <div class="materia-card" *ngIf="materias.length > 1"
@@ -41,8 +41,10 @@
   </div>
 
   <!-- Modificar la parte de las tarjetas de estadísticas -->
-  <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado">
+  <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado && !error">
+    <!-- Tarjeta de total (siempre visible si hay historias) -->
     <div class="stat-card total"
+        *ngIf="obtenerHistoriasNoArchivadas() > 0"
         (click)="aplicarFiltroCard('todos')"
         [ngClass]="{'selected': filtroEstado === 'todos'}">
       <div class="stat-card-icon">
@@ -54,7 +56,9 @@
       </div>
     </div>
 
+    <!-- Tarjeta de archivadas (solo visible si hay historias archivadas) -->
     <div class="stat-card archivadas"
+        *ngIf="estadisticas.archivadas > 0"
         (click)="aplicarFiltroCard('Archivado')"
         [ngClass]="{'selected': filtroEstado === 'Archivado'}">
       <div class="stat-card-icon">
@@ -66,8 +70,9 @@
       </div>
     </div>
 
+    <!-- Tarjetas por estado (solo visible si hay historias en ese estado) -->
     <div class="stat-card por-estado"
-        *ngFor="let estado of estadisticas.porEstado"
+        *ngFor="let estado of obtenerEstadosConValores()"
         (click)="aplicarFiltroCard(estado.estado)"
         [ngClass]="{'selected': filtroEstado === estado.estado}">
       <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
@@ -75,11 +80,20 @@
       </div>
       <div class="stat-card-content">
         <h3>{{ estado.estado }}</h3>
-        <!-- Usar el método personalizado solo para estado "Finalizado" -->
         <p class="stat-value" *ngIf="estado.estado !== 'Finalizado'">{{ estado.cantidad }}</p>
         <p class="stat-value" *ngIf="estado.estado === 'Finalizado'">{{ obtenerFinalizadasNoArchivadas() }}</p>
       </div>
     </div>
+  </div>
+
+  <!-- Error state - este debe mostrarse siempre que haya un error -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
   </div>
 
   <!-- Mensaje de ayuda -->
@@ -88,35 +102,38 @@
     <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas</p>
   </div>
 
-<!-- Filtros -->
-<div class="filtros-container">
-
-  <div class="filtro">
-    <label for="filtroPaciente">Buscar paciente:</label>
-    <div class="input-with-icon">
-      <i class="fas fa-search"></i>
-      <input
-        type="text"
-        id="filtroPaciente"
-        [(ngModel)]="filtroPaciente"
-        placeholder="Nombre del paciente"
-        (ngModelChange)="onFiltroPacienteChange()"
-      >
-    </div>
-  </div>
-
+<!-- Filtros - solo se muestran cuando no hay error -->
+<div class="filtros-container" *ngIf="!error">
   <div class="filtro">
     <label for="filtroEstado">Filtrar por estado:</label>
     <select
       id="filtroEstado"
       [(ngModel)]="filtroEstado"
       (ngModelChange)="resetearPaginacion()">
-      <option value="todos">Todos los estados</option>
-      <option value="Archivado">Archivados</option>
-      <option value="Finalizado">Finalizado</option>
-      <option value="En proceso">En proceso</option>
-      <option value="Revisión">Revisión</option>
-      <option value="Corrección">Corrección</option>
+      <!-- Siempre mostrar la opción "Todos" si hay historias no archivadas -->
+      <option value="todos" *ngIf="obtenerHistoriasNoArchivadas() > 0">Todos los estados</option>
+
+      <!-- Solo mostrar "Archivados" si hay historias archivadas -->
+      <option value="Archivado" *ngIf="estadisticas && estadisticas.archivadas > 0">Archivados</option>
+
+      <!-- Mostrar solo los estados que tienen valores -->
+      <option *ngFor="let estado of obtenerEstadosConValores()" [value]="estado.estado">
+        {{ estado.estado }}
+      </option>
+    </select>
+  </div>
+
+  <div class="filtro" *ngIf="filtroEstado === 'Archivado' && materiaSeleccionadaId === null">
+    <label for="filtroMateriaArchivada">Filtrar por materia:</label>
+    <select
+      id="filtroMateriaArchivada"
+      [(ngModel)]="filtroMateriaArchivada"
+      (ngModelChange)="aplicarFiltroMateriaArchivada()">
+      <option [ngValue]="null">Todas las materias</option>
+      <option *ngFor="let materia of obtenerMateriasConHistoriasArchivadas()" [ngValue]="materia.MateriaProfesorID">
+        {{ materia.NombreMateria }} ({{ materia.Semestre }}° Semestre |
+        {{ materia.EsPeriodoActual ? 'Periodo actual: ' : 'Periodo: ' }}{{ materia.PeriodoEscolar }})
+      </option>
     </select>
   </div>
 
@@ -136,22 +153,27 @@
       <option value="semestre-antiguo">Semestre (más antiguo primero)</option>
     </select>
   </div>
+
+  <div class="filtro">
+    <label for="filtroPaciente">Buscar paciente:</label>
+    <div class="input-with-icon">
+      <i class="fas fa-search"></i>
+      <input
+        type="text"
+        id="filtroPaciente"
+        [(ngModel)]="filtroPaciente"
+        placeholder="Nombre del paciente"
+        (ngModelChange)="onFiltroPacienteChange()"
+      >
+    </div>
+  </div>
 </div>
 
-<!-- Tabla de historias clínicas -->
-<div class="tabla-container">
+<!-- Tabla de historias clínicas - Ocultar cuando hay un error -->
+<div class="tabla-container" *ngIf="!error">
   <div class="loading-container" *ngIf="loading">
     <div class="spinner"></div>
     <p>Cargando historias clínicas...</p>
-  </div>
-
-  <div class="error-container" *ngIf="error">
-    <i class="fas fa-exclamation-triangle"></i>
-    <p>{{ error }}</p>
-    <button class="btn-retry" (click)="cargarDatos()">
-      <i class="fas fa-sync-alt"></i>
-      Reintentar
-    </button>
   </div>
 
   <div class="empty-container" *ngIf="!loading && !error && filtrarHistorias().length === 0">
@@ -219,7 +241,7 @@
       </tbody>
     </table>
 
-    <!-- Controles de paginación -->
+    <!-- Controles de paginación - solo se muestran si no hay error -->
     <div class="paginacion-container">
       <div class="paginacion-info">
         Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -

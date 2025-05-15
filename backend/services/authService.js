@@ -17,8 +17,7 @@ const authService = {
         `SELECT COUNT(*) as count
         FROM AlumnosInfo a
         JOIN Usuarios u ON a.UsuarioID = u.ID
-        WHERE a.NumeroBoleta = ?
-        AND u.EstaActivo = TRUE`,
+        WHERE a.NumeroBoleta = ?`,  // Removed the EstaActivo condition
         [boleta]
       );
 
@@ -42,8 +41,7 @@ const authService = {
         FROM AlumnosInfo a
         JOIN Usuarios u ON a.UsuarioID = u.ID
         WHERE a.NumeroBoleta = ?
-        AND u.CorreoElectronico = ?
-        AND u.EstaActivo = TRUE`,
+        AND u.CorreoElectronico = ?`,
         [boleta, correo]
       );
 
@@ -64,8 +62,7 @@ const authService = {
       const [usuarios] = await db.query(
         `SELECT COUNT(*) as count
         FROM Usuarios
-        WHERE CorreoElectronico = ?
-        AND EstaActivo = TRUE`,
+        WHERE CorreoElectronico = ?`,
         [correo]
       );
 
@@ -103,6 +100,33 @@ const authService = {
       return await this.verificarPassword(password, alumno.ContraseñaHash);
     } catch (error) {
       console.error('Error al verificar contraseña de alumno:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Verifica si la cuenta de un alumno está activa
+   * @param {string} boleta - Número de boleta del alumno
+   * @param {string} correo - Correo electrónico
+   * @returns {Promise<boolean>} - true si la cuenta está activa
+   */
+  async verificarCuentaActiva(boleta) {
+    try {
+      const [usuarios] = await db.query(
+        `SELECT u.EstaActivo
+        FROM AlumnosInfo a
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        WHERE a.NumeroBoleta = ?`,
+        [boleta]
+      );
+
+      if (usuarios.length === 0) {
+        return false;
+      }
+
+      return usuarios[0].EstaActivo;
+    } catch (error) {
+      console.error('Error al verificar estado de cuenta:', error);
       throw error;
     }
   },

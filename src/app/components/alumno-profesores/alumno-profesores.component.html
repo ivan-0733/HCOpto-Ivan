@@ -9,13 +9,7 @@
     </div>
   </header>
 
-  <!-- Loading state -->
-  <div class="loading-container" *ngIf="loading">
-    <div class="spinner"></div>
-    <p>Cargando información...</p>
-  </div>
-
-  <!-- Error state -->
+  <!-- Error state para Materias -->
   <div class="error-container" *ngIf="error">
     <i class="fas fa-exclamation-triangle"></i>
     <p>{{ error }}</p>
@@ -25,47 +19,47 @@
     </button>
   </div>
 
-    <!-- Materias list -->
-    <div class="profesores-list" *ngIf="!loading && !error && materias.length > 0">
-      <div class="profesor-card" *ngFor="let materia of materias">
-        <div class="perfil-avatar">
-          <i class="material-icons" style="font-size: 60px;">book</i>
-        </div>
-        <div class="profesor-info">
-          <h3>{{ materia.NombreMateria }}</h3>
-          <p class="profesor-id">
-            <i class="fas fa-user-tie"></i> Profesor: {{ materia.NombreProfesor }}
-          </p>
-          <p class="profesor-contact" *ngIf="materia.Codigo">
-            <i class="fas fa-code"></i>
-            <span style="text-decoration: underline;">Código:</span>&nbsp;{{ materia.Codigo }}
-          </p>
-          <p class="profesor-contact">
-            <i class="fas fa-graduation-cap"></i>
-            <span style="text-decoration: underline;">Semestre:</span>&nbsp;{{ materia.Semestre }}
-          </p>
-          <p class="profesor-contact" *ngIf="materia.Grupo">
-            <i class="fas fa-users"></i>
-            <span style="text-decoration: underline;">Grupo:</span>&nbsp;{{ materia.Grupo }}
-          </p>
-          <p class="profesor-contact" *ngIf="materia.EjeFormativo && materia.EjeFormativo !== 'NULL'">
-            <i class="fas fa-project-diagram"></i>
-            <span style="text-decoration: underline;">Eje Formativo:</span>&nbsp;{{ materia.EjeFormativo }}
-          </p>
-          <!-- Template -->
-          <p class="profesor-contact description" *ngIf="materia.Descripcion && materia.Descripcion !== 'NULL'">
-            <i class="fas fa-info-circle"></i>
-            <span class="content-wrapper">
-              <span class="description-label">Descripción:</span>
-              <span class="description-content">{{ materia.Descripcion }}</span>
-            </span>
-          </p>
-          <p class="profesor-since">
-            <i class="fas fa-calendar-check"></i> Inscrito desde: {{ materia.FechaInscripcion | date:'dd/MM/yyyy' }}
-          </p>
-        </div>
+  <!-- Materias list -->
+  <div class="profesores-list" *ngIf="!loading && !error && materias.length > 0">
+    <div class="profesor-card" *ngFor="let materia of materias">
+      <div class="perfil-avatar">
+        <i class="material-icons" style="font-size: 60px;">book</i>
+      </div>
+      <div class="profesor-info">
+        <h3>{{ materia.NombreMateria }}</h3>
+        <p class="profesor-id">
+          <i class="fas fa-user-tie"></i> Profesor: {{ materia.NombreProfesor }}
+        </p>
+        <p class="profesor-contact" *ngIf="materia.Codigo">
+          <i class="fas fa-code"></i>
+          <span style="text-decoration: underline;">Código:</span>&nbsp;{{ materia.Codigo }}
+        </p>
+        <p class="profesor-contact">
+          <i class="fas fa-graduation-cap"></i>
+          <span style="text-decoration: underline;">Semestre:</span>&nbsp;{{ materia.Semestre }}
+        </p>
+        <p class="profesor-contact" *ngIf="materia.Grupo">
+          <i class="fas fa-users"></i>
+          <span style="text-decoration: underline;">Grupo:</span>&nbsp;{{ materia.Grupo }}
+        </p>
+        <p class="profesor-contact" *ngIf="materia.EjeFormativo && materia.EjeFormativo !== 'NULL'">
+          <i class="fas fa-project-diagram"></i>
+          <span style="text-decoration: underline;">Eje Formativo:</span>&nbsp;{{ materia.EjeFormativo }}
+        </p>
+        <!-- Template -->
+        <p class="profesor-contact description" *ngIf="materia.Descripcion && materia.Descripcion !== 'NULL'">
+          <i class="fas fa-info-circle"></i>
+          <span class="content-wrapper">
+            <span class="description-label">Descripción:</span>
+            <span class="description-content">{{ materia.Descripcion }}</span>
+          </span>
+        </p>
+        <p class="profesor-since">
+          <i class="fas fa-calendar-check"></i> Inscrito desde: {{ materia.FechaInscripcion | date:'dd/MM/yyyy' }}
+        </p>
       </div>
     </div>
+  </div>
 
   <!-- Empty state para materias -->
   <div class="empty-container" *ngIf="!loading && !error && materias.length === 0">
@@ -83,6 +77,16 @@
       </h1>
     </div>
   </header>
+
+  <!-- Error state para Profesores -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>Error al cargar profesores. Por favor, intenta nuevamente.</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
 
 <!-- Professors list -->
 <div class="profesores-list" *ngIf="!loading && !error && profesores.length > 0">

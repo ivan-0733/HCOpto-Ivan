@@ -36,6 +36,9 @@ export class AlumnoDashboardComponent implements OnInit {
   estadisticas: EstadisticasHistorias | null = null;
   estadisticasPorMateria: Map<number | null, EstadisticasHistorias> = new Map(); // Para almacenar estadísticas por materia
   perfil: Perfil | null = null;
+  todasLasMaterias: MateriaAlumno[] = []; // Todas las materias (actuales e históricas)
+  mostrarMateriasHistoricas: boolean = false; // Para controlar la visualización
+  filtroMateriaArchivada: number | null = null;
   loading = true;
   error = '';
 
@@ -149,7 +152,7 @@ export class AlumnoDashboardComponent implements OnInit {
     this.alumnoService.obtenerMaterias().subscribe({
       next: (materias) => {
         this.materias = materias;
-        console.log('Materias cargadas:', materias);
+        console.log('Materias del periodo actual cargadas:', materias);
 
         // Only set a default if materiaSeleccionadaId isn't already set from localStorage
         if (this.materiaSeleccionadaId === undefined) {
@@ -182,6 +185,17 @@ export class AlumnoDashboardComponent implements OnInit {
       }
     });
 
+    // Ahora también cargar TODAS las materias (actuales e históricas)
+    this.alumnoService.obtenerTodasMaterias().subscribe({
+      next: (materias) => {
+        this.todasLasMaterias = materias;
+        console.log('Todas las materias cargadas (incluidas históricas):', materias);
+      },
+      error: (error) => {
+        console.error('Error al cargar todas las materias:', error);
+      }
+    });
+
     // Cargar profesores para tener la referencia
     this.alumnoService.obtenerProfesoresAsignados().subscribe({
       next: (profesores) => {
@@ -206,7 +220,7 @@ export class AlumnoDashboardComponent implements OnInit {
         // las propiedades esperadas, incluso si son undefined
         this.historiasClinicas = historias.map(historia => ({
           ...historia,
-          ID: historia.ID || 0, // Usar un valor predeterminado (como 0) si ID es undefined
+          ID: historia.ID || 0,
           CorreoElectronico: historia.CorreoElectronico || undefined,
           TelefonoCelular: historia.TelefonoCelular || undefined,
           Edad: historia.Edad !== undefined && historia.Edad !== null ? Number(historia.Edad) : undefined
@@ -219,9 +233,6 @@ export class AlumnoDashboardComponent implements OnInit {
         // Aplicar ordenamiento inicial
         this.aplicarOrdenamiento();
 
-        // Calcular total de páginas
-        this.calcularTotalPaginas();
-
         // Aplicar los filtros guardados después de cargar las historias
         this.loadSavedFilters(); // <- Añade esta línea
 
@@ -232,6 +243,9 @@ export class AlumnoDashboardComponent implements OnInit {
         if (this.estadisticas) {
           this.actualizarEstadisticas();
         }
+
+        // Calcular total de páginas
+        this.calcularTotalPaginas();
 
         // Asegurarse de que la página actual no sea mayor que el total de páginas
         if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
@@ -265,12 +279,17 @@ export class AlumnoDashboardComponent implements OnInit {
     });
   }
 
-  // Método para obtener el MateriaProfesorID basado en el ID de materia
   obtenerMateriaProfesorIdPorMateria(materiaId: number): number | undefined {
-    if (!materiaId || !this.materias.length) return undefined;
+    if (!materiaId) return undefined;
 
-    // Buscar la materia que coincida con el ID
-    const materia = this.materias.find(m => m.ID === materiaId);
+    // Buscar primero en las materias del periodo actual
+    let materia = this.materias.find(m => m.ID === materiaId);
+
+    // Si no se encuentra y estamos mostrando materias históricas, buscar en todas
+    if (!materia && this.mostrarMateriasHistoricas) {
+      materia = this.todasLasMaterias.find(m => m.ID === materiaId);
+    }
+
     if (!materia) return undefined;
 
     // Devolver el MateriaProfesorID asociado
@@ -314,6 +333,72 @@ export class AlumnoDashboardComponent implements OnInit {
     this.actualizarEstadisticasMateria(estadisticasTodas, historiasTodas);
     estadisticasTodas.archivadas = historiasArchivadasTodas.length;
     this.estadisticasPorMateria.set(null, estadisticasTodas);
+  }
+
+  // 2. Método para obtener las materias con historias archivadas
+  obtenerMateriasConHistoriasArchivadas(): any[] {
+    if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
+
+    // Obtener todas las historias archivadas
+    const historiasArchivadas = this.historiasClinicas.filter(h => Boolean(h.Archivado));
+
+    // Crear un Map para almacenar materias únicas por MateriaProfesorID
+    const materiasMap = new Map<number, any>();
+
+    // Obtener el periodo actual
+    const periodoActual = this.periodoEscolar?.Codigo || '';
+
+    // Recorrer todas las historias archivadas para encontrar sus materias
+    historiasArchivadas.forEach(historia => {
+      // Si esta materia ya fue agregada, omitirla
+      if (materiasMap.has(historia.MateriaProfesorID)) return;
+
+      // Buscar información adicional de la materia en todasLasMaterias
+      const materiaInfo = this.todasLasMaterias.find(m => m.MateriaProfesorID === historia.MateriaProfesorID);
+
+      // Verificar si el periodo de esta historia es el actual
+      const esActual = historia.PeriodoEscolar === periodoActual;
+
+      // Crear un objeto con los datos de la materia
+      const materiaData = {
+        MateriaProfesorID: historia.MateriaProfesorID,
+        NombreMateria: historia.NombreMateria || 'Materia desconocida',
+        Grupo: historia.GrupoMateria || '',
+        PeriodoEscolar: historia.PeriodoEscolar || '',
+        // Incluir el semestre (si está disponible)
+        Semestre: materiaInfo?.Semestre || 'N/A',
+        // Añadir la bandera que indica si es el periodo actual
+        EsPeriodoActual: esActual
+      };
+
+      // Añadir la materia al mapa
+      materiasMap.set(historia.MateriaProfesorID, materiaData);
+    });
+
+    // Convertir el mapa a array y ordenar: primero el periodo actual, luego por periodo descendente
+    return Array.from(materiasMap.values()).sort((a, b) => {
+      // Si uno es actual y el otro no, el actual va primero
+      if (a.EsPeriodoActual && !b.EsPeriodoActual) return -1;
+      if (!a.EsPeriodoActual && b.EsPeriodoActual) return 1;
+
+      // Si ambos son actuales o ambos no son actuales, ordenar por periodo descendente
+      const comparaPeriodo = b.PeriodoEscolar.localeCompare(a.PeriodoEscolar);
+      if (comparaPeriodo !== 0) return comparaPeriodo;
+
+      // Si el período es el mismo, ordenar por nombre de materia
+      return a.NombreMateria.localeCompare(b.NombreMateria);
+    });
+  }
+
+  // 3. Método para aplicar el filtro de materia archivada
+  aplicarFiltroMateriaArchivada(): void {
+    console.log(`Aplicando filtro de materia archivada: ${this.filtroMateriaArchivada}`);
+
+    // Resetear paginación
+    this.resetearPaginacion();
+
+    // Guardar filtros en localStorage
+    this.saveFilters();
   }
 
   // Método para clonar las estadísticas
@@ -374,6 +459,24 @@ export class AlumnoDashboardComponent implements OnInit {
         `ID: ${id}, Count: ${count}`));
   }
 
+  // Método para obtener solo los estados con valores mayores que cero
+  obtenerEstadosConValores(): { estado: string; cantidad: number; }[] {
+    if (!this.estadisticas || !this.estadisticas.porEstado) return [];
+
+    // Para estados normales, usar la cantidad directa
+    const estadosFiltrados = this.estadisticas.porEstado.filter(estado => {
+      if (estado.estado === 'Finalizado') {
+        // Para el estado "Finalizado", usar el método especializado
+        return this.obtenerFinalizadasNoArchivadas() > 0;
+      } else {
+        // Para otros estados, usar la cantidad en las estadísticas
+        return estado.cantidad > 0;
+      }
+    });
+
+    return estadosFiltrados;
+  }
+
   saveFilters(): void {
     const filters = {
       filtroEstado: this.filtroEstado,
@@ -381,7 +484,8 @@ export class AlumnoDashboardComponent implements OnInit {
       ordenamiento: this.ordenamiento,
       materiaSeleccionadaId: this.materiaSeleccionadaId,
       paginaActual: this.paginaActual,
-      registrosPorPagina: this.registrosPorPagina
+      registrosPorPagina: this.registrosPorPagina,
+      filtroMateriaArchivada: this.filtroMateriaArchivada
     };
     console.log('Guardando filtros en localStorage:', filters);
     localStorage.setItem('dashboard-filters', JSON.stringify(filters));
@@ -400,12 +504,13 @@ export class AlumnoDashboardComponent implements OnInit {
         this.filtroPaciente = filters.filtroPaciente || '';
         this.ordenamiento = filters.ordenamiento || 'recientes';
         this.materiaSeleccionadaId = filters.materiaSeleccionadaId;
+        this.filtroMateriaArchivada = filters.filtroMateriaArchivada;
 
         // Importante: asegurarse de cargar la paginación correctamente
         this.paginaActual = filters.paginaActual || 1;
         this.registrosPorPagina = filters.registrosPorPagina || 5;
 
-        // Recalcular las páginas basadas en los filtros cargados
+         // Recalcular las páginas basadas en los filtros cargados
         setTimeout(() => {
           this.calcularTotalPaginas();
         }, 0);
@@ -417,6 +522,7 @@ export class AlumnoDashboardComponent implements OnInit {
       }
     }
   }
+
   // Method to clear saved filters
   clearSavedFilters(): void {
     console.log('Limpiando filtros guardados');
@@ -428,6 +534,7 @@ export class AlumnoDashboardComponent implements OnInit {
     this.materiaSeleccionadaId = null;
     this.paginaActual = 1;
     this.registrosPorPagina = 5;
+    this.filtroMateriaArchivada = null;
   }
 
   crearNuevaHistoria(): void {
@@ -455,7 +562,6 @@ export class AlumnoDashboardComponent implements OnInit {
     this.saveFilters();
   }
 
-  // Método para filtrar historias por materia
   filtrarHistorias(): HistoriaClinica[] {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
@@ -474,29 +580,39 @@ export class AlumnoDashboardComponent implements OnInit {
       // Comprobar si está archivado
       const estaArchivado = Boolean(historia.Archivado);
 
-      // FILTRADO POR MATERIA - APLICAR EN TODOS LOS CASOS (ARCHIVADOS Y NO ARCHIVADOS)
-      if (this.materiaSeleccionadaId !== null) {
-        // Debug para ver si el MateriaProfesorID existe en las historias
-        console.log(`Filtrando por materia ID ${this.materiaSeleccionadaId}, historia MateriaProfesorID:`, historia.MateriaProfesorID);
-
-        // Obtener el MateriaProfesorID asociado a esta materia seleccionada
-        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
-        console.log(`MateriaProfesorID para materia ${this.materiaSeleccionadaId}:`, materiaProfesorID);
-
-        // Si no se encuentra la relación o el MateriaProfesorID de la historia es diferente, excluirla
-        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
-          return false;
-        }
-      }
-
-      // Filtro específico para "Archivado"
+      // Si el filtro es de archivadas, mostrar todas independientemente del periodo
       if (this.filtroEstado === 'Archivado') {
-        return estaArchivado;
+        // Si no está archivada, no mostrarla
+        if (!estaArchivado) return false;
+
+        // Si hay una materia seleccionada específica (no "Todas las materias")
+        if (this.materiaSeleccionadaId !== null) {
+          // Buscar la materia en todas las materias (incluidas históricas)
+          const materiaEncontrada = this.todasLasMaterias.find(m => m.ID === this.materiaSeleccionadaId);
+          if (materiaEncontrada) {
+            return historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
+          }
+        }
+        // Si está activo el filtro de materia archivada específica
+        else if (this.filtroMateriaArchivada !== null) {
+          return historia.MateriaProfesorID === this.filtroMateriaArchivada;
+        }
+
+        // Si no hay filtro de materia, mostrar todas las archivadas
+        return true;
       }
 
       // Para los demás filtros, no mostrar historias archivadas
       if (estaArchivado) {
         return false;
+      }
+
+      // FILTRADO POR MATERIA - SOLO PARA MATERIAS DEL PERIODO ACTUAL
+      if (this.materiaSeleccionadaId !== null) {
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
+          return false;
+        }
       }
 
       // Filtrar por estado
@@ -512,7 +628,11 @@ export class AlumnoDashboardComponent implements OnInit {
     console.log(`Aplicando filtro de materia: ${materiaId}`);
     this.materiaSeleccionadaId = materiaId;
 
-    // Update the statistics based on the selected materia
+    // Always reset to show all histories ("todos") when changing materia
+    this.filtroEstado = 'todos';
+
+    // For historical subjects, we no longer change to "Archivado" automatically
+    // We still update statistics based on selected materia
     this.actualizarEstadisticas();
 
     // Reset pagination when changing materia
@@ -685,17 +805,22 @@ export class AlumnoDashboardComponent implements OnInit {
   // Métodos de paginación
   calcularTotalPaginas(): void {
     const historiasVisibles = this.filtrarHistorias();
+    const oldTotalPages = this.totalPaginas;
     this.totalPaginas = Math.ceil(historiasVisibles.length / this.registrosPorPagina);
 
-    // Asegurar que la página actual no exceda el nuevo total, pero solo si es necesario
+    // Only adjust page if it's higher than the new total and there are actually pages
     if (this.paginaActual > this.totalPaginas && this.totalPaginas > 0) {
+      console.log(`Adjusting page from ${this.paginaActual} to ${this.totalPaginas} because total pages changed from ${oldTotalPages}`);
       this.paginaActual = this.totalPaginas;
     }
 
-    // Si el total de páginas es 0 pero hay página actual, ajustar
+    // If total pages is 0 but there's a current page, adjust
     if (this.totalPaginas === 0) {
       this.paginaActual = 1;
     }
+
+    // Save the updated pagination state
+    this.saveFilters();
   }
 
   obtenerHistoriasPaginaActual(): HistoriaClinica[] {
@@ -765,7 +890,28 @@ export class AlumnoDashboardComponent implements OnInit {
   }
 
   aplicarFiltroCard(estado: string): void {
-    // Update the status filter
+    // Verificar si el estado tiene valores antes de aplicar el filtro
+    if (estado === 'todos' && this.obtenerHistoriasNoArchivadas() === 0) {
+      return; // No hacer nada si no hay historias no archivadas
+    }
+
+    if (estado === 'Archivado' && (!this.estadisticas || this.estadisticas.archivadas === 0)) {
+      return; // No hacer nada si no hay historias archivadas
+    }
+
+    if (estado !== 'todos' && estado !== 'Archivado') {
+      // Para estados específicos (En proceso, Revisión, etc.)
+      const estadoEncontrado = this.estadisticas?.porEstado?.find(e => e.estado === estado);
+      const cantidadEstado = estado === 'Finalizado'
+        ? this.obtenerFinalizadasNoArchivadas()
+        : estadoEncontrado?.cantidad || 0;
+
+      if (cantidadEstado === 0) {
+        return; // No hacer nada si no hay historias en este estado
+      }
+    }
+
+    // Si llegamos aquí, podemos aplicar el filtro
     this.filtroEstado = estado;
 
     // Reset pagination

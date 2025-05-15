@@ -189,6 +189,46 @@ async obtenerMateriasAlumno(alumnoId) {
 },
 
 /**
+ * Obtiene todas las materias del alumno (actuales y de periodos anteriores)
+ * @param {number} alumnoId - ID del alumno
+ * @returns {Promise<Array>} - Lista de todas las materias del alumno
+ */
+async obtenerTodasMateriasAlumno(alumnoId) {
+  try {
+    const [materias] = await db.query(`
+      SELECT
+        ma.ID,
+        ma.AlumnoInfoID,
+        ma.MateriaProfesorID,
+        mp.PeriodoEscolarID,
+        m.Nombre AS NombreMateria,
+        m.Codigo,
+        m.Semestre,
+        m.EjeFormativo,
+        m.Descripcion,
+        CONCAT(p.Nombre, ' ', p.ApellidoPaterno) AS NombreProfesor,
+        pe.Codigo AS PeriodoEscolar,
+        ma.FechaInscripcion,
+        mp.Grupo,
+        pe.EsActual AS EsPeriodoActual
+      FROM MateriasAlumno ma
+      JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
+      JOIN ProfesoresInfo p ON mp.ProfesorInfoID = p.ID
+      JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
+      WHERE ma.AlumnoInfoID = ?
+      ORDER BY pe.EsActual DESC, pe.FechaInicio DESC, m.Semestre, m.Nombre`,
+      [alumnoId]
+    );
+
+    return materias;
+  } catch (error) {
+    console.error('Error al obtener todas las materias del alumno:', error);
+    throw error;
+  }
+},
+
+/**
  * Obtiene los profesores asignados a un alumno
  * @param {number} alumnoId - ID del alumno (de AlumnosInfo)
  * @returns {Promise<Array>} - Lista de profesores asignados

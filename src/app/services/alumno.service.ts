@@ -39,12 +39,13 @@ export interface MateriaAlumno {
   FechaInscripcion: string;
   NombreMateria: string;
   NombreProfesor: string;
-  Codigo?: string;    // Nombre correcto según la respuesta
-  Semestre?: number;         // Este ya está correcto
-  EjeFormativo?: string;     // Este necesitamos verificar
-  Descripcion?: string;      // Este necesitamos verificar
-  PeriodoEscolar?: string;   // También aparece en la respuesta
-  Grupo?: string;     // Add this property to fix the error
+  Codigo?: string;
+  Semestre?: number;
+  EjeFormativo?: string;
+  Descripcion?: string;
+  PeriodoEscolar?: string;
+  Grupo?: string;
+  EsPeriodoActual?: boolean; // Agregar esta propiedad
 }
 
 // Corregir la interfaz Profesor en alumno.service.ts
@@ -166,6 +167,14 @@ export class AlumnoService {
     }).pipe(
       map(response => response.data || [])
     );
+  }
+
+  // Añadir este método en alumno.service.ts
+  obtenerTodasMaterias(): Observable<MateriaAlumno[]> {
+    return this.http.get<ApiResponse<MateriaAlumno[]>>(`${this.apiUrl}/todas-materias`)
+      .pipe(
+        map(response => response.data)
+      );
   }
 
   // Actualizar contraseña del alumno
