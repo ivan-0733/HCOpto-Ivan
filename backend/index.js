@@ -7,6 +7,9 @@ const authRoutes = require('./routes/authRoutes');
 const alumnoRoutes = require('./routes/alumnoRoutes');
 const historiaClinicaRoutes = require('./routes/historiaClinicaRoutes');
 const { errorHandler } = require('./utils/errorHandler');
+const multer = require('multer'); 
+const path = require('path');
+
 
 // Cargar variables de entorno
 dotenv.config();
@@ -14,11 +17,12 @@ dotenv.config();
 // Crear aplicación Express
 const app = express();
 const PORT = config.server.port;
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Middleware
 app.use(cors(config.cors));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Verificar conexión a la base de datos
 db.query('SELECT 1')
@@ -29,7 +33,6 @@ db.query('SELECT 1')
 app.use('/api/auth', authRoutes);
 app.use('/api/alumnos', alumnoRoutes);
 app.use('/api/historias-clinicas', historiaClinicaRoutes);
-
 
 // Ruta de prueba
 app.get('/api/saludo', (req, res) => {
@@ -60,4 +63,6 @@ console.error(err.name, err.message);
 process.exit(1);
 });
 
-module.exports = app;
+
+
+

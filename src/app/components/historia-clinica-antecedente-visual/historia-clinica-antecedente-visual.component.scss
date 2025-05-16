@@ -1,0 +1,183 @@
+@import '../../styles/variables';
+
+.antecedente-visual-container {
+  padding: $spacing-lg;
+  background-color: $bg-white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-sm;
+  margin-bottom: $spacing-lg;
+
+  h2 {
+    color: $primary;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid $border-color;
+  }
+
+  .info-text {
+    color: $text-secondary;
+    margin-bottom: $spacing-md;
+    font-size: 0.9rem;
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-xl 0;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid $ipn-gray;
+      border-top: 4px solid $primary;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: $spacing-md;
+    }
+
+    p {
+      color: $text-secondary;
+      font-weight: $font-weight-medium;
+    }
+  }
+
+  .form-content {
+    .form-section {
+      background-color: $light-success;
+      border-radius: $border-radius;
+      padding: $spacing-md;
+      margin-bottom: $spacing-lg;
+      border: 1px solid $border-color;
+
+      h3 {
+        color: $primary;
+        font-size: 1.2rem;
+        margin-bottom: $spacing-md;
+        padding-bottom: $spacing-xs;
+        border-bottom: 1px solid $ipn-gray-dark;
+      }
+
+      h4 {
+        color: $text-primary;
+        margin: $spacing-md 0 $spacing-sm;
+        font-weight: $font-weight-medium;
+      }
+
+      .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -$spacing-sm;
+        margin-left: -$spacing-sm;
+        margin-bottom: $spacing-md;
+
+        .form-group {
+          flex: 0 0 100%;
+          max-width: 100%;
+          padding-right: $spacing-sm;
+          padding-left: $spacing-sm;
+          margin-bottom: $spacing-md;
+
+          @media (min-width: $breakpoint-md) {
+            flex: 0 0 50%;
+            max-width: 50%;
+
+            &.col-md-3 {
+              flex: 0 0 25%;
+              max-width: 25%;
+            }
+
+            &.col-md-4 {
+              flex: 0 0 33.333333%;
+              max-width: 33.333333%;
+            }
+
+            &.col-md-6 {
+              flex: 0 0 50%;
+              max-width: 50%;
+            }
+          }
+
+          label {
+            display: block;
+            margin-bottom: $spacing-xs;
+            color: $text-primary;
+            font-weight: $font-weight-medium;
+          }
+
+          .form-control {
+            display: block;
+            width: 100%;
+            padding: $spacing-sm $spacing-md;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: $text-primary;
+            background-color: $ipn-white;
+            background-clip: padding-box;
+            border: 1px solid $border-color;
+            border-radius: $border-radius-sm;
+            transition: $transition-base;
+
+            &:focus {
+              border-color: $primary-light;
+              outline: 0;
+              box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
+            }
+
+            &.form-control-xs {
+              padding: $spacing-xs $spacing-sm;
+              font-size: 0.9rem;
+            }
+          }
+        }
+      }
+
+      .table-responsive {
+        margin-bottom: $spacing-md;
+        overflow-x: auto;
+      }
+
+      .table-agudeza,
+      .table-lensometria {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: $spacing-md;
+
+        th, td {
+          padding: $spacing-sm;
+          border: 1px solid $border-color;
+          text-align: center;
+          font-size: 0.9rem;
+        }
+
+        th {
+          background-color: $ipn-gray;
+          color: $text-primary;
+          font-weight: $font-weight-bold;
+        }
+
+        td {
+          vertical-align: middle;
+
+          .form-control {
+            margin: 0;
+            padding: $spacing-xs;
+            text-align: center;
+            min-width: 80px;
+          }
+        }
+      }
+
+      .lensometria-datos-adicionales {
+        margin-top: $spacing-lg;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

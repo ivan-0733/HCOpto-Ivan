@@ -55,17 +55,21 @@
         <i class="fas fa-clipboard-list"></i>
         Interrogatorio
       </button>
-      <button type="button" [ngClass]="getButtonClass('agudeza-visual')" (click)="changeTab('agudeza-visual')">
+      <button type="button" [ngClass]="getButtonClass('antecedente-visual')" (click)="changeTab('antecedente-visual')">
         <i class="fas fa-eye"></i>
-        Agudeza Visual
+        Antecedente Visual
       </button>
-      <button type="button" [ngClass]="getButtonClass('lensometria')" (click)="changeTab('lensometria')">
+      <button type="button" [ngClass]="getButtonClass('examen-preliminar')" (click)="changeTab('examen-preliminar')">
+        <i class="fas fa-search"></i>
+        Examen Preliminar
+      </button>
+      <button type="button" [ngClass]="getButtonClass('estado-refractivo')" (click)="changeTab('estado-refractivo')">
         <i class="fas fa-glasses"></i>
-        Lensometría
+        Estado Refractivo
       </button>
-      <button type="button" [ngClass]="getButtonClass('diagnostico')" (click)="changeTab('diagnostico')">
-        <i class="fas fa-stethoscope"></i>
-        Diagnóstico
+      <button type="button" [ngClass]="getButtonClass('binocularidad')" (click)="changeTab('binocularidad')">
+        <i class="fas fa-binoculars"></i>
+        Binocularidad
       </button>
       <button type="button" [ngClass]="getButtonClass('receta')" (click)="changeTab('receta')">
         <i class="fas fa-prescription"></i>
@@ -257,13 +261,14 @@
         </div>
       </div>
 
-      <!-- Agudeza Visual -->
-      <div *ngIf="currentTab === 'agudeza-visual'" class="tab-pane">
+      <!-- Antecedente Visual -->
+      <div *ngIf="currentTab === 'antecedente-visual'" class="tab-pane">
+        <!-- Sección de Agudeza Visual -->
         <section class="info-section" *ngIf="historia.agudezaVisual && historia.agudezaVisual.length > 0">
           <h2>Agudeza Visual</h2>
 
           <div *ngFor="let agudeza of historia.agudezaVisual" class="agudeza-section">
-            <h3>{{ agudeza.TipoMedicion | titlecase }}</h3>
+            <h3>{{ obtenerNombreTipoMedicion(agudeza.TipoMedicion) }}</h3>
 
             <div class="table-responsive">
               <table class="table-agudeza">
@@ -277,19 +282,19 @@
                 </thead>
                 <tbody>
                   <!-- Para mediciones de lejos -->
-                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_LEJOS' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_LEJOS'">
+                  <tr *ngIf="esMedicionLejos(agudeza.TipoMedicion)">
                     <td>Snellen</td>
                     <td>{{ agudeza.OjoDerechoSnellen || '-' }}</td>
                     <td>{{ agudeza.OjoIzquierdoSnellen || '-' }}</td>
                     <td>{{ agudeza.AmbosOjosSnellen || '-' }}</td>
                   </tr>
-                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_LEJOS' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_LEJOS'">
+                  <tr *ngIf="esMedicionLejos(agudeza.TipoMedicion)">
                     <td>Metros</td>
                     <td>{{ agudeza.OjoDerechoMetros || '-' }}</td>
                     <td>{{ agudeza.OjoIzquierdoMetros || '-' }}</td>
                     <td>{{ agudeza.AmbosOjosMetros || '-' }}</td>
                   </tr>
-                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_LEJOS' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_LEJOS'">
+                  <tr *ngIf="esMedicionLejos(agudeza.TipoMedicion)">
                     <td>MAR</td>
                     <td>{{ agudeza.OjoDerechoMAR || '-' }}</td>
                     <td>{{ agudeza.OjoIzquierdoMAR || '-' }}</td>
@@ -297,19 +302,19 @@
                   </tr>
 
                   <!-- Para mediciones de cerca -->
-                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_CERCA' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_CERCA'">
+                  <tr *ngIf="esMedicionCerca(agudeza.TipoMedicion)">
                     <td>M</td>
                     <td>{{ agudeza.OjoDerechoM || '-' }}</td>
                     <td>{{ agudeza.OjoIzquierdoM || '-' }}</td>
                     <td>{{ agudeza.AmbosOjosM || '-' }}</td>
                   </tr>
-                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_CERCA' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_CERCA'">
+                  <tr *ngIf="esMedicionCerca(agudeza.TipoMedicion)">
                     <td>Jeager</td>
                     <td>{{ agudeza.OjoDerechoJeager || '-' }}</td>
                     <td>{{ agudeza.OjoIzquierdoJeager || '-' }}</td>
                     <td>{{ agudeza.AmbosOjosJeager || '-' }}</td>
                   </tr>
-                  <tr *ngIf="agudeza.TipoMedicion === 'SIN_RX_CERCA' || agudeza.TipoMedicion === 'CON_RX_ANTERIOR_CERCA'">
+                  <tr *ngIf="esMedicionCerca(agudeza.TipoMedicion)">
                     <td>Puntos</td>
                     <td>{{ agudeza.OjoDerechoPuntos || '-' }}</td>
                     <td>{{ agudeza.OjoIzquierdoPuntos || '-' }}</td>
@@ -333,18 +338,7 @@
           </div>
         </section>
 
-        <div class="no-data" *ngIf="!historia.agudezaVisual || historia.agudezaVisual.length === 0">
-          <i class="fas fa-eye"></i>
-          <p>No se ha registrado información de agudeza visual para esta historia clínica.</p>
-          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
-            <i class="fas fa-edit"></i>
-            Agregar Agudeza Visual
-          </button>
-        </div>
-      </div>
-
-      <!-- Lensometría -->
-      <div *ngIf="currentTab === 'lensometria'" class="tab-pane">
+        <!-- Sección de Lensometría -->
         <section class="info-section" *ngIf="historia.lensometria">
           <h2>Lensometría</h2>
 
@@ -378,7 +372,7 @@
           <div class="info-grid">
             <div class="info-item">
               <h3>Tipo de Lente</h3>
-              <p>{{ historia.lensometria.TipoBifocalMultifocalID || 'Monocal' }}</p>
+              <p>{{ obtenerTipoLente(historia.lensometria.TipoBifocalMultifocalID) }}</p>
             </div>
 
             <div class="info-item">
@@ -398,15 +392,648 @@
           </div>
         </section>
 
-        <div class="no-data" *ngIf="!historia.lensometria">
-          <i class="fas fa-glasses"></i>
-          <p>No se ha registrado información de lensometría para esta historia clínica.</p>
+        <!-- Mensaje cuando no hay datos -->
+        <div class="no-data" *ngIf="(!historia.agudezaVisual || historia.agudezaVisual.length === 0) && !historia.lensometria">
+          <i class="fas fa-eye"></i>
+          <p>No se ha registrado información de antecedente visual para esta historia clínica.</p>
           <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
             <i class="fas fa-edit"></i>
-            Agregar Lensometría
+            Agregar Antecedente Visual
           </button>
         </div>
       </div>
+
+      <!-- Examen Preliminar -->
+      <div *ngIf="currentTab === 'examen-preliminar'" class="tab-pane">
+        <section class="info-section" *ngIf="historia.alineacionOcular">
+          <h2>Alineación Ocular</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Lejos Horizontal</h3>
+              <p>{{ historia.alineacionOcular.LejosHorizontal || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Lejos Vertical</h3>
+              <p>{{ historia.alineacionOcular.LejosVertical || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Cerca Horizontal</h3>
+              <p>{{ historia.alineacionOcular.CercaHorizontal || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Cerca Vertical</h3>
+              <p>{{ historia.alineacionOcular.CercaVertical || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Método</h3>
+              <p>{{ obtenerNombreMetodo(historia.alineacionOcular.MetodoID) }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="historia.motilidad">
+          <h2>Motilidad</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Versiones</h3>
+              <p>{{ historia.motilidad.Versiones || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Ducciones</h3>
+              <p>{{ historia.motilidad.Ducciones || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Sacádicos</h3>
+              <p>{{ historia.motilidad.Sacadicos || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Persecución</h3>
+              <p>{{ historia.motilidad.Persecucion || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Fijación</h3>
+              <p>{{ historia.motilidad.Fijacion || 'No registrado' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="historia.exploracionFisica">
+          <h2>Exploración Física</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>OD Anexos</h3>
+              <p>{{ historia.exploracionFisica.OjoDerechoAnexos || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>OI Anexos</h3>
+              <p>{{ historia.exploracionFisica.OjoIzquierdoAnexos || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>OD Segmento Anterior</h3>
+              <p>{{ historia.exploracionFisica.OjoDerechoSegmentoAnterior || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>OI Segmento Anterior</h3>
+              <p>{{ historia.exploracionFisica.OjoIzquierdoSegmentoAnterior || 'No registrado' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="info-section" *ngIf="historia.viaPupilar">
+          <h2>Vía Pupilar</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Diámetro OD</h3>
+              <p>{{ historia.viaPupilar.OjoDerechoDiametro || 'No registrado' }} mm</p>
+            </div>
+            <div class="info-item">
+              <h3>Diámetro OI</h3>
+              <p>{{ historia.viaPupilar.OjoIzquierdoDiametro || 'No registrado' }} mm</p>
+            </div>
+            <div class="info-item">
+              <h3>Reflejos OD</h3>
+              <ul class="reflejo-list">
+                <li *ngIf="historia.viaPupilar.OjoDerechoFotomotorPresente">Fotomotor Presente</li>
+                <li *ngIf="historia.viaPupilar.OjoDerechoConsensualPresente">Consensual Presente</li>
+                <li *ngIf="historia.viaPupilar.OjoDerechoAcomodativoPresente">Acomodativo Presente</li>
+                <li *ngIf="historia.viaPupilar.OjoDerechoFotomotorAusente">Fotomotor Ausente</li>
+                <li *ngIf="historia.viaPupilar.OjoDerechoConsensualAusente">Consensual Ausente</li>
+                <li *ngIf="historia.viaPupilar.OjoDerechoAcomodativoAusente">Acomodativo Ausente</li>
+                <li *ngIf="!tieneReflejosOD(historia.viaPupilar)">No registrados</li>
+              </ul>
+            </div>
+            <div class="info-item">
+              <h3>Reflejos OI</h3>
+              <ul class="reflejo-list">
+                <li *ngIf="historia.viaPupilar.OjoIzquierdoFotomotorPresente">Fotomotor Presente</li>
+                <li *ngIf="historia.viaPupilar.OjoIzquierdoConsensualPresente">Consensual Presente</li>
+                <li *ngIf="historia.viaPupilar.OjoIzquierdoAcomodativoPresente">Acomodativo Presente</li>
+                <li *ngIf="historia.viaPupilar.OjoIzquierdoFotomotorAusente">Fotomotor Ausente</li>
+                <li *ngIf="historia.viaPupilar.OjoIzquierdoConsensualAusente">Consensual Ausente</li>
+                <li *ngIf="historia.viaPupilar.OjoIzquierdoAcomodativoAusente">Acomodativo Ausente</li>
+                <li *ngIf="!tieneReflejosOI(historia.viaPupilar)">No registrados</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>Características Pupilares</h3>
+              <ul class="caracteristicas-list">
+                <li *ngIf="historia.viaPupilar.EsIsocoria">Isocoria</li>
+                <li *ngIf="historia.viaPupilar.EsAnisocoria">Anisocoria</li>
+                <li *ngIf="historia.viaPupilar.RespuestaAcomodacion">Respuesta a Acomodación</li>
+                <li *ngIf="historia.viaPupilar.PupilasIguales">Pupilas Iguales</li>
+                <li *ngIf="historia.viaPupilar.PupilasRedondas">Pupilas Redondas</li>
+                <li *ngIf="historia.viaPupilar.RespuestaLuz">Respuesta a Luz</li>
+                <li *ngIf="!tieneCaracteristicasPupilares(historia.viaPupilar)">No registradas</li>
+              </ul>
+            </div>
+            <div class="info-item">
+              <h3>DIP</h3>
+              <p>{{ historia.viaPupilar.DIP || 'No registrado' }}</p>
+            </div>
+            <div class="info-item">
+              <h3>Dominancia Ocular</h3>
+              <p>{{ obtenerDominanciaOcular(historia.viaPupilar.DominanciaOcularID) }}</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="no-data" *ngIf="!historia.alineacionOcular && !historia.motilidad && !historia.exploracionFisica && !historia.viaPupilar">
+          <i class="fas fa-search"></i>
+          <p>No se ha registrado información del examen preliminar para esta historia clínica.</p>
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+            <i class="fas fa-edit"></i>
+            Agregar Examen Preliminar
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado Refractivo -->
+<div *ngIf="currentTab === 'estado-refractivo'" class="tab-pane">
+  <section class="info-section" *ngIf="historia.estadoRefractivo">
+    <h2>Queratometría y Retinoscopía</h2>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>OD Queratometría</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoQueratometria || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI Queratometría</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoQueratometria || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OD Astigmatismo Corneal</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoAstigmatismoCorneal || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI Astigmatismo Corneal</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoCorneal || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OD Regla Javal</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoAstigmatismoJaval || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI Regla Javal</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoJaval || 'No registrado' }}</p>
+      </div>
+    </div>
+    
+    <h3>Retinoscopía</h3>
+    <div class="table-responsive">
+      <table class="table-lensometria">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Esfera</th>
+            <th>Cilindro</th>
+            <th>Eje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoRetinoscopiaEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoRetinosciopiaCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoRetinoscopiaEje || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinosciopiaCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEje || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  
+  <section class="info-section" *ngIf="historia.estadoRefractivo">
+    <h2>Subjetivo y Balance Binoculares</h2>
+    
+    <h3>Subjetivo</h3>
+    <div class="table-responsive">
+      <table class="table-lensometria">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Esfera</th>
+            <th>Cilindro</th>
+            <th>Eje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoEje || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoEje || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <h3>Balance Binoculares</h3>
+    <div class="table-responsive">
+      <table class="table-lensometria">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Esfera</th>
+            <th>Cilindro</th>
+            <th>Eje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesEje || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEsfera || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesCilindro || '-' }}</td>
+            <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEje || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>OD AV Lejana</h3>
+        <p>{{ historia.estadoRefractivo.OjoDerechoAVLejana || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>OI AV Lejana</h3>
+        <p>{{ historia.estadoRefractivo.OjoIzquierdoAVLejana || 'No registrado' }}</p>
+      </div>
+    </div>
+  </section>
+  
+  <section class="info-section" *ngIf="historia.subjetivoCerca">
+    <h2>Subjetivo de Cerca</h2>
+    
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>OD</th>
+            <th>OI</th>
+            <th>AO</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>M</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoM || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoM || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosM || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Jaeger</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoJacger || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoJacger || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosJacger || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Puntos</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoPuntos || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoPuntos || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosPuntos || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Snellen</strong></td>
+            <td>{{ historia.subjetivoCerca.OjoDerechoSnellen || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.OjoIzquierdoSnellen || '-' }}</td>
+            <td>{{ historia.subjetivoCerca.AmbosOjosSnellen || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>Valor ADD</h3>
+        <p>{{ historia.subjetivoCerca.ValorADD || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>AV</h3>
+        <p>{{ historia.subjetivoCerca.AV || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Distancia</h3>
+        <p>{{ historia.subjetivoCerca.Distancia || 'No registrado' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Rango</h3>
+        <p>{{ historia.subjetivoCerca.Rango || 'No registrado' }}</p>
+      </div>
+    </div>
+  </section>
+  
+  <div class="no-data" *ngIf="!historia.estadoRefractivo && !historia.subjetivoCerca">
+    <i class="fas fa-glasses"></i>
+    <p>No se ha registrado información de estado refractivo para esta historia clínica.</p>
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+      <i class="fas fa-edit"></i>
+      Agregar Estado Refractivo
+    </button>
+  </div>
+</div>
+
+<!-- Sección de Binocularidad -->
+<!-- Sección de Binocularidad (versión corregida) -->
+<div *ngIf="currentTab === 'binocularidad'" class="tab-pane">
+  <!-- Subsección de Binocularidad -->
+  <section class="info-section">
+    <h2>Binocularidad</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>PPC</h3>
+        <p>{{ historia.binocularidad?.PPC || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>ARN</h3>
+        <p>{{ historia.binocularidad?.ARN || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>ARP</h3>
+        <p>{{ historia.binocularidad?.ARP || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Mediciones</h3>
+        <ul class="caracteristicas-list">
+          <li *ngIf="historia.binocularidad?.Donders">Donders</li>
+          <li *ngIf="historia.binocularidad?.Sheards">Sheards</li>
+          <li *ngIf="!historia.binocularidad?.Donders && !historia.binocularidad?.Sheards">-</li>
+        </ul>
+      </div>
+      <div class="info-item">
+        <h3>Hab. Acom. Lente</h3>
+        <p>{{ historia.binocularidad?.HabAcomLente || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Hab. Acom. Dificultad</h3>
+        <p>{{ historia.binocularidad?.HabAcomDificultad || '-' }}</p>
+      </div>
+    </div>
+
+    <!-- Sección de Amplitud de Acomodación -->
+    <h3>Amplitud de Acomodación</h3>
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>cm</th>
+            <th>D</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>OD</strong></td>
+            <td>{{ historia.binocularidad?.OjoDerechoAmpAcomCm || '-' }}</td>
+            <td>{{ historia.binocularidad?.OjoDerechoAmpAcomD || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>OI</strong></td>
+            <td>{{ historia.binocularidad?.OjoIzquierdoAmpAcomCm || '-' }}</td>
+            <td>{{ historia.binocularidad?.OjoIzquierdoAmpAcomD || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>AO</strong></td>
+            <td>{{ historia.binocularidad?.AmbosOjosAmpAcomCm || '-' }}</td>
+            <td>{{ historia.binocularidad?.AmbosOjosAmpAcomD || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Subsección de Forias -->
+  <section class="info-section">
+    <h2>Forias</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>Horizontales Lejos</h3>
+        <p>{{ historia.forias?.HorizontalesLejos || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Horizontales Cerca</h3>
+        <p>{{ historia.forias?.HorizontalesCerca || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Vertical Lejos</h3>
+        <p>{{ historia.forias?.VerticalLejos || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Vertical Cerca</h3>
+        <p>{{ historia.forias?.VerticalCerca || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Método de Medición</h3>
+        <p>{{ obtenerNombreMetodo(historia.forias?.MetodoMedicionID) }}</p>
+      </div>
+      <div class="info-item">
+        <h3>CAA</h3>
+        <p>{{ historia.forias?.CAA || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>CAA Calculada</h3>
+        <p>{{ historia.forias?.CAACalculada || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>CAA Medida</h3>
+        <p>{{ historia.forias?.CAAMedida || '-' }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subsección de Vergencias -->
+  <section class="info-section">
+    <h2>Vergencias</h2>
+    
+    <h3>Vergencias Positivas</h3>
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Borroso</th>
+            <th>Ruptura</th>
+            <th>Recuperación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lejos</strong></td>
+            <td>{{ historia.vergencias?.PositivasLejosBorroso || '-' }}</td>
+            <td>{{ historia.vergencias?.PositivasLejosRuptura || '-' }}</td>
+            <td>{{ historia.vergencias?.PositivasLejosRecuperacion || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Cerca</strong></td>
+            <td>{{ historia.vergencias?.PositivasCercaBorroso || '-' }}</td>
+            <td>{{ historia.vergencias?.PositivasCercaRuptura || '-' }}</td>
+            <td>{{ historia.vergencias?.PositivasCercaRecuperacion || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Vergencias Negativas</h3>
+    <div class="table-responsive">
+      <table class="table-agudeza">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Borroso</th>
+            <th>Ruptura</th>
+            <th>Recuperación</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Lejos</strong></td>
+            <td>{{ historia.vergencias?.NegativasLejosBorroso || '-' }}</td>
+            <td>{{ historia.vergencias?.NegativasLejosRuptura || '-' }}</td>
+            <td>{{ historia.vergencias?.NegativasLejosRecuperacion || '-' }}</td>
+          </tr>
+          <tr>
+            <td><strong>Cerca</strong></td>
+            <td>{{ historia.vergencias?.NegativasCercaBorroso || '-' }}</td>
+            <td>{{ historia.vergencias?.NegativasCercaRuptura || '-' }}</td>
+            <td>{{ historia.vergencias?.NegativasCercaRecuperacion || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-section-grid">
+      <div class="grid-section">
+        <h3>Supravergencias</h3>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Ruptura</th>
+                <th>Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Lejos</strong></td>
+                <td>{{ historia.vergencias?.SupravergenciasLejosRuptura || '-' }}</td>
+                <td>{{ historia.vergencias?.SupravergenciasLejosRecuperacion || '-' }}</td>
+              </tr>
+              <tr>
+                <td><strong>Cerca</strong></td>
+                <td>{{ historia.vergencias?.SupravergenciasCercaRuptura || '-' }}</td>
+                <td>{{ historia.vergencias?.SupravergenciasCercaRecuperacion || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="grid-section">
+        <h3>Infravergencias</h3>
+        <div class="table-responsive">
+          <table class="table-agudeza">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Ruptura</th>
+                <th>Recuperación</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Lejos</strong></td>
+                <td>{{ historia.vergencias?.InfravergenciasLejosRuptura || '-' }}</td>
+                <td>{{ historia.vergencias?.InfravergenciasLejosRecuperacion || '-' }}</td>
+              </tr>
+              <tr>
+                <td><strong>Cerca</strong></td>
+                <td>{{ historia.vergencias?.InfravergenciasCercaRuptura || '-' }}</td>
+                <td>{{ historia.vergencias?.InfravergenciasCercaRecuperacion || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subsección de Método Gráfico -->
+  <section class="info-section">
+    <h2>Método Gráfico</h2>
+    
+    <div class="info-grid">
+      <div class="info-item">
+        <h3>Integración Binocular</h3>
+        <p>{{ historia.metodoGrafico?.integracionBinocular || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Tipo de Test</h3>
+        <p>{{ obtenerTipoTest(historia.metodoGrafico?.tipoID) }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Visión Estereoscópica</h3>
+        <p>{{ historia.metodoGrafico?.visionEstereoscopica || '-' }}</p>
+      </div>
+      <div class="info-item">
+        <h3>Tipo de Visión Estereoscópica</h3>
+        <p>{{ obtenerTipoVision(historia.metodoGrafico?.tipoVisionID) }}</p>
+      </div>
+    </div>
+    
+    <!-- Imagen de método gráfico - mostrar base64 o URL según disponibilidad -->
+    <div class="metodo-grafico-imagen">
+      <h3>Imagen</h3>
+      <!-- Priorizar mostrar la imagen en base64 si está disponible -->
+      <img 
+        *ngIf="historia.metodoGrafico?.imagenBase64" 
+        [src]="historia.metodoGrafico?.imagenBase64"  
+        alt="Imagen de método gráfico"
+        class="img-fluid">
+      <!-- Si no hay base64 pero hay ID, mostrar desde URL -->
+      <img 
+        *ngIf="!historia.metodoGrafico?.imagenBase64 && historia.metodoGrafico?.imagenID" 
+        [src]="obtenerUrlImagen(historia.metodoGrafico?.imagenID)" 
+        alt="Imagen de método gráfico"
+        class="img-fluid">
+      <!-- Mensaje si no hay imagen -->
+      <p *ngIf="!historia.metodoGrafico?.imagenBase64 && !historia.metodoGrafico?.imagenID" class="text-muted">
+        No hay imagen disponible
+      </p>
+    </div>
+  </section>
+
+<!-- Botón para editar si no hay datos -->
+  <div class="no-data" *ngIf="!historia.binocularidad && !historia.forias && !historia.vergencias && !historia.metodoGrafico">
+    <i class="fas fa-binoculars"></i>
+    <p>No se ha registrado información de binocularidad para esta historia clínica.</p>
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+      <i class="fas fa-edit"></i>
+      Agregar Binocularidad
+    </button>
+  </div>
+</div>
 
       <!-- Diagnóstico -->
       <div *ngIf="currentTab === 'diagnostico'" class="tab-pane">
@@ -463,7 +1090,7 @@
         <div class="no-data" *ngIf="!historia.diagnostico && !historia.planTratamiento && !historia.pronostico">
           <i class="fas fa-stethoscope"></i>
           <p>No se ha registrado información de diagnóstico para esta historia clínica.</p>
-          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !=='Finalizado'" (click)="editarHistoria()">
             <i class="fas fa-edit"></i>
             Agregar Diagnóstico
           </button>
@@ -516,7 +1143,7 @@
 
             <div class="info-item">
               <h3>Tipo de Lente</h3>
-              <p>{{ historia.recetaFinal.TipoID || 'Monocal' }}</p>
+              <p>{{ obtenerTipoLente(historia.recetaFinal.TipoID) }}</p>
             </div>
 
             <div class="info-item">

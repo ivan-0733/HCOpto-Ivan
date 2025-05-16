@@ -1,5 +1,6 @@
 const historiaClinicaService = require('../services/historiaClinicaService');
 const { catchAsync } = require('../utils/errorHandler');
+//const { plantilla } = require('../utils/plantillaHistoriaClinica.js');
 
 /**
  * Controlador para manejar las operaciones de historias clínicas
@@ -44,23 +45,92 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
   });
 }),
 
-/**
- * Crear una nueva historia clínica
- */
-crearHistoriaClinica: catchAsync(async (req, res) => {
-const alumnoId = req.usuario.AlumnoInfoID;
+crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
+  // 1. Obtener ID del alumno desde el token
+  const alumnoId = req.usuario.AlumnoInfoID;
+  
+  // 2. Extraer datos del body
+  const { datosHistoria, secciones } = req.body;
+  
+  // 3. Validaciones básicas
+  if (!datosHistoria || typeof datosHistoria !== 'object') {
+    return res.status(400).json({
+      status: 'error',
+      message: 'El formato de datosHistoria es incorrecto'
+    });
+  }
+  
+  // 4. Validar campos obligatorios
+  const camposRequeridos = ['NombreMateria', 'PeriodoEscolarID'];
+  const faltantes = camposRequeridos.filter(campo => !datosHistoria[campo]);
+  
+  if (faltantes.length > 0) {
+    return res.status(400).json({
+      status: 'error',
+      message: `Faltan campos obligatorios: ${faltantes.join(', ')}`,
+      requiredFields: camposRequeridos
+    });
+  }
 
-const datosHistoria = {
-    ...req.body,
-    alumnoID: alumnoId
-};
+  // 5. Validar datos del paciente si es nuevo
+  if (!datosHistoria.paciente?.id) {
+    const camposPacienteRequeridos = ['nombre', 'apellidoPaterno', 'generoID', 'edad', 'correoElectronico', 'telefonoCelular'];
+    const faltantesPaciente = camposPacienteRequeridos.filter(
+      campo => !datosHistoria.paciente?.[campo]
+    );
+    
+    if (faltantesPaciente.length > 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: `Faltan datos obligatorios del paciente: ${faltantesPaciente.join(', ')}`
+      });
+    }
+  }
 
-const nuevaHistoria = await historiaClinicaService.crearHistoriaClinica(datosHistoria);
+  // 6. Asignar alumnoID (seguridad)
+  datosHistoria.alumnoID = alumnoId;
 
-res.status(201).json({
-    status: 'success',
-    data: nuevaHistoria
-});
+  if (datosHistoria.materiaProfesorID) {
+    datosHistoria.MateriaProfesorID = datosHistoria.materiaProfesorID;
+  }
+
+  // 7. Log para depuración (opcional)
+  console.log('Datos recibidos para crear historia:', {
+    datosHistoria: {
+      ...datosHistoria,
+      paciente: datosHistoria.paciente ? { ...datosHistoria.paciente } : null
+    },
+    secciones: secciones ? Object.keys(secciones) : null
+  });
+
+  try {
+    // 8. Llamar al servicio
+    const historiaCreada = await historiaClinicaService.crearHistoriaClinicaCompleta(
+      datosHistoria, 
+      secciones || {} // Asegurar que secciones siempre sea un objeto
+    );
+
+    // 9. Respuesta exitosa
+    return res.status(201).json({
+      status: 'success',
+      message: 'Historia clínica creada exitosamente',
+      data: {historiaCreada}
+    });
+
+  } catch (error) {
+    // 10. Manejo de errores
+    console.error('Error detallado:', error);
+    
+    const mensajeError = error.message.includes('duplicate') 
+      ? 'Ya existe una historia clínica con estos datos'
+      : error.message || 'Error al crear historia clínica';
+
+    return res.status(500).json({
+      status: 'error',
+      message: mensajeError,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 }),
 
 /**
