@@ -591,8 +591,8 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
         `INSERT INTO Forias (
           HistorialID, HorizontalesLejos, HorizontalesCerca, 
           VerticalLejos, VerticalCerca, MetodoMedicionID, 
-          CAA, CAACalculada, CAAMedida
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          CAACalculada, CAAMedida
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           historiaID,
           secciones.forias.horizontalesLejos || null,
@@ -600,7 +600,6 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           secciones.forias.verticalLejos || null,
           secciones.forias.verticalCerca || null,
           secciones.forias.metodoMedicionID,
-          secciones.forias.caa || null,
           secciones.forias.caaCalculada || null,
           secciones.forias.caaMedida || null
         ]
