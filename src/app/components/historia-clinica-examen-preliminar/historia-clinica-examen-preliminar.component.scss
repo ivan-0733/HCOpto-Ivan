@@ -285,4 +285,48 @@
   .mr-1 {
     margin-right: 0.25rem;
   }
+
+  .form-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: $spacing-md;
+  
+  th, td {
+    padding: $spacing-sm;
+    border: 1px solid $border-color;
+    text-align: left;
+  }
+  
+  th {
+    background-color: $bg-primary;
+    color: $primary-dark;
+    font-weight: $font-weight-medium;
+  }
+  
+  td {
+    vertical-align: middle;
+  }
+  
+  td input.form-control {
+    margin: 0;
+    width: 100%;
+    border: none;
+    padding: $spacing-xs;
+    background-color: transparent;
+    
+    &:focus {
+      background-color: rgba($primary-light, 0.1);
+      box-shadow: none;
+    }
+  }
+  
+  tr:nth-child(even) {
+    background-color: $bg-white;
+  }
+  
+  tr:hover {
+    background-color: $bg-primary;
+  }
+}
+
 }

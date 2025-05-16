@@ -20,31 +20,31 @@
   </div>
 
   <div *ngIf="!loading" class="form-content">
-    <!-- Sección de Alineación Ocular -->
+    <!-- Sección de Alineación Ocular - Ahora en formato tabla -->
     <div class="form-section">
       <h3>Alineación Ocular</h3>
       <form [formGroup]="alineacionForm">
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="lejosHorizontal">Lejos Horizontal</label>
-            <input type="text" id="lejosHorizontal" formControlName="lejosHorizontal" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="lejosVertical">Lejos Vertical</label>
-            <input type="text" id="lejosVertical" formControlName="lejosVertical" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="cercaHorizontal">Cerca Horizontal</label>
-            <input type="text" id="cercaHorizontal" formControlName="cercaHorizontal" class="form-control">
-          </div>
-          <div class="form-group col-md-6">
-            <label for="cercaVertical">Cerca Vertical</label>
-            <input type="text" id="cercaVertical" formControlName="cercaVertical" class="form-control">
-          </div>
-        </div>
+        <table class="form-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Lejos</th>
+              <th>Cerca</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Horizontal</td>
+              <td><input type="text" formControlName="lejosHorizontal" class="form-control"></td>
+              <td><input type="text" formControlName="cercaHorizontal" class="form-control"></td>
+            </tr>
+            <tr>
+              <td>Vertical</td>
+              <td><input type="text" formControlName="lejosVertical" class="form-control"></td>
+              <td><input type="text" formControlName="cercaVertical" class="form-control"></td>
+            </tr>
+          </tbody>
+        </table>
 
         <div class="form-row">
           <div class="form-group col-md-6">
@@ -61,42 +61,34 @@
       </form>
     </div>
 
-    <!-- Sección de Motilidad -->
+    <!-- Sección de Motilidad - Ahora en formato tabla -->
     <div class="form-section">
       <h3>Motilidad</h3>
       <form [formGroup]="motilidadForm">
-        <div class="form-row">
-          <div class="form-group col-md-12">
-            <label for="versiones">Versiones</label>
-            <input type="text" id="versiones" formControlName="versiones" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-12">
-            <label for="ducciones">Ducciones</label>
-            <input type="text" id="ducciones" formControlName="ducciones" class="form-control">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-md-4">
-            <label for="sacadicos">Sacádicos</label>
-            <input type="text" id="sacadicos" formControlName="sacadicos" class="form-control">
-          </div>
-          <div class="form-group col-md-4">
-            <label for="persecucion">Persecución</label>
-            <input type="text" id="persecucion" formControlName="persecucion" class="form-control">
-          </div>
-          <div class="form-group col-md-4">
-            <label for="fijacion">Fijación</label>
-            <input type="text" id="fijacion" formControlName="fijacion" class="form-control">
-          </div>
-        </div>
+        <table class="form-table">
+          <thead>
+            <tr>
+              <th>Versiones</th>
+              <th>Ducciones</th>
+              <th>Sacádicos</th>
+              <th>Persecución</th>
+              <th>Fijación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="text" formControlName="versiones" class="form-control"></td>
+              <td><input type="text" formControlName="ducciones" class="form-control"></td>
+              <td><input type="text" formControlName="sacadicos" class="form-control"></td>
+              <td><input type="text" formControlName="persecucion" class="form-control"></td>
+              <td><input type="text" formControlName="fijacion" class="form-control"></td>
+            </tr>
+          </tbody>
+        </table>
       </form>
     </div>
 
-    <!-- Sección de Exploración Física -->
+    <!-- Sección de Exploración Física (sin cambios) -->
     <div class="form-section">
       <h3>Exploración Física</h3>
       <form [formGroup]="exploracionForm">
@@ -124,7 +116,7 @@
       </form>
     </div>
 
-    <!-- Sección de Vía Pupilar -->
+    <!-- Sección de Vía Pupilar - Campos lado a lado -->
     <div class="form-section">
       <h3>Vía Pupilar</h3>
       <form [formGroup]="viaPupilarForm">
@@ -235,7 +227,7 @@
         <div class="form-row">
           <div class="form-group col-md-6">
             <label for="dip">DIP (mm)</label>
-            <input type="text" id="dip" formControlName="dip" class="form-control" placeholder="Ej: 62/60">
+            <input type="text" id="dip" formControlName="dip" class="form-control">
           </div>
           <div class="form-group col-md-6">
             <label for="dominanciaOcularID">Dominancia Ocular</label>
