@@ -7,7 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const alumnoRoutes = require('./routes/alumnoRoutes');
 const historiaClinicaRoutes = require('./routes/historiaClinicaRoutes');
 const { errorHandler } = require('./utils/errorHandler');
-const multer = require('multer'); 
+const multer = require('multer');
 const path = require('path');
 
 

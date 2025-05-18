@@ -78,6 +78,10 @@ $accent-color-dark2: $ipn-guinda-light;
 
   button {
     margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
   }
 }
 
@@ -191,16 +195,17 @@ $accent-color-dark2: $ipn-guinda-light;
       display: inline-flex;
       align-items: center;
       padding: 0.75rem 1.25rem;
-      background-color: $ipn-guinda-light;
+      background-color: lighten(#731635,8%);
       color: $ipn-secondary; // Cambiado a color IPN blanco
       font-weight: 600;
       border: none;
       border-radius: $border-radius;
       cursor: pointer;
       transition: background-color 0.2s;
+      margin-right: 1rem;
 
       &:hover {
-        background-color: $ipn-guinda-dark;
+        background-color: lighten(#731635,10%);
       }
     }
   }
@@ -599,8 +604,8 @@ $accent-color-dark2: $ipn-guinda-light;
         color: $ipn-secondary; // Cambiado a color IPN blanco
         border: none;
 
-        &:hover:not(:disabled) {
-          background-color: $ipn-guinda-dark;
+        &:hover {
+          background-color: lighten(#731635,10%);
         }
 
         &:disabled {
@@ -615,7 +620,7 @@ $accent-color-dark2: $ipn-guinda-light;
         border: 1px solid $border-color; // Cambiado para soporte de tema
 
         &:hover {
-          background-color: rgba($ipn-guinda, 0.1); // Cambiado para soporte de tema
+          background-color: $light-selected-bg;
         }
       }
     }
@@ -872,6 +877,13 @@ $accent-color-dark2: $ipn-guinda-light;
   .loading-container,
   .error-container {
     background-color: $dark-bg-card;
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
   }
 
   // Mensajes de error
@@ -906,13 +918,18 @@ $accent-color-dark2: $ipn-guinda-light;
     }
   }
 
-  .btn-secondary {
-    background-color: transparent;
-    color: $text-primary;
-    border-color: $border-color;
+  // Por esta versión más específica
+  .form-actions {
+    button {
+      &.btn-secondary {
+        background-color: transparent;
+        color: $text-primary;
+        border-color: $border-color;
 
-    &:hover {
-      background-color: $dark-selected-bg;
+        &:hover {
+          background-color: $hover-bg-dark;
+        }
+      }
     }
   }
 

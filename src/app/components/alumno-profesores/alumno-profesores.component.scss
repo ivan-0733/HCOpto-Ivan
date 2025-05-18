@@ -97,6 +97,10 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
 
   button {
     margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
   }
 }
 
@@ -372,6 +376,13 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
 
     .secondary-text {
       color: $text-secondary;
+    }
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
     }
   }
 

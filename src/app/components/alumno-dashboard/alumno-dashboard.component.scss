@@ -11,6 +11,7 @@ $dark-color: $ipn-guinda; // Cambiado a color IPN
 $neutral-gray: #808080;
 $border-radius: 6px;
 $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+$light-selected-bg: #f0f0f0; // Fondo gris claro para elementos seleccionados en modo claro
 
 // Dashboard container
 .dashboard-container {
@@ -520,6 +521,10 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 
   button {
     margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
   }
 }
 
@@ -667,7 +672,7 @@ $box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
       }
 
       &:hover {
-        background-color: rgba($ipn-guinda, 0.1);
+        background-color: $light-selected-bg;
       }
 
       &:disabled {
@@ -873,6 +878,13 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
 
   .error-container{
     background-color: $dark-bg-card;
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
   }
 
   // Estilos para filtros en modo oscuro
@@ -924,6 +936,14 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   .valor-destacado,
   .paginacion-botones .btn-pagina i.material-icons {
     color: $accent-color-dark2;
+  }
+
+  .paginacion-botones {
+    .btn-pagina {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
   }
 
   .estado-badge{color: black}
