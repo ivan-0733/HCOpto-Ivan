@@ -57,11 +57,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   interrogatorio?: any;
   agudezaVisual?: any[];
   lensometria?: any;
-  diagnostico?: any;
-  planTratamiento?: any;
-  pronostico?: any;
   recetaFinal?: any;
-  recomendaciones?: any;
   comentarios?: any[];
   
   // Nuevas propiedades para examen preliminar
@@ -332,6 +328,30 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoDerechoImagenBase64?: string;
     ojoIzquierdoImagenBase64?: string;
   };
+
+  diagnostico?: {
+    OjoDerechoRefractivo?: string;
+    OjoIzquierdoRefractivo?: string;
+    OjoDerechoPatologico?: string;
+    OjoIzquierdoPatologico?: string;
+    Binocular?: string;
+    Sensorial?: string;
+  };
+  
+  planTratamiento?: {
+    Descripcion?: string;
+  };
+  
+  pronostico?: {
+    Descripcion?: string;
+  };
+  
+  recomendaciones?: {
+    Descripcion?: string;
+    ProximaCita?: Date | string;
+  };
+  
+
 
 }
 

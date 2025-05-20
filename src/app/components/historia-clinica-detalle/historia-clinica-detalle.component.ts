@@ -61,6 +61,9 @@ loadHistoriaClinica(): void {
         if (historia.metodoGrafico && historia.metodoGrafico.imagenID) {
           this.cargarImagenMetodoGrafico(historia.metodoGrafico.imagenID);
         }
+        
+        // Cargar imágenes de detección de alteraciones
+        this.cargarImagenesDeteccionAlteraciones();
       },
       error: (error) => {
         this.error = 'No se pudo cargar la historia clínica. ' + error.message;
@@ -226,16 +229,15 @@ obtenerNombreMetodo(metodoID: number | null | undefined): string {
 }
 
 
-
 tieneReflejosOD(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
   
   return viaPupilar.OjoDerechoFotomotorPresente || 
-          viaPupilar.OjoDerechoConsensualPresente || 
-          viaPupilar.OjoDerechoAcomodativoPresente ||
-          viaPupilar.OjoDerechoFotomotorAusente || 
-          viaPupilar.OjoDerechoConsensualAusente || 
-          viaPupilar.OjoDerechoAcomodativoAusente;
+        viaPupilar.OjoDerechoConsensualPresente || 
+        viaPupilar.OjoDerechoAcomodativoPresente ||
+        viaPupilar.OjoDerechoFotomotorAusente || 
+        viaPupilar.OjoDerechoConsensualAusente || 
+        viaPupilar.OjoDerechoAcomodativoAusente;
 }
 
 tieneReflejosOI(viaPupilar: any): boolean {
@@ -535,6 +537,222 @@ tieneDatosInfravergencias(vergencias: any): boolean {
     vergencias.infravergenciasCercaRuptura || 
     vergencias.infravergenciasCercaRecuperacion
   );
+}
+
+// Verificar si hay datos de detección de alteraciones
+tieneDatosAlteraciones(): boolean {
+  if (!this.historia) return false;
+  
+  // Función auxiliar para verificar si un valor tiene datos significativos
+  const tieneValor = (val: any): boolean => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') return val.trim() !== '';
+    if (typeof val === 'number') return !isNaN(val);
+    if (typeof val === 'boolean') return val;
+    return true;
+  };
+
+  // Verificar datos en Grid de Amsler
+  const hasGridAmslerData = !!(
+    this.historia.gridAmsler && 
+    Object.values(this.historia.gridAmsler).some(tieneValor)
+  );
+
+  // Verificar datos en Tonometría
+  const hasTonometriaData = !!(
+    this.historia.tonometria && 
+    Object.values(this.historia.tonometria).some(tieneValor)
+  );
+
+  // Verificar datos en Paquimetría
+  const hasPaquimetriaData = !!(
+    this.historia.paquimetria && 
+    Object.values(this.historia.paquimetria).some(tieneValor)
+  );
+
+  // Verificar datos en Campimetría
+  const hasCampimetriaData = !!(
+    this.historia.campimetria && (
+      Object.values(this.historia.campimetria).some(tieneValor) ||
+      this.historia.campimetria.imagenID ||
+      this.historia.campimetria.imagenBase64
+    )
+  );
+
+  // Verificar datos en Biomicroscopía
+  const hasBiomicroscopiaData = !!(
+    this.historia.biomicroscopia && 
+    Object.values(this.historia.biomicroscopia).some(tieneValor)
+  );
+
+  // Verificar datos en Oftalmoscopía
+  const hasOftalmoscopiaData = !!(
+    this.historia.oftalmoscopia && (
+      Object.values(this.historia.oftalmoscopia).some(tieneValor) ||
+      this.historia.oftalmoscopia.ojoDerechoImagenID ||
+      this.historia.oftalmoscopia.ojoIzquierdoImagenID ||
+      this.historia.oftalmoscopia.ojoDerechoImagenBase64 ||
+      this.historia.oftalmoscopia.ojoIzquierdoImagenBase64
+    )
+  );
+
+  return hasGridAmslerData || hasTonometriaData || hasPaquimetriaData || hasCampimetriaData || hasBiomicroscopiaData || hasOftalmoscopiaData;
+}
+
+// Verificar si hay datos de diagnóstico
+tieneDatosDiagnostico(): boolean {
+  if (!this.historia) return false;
+  
+  // Función auxiliar para verificar si un valor tiene datos significativos
+  const tieneValor = (val: any): boolean => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') return val.trim() !== '';
+    if (typeof val === 'number') return !isNaN(val);
+    if (typeof val === 'boolean') return val;
+    return true;
+  };
+
+  // Verificar datos en Diagnóstico
+  const hasDiagnosticoData = !!(
+    this.historia.diagnostico && 
+    Object.values(this.historia.diagnostico).some(tieneValor)
+  );
+
+  // Verificar datos en Plan de Tratamiento
+  const hasPlanTratamientoData = !!(
+    this.historia.planTratamiento && 
+    Object.values(this.historia.planTratamiento).some(tieneValor)
+  );
+
+  // Verificar datos en Pronóstico
+  const hasPronosticoData = !!(
+    this.historia.pronostico && 
+    Object.values(this.historia.pronostico).some(tieneValor)
+  );
+
+  // Verificar datos en Recomendaciones
+  const hasRecomendacionesData = !!(
+    this.historia.recomendaciones && 
+    Object.values(this.historia.recomendaciones).some(tieneValor)
+  );
+
+  return hasDiagnosticoData || hasPlanTratamientoData || hasPronosticoData || hasRecomendacionesData;
+}
+
+// Obtener el tipo de tonometría según el ID
+obtenerTipoTonometria(tipoID: number | null | undefined): string {
+  if (!tipoID) return 'No especificado';
+  
+  const tipos: {[key: number]: string} = {
+    31: 'Aplanación',
+    32: 'Identación',
+    33: 'Aire'
+  };
+  
+  return tipos[tipoID] || 'Desconocido';
+}
+
+// Método para cargar imágenes desde el servidor
+cargarImagenesDeteccionAlteraciones(): void {
+  if (!this.historia) return;
+  
+  // Cargar imagen de campimetría si hay ID pero no base64
+  if (this.historia.campimetria?.imagenID && !this.historia.campimetria?.imagenBase64) {
+    this.cargarImagenCampimetria(this.historia.campimetria.imagenID);
+  }
+  
+  // Cargar imágenes de oftalmoscopía si hay IDs pero no base64
+  if (this.historia.oftalmoscopia?.ojoDerechoImagenID && !this.historia.oftalmoscopia?.ojoDerechoImagenBase64) {
+    this.cargarImagenOftalmoscopiaOD(this.historia.oftalmoscopia.ojoDerechoImagenID);
+  }
+  
+  if (this.historia.oftalmoscopia?.ojoIzquierdoImagenID && !this.historia.oftalmoscopia?.ojoIzquierdoImagenBase64) {
+    this.cargarImagenOftalmoscopiaOI(this.historia.oftalmoscopia.ojoIzquierdoImagenID);
+  }
+}
+
+// Método para cargar la imagen de campimetría
+cargarImagenCampimetria(imagenID: number): void {
+  if (!imagenID) return;
+  
+  this.historiaClinicaService.obtenerImagenBase64(imagenID)
+    .subscribe({
+      next: (base64) => {
+        if (typeof base64 === 'string' && base64.length > 0) {
+          // Asegurar formato correcto de data URL
+          if (!base64.startsWith('data:image')) {
+            base64 = `data:image/png;base64,${base64}`;
+          }
+          
+          // Actualizar en el objeto historia
+          if (this.historia && this.historia.campimetria) {
+            this.historia.campimetria.imagenBase64 = base64;
+            console.log('Imagen de campimetría cargada correctamente');
+          }
+        } else {
+          console.error('La respuesta no contiene datos válidos de imagen de campimetría');
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar la imagen de campimetría:', error);
+      }
+    });
+}
+
+// Método para cargar la imagen de oftalmoscopía OD
+cargarImagenOftalmoscopiaOD(imagenID: number): void {
+  if (!imagenID) return;
+  
+  this.historiaClinicaService.obtenerImagenBase64(imagenID)
+    .subscribe({
+      next: (base64) => {
+        if (typeof base64 === 'string' && base64.length > 0) {
+          // Asegurar formato correcto de data URL
+          if (!base64.startsWith('data:image')) {
+            base64 = `data:image/png;base64,${base64}`;
+          }
+          
+          // Actualizar en el objeto historia
+          if (this.historia && this.historia.oftalmoscopia) {
+            this.historia.oftalmoscopia.ojoDerechoImagenBase64 = base64;
+            console.log('Imagen de oftalmoscopía OD cargada correctamente');
+          }
+        } else {
+          console.error('La respuesta no contiene datos válidos de imagen de oftalmoscopía OD');
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar la imagen de oftalmoscopía OD:', error);
+      }
+    });
+}
+
+// Método para cargar la imagen de oftalmoscopía OI
+cargarImagenOftalmoscopiaOI(imagenID: number): void {
+  if (!imagenID) return;
+  
+  this.historiaClinicaService.obtenerImagenBase64(imagenID)
+    .subscribe({
+      next: (base64) => {
+        if (typeof base64 === 'string' && base64.length > 0) {
+          // Asegurar formato correcto de data URL
+          if (!base64.startsWith('data:image')) {
+            base64 = `data:image/png;base64,${base64}`;
+          }
+          
+          // Actualizar en el objeto historia
+          if (this.historia && this.historia.oftalmoscopia) {
+            this.historia.oftalmoscopia.ojoIzquierdoImagenBase64 = base64;
+            console.log('Imagen de oftalmoscopía OI cargada correctamente');
+          }
+        } else {
+          console.error('La respuesta no contiene datos válidos de imagen de oftalmoscopía OI');
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar la imagen de oftalmoscopía OI:', error);
+      }
+    });
 }
 
 }

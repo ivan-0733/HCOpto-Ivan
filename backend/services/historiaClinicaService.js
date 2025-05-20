@@ -130,32 +130,197 @@ try {
   console.log('Datos básicos obtenidos:', historia.ID);
 
   // Función auxiliar para ejecutar consultas relacionadas con manejo de errores
-  const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') => {
-    try {
-      const [results] = await db.query(
-        `SELECT * FROM ${table} WHERE ${whereColumn} = ?`,
-        [id]
-      );
-      historia[fieldName] = results.length > 0 ? results : [];
-      if (results.length > 0 && table !== 'AgudezaVisual') {
-        historia[fieldName] = results[0];
-      }
-    } catch (err) {
-      console.error(`Error en ${table}:`, err.message);
-      historia[fieldName] = table === 'AgudezaVisual' ? [] : null;
+const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') => {
+  try {
+    const [results] = await db.query(
+      `SELECT * FROM ${table} WHERE ${whereColumn} = ?`,
+      [id]
+    );
+    
+    // Procesamiento especial para ciertas tablas
+    if (table === 'MetodoGrafico' && results.length > 0) {
+      // Normalizar nombres de propiedades del método gráfico para que el frontend pueda leerlas
+      historia[fieldName] = {
+        integracionBinocular: results[0].IntegracionBinocular,
+        tipoID: results[0].TipoID,
+        visionEstereoscopica: results[0].VisionEstereoscopica,
+        tipoVisionID: results[0].TipoVisionID,
+        imagenID: results[0].ImagenID
+      };
+    } 
+    // Normalizar GridAmsler
+    else if (table === 'GridAmsler' && results.length > 0) {
+      historia[fieldName] = {
+        numeroCartilla: results[0].NumeroCartilla,
+        ojoDerechoSensibilidadContraste: results[0].OjoDerechoSensibilidadContraste,
+        ojoIzquierdoSensibilidadContraste: results[0].OjoIzquierdoSensibilidadContraste,
+        ojoDerechoVisionCromatica: results[0].OjoDerechoVisionCromatica,
+        ojoIzquierdoVisionCromatica: results[0].OjoIzquierdoVisionCromatica
+      };
     }
+    // Normalizar Tonometria
+    else if (table === 'Tonometria' && results.length > 0) {
+      historia[fieldName] = {
+        metodoAnestesico: results[0].MetodoAnestesico,
+        fecha: results[0].Fecha,
+        hora: results[0].Hora,
+        ojoDerecho: results[0].OjoDerecho,
+        ojoIzquierdo: results[0].OjoIzquierdo,
+        tipoID: results[0].TipoID
+      };
+    }
+    // Normalizar Paquimetria
+    else if (table === 'Paquimetria' && results.length > 0) {
+      historia[fieldName] = {
+        ojoDerechoCCT: results[0].OjoDerechoCCT,
+        ojoIzquierdoCCT: results[0].OjoIzquierdoCCT,
+        ojoDerechoPIOCorregida: results[0].OjoDerechoPIOCorregida,
+        ojoIzquierdoPIOCorregida: results[0].OjoIzquierdoPIOCorregida
+      };
+    }
+    // Normalizar Campimetria
+    else if (table === 'Campimetria' && results.length > 0) {
+      historia[fieldName] = {
+        distancia: results[0].Distancia,
+        tamanoColorIndice: results[0].TamanoColorIndice,
+        tamanoColorPuntoFijacion: results[0].TamanoColorPuntoFijacion,
+        imagenID: results[0].ImagenID
+      };
+    }
+    // Normalizar Biomicroscopia
+    else if (table === 'Biomicroscopia' && results.length > 0) {
+      historia[fieldName] = {
+        ojoDerechoPestanas: results[0].OjoDerechoPestanas,
+        ojoIzquierdoPestanas: results[0].OjoIzquierdoPestanas,
+        ojoDerechoParpadosIndice: results[0].OjoDerechoParpadosIndice,
+        ojoIzquierdoParpadosIndice: results[0].OjoIzquierdoParpadosIndice,
+        ojoDerechoBordePalpebral: results[0].OjoDerechoBordePalpebral,
+        ojoIzquierdoBordePalpebral: results[0].OjoIzquierdoBordePalpebral,
+        ojoDerechoLineaGris: results[0].OjoDerechoLineaGris,
+        ojoIzquierdoLineaGris: results[0].OjoIzquierdoLineaGris,
+        ojoDerechoCantoExterno: results[0].OjoDerechoCantoExterno,
+        ojoIzquierdoCantoExterno: results[0].OjoIzquierdoCantoExterno,
+        ojoDerechoCantoInterno: results[0].OjoDerechoCantoInterno,
+        ojoIzquierdoCantoInterno: results[0].OjoIzquierdoCantoInterno,
+        ojoDerechoPuntosLagrimales: results[0].OjoDerechoPuntosLagrimales,
+        ojoIzquierdoPuntosLagrimales: results[0].OjoIzquierdoPuntosLagrimales,
+        ojoDerechoConjuntivaTarsal: results[0].OjoDerechoConjuntivaTarsal,
+        ojoIzquierdoConjuntivaTarsal: results[0].OjoIzquierdoConjuntivaTarsal,
+        ojoDerechoConjuntivaBulbar: results[0].OjoDerechoConjuntivaBulbar,
+        ojoIzquierdoConjuntivaBulbar: results[0].OjoIzquierdoConjuntivaBulbar,
+        ojoDerechoFondoSaco: results[0].OjoDerechoFondoSaco,
+        ojoIzquierdoFondoSaco: results[0].OjoIzquierdoFondoSaco,
+        ojoDerechoLimbo: results[0].OjoDerechoLimbo,
+        ojoIzquierdoLimbo: results[0].OjoIzquierdoLimbo,
+        ojoDerechoCorneaBiomicroscopia: results[0].OjoDerechoCorneaBiomicroscopia,
+        ojoIzquierdoCorneaBiomicroscopia: results[0].OjoIzquierdoCorneaBiomicroscopia,
+        ojoDerechoCamaraAnterior: results[0].OjoDerechoCamaraAnterior,
+        ojoIzquierdoCamaraAnterior: results[0].OjoIzquierdoCamaraAnterior,
+        ojoDerechoIris: results[0].OjoDerechoIris,
+        ojoIzquierdoIris: results[0].OjoIzquierdoIris,
+        ojoDerechoCristalino: results[0].OjoDerechoCristalino,
+        ojoIzquierdoCristalino: results[0].OjoIzquierdoCristalino
+      };
+    }
+    else if (table === 'Diagnostico' && results.length > 0) {
+  historia[fieldName] = {
+    OjoDerechoRefractivo: results[0].OjoDerechoRefractivo,
+    OjoIzquierdoRefractivo: results[0].OjoIzquierdoRefractivo,
+    OjoDerechoPatologico: results[0].OjoDerechoPatologico,
+    OjoIzquierdoPatologico: results[0].OjoIzquierdoPatologico,
+    Binocular: results[0].Binocular,
+    Sensorial: results[0].Sensorial
   };
+}
+
+// Y similar para PlanTratamiento y Pronostico
+else if (table === 'PlanTratamiento' && results.length > 0) {
+  historia[fieldName] = {
+    Descripcion: results[0].Descripcion
+  };
+}
+
+else if (table === 'Pronostico' && results.length > 0) {
+  historia[fieldName] = {
+    Descripcion: results[0].Descripcion
+  };
+}
+
+else if (table === 'Recomendaciones' && results.length > 0) {
+  historia[fieldName] = {
+    Descripcion: results[0].Descripcion,
+    ProximaCita: results[0].ProximaCita
+  };
+}
+    // Normalizar Oftalmoscopia
+    else if (table === 'Oftalmoscopia' && results.length > 0) {
+      historia[fieldName] = {
+        ojoDerechoPapila: results[0].OjoDerechoPapila,
+        ojoIzquierdoPapila: results[0].OjoIzquierdoPapila,
+        ojoDerechoExcavacion: results[0].OjoDerechoExcavacion,
+        ojoIzquierdoExcavacion: results[0].OjoIzquierdoExcavacion,
+        ojoDerechoRadio: results[0].OjoDerechoRadio,
+        ojoIzquierdoRadio: results[0].OjoIzquierdoRadio,
+        ojoDerechoProfundidad: results[0].OjoDerechoProfundidad,
+        ojoIzquierdoProfundidad: results[0].OjoIzquierdoProfundidad,
+        ojoDerechoVasos: results[0].OjoDerechoVasos,
+        ojoIzquierdoVasos: results[0].OjoIzquierdoVasos,
+        ojoDerechoRELAV: results[0].OjoDerechoRELAV,
+        ojoIzquierdoRELAV: results[0].OjoIzquierdoRELAV,
+        ojoDerechoMacula: results[0].OjoDerechoMacula,
+        ojoIzquierdoMacula: results[0].OjoIzquierdoMacula,
+        ojoDerechoReflejo: results[0].OjoDerechoReflejo,
+        ojoIzquierdoReflejo: results[0].OjoIzquierdoReflejo,
+        ojoDerechoRetinaPeriferica: results[0].OjoDerechoRetinaPeriferica,
+        ojoIzquierdoRetinaPeriferica: results[0].OjoIzquierdoRetinaPeriferica,
+        ojoDerechoISNT: results[0].OjoDerechoISNT,
+        ojoIzquierdoISNT: results[0].OjoIzquierdoISNT,
+        ojoDerechoImagenID: results[0].OjoDerechoImagenID,
+        ojoIzquierdoImagenID: results[0].OjoIzquierdoImagenID
+      };
+    }
+    else if (table === 'AgudezaVisual') {
+      historia[fieldName] = results.length > 0 ? results : [];
+    } else {
+      historia[fieldName] = results.length > 0 ? results[0] : null;
+    }
+  } catch (err) {
+    console.error(`Error en ${table}:`, err.message);
+    historia[fieldName] = table === 'AgudezaVisual' ? [] : null;
+  }
+
+  
+    
+
+  
+};
 
   // Obtener datos relacionados
   await Promise.all([
-    fetchRelatedData('Interrogatorio', 'interrogatorio'),
-    fetchRelatedData('AgudezaVisual', 'agudezaVisual'),
-    fetchRelatedData('Lensometria', 'lensometria'),
-    fetchRelatedData('Diagnostico', 'diagnostico'),
-    fetchRelatedData('PlanTratamiento', 'planTratamiento'),
-    fetchRelatedData('Pronostico', 'pronostico'),
-    fetchRelatedData('RecetaFinal', 'recetaFinal'),
-  ]);
+  fetchRelatedData('Interrogatorio', 'interrogatorio'),
+  fetchRelatedData('AgudezaVisual', 'agudezaVisual'),
+  fetchRelatedData('Lensometria', 'lensometria'),
+  fetchRelatedData('AlineacionOcular', 'alineacionOcular'),
+  fetchRelatedData('Motilidad', 'motilidad'),
+  fetchRelatedData('ExploracionFisica', 'exploracionFisica'),
+  fetchRelatedData('ViaPupilar', 'viaPupilar'),
+  fetchRelatedData('EstadoRefractivo', 'estadoRefractivo'),
+  fetchRelatedData('SubjetivoCerca', 'subjetivoCerca'),
+  fetchRelatedData('Binocularidad', 'binocularidad'),
+  fetchRelatedData('Forias', 'forias'),
+  fetchRelatedData('Vergencias', 'vergencias'),
+  fetchRelatedData('MetodoGrafico', 'metodoGrafico'),
+  fetchRelatedData('GridAmsler', 'gridAmsler'),
+  fetchRelatedData('Tonometria', 'tonometria'),
+  fetchRelatedData('Paquimetria', 'paquimetria'),
+  fetchRelatedData('Campimetria', 'campimetria'),
+  fetchRelatedData('Biomicroscopia', 'biomicroscopia'),
+  fetchRelatedData('Oftalmoscopia', 'oftalmoscopia'),
+  fetchRelatedData('Diagnostico', 'diagnostico'),
+  fetchRelatedData('PlanTratamiento', 'planTratamiento'),
+  fetchRelatedData('Pronostico', 'pronostico'),
+  fetchRelatedData('RecetaFinal', 'recetaFinal'),
+]);
 
   // Obtener comentarios y respuestas con manejo de errores
   try {
@@ -1168,7 +1333,7 @@ try {
           InfravergenciasCercaRuptura, InfravergenciasCercaRecuperacion)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [historiaId,
-          vergencias.PositivasLejosBorroso, vergencias.PositivasLejosRuptura, vergencias.PositivasLejosRecuperacion,
+          vergencias.PositiTonvasLejosBorroso, vergencias.PositivasLejosRuptura, vergencias.PositivasLejosRecuperacion,
           vergencias.PositivasCercaBorroso, vergencias.PositivasCercaRuptura, vergencias.PositivasCercaRecuperacion,
           vergencias.NegativasLejosBorroso, vergencias.NegativasLejosRuptura, vergencias.NegativasLejosRecuperacion,
           vergencias.NegativasCercaBorroso, vergencias.NegativasCercaRuptura, vergencias.NegativasCercaRecuperacion,
@@ -1187,7 +1352,7 @@ try {
           metodoGrafico.VisionEstereoscopica, metodoGrafico.TipoVisionID, metodoGrafico.ImagenID]
       );
     
-      case 'deteccion-alteraciones':
+    case 'deteccion-alteraciones':
       const {
         gridAmsler,        // datos para tabla GridAmsler
         tonometria,        // datos para tabla Tonometria
@@ -1211,7 +1376,7 @@ try {
       ) VALUES (?, ?, ?, ?, ?, ?)`,
       [
         historiaId,
-        gridAmsler.numeroCartilla || null,
+        gridAmsler.NumeroCartilla || null,
         gridAmsler.ojoDerechoSensibilidadContraste || null,
         gridAmsler.ojoIzquierdoSensibilidadContraste || null,
         gridAmsler.ojoDerechoVisionCromatica || null,
@@ -1547,7 +1712,7 @@ try {
     );
   }
     break;
-      
+
   case 'diagnostico':
       // Verificar si ya existe un diagnóstico para esta historia
       const [diagnosticos] = await connection.query(
