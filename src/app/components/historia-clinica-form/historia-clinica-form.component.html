@@ -1,6 +1,6 @@
 <div class="historia-form-container">
   <!-- Header - se muestra solo si no está oculto -->
-  <header class="form-header" *ngIf="!hideHeaderAndButtons">
+  <header class="content-header" *ngIf="!hideHeaderAndButtons">
     <div class="header-title">
       <h1 *ngIf="!isEditing">
         <i class="fas fa-file-medical"></i>
@@ -24,19 +24,24 @@
     </div>
   </header>
 
-  <!-- Mensajes de error y éxito -->
-  <div *ngIf="error && !hideHeaderAndButtons" class="error-message">
+  <!-- Error state - idéntico al patrón de otros componentes -->
+  <div class="error-container" *ngIf="error && !hideHeaderAndButtons">
     <i class="fas fa-exclamation-triangle"></i>
-    {{ error }}
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="onSubmit()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
   </div>
 
-  <div *ngIf="success && !hideHeaderAndButtons" class="success-message">
+  <!-- Success message con fade-out -->
+  <div class="success-message fade-out" *ngIf="success && !hideHeaderAndButtons">
     <i class="fas fa-check-circle"></i>
-    {{ success }}
+    <p>{{ success }}</p>
   </div>
 
-  <!-- Indicador de carga -->
-  <div *ngIf="loading" class="loading-container">
+  <!-- Loading container -->
+  <div class="loading-container" *ngIf="loading">
     <div class="spinner"></div>
     <p>Cargando datos...</p>
   </div>
@@ -46,7 +51,10 @@
     <form [formGroup]="historiaForm" (ngSubmit)="onSubmit()">
       <!-- Sección de datos generales -->
       <div class="form-section">
-        <h2>Información General</h2>
+        <h3 class="section-title">
+          <i class="material-icons">info</i>
+          Información General
+        </h3>
 
         <div class="form-group">
           <label for="materiaProfesorID">Materia y Grupo *</label>
@@ -61,6 +69,7 @@
           </div>
         </div>
 
+        <div class="form-row">
           <div class="form-group">
             <label for="consultorioID">Consultorio *</label>
             <select id="consultorioID" formControlName="consultorioID" [ngClass]="{'is-invalid': historiaForm.get('consultorioID')?.invalid && historiaForm.get('consultorioID')?.touched}">
@@ -73,9 +82,6 @@
               Por favor, selecciona un consultorio.
             </div>
           </div>
-        </div>
-
-          <!-- En src/app/components/historia-clinica-form/historia-clinica-form.component.html -->
 
           <div class="form-group">
             <label for="periodoEscolarID">Período Escolar *</label>
@@ -97,22 +103,37 @@
               Por favor, selecciona una fecha válida.
             </div>
           </div>
+        </div>
+      </div>
 
-        <h2>Paciente</h2>
+      <!-- Línea divisoria -->
+    <div class="section-divider"></div>
+
+      <!-- Sección de paciente -->
+      <div class="form-section">
+        <h3 class="section-title">
+          <i class="material-icons">person</i>
+          Información del Paciente
+        </h3>
 
         <!-- Búsqueda de paciente existente -->
         <div class="paciente-search" *ngIf="!pacienteSeleccionado && !isEditing">
+          <div class="search-info">
+            <i class="material-icons info-icon">info</i>
+            <p>Busca si el paciente ya existe en el sistema antes de crear uno nuevo</p>
+          </div>
+
           <div class="form-group">
             <label for="busquedaPaciente">Buscar paciente existente</label>
             <div class="search-input-group">
               <div class="input-with-icon">
                 <i class="fas fa-search"></i>
                 <input
-                type="text"
-                id="busquedaPaciente"
-                [formControl]="busquedaControl"
-                placeholder="Nombre, apellido o correo (mínimo 3 caracteres)"
-              >
+                  type="text"
+                  id="busquedaPaciente"
+                  [formControl]="busquedaControl"
+                  placeholder="Nombre, apellido o correo (mínimo 3 caracteres)"
+                >
               </div>
               <button type="button" class="btn-outline" (click)="limpiarPacienteSeleccionado()" *ngIf="pacienteSeleccionado">
                 <i class="fas fa-times"></i>
@@ -123,7 +144,7 @@
             <!-- Resultados de búsqueda -->
             <div class="search-results" *ngIf="mostrarResultadosBusqueda">
               <div class="search-loading" *ngIf="buscandoPacientes">
-                <div class="spinner-small"></div>
+                <div class="spinner"></div>
                 <span>Buscando pacientes...</span>
               </div>
 
@@ -140,7 +161,7 @@
                       <small>{{ paciente.CorreoElectronico }} | {{ paciente.TelefonoCelular }}</small>
                     </div>
                     <div class="paciente-edad">
-                      <span>{{ paciente.Edad }} años</span>
+                      <span class="estado-badge">{{ paciente.Edad }} años</span>
                     </div>
                   </div>
                 </li>
@@ -152,7 +173,7 @@
         <!-- Paciente seleccionado -->
         <div class="paciente-selected" *ngIf="pacienteSeleccionado && !isEditing">
           <div class="paciente-selected-header">
-            <h3>Paciente Seleccionado</h3>
+            <h4>Paciente Seleccionado</h4>
             <button type="button" class="btn-outline" (click)="limpiarPacienteSeleccionado()">
               <i class="fas fa-times"></i>
               Cambiar paciente
@@ -160,20 +181,22 @@
           </div>
 
           <div class="paciente-selected-info">
-            <div class="info-row">
-              <div class="info-col">
-                <strong>Nombre:</strong> {{ pacienteSeleccionado.Nombre }} {{ pacienteSeleccionado.ApellidoPaterno }} {{ pacienteSeleccionado.ApellidoMaterno }}
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Nombre:</label>
+                <p>{{ pacienteSeleccionado.Nombre }} {{ pacienteSeleccionado.ApellidoPaterno }} {{ pacienteSeleccionado.ApellidoMaterno }}</p>
               </div>
-              <div class="info-col">
-                <strong>Edad:</strong> {{ pacienteSeleccionado.Edad }} años
+              <div class="info-item">
+                <label>Edad:</label>
+                <p>{{ pacienteSeleccionado.Edad }} años</p>
               </div>
-            </div>
-            <div class="info-row">
-              <div class="info-col">
-                <strong>Correo:</strong> {{ pacienteSeleccionado.CorreoElectronico }}
+              <div class="info-item">
+                <label>Correo:</label>
+                <p>{{ pacienteSeleccionado.CorreoElectronico }}</p>
               </div>
-              <div class="info-col">
-                <strong>Teléfono:</strong> {{ pacienteSeleccionado.TelefonoCelular }}
+              <div class="info-item">
+                <label>Teléfono:</label>
+                <p>{{ pacienteSeleccionado.TelefonoCelular }}</p>
               </div>
             </div>
           </div>
@@ -304,14 +327,6 @@
             </div>
           </div>
         </div>
-
-      <!-- Botones de acción - solo se muestran si no están ocultos -->
-      <div class="form-actions" *ngIf="!hideHeaderAndButtons">
-        <button type="button" class="btn-secondary" (click)="cancelar()">Cancelar</button>
-        <button type="submit" class="btn-primary" [disabled]="submitting">
-          <span *ngIf="submitting" class="spinner-border spinner-border-sm mr-1"></span>
-          {{ isEditing ? 'Actualizar Historia Clínica' : 'Crear Historia Clínica' }}
-        </button>
       </div>
     </form>
   </div>

@@ -1,24 +1,34 @@
 @import '../../styles/variables';
 
+// Variables para el tema oscuro
+$dark-bg-card: #2a2a2a;
+$dark-selected-bg: #1e1e1e;
+$light-selected-bg: #f0f0f0;
+$hover-bg-light: #f0f0f0;
+$hover-bg-dark: #1e1e1e;
+$accent-color-dark: $ipn-guinda-light;
+
 .historia-container {
   max-width: 1200px;
   margin: 0 auto;
-  background-color: $ipn-white;
-  border-radius: $border-radius-lg;
-  box-shadow: $box-shadow;
+  background-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   min-height: 700px;
+  padding: 0.2rem 1.5rem; // Sin padding-top
 
-  // Header mejorado
+  // Header mejorado y ajustado
   .historia-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $spacing-lg $spacing-xl;
-    background-color: $ipn-white;
-    border-bottom: 1px solid $ipn-gray;
+    padding: $spacing-md 0rem $spacing-md 0;
+    background-color: transparent;
+    border-bottom: 2px solid $ipn-guinda;
+    margin-bottom: 1rem;
 
     .header-title {
       h1 {
@@ -28,9 +38,9 @@
         color: $ipn-guinda;
         display: flex;
         align-items: center;
-        
+        padding-left: 0;
+
         i {
-          margin-right: $spacing-md;
           opacity: 0.8;
         }
       }
@@ -39,110 +49,217 @@
     .header-actions {
       display: flex;
       gap: $spacing-md;
+
+      // Mejorar estilo de botones
+      button {
+        padding: $spacing-md $spacing-lg;
+        font-size: 0.9rem;
+        border-radius: 0;
+        font-weight: $font-weight-medium;
+        transition: $transition-base;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+        height: 42px;
+        border-radius: $border-radius;
+      }
+
+      .btn-primary {
+        background-color: $ipn-guinda;
+        color: white;
+        border: none;
+
+        &:hover {
+          background-color: lighten(#731635,10%);
+        }
+
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+      }
+
+      .btn-secondary {
+        background-color: $bg-primary;
+        color: #000;
+        border: 1px solid $border-color;
+
+        &:hover {
+          background-color: $light-selected-bg;
+        }
+      }
     }
   }
 
   // Mensajes de error y éxito
   .error-message {
-    padding: $spacing-md $spacing-lg;
-    margin: $spacing-md $spacing-xl;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
     background-color: $danger-light;
     color: $danger;
     border-radius: $border-radius;
-    border-left: 4px solid $danger;
-    display: flex;
-    align-items: center;
-    
+    margin-bottom: 1.5rem;
+
     i {
-      margin-right: $spacing-md;
-      font-size: 1.2rem;
+      font-size: 1.5rem;
+      margin-right: 0.25rem;
     }
-  }
-  
-  .success-message {
-    padding: $spacing-md $spacing-lg;
-    margin: $spacing-md $spacing-xl;
-    background-color: $ipn-gray;
-    color: $success;
-    border-radius: $border-radius;
-    border-left: 4px solid $success;
-    display: flex;
-    align-items: center;
-    
-    i {
-      margin-right: $spacing-md;
-      font-size: 1.2rem;
+
+    p {
+      margin: 0;
+      font-weight: 500;
     }
   }
 
-  // Indicador de carga
-  .loading-container {
-    flex: 1;
+  .success-message {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    background-color: #dff6ea; /* fondo claro, suave basado en #2ecc71 */
+    color: #27ae60;            /* texto verde fuerte */
+    border-radius: $border-radius;
+    margin-bottom: 1.5rem;
+
+    i {
+      font-size: 1.5rem;
+      margin-right: 0.25rem;
+    }
+
+    p {
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+
+  // Nuevo estilo para el contenedor de tabs con posicionamiento relativo
+  .tabs-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  // Contenedor de tabs y botones (actualizado para evitar superposición)
+  .tabs-scroll-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+  }
+
+  // Botones de navegación fijos en los extremos
+  .nav-tab-button {
+    position: relative; // Cambiado de absolute a relative
+    top: 0;
+    height: auto; // Cambiado de 42px para que adopte la altura natural como los otros botones
+    min-width: auto; // Cambiado para que use el mismo tamaño que los botones de detalle
+    max-width: 40px; // Eliminar la restricción de ancho máximo
+    padding: $spacing-md $spacing-lg; // Usar el mismo padding que los botones de detalle
+    background-color: transparent; // Fondo transparente en ambos modos
+    border: none;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: $spacing-xxl 0;
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba($ipn-guinda, 0.1);
-      border-radius: 50%;
-      border-left-color: $ipn-guinda;
-      animation: spin 1s linear infinite;
-      margin-bottom: $spacing-md;
+    cursor: pointer;
+    z-index: 10;
+    color: $text-secondary;
+    transition: $transition-base;
+    flex-shrink: 0; // Evita que los botones se reduzcan
+    border-radius: 0; // Esquinas cuadradas siempre
+
+    &:hover {
+      background-color: rgba($ipn-guinda, 0.1);
+      color: $ipn-guinda;
     }
-    
-    p {
-      color: #666;
+
+    &:active {
+      background-color: rgba($ipn-guinda, 0.2);
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+
+    &.left {
+      left: 0;
+      border-right: 1px solid rgba($border-color, 0.2);
+      border-bottom: 1px solid $border-color;
+      padding-top: 1.05rem;
+    }
+
+    &.right {
+      right: 0;
+      border-left: 1px solid rgba($border-color, 0.2);
+      border-bottom: 1px solid $border-color;
+    }
+
+    i {
+      font-size: 24px;
     }
   }
 
-  // Nuevo estilo para pestañas tipo detalle
+  .nav-tab-button.disabled {
+    // Quita la opacidad general
+    opacity: 1;
+    cursor: default;
+    pointer-events: none;
+
+    // Aplica opacidad solo al contenido
+    color: rgba($text-secondary, 0.4);
+
+    i {
+      opacity: 0.4;
+    }
+  }
+
+  // Estilo de pestañas (slider original) - Actualizado para ajustarse entre botones de navegación
   .detalle-tabs {
     display: flex;
     overflow-x: auto;
-    background-color: $ipn-gray;
-    border-bottom: 1px solid $ipn-gray-dark;
-    
+    background-color: transparent;
+    position: relative;
+    -ms-overflow-style: none;  /* IE y Edge */
+    scrollbar-width: none;     /* Firefox */
+    padding: 0; // Sin padding
+    margin: 0; // Sin margen
+    flex: 1; // Para que ocupe todo el espacio disponible entre botones
+    /* Ocultar scrollbar */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
     button {
       padding: $spacing-md $spacing-lg;
       background: none;
       border: none;
       font-size: 0.95rem;
       font-weight: $font-weight-medium;
-      color: #555;
+      color: $text-secondary;
       cursor: pointer;
       transition: $transition-base;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      border-bottom: 3px solid transparent;
-      
-      i:first-child {
-        margin-right: $spacing-sm;
-      }
+      border-radius: 0;
+      flex-shrink: 0;
+      border-bottom: 1px solid $border-color;
 
       i.fa-check {
         margin-left: $spacing-sm;
         color: $success;
         font-size: 0.8rem;
       }
-      
+
       &:hover {
-        background-color: rgba($ipn-white, 0.7);
+        background-color: rgba($ipn-guinda, 0.1);
+        color: $ipn-guinda;
       }
-      
+
       &.active {
-        background-color: $ipn-white;
+        background-color: darken(#ffffff, 5%);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
         color: $ipn-guinda;
         font-weight: $font-weight-bold;
-        border-bottom-color: $ipn-guinda;
+        border-bottom: 5px solid $ipn-guinda;
+        padding-top: 1.2rem;
 
         i {
           color: $ipn-guinda;
@@ -151,238 +268,457 @@
     }
   }
 
-  // Contenido de sección
-  .tab-content {
-    flex: 1;
-    padding: $spacing-xl;
-    position: relative;
-    min-height: 400px;
-    background-color: $ipn-white;
-    
-    .tab-pane {
-      height: 100%;
-    }
-    
-    .placeholder-section {
-      padding: $spacing-xxl;
-      background-color: $ipn-gray;
-      border-radius: $border-radius;
-      border: 1px dashed $ipn-gray-dark;
-      text-align: center;
-      color: #666;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: $spacing-lg;
-      
-      i {
-        font-size: 2.5rem;
-        color: $ipn-guinda;
-        opacity: 0.7;
-        margin-bottom: $spacing-md;
-      }
-      
-      h3 {
-        font-size: 1.3rem;
-        font-weight: $font-weight-bold;
-        margin-bottom: $spacing-sm;
-      }
-      
-      p {
-        font-size: 1rem;
-        color: #888;
-      }
-    }
+  // Barra de progreso
+  .progress-container {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  // Barra de progreso
+  // Etiqueta "Barra de progreso:"
+  .progress-label {
+    margin-right: 1.3rem;
+    font-size: 0.9rem;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+  }
+
+  // La barra de progreso en sí
   .progress-bar {
+    flex: 1;
     height: 6px;
-    background-color: $ipn-gray;
-    margin: 0;
-    
+    background-color: $border-color;
+    border-radius: 3px;
+    overflow: hidden;
+
     .progress-indicator {
       height: 100%;
       background-color: $success;
       transition: width 0.3s ease;
+      border-radius: 3px;
     }
   }
 
-  // Navegación inferior
+  // Porcentaje numérico
+  .progress-percentage {
+    margin-left: 0.1rem;
+    font-size: 0.9rem;
+    color: $text-secondary;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  // Navegación inferior (estilo similar a alumno-dashboard)
   .bottom-navigation {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    padding: $spacing-md $spacing-xl;
-    border-top: 1px solid $ipn-gray;
-    background-color: $ipn-gray;
-    
+    margin-top: $spacing-lg;
+    padding: $spacing-md 0rem $spacing-md 0;
+    background-color: rgba($ipn-guinda, 0.05);
+    border-radius: 0;
+    font-size: 0.9rem;
+    border-top: 2px solid $ipn-guinda;
+
     .nav-section {
+      color: $text-secondary;
       font-weight: $font-weight-medium;
-      color: #555;
-      font-size: 0.95rem;
+
+      .pagina-info {
+        font-size: 0.9rem;
+      }
     }
-    
+
     .nav-buttons {
+      margin-top: 0.5rem;
       display: flex;
+      align-items: center;
       gap: $spacing-md;
+
+      .btn-navigation {
+        font-size: 0.9rem;
+        min-width: 120px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: $bg-primary;
+        border: 1px solid $border-color;
+        border-radius: 0;
+        color: $text-primary;
+        font-weight: $font-weight-medium;
+        cursor: pointer;
+        transition: $transition-base;
+        border-radius: $border-radius;
+
+        &:hover {
+          background-color: $light-selected-bg;
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+
+          &:hover {
+            background-color: $bg-primary;
+          }
+        }
+
+        &.prev-btn i {
+          margin-right: 8px;
+        }
+
+        &.next-btn i {
+          margin-left: 8px;
+        }
+      }
     }
   }
 }
 
-// Botones mejorados
-.btn-primary {
-  background-color: $ipn-guinda;
-  color: $ipn-white;
+// Estructura de navegación de pestañas mejorada
+.tabs-wrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+// Nuevo contenedor para los tabs y botones de navegación
+.tabs-scroll-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+}
+
+.tabs-navigation-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  margin-bottom: $spacing-md;
+  border-bottom: 1px solid $border-color;
+}
+
+/* Estilo de las flechas de navegación */
+/* Estilo de las flechas de navegación actualizado para que se vean como pestañas */
+.tab-scroll-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: 100%;
+  background-color: transparent;
   border: none;
-  border-radius: $border-radius;
-  padding: $spacing-md $spacing-lg;
+  border-bottom: 5px solid transparent;
+  cursor: pointer;
+  position: absolute;
+  z-index: 10;
+  color: $text-secondary;
+  transition: $transition-base;
+  padding: $spacing-md $spacing-sm;
   font-size: 0.95rem;
   font-weight: $font-weight-medium;
-  cursor: pointer;
-  transition: $transition-base;
-  display: flex;
-  align-items: center;
-
-  i {
-    margin-right: $spacing-sm;
-  }
-
-  &:hover {
-    background-color: $ipn-guinda-light;
-  }
-
-  &:disabled {
-    background-color: $ipn-gray-dark;
-    cursor: not-allowed;
-  }
-}
-
-.btn-secondary {
-  background-color: $ipn-white;
-  color: #666;
-  border: 1px solid $ipn-gray-dark;
-  border-radius: $border-radius;
-  padding: $spacing-md $spacing-lg;
-  font-size: 0.95rem;
-  font-weight: $font-weight-medium;
-  cursor: pointer;
-  transition: $transition-base;
-  display: flex;
-  align-items: center;
-
-  i {
-    margin-right: $spacing-sm;
-  }
-
-  &:hover {
-    background-color: $ipn-gray;
-  }
-}
-
-.btn-outline {
-  background-color: $ipn-white;
-  color: $ipn-guinda;
-  border: 1px solid $ipn-guinda;
-  border-radius: $border-radius;
-  padding: $spacing-md $spacing-lg;
-  font-size: 0.95rem;
-  font-weight: $font-weight-medium;
-  cursor: pointer;
-  transition: $transition-base;
-  display: flex;
-  align-items: center;
-
-  i {
-    margin-right: $spacing-sm;
-  }
+  white-space: nowrap;
 
   &:hover {
     background-color: rgba($ipn-guinda, 0.1);
+    color: $ipn-guinda;
   }
-}
 
-.btn-navigation {
-  background-color: $ipn-white;
-  color: #555;
-  border: 1px solid $ipn-gray-dark;
-  border-radius: $border-radius;
-  padding: $spacing-md $spacing-lg;
-  font-size: 0.95rem;
-  font-weight: $font-weight-medium;
-  cursor: pointer;
-  transition: $transition-base;
-  display: flex;
-  align-items: center;
-  
+  &:active {
+    background-color: rgba($ipn-guinda, 0.2);
+  }
+
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  &.left {
+    left: 0;
+    border-right: 1px solid rgba($border-color, 0.4);
+  }
+
+  &.right {
+    right: 0;
+    border-left: 1px solid rgba($border-color, 0.4);
+  }
+
   i {
-    font-size: 0.9rem;
-  }
-  
-  &:hover {
-    background-color: $ipn-gray;
-  }
-  
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    font-size: 22px;
   }
 }
 
-// Media queries para responsive
-@media (max-width: $breakpoint-lg) {
+// Agregar estilos en historia-clinica-container.component.scss
+// Estilo del error container idéntico al de alumno-perfil.component.scss
+
+// Estados de carga, error y vacío
+.error-container{
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 400px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $ipn-guinda-dark;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 0rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    color: $ipn-gray-dark;
+  }
+
+  button {
+    margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
+  }
+}
+
+.loading-container {
+  i, .spinner {
+    color: $ipn-guinda; // Cambiado a color IPN
+  }
+}
+
+.error-container {
+  color: $danger;
+  border-color: $danger;
+}
+
+// Botón de reintentar (idéntico al de alumno-perfil)
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.1);
+  }
+}
+
+// Adaptación al modo oscuro
+:host-context(.dark-theme) {
   .historia-container {
     .historia-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: $spacing-md;
+      border-color: $ipn-guinda-light;
+
+      .header-title h1 {
+        color: $ipn-guinda-light;
+
+        i {
+          color: $ipn-guinda-light;
+        }
+      }
 
       .header-actions {
-        width: 100%;
-        justify-content: flex-end;
+        .btn-primary {
+          background-color: $ipn-guinda;
+
+          &:hover {
+            background-color: lighten(#731635,10%);
+          }
+        }
+
+        .btn-secondary {
+          background-color: $dark-bg-card;
+          color: $text-primary;
+          border-color: $border-color;
+
+          &:hover {
+            background-color: $dark-selected-bg;
+          }
+        }
+      }
+    }
+
+    .nav-tab-button {
+      background-color: transparent; // Fondo transparente en modo oscuro
+
+      &:hover {
+        background-color: rgba($ipn-guinda-light, 0.1);
+        color: $ipn-guinda-light;
       }
     }
 
     .detalle-tabs {
-      overflow-x: auto;
-      flex-wrap: nowrap;
+      border-color: $border-color;
 
       button {
-        padding: $spacing-sm $spacing-md;
-        font-size: 0.9rem;
-        
-        span {
-          max-width: 100px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        color: $text-secondary;
+
+        &:hover {
+          background-color: rgba($ipn-guinda-light, 0.1);
+          color: $ipn-guinda-light;
         }
+
+        &.active {
+          background-color: darken(#2a2a2a, 3%);
+          color: $ipn-guinda-light;
+          border-bottom-color: $ipn-guinda-light;
+
+          i {
+            color: $ipn-guinda-light;
+          }
+        }
+
+        &.nav-tab-button {
+          &.disabled {
+            &:hover {
+              background-color: transparent;
+            }
+          }
+        }
+      }
+    }
+
+    .progress-container {
+      .progress-label, .progress-percentage {
+        color: $text-secondary;
+      }
+
+      .progress-bar {
+        background-color: $border-color;
+
+        .progress-indicator {
+          background-color: $success;
+        }
+      }
+    }
+
+    .bottom-navigation {
+      background-color: rgba($ipn-guinda-light, 0.1);
+      border-color: $ipn-guinda-light;
+
+      .nav-buttons .btn-navigation {
+        background-color: $dark-bg-card;
+        color: $text-primary;
+        border-color: $border-color;
+
+        &:hover {
+          background-color: rgba($ipn-guinda-light, 0.2);
+        }
+
+        &:disabled {
+          &:hover {
+            background-color: $dark-bg-card;
+          }
+        }
+      }
+    }
+  }
+
+  .loading-container,
+  .error-container {
+    background-color: $dark-bg-card;
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
       }
     }
   }
 }
 
-@media (max-width: $breakpoint-sm) {
+// Media queries para responsividad
+@media (max-width: $breakpoint-md) {
   .historia-container {
+    padding: 0.5rem 1.5rem; // Sin padding-top
+
     .historia-header {
+      flex-direction: column;
+      align-items: center;
+      gap: $spacing-md;
+
       .header-actions {
-        flex-direction: column;
-        align-items: stretch;
-        
-        button {
-          width: 100%;
-          justify-content: center;
-        }
+        align-self: center;
+        text-align: center;
       }
+
+      .error-container {
+        background-color: $dark-bg-card;
+        color: $danger;
+
+        i {
+          color: $danger;
+        }
     }
-    
+  }
+
+    .success-message{
+      background-color: rgba(46, 204, 113, 0.15); // #2ecc71 con opacidad
+      color: #6effb2; // versión más clara de #2ecc71
+    }
+
+    .error-message {
+      background-color: #4a4a4a;
+    }
+
     .bottom-navigation {
       flex-direction: column;
       gap: $spacing-md;
-      
-      .nav-section {
+      align-items: center;
+
+      .nav-section,
+      .nav-buttons {
+        align-self: center;
         text-align: center;
       }
+    }
+  }
+
+  .btn-retry {
+    border-color: $danger;
+    color: $danger;
+
+    &:hover {
+      background-color: rgba($danger, 0.15);
     }
   }
 }

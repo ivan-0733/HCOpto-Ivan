@@ -1,611 +1,829 @@
 @import '../../styles/variables';
 
+// Variables para tema oscuro
+$dark-bg-card: #2a2a2a;
+$dark-selected-bg: #1e1e1e;
+$light-selected-bg: #f0f0f0;
+$hover-bg-light: #f0f0f0;
+$hover-bg-dark: #1e1e1e;
+$accent-color-dark: $ipn-guinda;
+$accent-color-dark2: $ipn-guinda-light;
+
+// VARIABLE GLOBAL PARA ESPACIADO CONSISTENTE
+$form-spacing: 1rem;
+
 .historia-form-container {
+  background-color: $bg-primary;
+  min-height: calc(100vh - $nav-height);
   max-width: 1200px;
-  margin: 0 auto;
-  padding: $spacing-md;
 }
 
-// Header
-.form-header {
+// Header (idéntico al patrón de otros componentes)
+.content-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $spacing-lg;
+  margin-bottom: 1rem;
 
   .header-title {
     h1 {
-      margin: 0;
       font-size: 1.8rem;
-      font-weight: $font-weight-bold;
       color: $ipn-guinda;
+      margin: 0;
       display: flex;
       align-items: center;
 
       i {
-        margin-right: $spacing-md;
-        opacity: 0.7;
+        margin-right: 0rem;
+        color: $ipn-guinda;
       }
     }
   }
 
   .header-actions {
     display: flex;
-    gap: $spacing-md;
+    gap: 1rem;
 
-    .btn-primary {
-      background-color: $ipn-guinda;
-      color: $ipn-white;
-      border: none;
+    button {
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
       border-radius: $border-radius;
-      padding: $spacing-md $spacing-lg;
-      font-size: 0.9rem;
-      font-weight: $font-weight-medium;
       cursor: pointer;
-      transition: $transition-base;
+      transition: all 0.2s;
       display: flex;
       align-items: center;
 
       i {
-        margin-right: $spacing-sm;
+        margin-right: 0.5rem;
       }
 
-      &:hover {
-        background-color: $ipn-guinda-light;
+      &.btn-primary {
+        background-color: $ipn-guinda;
+        color: $ipn-secondary;
+        border: none;
+
+        &:hover {
+          background-color: lighten(#731635,10%);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
       }
 
-      &:disabled {
-        background-color: $ipn-gray-dark;
-        cursor: not-allowed;
-      }
+      &.btn-secondary {
+        background-color: $bg-primary;
+        color: $text-primary;
+        border: 1px solid $border-color;
 
-      .spinner-border {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid rgba($ipn-white, 0.2);
-        border-left-color: $ipn-white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: $spacing-sm;
+        &:hover {
+          background-color: $light-selected-bg;
+        }
+      }
+    }
+  }
+}
+
+// Estados de carga, error y éxito (idénticos a otros componentes)
+.loading-container,
+.error-container {
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $text-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  button {
+    margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
+  }
+}
+
+.error-container {
+  color: $danger;
+
+  i {
+    color: $danger;
+  }
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: #dff6ea;
+  color: #27ae60;
+  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+
+  i {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.fade-out {
+  animation: fadeOutAnimation 5s forwards;
+}
+
+@keyframes fadeOutAnimation {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+// Botón de reintentar
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.1);
+  }
+}
+
+.section-divider {
+  height: 1px;
+  background-color: $border-color;
+  margin: 0.5rem 1rem;
+  border-radius: 2px;
+}
+
+// Contenido del formulario
+.form-content {
+  width: 100%;
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  overflow: hidden;
+}
+
+// Secciones del formulario (siguiendo el patrón de perfil)
+.form-section {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  padding: 1.2rem 1.2rem 0rem;
+  overflow: hidden;
+
+    // Segunda sección (después del section-divider) con menos padding-top
+    &:nth-child(3) {
+      padding-top: 0.75rem;
+    }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $ipn-guinda;
+    margin: 0 0 1.25rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba($ipn-guinda, 0.2);
+
+    i {
+      color: $ipn-guinda;
+      margin-right: 0.75rem;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Información de búsqueda
+.search-info {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  background-color: rgba(220, 220, 220, 0.25);
+  border-left: 4px solid $ipn-guinda;
+
+  .info-icon {
+    color: $ipn-guinda;
+    margin-right: 0.55rem;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  p {
+    margin: 0;
+    color: $text-primary;
+    line-height: 1.4;
+  }
+}
+
+// CAMBIO 1: Filas de formulario con espaciado consistente
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $form-spacing; // Usar variable consistente
+  width: 100%;
+  margin-bottom: 0rem; // Sin margen inferior para evitar doble espaciado
+
+  .form-group {
+    flex: 1 1 0;
+    min-width: 200px;
+  }
+}
+
+// CAMBIO 2: Grupos de formulario con espaciado consistente
+.form-group {
+  margin-bottom: $form-spacing; // Usar variable consistente
+  width: 100%;
+
+  label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: $text-primary;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    transition: all 0.2s;
+    color: $text-primary;
+    background-color: $bg-primary;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $ipn-guinda;
+      box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
+    }
+
+    &.is-invalid {
+      border-color: $danger;
+      background-color: rgba($danger, 0.02);
+    }
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .invalid-feedback {
+    font-size: 0.85rem;
+    color: $danger;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    &:before {
+      content: "error";
+      font-family: 'Material Icons';
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+// Búsqueda de paciente
+.paciente-search {
+
+  .search-input-group {
+    display: flex;
+    gap: $form-spacing; // Usar variable consistente
+    align-items: flex-end;
+
+    .input-with-icon {
+      position: relative;
+      flex: 1;
+
+      i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-secondary;
       }
     }
 
-    .btn-secondary {
-      background-color: $ipn-white;
-      color: $ipn-guinda;
-      border: 1px solid $ipn-guinda;
+    .btn-outline {
+      background: none;
+      border: 1px solid $border-color;
+      color: $text-primary;
+      padding: 0.75rem 1rem;
       border-radius: $border-radius;
-      padding: $spacing-md $spacing-lg;
-      font-size: 0.9rem;
-      font-weight: $font-weight-medium;
       cursor: pointer;
-      transition: $transition-base;
       display: flex;
       align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: $light-selected-bg;
+      }
+    }
+  }
+
+  .search-results {
+    margin-top: 1rem;
+    background-color: $bg-primary;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: $box-shadow;
+
+    .search-loading, .no-results {
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $text-secondary;
 
       i {
-        margin-right: $spacing-sm;
+        margin-right: 0.5rem;
       }
+
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba($ipn-guinda, 0.1);
+        border-left-color: $ipn-guinda;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+      }
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: 1rem;
+        border-bottom: 1px solid $border-color;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: rgba($ipn-guinda, 0.05);
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .paciente-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .paciente-info {
+            display: flex;
+            flex-direction: column;
+
+            strong {
+              color: $text-primary;
+              font-weight: 600;
+              margin-bottom: 0.25rem;
+            }
+
+            small {
+              color: $text-secondary;
+              font-size: 0.85rem;
+            }
+          }
+
+          .paciente-edad {
+            .estado-badge {
+              display: inline-block;
+              padding: 0.3rem 0.6rem;
+              border-radius: 20px;
+              font-size: 0.8rem;
+              color: #fff;
+              background-color: $ipn-guinda;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Paciente seleccionado
+.paciente-selected {
+  background-color: rgba($ipn-guinda, 0.05);
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-left: 4px solid $ipn-guinda;
+
+  .paciente-selected-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h4 {
+      margin: 0;
+      color: $ipn-guinda;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .btn-outline {
+      background: none;
+      border: 1px solid $ipn-guinda;
+      color: $ipn-guinda;
+      padding: 0.5rem 1rem;
+      border-radius: $border-radius;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
 
       &:hover {
         background-color: rgba($ipn-guinda, 0.1);
       }
     }
   }
-}
 
-// Mensajes de error y éxito
-.error-message,
-.success-message {
-  padding: $spacing-md;
-  border-radius: $border-radius;
-  margin-bottom: $spacing-lg;
-  display: flex;
-  align-items: center;
+  .paciente-selected-info {
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
 
-  i {
-    margin-right: $spacing-md;
-    font-size: 1.2rem;
-  }
-}
+      .info-item {
+        label {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: $text-secondary;
+          margin-bottom: 0.25rem;
+        }
 
-.error-message {
-  background-color: $danger-light;
-  color: $danger;
-  border-left: 4px solid $danger;
-}
-
-.success-message {
-  background-color: rgba($success, 0.1);
-  color: $success-dark;
-  border-left: 4px solid $success;
-}
-
-// Indicador de carga
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: $spacing-xxl;
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba($ipn-guinda, 0.1);
-    border-left-color: $ipn-guinda;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: $spacing-md;
-  }
-
-  p {
-    color: #666;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-}
-
-// Contenido del formulario
-.form-content {
-  background-color: $ipn-white;
-  border-radius: $border-radius-lg;
-  box-shadow: $box-shadow;
-  overflow: hidden;
-
-  // Pestañas de navegación
-  .form-tabs {
-    display: flex;
-    overflow-x: auto;
-    border-bottom: 1px solid $ipn-gray-dark;
-    background-color: $ipn-gray;
-
-    button {
-      padding: $spacing-md $spacing-lg;
-      background: none;
-      border: none;
-      font-size: 0.95rem;
-      font-weight: $font-weight-medium;
-      color: #555;
-      cursor: pointer;
-      transition: $transition-base;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-
-      i {
-        margin-right: $spacing-sm;
+        p {
+          margin: 0;
+          font-weight: 500;
+          color: $text-primary;
+        }
       }
+    }
+  }
+}
+
+// Botones de acción
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-top: 1px solid $border-color;
+  background-color: rgba($ipn-guinda, 0.05);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: $border-radius;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    i {
+      margin-right: 0.5rem;
+    }
+
+    &.btn-primary {
+      background-color: $ipn-guinda;
+      color: $ipn-secondary;
+      border: none;
 
       &:hover {
-        background-color: rgba($ipn-white, 0.7);
+        background-color: lighten(#731635,10%);
       }
 
-      &.active {
-        background-color: $ipn-white;
-        color: $ipn-guinda;
-        font-weight: $font-weight-bold;
-        border-bottom: 3px solid $ipn-guinda;
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
 
-        i {
-          color: $ipn-guinda;
-        }
+    &.btn-secondary {
+      background-color: transparent;
+      color: $text-primary;
+      border: 1px solid $border-color;
+
+      &:hover {
+        background-color: $light-selected-bg;
+      }
+    }
+  }
+}
+
+// Animación de carga
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Modo oscuro
+:host-context(.dark-theme) {
+  .historia-form-container {
+    background-color: $bg-primary;
+  }
+
+  input[type="date"] {
+    &::-webkit-calendar-picker-indicator {
+      filter: invert(1); // Invierte el color a blanco
+    }
+  }
+
+  .content-header .header-title h1 {
+    color: $accent-color-dark2;
+
+    i {
+      color: $accent-color-dark2;
+    }
+  }
+
+  .section-divider {
+    height: 2px;
+    background-color: #3a3a3a;
+  }
+
+  .header-actions {
+    .btn-secondary {
+      background-color: $dark-bg-card;
+      color: $text-primary;
+      border-color: $border-color;
+
+      &:hover {
+        background-color: $hover-bg-dark;
       }
     }
   }
 
-  // Secciones del formulario
+  .form-content,
   .form-section {
-    padding: $spacing-xl;
+    background-color: $dark-bg-card;
+    border-radius: $border-radius;
+  }
 
-    h2 {
-      color: $ipn-guinda;
-      font-size: 1.4rem;
-      margin-top: 0;
-      margin-bottom: $spacing-lg;
-      padding-bottom: $spacing-sm;
-      border-bottom: 1px solid $ipn-gray;
+  // Inputs, selects y textareas con fondo consistente
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background-color: $bg-primary;
+
+    // Estado de error también con fondo consistente
+    &.is-invalid {
+      background-color: $bg-primary;
+    }
+  }
+
+  .success-message {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #6effb2;
+  }
+
+  .search-info {
+    background-color: #3a3a3a;
+    border-left: 4px solid $ipn-guinda;
+
+    .info-icon {
+      color: $accent-color-dark2;
+    }
+  }
+
+  .paciente-selected {
+    background-color: $dark-selected-bg;
+    border-left-color: $accent-color-dark;
+
+    .paciente-selected-header h4 {
+      color: $accent-color-dark2;
     }
 
-    .info-text {
-      color: #666;
-      margin-bottom: $spacing-lg;
-    }
+    .btn-outline {
+      border-color: $accent-color-dark;
+      color: $accent-color-dark;
 
-    .coming-soon {
-      text-align: center;
-      padding: $spacing-xxl $spacing-xl;
-      color: #888;
-
-      i {
-        font-size: 3rem;
-        margin-bottom: $spacing-md;
-        color: $ipn-gray-dark;
-      }
-
-      p {
-        font-size: 1.1rem;
+      &:hover {
+        background-color: rgba($accent-color-dark, 0.1);
       }
     }
   }
 
-  // Estilos para las filas de formulario
-  .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-lg;
-    margin-bottom: $spacing-lg;
+  .search-results {
+    background-color: $dark-bg-card;
+    border-color: $border-color;
 
-    .form-group {
-      flex: 1;
-      min-width: 200px;
+    ul li {
+      border-color: $border-color;
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
     }
   }
 
-  // Grupos de formulario
-  .form-group {
-    margin-bottom: $spacing-lg;
+  .btn-outline {
+    border-color: $border-color;
+    color: $text-primary;
 
-    label {
-      display: block;
-      margin-bottom: $spacing-sm;
-      font-weight: $font-weight-medium;
-      color: #555;
-      font-size: 0.95rem;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: $spacing-md;
-      border: 1px solid $ipn-gray-dark;
-      border-radius: $border-radius;
-      font-size: 1rem;
-      transition: $transition-base;
-
-      &:focus {
-        outline: none;
-        border-color: $ipn-guinda;
-        box-shadow: 0 0 0 3px rgba($ipn-guinda, 0.1);
-      }
-
-      &.is-invalid {
-        border-color: $danger;
-      }
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .invalid-feedback {
-      color: $danger;
-      font-size: 0.85rem;
-      margin-top: $spacing-sm;
+    &:hover {
+      background-color: $hover-bg-dark;
     }
   }
 
-  // Búsqueda de paciente
+  .loading-container,
+  .error-container {
+    background-color: $dark-bg-card;
+
+    .btn-retry {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .section-title i,
+  .section-title,
+  .search-info .info-icon {
+    color: $accent-color-dark2;
+  }
+
+  .form-actions {
+    background-color: rgba($accent-color-dark, 0.1);
+
+    .btn-secondary {
+      background-color: transparent;
+      color: $text-primary;
+      border-color: $border-color;
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .estado-badge {
+    background-color: $accent-color-dark;
+    color: #fff;
+  }
+}
+
+// CAMBIO 3: Media queries para responsividad con espaciado consistente
+@media (max-width: 768px) {
+
   .paciente-search {
-    margin-bottom: $spacing-xl;
-
     .search-input-group {
-      display: flex;
-      gap: $spacing-md;
+      width: 100%;
+      gap: $form-spacing; // Usar variable consistente
 
       .input-with-icon {
-        position: relative;
-        flex: 1;
-
-        i {
-          position: absolute;
-          left: $spacing-md;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #888;
-        }
+        width: 100%;
 
         input {
-          padding-left: 35px;
+          width: 100%;
         }
       }
 
       .btn-outline {
-        background: none;
-        border: 1px solid $ipn-gray-dark;
-        color: #666;
-        padding: 0 $spacing-md;
-        border-radius: $border-radius;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm;
-
-        &:hover {
-          background-color: $ipn-gray;
-        }
+        width: 100%;
+        justify-content: center;
+        margin-top: $form-spacing; // Usar variable consistente
       }
     }
 
     .search-results {
-      margin-top: $spacing-md;
-      background-color: $ipn-white;
-      border: 1px solid $ipn-gray-dark;
-      border-radius: $border-radius;
-      max-height: 300px;
-      overflow-y: auto;
-      box-shadow: $box-shadow;
-
-      .search-loading, .no-results {
-        padding: $spacing-md;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #666;
-
-        i {
-          margin-right: $spacing-sm;
-        }
-
-        .spinner-small {
-          width: 20px;
-          height: 20px;
-          border: 2px solid rgba($ipn-guinda, 0.1);
-          border-left-color: $ipn-guinda;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-right: $spacing-sm;
-        }
-      }
-
-      ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-
-        li {
-          padding: $spacing-md;
-          border-bottom: 1px solid $ipn-gray;
-          cursor: pointer;
-          transition: $transition-base;
-
-          &:hover {
-            background-color: rgba($ipn-guinda, 0.05);
-          }
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          .paciente-item {
-            display: flex;
-            justify-content: space-between;
-
-            .paciente-info {
-              display: flex;
-              flex-direction: column;
-
-              strong {
-                color: #333;
-                font-weight: $font-weight-medium;
-              }
-
-              small {
-                color: #666;
-                font-size: 0.85rem;
-                margin-top: $spacing-xs;
-              }
-            }
-
-            .paciente-edad {
-              color: #666;
-              align-self: center;
-              font-weight: $font-weight-medium;
-              padding: $spacing-sm $spacing-md;
-              background-color: $ipn-gray;
-              border-radius: 20px;
-              font-size: 0.85rem;
-            }
-          }
-        }
-      }
+      margin-top: $form-spacing; // Usar variable consistente
     }
   }
 
-  // Paciente seleccionado
-  .paciente-selected {
-    background-color: rgba($ipn-guinda, 0.05);
-    border-radius: $border-radius;
-    padding: $spacing-lg;
-    margin-bottom: $spacing-xl;
-    border-left: 4px solid $ipn-guinda;
-
-    &-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: $spacing-md;
-
-      h3 {
-        margin: 0;
-        color: $ipn-guinda;
-        font-size: 1.1rem;
-      }
-
-      .btn-outline {
-        background: none;
-        border: 1px solid $ipn-guinda;
-        color: $ipn-guinda;
-        padding: $spacing-sm $spacing-md;
-        border-radius: $border-radius;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: $spacing-sm;
-        font-size: 0.9rem;
-
-        &:hover {
-          background-color: rgba($ipn-guinda, 0.1);
-        }
-      }
-    }
-
-    &-info {
-      .info-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: $spacing-lg;
-        margin-bottom: $spacing-sm;
-
-        .info-col {
-          flex: 1;
-          min-width: 200px;
-          color: #333;
-
-          strong {
-            color: #555;
-            font-weight: $font-weight-medium;
-          }
-        }
-      }
-    }
-  }
-
-  // Botones de acción
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: $spacing-md;
-    padding: $spacing-lg;
-    border-top: 1px solid $ipn-gray;
-    background-color: $ipn-gray;
-
-    .btn-primary {
-      background-color: $ipn-guinda;
-      color: $ipn-white;
-      border: none;
-      border-radius: $border-radius;
-      padding: $spacing-md $spacing-xl;
-      font-size: 0.95rem;
-      font-weight: $font-weight-medium;
-      cursor: pointer;
-      transition: $transition-base;
-
-      &:hover {
-        background-color: $ipn-guinda-light;
-      }
-
-      &:disabled {
-        background-color: $ipn-gray-dark;
-        cursor: not-allowed;
-      }
-
-      .spinner-border {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid rgba($ipn-white, 0.2);
-        border-left-color: $ipn-white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: $spacing-sm;
-      }
-    }
-
-    .btn-secondary {
-      background-color: $ipn-white;
-      color: #666;
-      border: 1px solid $ipn-gray-dark;
-      border-radius: $border-radius;
-      padding: $spacing-md $spacing-xl;
-      font-size: 0.95rem;
-      font-weight: $font-weight-medium;
-      cursor: pointer;
-      transition: $transition-base;
-
-      &:hover {
-        background-color: $ipn-gray;
-      }
-    }
-  }
-}
-
-// Media queries para responsive
-@media (max-width: $breakpoint-lg) {
-  .form-header {
+  .content-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: $spacing-md;
+    align-items: center;
+    gap: 1rem;
 
     .header-actions {
       width: 100%;
-      justify-content: flex-end;
-    }
-  }
-
-  .form-content {
-    .form-tabs {
-      padding-bottom: $spacing-sm;
-
-      button {
-        padding: $spacing-sm $spacing-md;
-        font-size: 0.9rem;
-
-        &.active {
-          border-bottom: 2px solid $ipn-guinda;
-        }
-      }
-    }
-
-    .form-section {
-      padding: $spacing-lg;
-    }
-
-    .form-row {
-      flex-direction: column;
-      gap: $spacing-md;
-    }
-  }
-}
-
-@media (max-width: $breakpoint-md) {
-  .paciente-selected-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: $spacing-md;
-
-    .btn-outline {
-      width: 100%;
       justify-content: center;
+    }
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0; // Sin gap entre elementos porque form-group ya tiene margin-bottom
+    margin-bottom: 0; // Sin margin-bottom adicional
+    width: 100%;
+
+    .form-group {
+      min-width: auto;
+      width: 100%;
+      flex: none; // Remover flex para evitar comportamientos inesperados
+      margin-bottom: $form-spacing !important; // Forzar espaciado consistente en todos los campos
     }
   }
 
   .search-input-group {
-    flex-direction: column;
+    flex-direction: column !important;
+    gap: $form-spacing !important; // Usar variable consistente
 
     .btn-outline {
       width: 100%;
       justify-content: center;
-      padding: $spacing-sm 0;
     }
+  }
+
+  .form-section {
+    padding: 1rem 0.5rem;
+  }
+
+  .paciente-selected-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $form-spacing; // Usar variable consistente
+
+    .btn-outline {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .paciente-selected-info .info-grid {
+    grid-template-columns: 1fr;
+    gap: $form-spacing; // Usar variable consistente
   }
 
   .form-actions {
     flex-direction: column;
+    gap: $form-spacing; // Usar variable consistente
 
     button {
       width: 100%;
+      justify-content: center;
     }
-  }
-}
-
-@media (max-width: $breakpoint-sm) {
-  .historia-form-container {
-    padding: $spacing-sm;
   }
 
   .form-section {
-    padding: $spacing-md !important;
+    padding: 1rem;
   }
 }
