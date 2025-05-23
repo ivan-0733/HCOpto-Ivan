@@ -211,7 +211,7 @@ $form-spacing: 1rem;
 .form-section {
   background-color: $bg-primary;
   border-radius: $border-radius;
-  padding: 1.2rem 1rem 0rem;
+  padding: 1.2rem 1.2rem 0rem;
   overflow: hidden;
 
     // Segunda sección (después del section-divider) con menos padding-top
@@ -625,6 +625,18 @@ $form-spacing: 1rem;
   .form-section {
     background-color: $dark-bg-card;
     border-radius: $border-radius;
+  }
+
+  // Inputs, selects y textareas con fondo consistente
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background-color: $bg-primary;
+
+    // Estado de error también con fondo consistente
+    &.is-invalid {
+      background-color: $bg-primary;
+    }
   }
 
   .success-message {
