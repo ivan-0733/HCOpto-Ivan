@@ -40,6 +40,7 @@ ngOnInit(): void {
   });
 }
 
+
 loadHistoriaClinica(): void {
   if (!this.historiaId) return;
 

@@ -1139,26 +1139,26 @@ crearNuevaHistoria(): void {
   const secciones = {
     interrogatorio: this.formValues['interrogatorio'],
     // Estructurar agudeza visual correctamente
-    agudezaVisual: this.formValues['agudeza-visual'] ?
+    agudezaVisual: this.formValues['agudeza-visual'] ? 
     this.convertirFormDataAAgudezaVisual(this.formValues['agudeza-visual']) : [],
     lensometria: this.formValues['lensometria'],
-
+    
     // Examen preliminar
     alineacionOcular: this.formValues['alineacion-ocular'],
     motilidad: this.formValues['motilidad'],
     exploracionFisica: this.formValues['exploracion-fisica'],
     viaPupilar: this.formValues['via-pupilar'],
-
+    
     // Estado refractivo
     estadoRefractivo: this.formValues['estado-refractivo'],
     subjetivoCerca: this.formValues['subjetivo-cerca'],
-
+    
     // Binocularidad - eliminamos imagenBase64 para evitar envío de datos grandes
     binocularidad: this.formValues['binocularidad'],
     forias: this.formValues['forias'],
     vergencias: this.formValues['vergencias'],
     metodoGrafico: { ...this.formValues['metodo-grafico'] },
-
+    
     // Detección de alteraciones
     gridAmsler: this.formValues['grid-amsler'],
     tonometria: this.formValues['tonometria'],
@@ -1166,7 +1166,7 @@ crearNuevaHistoria(): void {
     campimetria: this.formValues['campimetria'],
     biomicroscopia: this.formValues['biomicroscopia'],
     oftalmoscopia: this.formValues['oftalmoscopia'],
-
+    
     // Diagnostico y receta
     diagnostico: this.formValues['diagnostico'],
     planTratamiento: this.formValues['plan-tratamiento'],
@@ -1199,13 +1199,13 @@ crearNuevaHistoria(): void {
         if (newHistoriaId) {
           this.onHistoriaCreated(newHistoriaId);
           this.success = 'Historia clínica creada correctamente.';
-
+          
           // Marcar todas las secciones enviadas como completadas
           for (const seccionKey in secciones) {
             if (
-              Object.prototype.hasOwnProperty.call(secciones, seccionKey) &&
-              secciones[seccionKey as keyof typeof secciones] &&
-              typeof secciones[seccionKey as keyof typeof secciones] === 'object' &&
+              Object.prototype.hasOwnProperty.call(secciones, seccionKey) && 
+              secciones[seccionKey as keyof typeof secciones] && 
+              typeof secciones[seccionKey as keyof typeof secciones] === 'object' && 
               Object.keys(secciones[seccionKey as keyof typeof secciones]).length > 0
             ) {
               // Convertir nombre de sección a formato de sectionStatus
@@ -1215,16 +1215,16 @@ crearNuevaHistoria(): void {
               }
             }
           }
-
+          
           // Ahora subir las imágenes si existen
           const promesasImagenes: Promise<void>[] = [];
-
+          
           // Subir imagen de método gráfico si existe
           if (imagenesBase64.metodoGrafico) {
             promesasImagenes.push(
               this.uploadBase64Image(
-                newHistoriaId,
-                imagenesBase64.metodoGrafico,
+                newHistoriaId, 
+                imagenesBase64.metodoGrafico, 
                 '12',  // Section ID for binocularidad
                 '2'    // Image type ID for metodo grafico
               ).then(imageId => {
@@ -1259,8 +1259,8 @@ crearNuevaHistoria(): void {
           if (imagenesBase64.campimetria) {
           promesasImagenes.push(
             this.uploadBase64Image(
-              newHistoriaId,
-              imagenesBase64.campimetria,
+              newHistoriaId, 
+              imagenesBase64.campimetria, 
               '9',  // Section ID for campimetría
               '3'   // Image type ID for campimetría
             ).then(imageId => {
@@ -1268,7 +1268,7 @@ crearNuevaHistoria(): void {
                 // Actualizar la sección con el nuevo ID de imagen
                 return new Promise<void>((resolve) => {
                   this.historiaClinicaService.actualizarSeccion(
-                    newHistoriaId,
+                    newHistoriaId, 
                     'campimetria',
                     {
                       ...this.formValues['campimetria'],
@@ -1295,8 +1295,8 @@ crearNuevaHistoria(): void {
         if (imagenesBase64.oftalmoscopiaOD) {
         promesasImagenes.push(
           this.uploadBase64Image(
-            newHistoriaId,
-            imagenesBase64.oftalmoscopiaOD,
+            newHistoriaId, 
+            imagenesBase64.oftalmoscopiaOD, 
             '11',  // Section ID for oftalmoscopía
             '5',   // Image type ID for oftalmoscopía
             true   // Es ojo derecho
@@ -1309,7 +1309,7 @@ crearNuevaHistoria(): void {
                   ojoDerechoImagenID: imageId,
                   ojoDerechoImagenBase64: undefined
                 };
-
+                
                 this.historiaClinicaService.actualizarSeccion(
                   newHistoriaId,
                   'oftalmoscopia',
@@ -1334,8 +1334,8 @@ crearNuevaHistoria(): void {
         if (imagenesBase64.oftalmoscopiaOI) {
         promesasImagenes.push(
           this.uploadBase64Image(
-            newHistoriaId,
-            imagenesBase64.oftalmoscopiaOI,
+            newHistoriaId, 
+            imagenesBase64.oftalmoscopiaOI, 
             '11',  // Section ID for oftalmoscopía
             '5',   // Image type ID for oftalmoscopía
             false  // Es ojo izquierdo
@@ -1348,7 +1348,7 @@ crearNuevaHistoria(): void {
                   ojoIzquierdoImagenID: imageId,
                   ojoIzquierdoImagenBase64: undefined
                 };
-
+                
                 this.historiaClinicaService.actualizarSeccion(
                   newHistoriaId,
                   'oftalmoscopia',
@@ -1369,15 +1369,15 @@ crearNuevaHistoria(): void {
           })
         );
       }
-
-          Promise.all(promesasImagenes)
-            .then(() => {
-              console.log('Todas las imágenes procesadas correctamente');
-              // Navegar a la historia recién creada
-              setTimeout(() => {
-                this.router.navigate(['/alumno/historias', newHistoriaId]);
-              }, 1500);
-            })
+          
+        Promise.all(promesasImagenes)
+        .then(() => {
+          console.log('Todas las imágenes procesadas correctamente');
+          // Navegar al detalle de la historia recién creada
+          this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+            this.router.navigateByUrl(`/alumno/historias/${newHistoriaId}`);
+          });
+        })
             .catch(err => {
               console.error('Error procesando imágenes:', err);
               // Aún navegamos a la historia para que el usuario pueda continuar
@@ -1466,10 +1466,10 @@ this.historiaClinicaService.actualizarSeccion(this.historiaId, 'datos-generales'
             this.sectionStatus['datos-generales'] = true;
 
             setTimeout(() => {
-              if (this.historiaId) { // También verificamos aquí
-                this.router.navigate(['/alumno/historias', this.historiaId]);
-              }
-            }, 1500);
+            if (this.historiaId) { 
+              this.router.navigate(['/alumno/historias', this.historiaId], { replaceUrl: true });
+            }
+          }, 3000);
           })
           .catch(error => {
             this.error = 'Los datos generales se actualizaron pero hubo un problema con algunas secciones.';
@@ -2209,7 +2209,7 @@ this.historiaId = id;
 this.isNewHistoria = false;
 this.title = `Editar Historia Clínica #${id}`;
 // Actualizar la URL para reflejar la edición sin recargar
-this.router.navigate(['/alumno/historias', id], { replaceUrl: true });
+//this.router.navigate(['/alumno/historias', id], { replaceUrl: true });
 }
 
 // Método para manejar la compleción de una sección
