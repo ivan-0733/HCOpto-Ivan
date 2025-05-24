@@ -563,7 +563,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
         [
           historiaID,
           secciones.alineacionOcular.lejosHorizontal || null,
-          secciones.alineacionOcular.lejoVertical || null,
+          secciones.alineacionOcular.lejosVertical || null,
           secciones.alineacionOcular.cercaHorizontal || null,
           secciones.alineacionOcular.cercaVertical || null,
           secciones.alineacionOcular.metodoID || null
