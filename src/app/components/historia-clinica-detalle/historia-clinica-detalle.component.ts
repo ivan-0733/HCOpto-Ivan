@@ -201,19 +201,16 @@ esMedicionCerca(tipoMedicion: string): boolean {
   return tipoMedicion === 'SIN_RX_CERCA' || tipoMedicion === 'CON_RX_ANTERIOR_CERCA';
 }
 
-obtenerTipoLente(tipoID: number | string | null | undefined): string {
-  if (!tipoID) return 'Monocal';
+obtenerTipoLente(tipoID: number | null | undefined): string {
+  if (!tipoID) return '-';
   
-  const tipos: {[key: string]: string} = {
-    'MONOCAL': 'Monocal',
-    'BIFOCAL': 'Bifocal',
-    'MULTIFOCAL': 'Multifocal',
-    '17': 'Bifocal',
-    '18': 'Multifocal',
-    '19': 'Monocal'
+  const tipos: {[key: number]: string} = {
+    1: 'Bifocal',
+    2: 'Multifocal', 
+    3: 'Monocal'
   };
   
-  return tipos[tipoID.toString()] || 'Tipo desconocido';
+  return tipos[tipoID] || '-';
 }
 
 obtenerNombreMetodo(metodoID: number | null | undefined): string {

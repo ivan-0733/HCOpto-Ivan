@@ -411,146 +411,149 @@
         </div>
       </div>
 
-      <!-- Examen Preliminar -->
-  <div *ngIf="currentTab === 'examen-preliminar'" class="tab-pane">
-  <!-- Sección de Alineación Ocular -->
-  <section class="info-section">
-    <h2>Alineación Ocular</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Lejos Horizontal</h3>
-        <p>{{ historia.alineacionOcular?.LejosHorizontal || '-' }}</p>
+<!-- Examen preliminar -->
+<div *ngIf="currentTab === 'examen-preliminar'" class="tab-pane">
+  <!-- Solo mostrar las secciones si hay datos -->
+  <div *ngIf="historia.alineacionOcular || historia.motilidad || historia.exploracionFisica || historia.viaPupilar">
+    <!-- Sección de Alineación Ocular -->
+    <section class="info-section" *ngIf="historia.alineacionOcular">
+      <h2>Alineación Ocular</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Lejos Horizontal</h3>
+          <p>{{ historia.alineacionOcular.LejosHorizontal || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Lejos Vertical</h3>
+          <p>{{ historia.alineacionOcular.LejosVertical || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Cerca Horizontal</h3>
+          <p>{{ historia.alineacionOcular.CercaHorizontal || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Cerca Vertical</h3>
+          <p>{{ historia.alineacionOcular.CercaVertical || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Método</h3>
+          <p>{{ obtenerNombreMetodo(historia.alineacionOcular.MetodoID) }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Lejos Vertical</h3>
-        <p>{{ historia.alineacionOcular?.LejosVertical || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Cerca Horizontal</h3>
-        <p>{{ historia.alineacionOcular?.CercaHorizontal || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Cerca Vertical</h3>
-        <p>{{ historia.alineacionOcular?.CercaVertical || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Método</h3>
-        <p>{{ obtenerNombreMetodo(historia.alineacionOcular?.MetodoID) }}</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Sección de Motilidad -->
-  <section class="info-section">
-    <h2>Motilidad</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Versiones</h3>
-        <p>{{ historia.motilidad?.Versiones || '-' }}</p>
+    <!-- Sección de Motilidad -->
+    <section class="info-section" *ngIf="historia.motilidad">
+      <h2>Motilidad</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Versiones</h3>
+          <p>{{ historia.motilidad.Versiones || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Ducciones</h3>
+          <p>{{ historia.motilidad.Ducciones || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Sacádicos</h3>
+          <p>{{ historia.motilidad.Sacadicos || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Persecución</h3>
+          <p>{{ historia.motilidad.Persecucion || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Fijación</h3>
+          <p>{{ historia.motilidad.Fijacion || '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Ducciones</h3>
-        <p>{{ historia.motilidad?.Ducciones || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Sacádicos</h3>
-        <p>{{ historia.motilidad?.Sacadicos || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Persecución</h3>
-        <p>{{ historia.motilidad?.Persecucion || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Fijación</h3>
-        <p>{{ historia.motilidad?.Fijacion || '-' }}</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Sección de Exploración Física -->
-  <section class="info-section">
-    <h2>Exploración Física</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>OD Anexos</h3>
-        <p>{{ historia.exploracionFisica?.OjoDerechoAnexos || '-' }}</p>
+    <!-- Sección de Exploración Física -->
+    <section class="info-section" *ngIf="historia.exploracionFisica">
+      <h2>Exploración Física</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>OD Anexos</h3>
+          <p>{{ historia.exploracionFisica.OjoDerechoAnexos || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OI Anexos</h3>
+          <p>{{ historia.exploracionFisica.OjoIzquierdoAnexos || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OD Segmento Anterior</h3>
+          <p>{{ historia.exploracionFisica.OjoDerechoSegmentoAnterior || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OI Segmento Anterior</h3>
+          <p>{{ historia.exploracionFisica.OjoIzquierdoSegmentoAnterior || '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>OI Anexos</h3>
-        <p>{{ historia.exploracionFisica?.OjoIzquierdoAnexos || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>OD Segmento Anterior</h3>
-        <p>{{ historia.exploracionFisica?.OjoDerechoSegmentoAnterior || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>OI Segmento Anterior</h3>
-        <p>{{ historia.exploracionFisica?.OjoIzquierdoSegmentoAnterior || '-' }}</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Sección de Vía Pupilar -->
-  <section class="info-section">
-    <h2>Vía Pupilar</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Diámetro OD</h3>
-        <p>{{ historia.viaPupilar?.OjoDerechoDiametro ? (historia.viaPupilar?.OjoDerechoDiametro + ' mm') : '-' }}</p>
+    <!-- Sección de Vía Pupilar -->
+    <section class="info-section" *ngIf="historia.viaPupilar">
+      <h2>Vía Pupilar</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Diámetro OD</h3>
+          <p>{{ historia.viaPupilar.OjoDerechoDiametro ? (historia.viaPupilar.OjoDerechoDiametro + ' mm') : '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Diámetro OI</h3>
+          <p>{{ historia.viaPupilar.OjoIzquierdoDiametro ? (historia.viaPupilar.OjoIzquierdoDiametro + ' mm') : '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Reflejos OD</h3>
+          <ul class="reflejo-list">
+            <li *ngIf="historia.viaPupilar.OjoDerechoFotomotorPresente">Fotomotor Presente</li>
+            <li *ngIf="historia.viaPupilar.OjoDerechoConsensualPresente">Consensual Presente</li>
+            <li *ngIf="historia.viaPupilar.OjoDerechoAcomodativoPresente">Acomodativo Presente</li>
+            <li *ngIf="historia.viaPupilar.OjoDerechoFotomotorAusente">Fotomotor Ausente</li>
+            <li *ngIf="historia.viaPupilar.OjoDerechoConsensualAusente">Consensual Ausente</li>
+            <li *ngIf="historia.viaPupilar.OjoDerechoAcomodativoAusente">Acomodativo Ausente</li>
+            <li *ngIf="!tieneReflejosOD(historia.viaPupilar)">No registrados</li>
+          </ul>
+        </div>
+        <div class="info-item">
+          <h3>Reflejos OI</h3>
+          <ul class="reflejo-list">
+            <li *ngIf="historia.viaPupilar.OjoIzquierdoFotomotorPresente">Fotomotor Presente</li>
+            <li *ngIf="historia.viaPupilar.OjoIzquierdoConsensualPresente">Consensual Presente</li>
+            <li *ngIf="historia.viaPupilar.OjoIzquierdoAcomodativoPresente">Acomodativo Presente</li>
+            <li *ngIf="historia.viaPupilar.OjoIzquierdoFotomotorAusente">Fotomotor Ausente</li>
+            <li *ngIf="historia.viaPupilar.OjoIzquierdoConsensualAusente">Consensual Ausente</li>
+            <li *ngIf="historia.viaPupilar.OjoIzquierdoAcomodativoAusente">Acomodativo Ausente</li>
+            <li *ngIf="!tieneReflejosOI(historia.viaPupilar)">No registrados</li>
+          </ul>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Diámetro OI</h3>
-        <p>{{ historia.viaPupilar?.OjoIzquierdoDiametro ? (historia.viaPupilar?.OjoIzquierdoDiametro + ' mm') : '-' }}</p>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Características Pupilares</h3>
+          <ul class="caracteristicas-list">
+            <li *ngIf="historia.viaPupilar.EsIsocoria">Isocoria</li>
+            <li *ngIf="historia.viaPupilar.EsAnisocoria">Anisocoria</li>
+            <li *ngIf="historia.viaPupilar.RespuestaAcomodacion">Respuesta a Acomodación</li>
+            <li *ngIf="historia.viaPupilar.PupilasIguales">Pupilas Iguales</li>
+            <li *ngIf="historia.viaPupilar.PupilasRedondas">Pupilas Redondas</li>
+            <li *ngIf="historia.viaPupilar.RespuestaLuz">Respuesta a Luz</li>
+            <li *ngIf="!tieneCaracteristicasPupilares(historia.viaPupilar)">No registradas</li>
+          </ul>
+        </div>
+        <div class="info-item">
+          <h3>DIP</h3>
+          <p>{{ historia.viaPupilar.DIP || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Dominancia Ocular</h3>
+          <p>{{ obtenerDominanciaOcular(historia.viaPupilar.DominanciaOcularID) }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Reflejos OD</h3>
-        <ul class="reflejo-list">
-          <li *ngIf="historia.viaPupilar?.OjoDerechoFotomotorPresente">Fotomotor Presente</li>
-          <li *ngIf="historia.viaPupilar?.OjoDerechoConsensualPresente">Consensual Presente</li>
-          <li *ngIf="historia.viaPupilar?.OjoDerechoAcomodativoPresente">Acomodativo Presente</li>
-          <li *ngIf="historia.viaPupilar?.OjoDerechoFotomotorAusente">Fotomotor Ausente</li>
-          <li *ngIf="historia.viaPupilar?.OjoDerechoConsensualAusente">Consensual Ausente</li>
-          <li *ngIf="historia.viaPupilar?.OjoDerechoAcomodativoAusente">Acomodativo Ausente</li>
-          <li *ngIf="!tieneReflejosOD(historia.viaPupilar)">No registrados</li>
-        </ul>
-      </div>
-      <div class="info-item">
-        <h3>Reflejos OI</h3>
-        <ul class="reflejo-list">
-          <li *ngIf="historia.viaPupilar?.OjoIzquierdoFotomotorPresente">Fotomotor Presente</li>
-          <li *ngIf="historia.viaPupilar?.OjoIzquierdoConsensualPresente">Consensual Presente</li>
-          <li *ngIf="historia.viaPupilar?.OjoIzquierdoAcomodativoPresente">Acomodativo Presente</li>
-          <li *ngIf="historia.viaPupilar?.OjoIzquierdoFotomotorAusente">Fotomotor Ausente</li>
-          <li *ngIf="historia.viaPupilar?.OjoIzquierdoConsensualAusente">Consensual Ausente</li>
-          <li *ngIf="historia.viaPupilar?.OjoIzquierdoAcomodativoAusente">Acomodativo Ausente</li>
-          <li *ngIf="!tieneReflejosOI(historia.viaPupilar)">No registrados</li>
-        </ul>
-      </div>
-    </div>
-    
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Características Pupilares</h3>
-        <ul class="caracteristicas-list">
-          <li *ngIf="historia.viaPupilar?.EsIsocoria">Isocoria</li>
-          <li *ngIf="historia.viaPupilar?.EsAnisocoria">Anisocoria</li>
-          <li *ngIf="historia.viaPupilar?.RespuestaAcomodacion">Respuesta a Acomodación</li>
-          <li *ngIf="historia.viaPupilar?.PupilasIguales">Pupilas Iguales</li>
-          <li *ngIf="historia.viaPupilar?.PupilasRedondas">Pupilas Redondas</li>
-          <li *ngIf="historia.viaPupilar?.RespuestaLuz">Respuesta a Luz</li>
-          <li *ngIf="!tieneCaracteristicasPupilares(historia.viaPupilar)">No registradas</li>
-        </ul>
-      </div>
-      <div class="info-item">
-        <h3>DIP</h3>
-        <p>{{ historia.viaPupilar?.DIP || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Dominancia Ocular</h3>
-        <p>{{ obtenerDominanciaOcular(historia.viaPupilar?.DominanciaOcularID) }}</p>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
   <!-- Mensaje cuando no hay datos de examen preliminar -->
   <div class="no-data" *ngIf="!historia.alineacionOcular && !historia.motilidad && !historia.exploracionFisica && !historia.viaPupilar">
@@ -563,202 +566,200 @@
   </div>
 </div>
 
-      <!-- Estado Refractivo -->
     <!-- Estado Refractivo -->
 <div *ngIf="currentTab === 'estado-refractivo'" class="tab-pane">
-  <!-- Sección de Estado Refractivo -->
-  <section class="info-section">
-    <h2>Queratometría y Retinoscopía</h2>
+  <!-- Solo mostrar las secciones si hay datos -->
+  <div *ngIf="historia.estadoRefractivo || historia.subjetivoCerca">
+    <!-- Sección de Estado Refractivo -->
+    <section class="info-section" *ngIf="historia.estadoRefractivo">
+      <h2>Queratometría y Retinoscopía</h2>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>OD Queratometría</h3>
+          <p>{{ historia.estadoRefractivo.OjoDerechoQueratometria || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OI Queratometría</h3>
+          <p>{{ historia.estadoRefractivo.OjoIzquierdoQueratometria || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OD Astigmatismo Corneal</h3>
+          <p>{{ historia.estadoRefractivo.OjoDerechoAstigmatismoCorneal || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OI Astigmatismo Corneal</h3>
+          <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoCorneal || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OD Regla Javal</h3>
+          <p>{{ historia.estadoRefractivo.OjoDerechoAstigmatismoJaval || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OI Regla Javal</h3>
+          <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoJaval || '-' }}</p>
+        </div>
+      </div>
+      
+      <h3>Retinoscopía</h3>
+      <div class="table-responsive">
+        <table class="table-lensometria">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Esfera</th>
+              <th>Cilindro</th>
+              <th>Eje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>OD</strong></td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoRetinoscopiaEsfera || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoRetinosciopiaCilindro || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoRetinoscopiaEje || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>OI</strong></td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEsfera || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinosciopiaCilindro || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEje || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Subjetivo</h3>
+      <div class="table-responsive">
+        <table class="table-lensometria">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Esfera</th>
+              <th>Cilindro</th>
+              <th>Eje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>OD</strong></td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoEsfera || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoCilindro || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoSubjetivoEje || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>OI</strong></td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoEsfera || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoCilindro || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoSubjetivoEje || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <h3>Balance Binoculares</h3>
+      <div class="table-responsive">
+        <table class="table-lensometria">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Esfera</th>
+              <th>Cilindro</th>
+              <th>Eje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>OD</strong></td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesEsfera || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesCilindro || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoDerechoBalanceBinocularesEje || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>OI</strong></td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEsfera || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesCilindro || '-' }}</td>
+              <td>{{ historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEje || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>OD AV Lejana</h3>
+          <p>{{ historia.estadoRefractivo.OjoDerechoAVLejana || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>OI AV Lejana</h3>
+          <p>{{ historia.estadoRefractivo.OjoIzquierdoAVLejana || '-' }}</p>
+        </div>
+      </div>
+    </section>
     
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>OD Queratometría</h3>
-        <p>{{ historia.estadoRefractivo?.OjoDerechoQueratometria || '-' }}</p>
+    <!-- Sección de Subjetivo Cerca -->
+    <section class="info-section" *ngIf="historia.subjetivoCerca">
+      <h2>Subjetivo de Cerca</h2>
+      
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th></th>
+              <th>OD</th>
+              <th>OI</th>
+              <th>AO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>M</strong></td>
+              <td>{{ historia.subjetivoCerca.OjoDerechoM || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.OjoIzquierdoM || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.AmbosOjosM || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Jaeger</strong></td>
+              <td>{{ historia.subjetivoCerca.OjoDerechoJacger || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.OjoIzquierdoJacger || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.AmbosOjosJacger || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Puntos</strong></td>
+              <td>{{ historia.subjetivoCerca.OjoDerechoPuntos || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.OjoIzquierdoPuntos || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.AmbosOjosPuntos || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Snellen</strong></td>
+              <td>{{ historia.subjetivoCerca.OjoDerechoSnellen || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.OjoIzquierdoSnellen || '-' }}</td>
+              <td>{{ historia.subjetivoCerca.AmbosOjosSnellen || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="info-item">
-        <h3>OI Queratometría</h3>
-        <p>{{ historia.estadoRefractivo?.OjoIzquierdoQueratometria || '-' }}</p>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Valor ADD</h3>
+          <p>{{ historia.subjetivoCerca.ValorADD || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>AV</h3>
+          <p>{{ historia.subjetivoCerca.AV || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Distancia</h3>
+          <p>{{ historia.subjetivoCerca.Distancia || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Rango</h3>
+          <p>{{ historia.subjetivoCerca.Rango || '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>OD Astigmatismo Corneal</h3>
-        <p>{{ historia.estadoRefractivo?.OjoDerechoAstigmatismoCorneal || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>OI Astigmatismo Corneal</h3>
-        <p>{{ historia.estadoRefractivo?.OjoIzquierdoAstigmatismoCorneal || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>OD Regla Javal</h3>
-        <p>{{ historia.estadoRefractivo?.OjoDerechoAstigmatismoJaval || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>OI Regla Javal</h3>
-        <p>{{ historia.estadoRefractivo?.OjoIzquierdoAstigmatismoJaval || '-' }}</p>
-      </div>
-    </div>
-    
-    <h3>Retinoscopía</h3>
-    <div class="table-responsive">
-      <table class="table-lensometria">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Esfera</th>
-            <th>Cilindro</th>
-            <th>Eje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>OD</strong></td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoRetinoscopiaEsfera || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoRetinosciopiaCilindro || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoRetinoscopiaEje || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>OI</strong></td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoRetinoscopiaEsfera || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoRetinosciopiaCilindro || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoRetinoscopiaEje || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-  
-  <section class="info-section">
-    <h2>Subjetivo y Balance Binoculares</h2>
-    
-    <h3>Subjetivo</h3>
-    <div class="table-responsive">
-      <table class="table-lensometria">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Esfera</th>
-            <th>Cilindro</th>
-            <th>Eje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>OD</strong></td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoSubjetivoEsfera || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoSubjetivoCilindro || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoSubjetivoEje || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>OI</strong></td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoSubjetivoEsfera || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoSubjetivoCilindro || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoSubjetivoEje || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <h3>Balance Binoculares</h3>
-    <div class="table-responsive">
-      <table class="table-lensometria">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Esfera</th>
-            <th>Cilindro</th>
-            <th>Eje</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>OD</strong></td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoBalanceBinocularesEsfera || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoBalanceBinocularesCilindro || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoDerechoBalanceBinocularesEje || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>OI</strong></td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoBalanceBinocularesEsfera || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoBalanceBinocularesCilindro || '-' }}</td>
-            <td>{{ historia.estadoRefractivo?.OjoIzquierdoBalanceBinocularesEje || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>OD AV Lejana</h3>
-        <p>{{ historia.estadoRefractivo?.OjoDerechoAVLejana || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>OI AV Lejana</h3>
-        <p>{{ historia.estadoRefractivo?.OjoIzquierdoAVLejana || '-' }}</p>
-      </div>
-    </div>
-  </section>
-  
-  <!-- Sección de Subjetivo Cerca -->
-  <section class="info-section">
-    <h2>Subjetivo de Cerca</h2>
-    
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th></th>
-            <th>OD</th>
-            <th>OI</th>
-            <th>AO</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>M</strong></td>
-            <td>{{ historia.subjetivoCerca?.OjoDerechoM || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.OjoIzquierdoM || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.AmbosOjosM || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Jaeger</strong></td>
-            <td>{{ historia.subjetivoCerca?.OjoDerechoJacger || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.OjoIzquierdoJacger || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.AmbosOjosJacger || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Puntos</strong></td>
-            <td>{{ historia.subjetivoCerca?.OjoDerechoPuntos || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.OjoIzquierdoPuntos || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.AmbosOjosPuntos || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Snellen</strong></td>
-            <td>{{ historia.subjetivoCerca?.OjoDerechoSnellen || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.OjoIzquierdoSnellen || '-' }}</td>
-            <td>{{ historia.subjetivoCerca?.AmbosOjosSnellen || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Valor ADD</h3>
-        <p>{{ historia.subjetivoCerca?.ValorADD || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>AV</h3>
-        <p>{{ historia.subjetivoCerca?.AV || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Distancia</h3>
-        <p>{{ historia.subjetivoCerca?.Distancia || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Rango</h3>
-        <p>{{ historia.subjetivoCerca?.Rango || '-' }}</p>
-      </div>
-    </div>
-  </section>
+    </section>
+  </div>
   
   <!-- Mensaje cuando no hay datos de estado refractivo -->
   <div class="no-data" *ngIf="!historia.estadoRefractivo && !historia.subjetivoCerca">
@@ -771,272 +772,273 @@
   </div>
 </div>
 
+
 <!-- Sección de Binocularidad -->
 <div *ngIf="currentTab === 'binocularidad'" class="tab-pane">
-  <!-- Subsección de Binocularidad -->
-  <section class="info-section">
-    <h2>Binocularidad</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>PPC</h3>
-        <p>{{ historia.binocularidad?.PPC || '-' }}</p>
+  <!-- Solo mostrar las secciones si hay datos -->
+  <div *ngIf="historia.binocularidad || historia.forias || historia.vergencias || historia.metodoGrafico">
+    <!-- Subsección de Binocularidad -->
+    <section class="info-section" *ngIf="historia.binocularidad">
+      <h2>Binocularidad</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>PPC</h3>
+          <p>{{ historia.binocularidad.PPC || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>ARN</h3>
+          <p>{{ historia.binocularidad.ARN || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>ARP</h3>
+          <p>{{ historia.binocularidad.ARP || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Mediciones</h3>
+          <ul class="caracteristicas-list">
+            <li *ngIf="historia.binocularidad.Donders">Donders</li>
+            <li *ngIf="historia.binocularidad.Sheards">Sheards</li>
+            <li *ngIf="!historia.binocularidad.Donders && !historia.binocularidad.Sheards">-</li>
+          </ul>
+        </div>
+        <div class="info-item">
+          <h3>Hab. Acom. Lente</h3>
+          <p>{{ historia.binocularidad.HabAcomLente || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Hab. Acom. Dificultad</h3>
+          <p>{{ historia.binocularidad.HabAcomDificultad || '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>ARN</h3>
-        <p>{{ historia.binocularidad?.ARN || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>ARP</h3>
-        <p>{{ historia.binocularidad?.ARP || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Mediciones</h3>
-        <ul class="caracteristicas-list">
-          <li *ngIf="historia.binocularidad?.Donders">Donders</li>
-          <li *ngIf="historia.binocularidad?.Sheards">Sheards</li>
-          <li *ngIf="!historia.binocularidad?.Donders && !historia.binocularidad?.Sheards">-</li>
-        </ul>
-      </div>
-      <div class="info-item">
-        <h3>Hab. Acom. Lente</h3>
-        <p>{{ historia.binocularidad?.HabAcomLente || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Hab. Acom. Dificultad</h3>
-        <p>{{ historia.binocularidad?.HabAcomDificultad || '-' }}</p>
-      </div>
-    </div>
 
-    <!-- Sección de Amplitud de Acomodación -->
-    <h3>Amplitud de Acomodación</h3>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th></th>
-            <th>cm</th>
-            <th>D</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>OD</strong></td>
-            <td>{{ historia.binocularidad?.OjoDerechoAmpAcomCm || '-' }}</td>
-            <td>{{ historia.binocularidad?.OjoDerechoAmpAcomD || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>OI</strong></td>
-            <td>{{ historia.binocularidad?.OjoIzquierdoAmpAcomCm || '-' }}</td>
-            <td>{{ historia.binocularidad?.OjoIzquierdoAmpAcomD || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>AO</strong></td>
-            <td>{{ historia.binocularidad?.AmbosOjosAmpAcomCm || '-' }}</td>
-            <td>{{ historia.binocularidad?.AmbosOjosAmpAcomD || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
+      <!-- Sección de Amplitud de Acomodación -->
+      <h3>Amplitud de Acomodación</h3>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th></th>
+              <th>cm</th>
+              <th>D</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>OD</strong></td>
+              <td>{{ historia.binocularidad.OjoDerechoAmpAcomCm || '-' }}</td>
+              <td>{{ historia.binocularidad.OjoDerechoAmpAcomD || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>OI</strong></td>
+              <td>{{ historia.binocularidad.OjoIzquierdoAmpAcomCm || '-' }}</td>
+              <td>{{ historia.binocularidad.OjoIzquierdoAmpAcomD || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>AO</strong></td>
+              <td>{{ historia.binocularidad.AmbosOjosAmpAcomCm || '-' }}</td>
+              <td>{{ historia.binocularidad.AmbosOjosAmpAcomD || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- Subsección de Forias -->
-  <section class="info-section">
-    <h2>Forias</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Horizontales Lejos</h3>
-        <p>{{ historia.forias?.HorizontalesLejos || '-' }}</p>
+    <!-- Subsección de Forias -->
+    <section class="info-section" *ngIf="historia.forias">
+      <h2>Forias</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Horizontales Lejos</h3>
+          <p>{{ historia.forias.HorizontalesLejos || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Horizontales Cerca</h3>
+          <p>{{ historia.forias.HorizontalesCerca || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Vertical Lejos</h3>
+          <p>{{ historia.forias.VerticalLejos || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Vertical Cerca</h3>
+          <p>{{ historia.forias.VerticalCerca || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Método de Medición</h3>
+          <p>{{ obtenerNombreMetodo(historia.forias.MetodoMedicionID) }}</p>
+        </div>
+        <div class="info-item">
+          <h3>CAA Calculada</h3>
+          <p>{{ historia.forias.CAACalculada || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>CAA Medida</h3>
+          <p>{{ historia.forias.CAAMedida || '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Horizontales Cerca</h3>
-        <p>{{ historia.forias?.HorizontalesCerca || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Vertical Lejos</h3>
-        <p>{{ historia.forias?.VerticalLejos || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Vertical Cerca</h3>
-        <p>{{ historia.forias?.VerticalCerca || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Método de Medición</h3>
-        <p>{{ obtenerNombreMetodo(historia.forias?.MetodoMedicionID) }}</p>
-      </div>
-      <div class="info-item">
-        <h3>CAA Calculada</h3>
-        <p>{{ historia.forias?.CAACalculada || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>CAA Medida</h3>
-        <p>{{ historia.forias?.CAAMedida || '-' }}</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Subsección de Vergencias -->
-  <section class="info-section">
-    <h2>Vergencias</h2>
-    
-    <h3>Vergencias Positivas</h3>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Borroso</th>
-            <th>Ruptura</th>
-            <th>Recuperación</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Lejos</strong></td>
-            <td>{{ historia.vergencias?.PositivasLejosBorroso || '-' }}</td>
-            <td>{{ historia.vergencias?.PositivasLejosRuptura || '-' }}</td>
-            <td>{{ historia.vergencias?.PositivasLejosRecuperacion || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Cerca</strong></td>
-            <td>{{ historia.vergencias?.PositivasCercaBorroso || '-' }}</td>
-            <td>{{ historia.vergencias?.PositivasCercaRuptura || '-' }}</td>
-            <td>{{ historia.vergencias?.PositivasCercaRecuperacion || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Subsección de Vergencias -->
+    <section class="info-section" *ngIf="historia.vergencias">
+      <h2>Vergencias</h2>
+      
+      <h3>Vergencias Positivas</h3>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Borroso</th>
+              <th>Ruptura</th>
+              <th>Recuperación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Lejos</strong></td>
+              <td>{{ historia.vergencias.PositivasLejosBorroso || '-' }}</td>
+              <td>{{ historia.vergencias.PositivasLejosRuptura || '-' }}</td>
+              <td>{{ historia.vergencias.PositivasLejosRecuperacion || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Cerca</strong></td>
+              <td>{{ historia.vergencias.PositivasCercaBorroso || '-' }}</td>
+              <td>{{ historia.vergencias.PositivasCercaRuptura || '-' }}</td>
+              <td>{{ historia.vergencias.PositivasCercaRecuperacion || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <h3>Vergencias Negativas</h3>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Borroso</th>
-            <th>Ruptura</th>
-            <th>Recuperación</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Lejos</strong></td>
-            <td>{{ historia.vergencias?.NegativasLejosBorroso || '-' }}</td>
-            <td>{{ historia.vergencias?.NegativasLejosRuptura || '-' }}</td>
-            <td>{{ historia.vergencias?.NegativasLejosRecuperacion || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Cerca</strong></td>
-            <td>{{ historia.vergencias?.NegativasCercaBorroso || '-' }}</td>
-            <td>{{ historia.vergencias?.NegativasCercaRuptura || '-' }}</td>
-            <td>{{ historia.vergencias?.NegativasCercaRecuperacion || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <h3>Vergencias Negativas</h3>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Borroso</th>
+              <th>Ruptura</th>
+              <th>Recuperación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Lejos</strong></td>
+              <td>{{ historia.vergencias.NegativasLejosBorroso || '-' }}</td>
+              <td>{{ historia.vergencias.NegativasLejosRuptura || '-' }}</td>
+              <td>{{ historia.vergencias.NegativasLejosRecuperacion || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Cerca</strong></td>
+              <td>{{ historia.vergencias.NegativasCercaBorroso || '-' }}</td>
+              <td>{{ historia.vergencias.NegativasCercaRuptura || '-' }}</td>
+              <td>{{ historia.vergencias.NegativasCercaRecuperacion || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <div class="form-section-grid">
-      <div class="grid-section">
-        <h3>Supravergencias</h3>
-        <div class="table-responsive">
-          <table class="table-agudeza">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Ruptura</th>
-                <th>Recuperación</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Lejos</strong></td>
-                <td>{{ historia.vergencias?.SupravergenciasLejosRuptura || '-' }}</td>
-                <td>{{ historia.vergencias?.SupravergenciasLejosRecuperacion || '-' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Cerca</strong></td>
-                <td>{{ historia.vergencias?.SupravergenciasCercaRuptura || '-' }}</td>
-                <td>{{ historia.vergencias?.SupravergenciasCercaRecuperacion || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="form-section-grid">
+        <div class="grid-section">
+          <h3>Supravergencias</h3>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Ruptura</th>
+                  <th>Recuperación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Lejos</strong></td>
+                  <td>{{ historia.vergencias.SupravergenciasLejosRuptura || '-' }}</td>
+                  <td>{{ historia.vergencias.SupravergenciasLejosRecuperacion || '-' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Cerca</strong></td>
+                  <td>{{ historia.vergencias.SupravergenciasCercaRuptura || '-' }}</td>
+                  <td>{{ historia.vergencias.SupravergenciasCercaRecuperacion || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="grid-section">
+          <h3>Infravergencias</h3>
+          <div class="table-responsive">
+            <table class="table-agudeza">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Ruptura</th>
+                  <th>Recuperación</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Lejos</strong></td>
+                  <td>{{ historia.vergencias.InfravergenciasLejosRuptura || '-' }}</td>
+                  <td>{{ historia.vergencias.InfravergenciasLejosRecuperacion || '-' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Cerca</strong></td>
+                  <td>{{ historia.vergencias.InfravergenciasCercaRuptura || '-' }}</td>
+                  <td>{{ historia.vergencias.InfravergenciasCercaRecuperacion || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Subsección de Método Gráfico -->
+    <section class="info-section" *ngIf="historia.metodoGrafico">
+      <h2>Método Gráfico</h2>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Integración Binocular</h3>
+          <p>{{ historia.metodoGrafico.integracionBinocular || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Tipo de Test</h3>
+          <p>{{ obtenerTipoTest(historia.metodoGrafico.tipoID) }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Visión Estereoscópica</h3>
+          <p>{{ historia.metodoGrafico.visionEstereoscopica || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Tipo de Visión Estereoscópica</h3>
+          <p>{{ obtenerTipoVision(historia.metodoGrafico.tipoVisionID) }}</p>
         </div>
       </div>
       
-      <div class="grid-section">
-        <h3>Infravergencias</h3>
-        <div class="table-responsive">
-          <table class="table-agudeza">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Ruptura</th>
-                <th>Recuperación</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Lejos</strong></td>
-                <td>{{ historia.vergencias?.InfravergenciasLejosRuptura || '-' }}</td>
-                <td>{{ historia.vergencias?.InfravergenciasLejosRecuperacion || '-' }}</td>
-              </tr>
-              <tr>
-                <td><strong>Cerca</strong></td>
-                <td>{{ historia.vergencias?.InfravergenciasCercaRuptura || '-' }}</td>
-                <td>{{ historia.vergencias?.InfravergenciasCercaRecuperacion || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+      <!-- Imagen de método gráfico -->
+      <div class="metodo-grafico-imagen">
+        <h3>Imagen</h3>
+        <img 
+          *ngIf="historia.metodoGrafico.imagenBase64" 
+          [src]="historia.metodoGrafico.imagenBase64"  
+          alt="Imagen de método gráfico"
+          class="img-fluid">
+        <img 
+          *ngIf="!historia.metodoGrafico.imagenBase64 && historia.metodoGrafico.imagenID" 
+          [src]="obtenerUrlImagen(historia.metodoGrafico.imagenID)" 
+          alt="Imagen de método gráfico"
+          class="img-fluid">
+        <p *ngIf="!historia.metodoGrafico.imagenBase64 && !historia.metodoGrafico.imagenID" class="text-muted">
+          No hay imagen disponible
+        </p>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 
-  <!-- Subsección de Método Gráfico -->
-  <section class="info-section">
-    <h2>Método Gráfico</h2>
-    
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Integración Binocular</h3>
-        <p>{{ historia.metodoGrafico?.integracionBinocular || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Tipo de Test</h3>
-        <p>{{ obtenerTipoTest(historia.metodoGrafico?.tipoID) }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Visión Estereoscópica</h3>
-        <p>{{ historia.metodoGrafico?.visionEstereoscopica || '-' }}</p>
-      </div>
-      <div class="info-item">
-        <h3>Tipo de Visión Estereoscópica</h3>
-        <p>{{ obtenerTipoVision(historia.metodoGrafico?.tipoVisionID) }}</p>
-      </div>
-    </div>
-    
-    <!-- Imagen de método gráfico - mostrar base64 o URL según disponibilidad -->
-    <div class="metodo-grafico-imagen">
-      <h3>Imagen</h3>
-      <!-- Priorizar mostrar la imagen en base64 si está disponible -->
-      <img 
-        *ngIf="historia.metodoGrafico?.imagenBase64" 
-        [src]="historia.metodoGrafico?.imagenBase64"  
-        alt="Imagen de método gráfico"
-        class="img-fluid">
-      <!-- Si no hay base64 pero hay ID, mostrar desde URL -->
-      <img 
-        *ngIf="!historia.metodoGrafico?.imagenBase64 && historia.metodoGrafico?.imagenID" 
-        [src]="obtenerUrlImagen(historia.metodoGrafico?.imagenID)" 
-        alt="Imagen de método gráfico"
-        class="img-fluid">
-      <!-- Mensaje si no hay imagen -->
-      <p *ngIf="!historia.metodoGrafico?.imagenBase64 && !historia.metodoGrafico?.imagenID" class="text-muted">
-        No hay imagen disponible
-      </p>
-    </div>
-  </section>
-
-<!-- Botón para editar si no hay datos -->
+  <!-- Mensaje cuando no hay datos de binocularidad -->
   <div class="no-data" *ngIf="!historia.binocularidad && !historia.forias && !historia.vergencias && !historia.metodoGrafico">
     <i class="fas fa-binoculars"></i>
     <p>No se ha registrado información de binocularidad para esta historia clínica.</p>
@@ -1049,387 +1051,379 @@
 
   <!-- Detección de Alteraciones -->
 <div *ngIf="currentTab === 'deteccion-alteraciones'" class="tab-pane">
-  <!-- Grid de Amsler -->
-  <section class="info-section">
-    <h2>Grid de Amsler</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Número de Cartilla</h3>
-        <p>{{ historia.gridAmsler?.numeroCartilla || '-' }}</p>
+  <!-- Solo mostrar las secciones si hay datos -->
+  <div *ngIf="historia.gridAmsler || historia.tonometria || historia.paquimetria || historia.campimetria || historia.biomicroscopia || historia.oftalmoscopia">
+    <!-- Grid de Amsler -->
+    <section class="info-section" *ngIf="historia.gridAmsler">
+      <h2>Grid de Amsler</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Número de Cartilla</h3>
+          <p>{{ historia.gridAmsler.numeroCartilla || '-' }}</p>
+        </div>
       </div>
-    </div>
 
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Sensibilidad al Contraste</strong></td>
-            <td>{{ historia.gridAmsler?.ojoDerechoSensibilidadContraste || '-' }}</td>
-            <td>{{ historia.gridAmsler?.ojoIzquierdoSensibilidadContraste || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Visión Cromática</strong></td>
-            <td>{{ historia.gridAmsler?.ojoDerechoVisionCromatica || '-' }}</td>
-            <td>{{ historia.gridAmsler?.ojoIzquierdoVisionCromatica || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Tonometría -->
-  <section class="info-section">
-    <h2>Tonometría</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Método Anestésico</h3>
-        <p>{{ historia.tonometria?.metodoAnestesico || '-' }}</p>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Sensibilidad al Contraste</strong></td>
+              <td>{{ historia.gridAmsler.ojoDerechoSensibilidadContraste || '-' }}</td>
+              <td>{{ historia.gridAmsler.ojoIzquierdoSensibilidadContraste || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Visión Cromática</strong></td>
+              <td>{{ historia.gridAmsler.ojoDerechoVisionCromatica || '-' }}</td>
+              <td>{{ historia.gridAmsler.ojoIzquierdoVisionCromatica || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="info-item">
-        <h3>Fecha</h3>
-        <p>{{ (historia.tonometria?.fecha | date:'dd/MM/yyyy') || '-' }}</p>
+    </section>
+
+    <!-- Tonometría -->
+    <section class="info-section" *ngIf="historia.tonometria">
+      <h2>Tonometría</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Método Anestésico</h3>
+          <p>{{ historia.tonometria.metodoAnestesico || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Fecha</h3>
+          <p>{{ (historia.tonometria.fecha | date:'dd/MM/yyyy') || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Hora</h3>
+          <p>{{ historia.tonometria.hora || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Tipo</h3>
+          <p>{{ historia.tonometria.tipoID ? obtenerTipoTonometria(historia.tonometria.tipoID) : '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Hora</h3>
-        <p>{{ historia.tonometria?.hora || '-' }}</p>
+
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Valor (mmHg)</strong></td>
+              <td>{{ historia.tonometria.ojoDerecho || '-' }}</td>
+              <td>{{ historia.tonometria.ojoIzquierdo || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="info-item">
-        <h3>Tipo</h3>
-        <p>{{ historia.tonometria?.tipoID ? obtenerTipoTonometria(historia.tonometria?.tipoID) : '-' }}</p>
+    </section>
+
+    <!-- Paquimetría -->
+    <section class="info-section" *ngIf="historia.paquimetria">
+      <h2>Paquimetría</h2>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>CCT (μm)</strong></td>
+              <td>{{ historia.paquimetria.ojoDerechoCCT || '-' }}</td>
+              <td>{{ historia.paquimetria.ojoIzquierdoCCT || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>PIO Corregida</strong></td>
+              <td>{{ historia.paquimetria.ojoDerechoPIOCorregida || '-' }}</td>
+              <td>{{ historia.paquimetria.ojoIzquierdoPIOCorregida || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
 
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Valor (mmHg)</strong></td>
-            <td>{{ historia.tonometria?.ojoDerecho || '-' }}</td>
-            <td>{{ historia.tonometria?.ojoIzquierdo || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Paquimetría -->
-  <section class="info-section">
-    <h2>Paquimetría</h2>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>CCT (μm)</strong></td>
-            <td>{{ historia.paquimetria?.ojoDerechoCCT || '-' }}</td>
-            <td>{{ historia.paquimetria?.ojoIzquierdoCCT || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>PIO Corregida</strong></td>
-            <td>{{ historia.paquimetria?.ojoDerechoPIOCorregida || '-' }}</td>
-            <td>{{ historia.paquimetria?.ojoIzquierdoPIOCorregida || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Campimetría -->
-  <section class="info-section">
-    <h2>Campimetría</h2>
-    <div class="info-grid">
-      <div class="info-item">
-        <h3>Distancia (cm)</h3>
-        <p>{{ historia.campimetria?.distancia || '-' }}</p>
+    <!-- Campimetría -->
+    <section class="info-section" *ngIf="historia.campimetria">
+      <h2>Campimetría</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <h3>Distancia (cm)</h3>
+          <p>{{ historia.campimetria.distancia || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Tamaño/Color Índice</h3>
+          <p>{{ historia.campimetria.tamanoColorIndice || '-' }}</p>
+        </div>
+        <div class="info-item">
+          <h3>Tamaño/Color Punto Fijación</h3>
+          <p>{{ historia.campimetria.tamanoColorPuntoFijacion || '-' }}</p>
+        </div>
       </div>
-      <div class="info-item">
-        <h3>Tamaño/Color Índice</h3>
-        <p>{{ historia.campimetria?.tamanoColorIndice || '-' }}</p>
+
+      <div class="metodo-grafico-imagen">
+        <h3>Imagen de Campimetría</h3>
+        <img 
+          *ngIf="historia.campimetria.imagenBase64" 
+          [src]="historia.campimetria.imagenBase64" 
+          alt="Campimetría" 
+          class="img-fluid">
+        <img 
+          *ngIf="!historia.campimetria.imagenBase64 && historia.campimetria.imagenID" 
+          [src]="obtenerUrlImagen(historia.campimetria.imagenID)" 
+          alt="Campimetría" 
+          class="img-fluid">
+        <p *ngIf="!historia.campimetria.imagenBase64 && !historia.campimetria.imagenID" class="text-muted">
+          No hay imagen disponible
+        </p>
       </div>
-      <div class="info-item">
-        <h3>Tamaño/Color Punto Fijación</h3>
-        <p>{{ historia.campimetria?.tamanoColorPuntoFijacion || '-' }}</p>
+    </section>
+
+    <!-- Biomicroscopía -->
+    <section class="info-section" *ngIf="historia.biomicroscopia">
+      <h2>Biomicroscopía</h2>
+
+      <h3>Anexos</h3>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Pestañas</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoPestanas || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoPestanas || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Párpados/Índice</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoParpadosIndice || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoParpadosIndice || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Borde Palpebral</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoBordePalpebral || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoBordePalpebral || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Línea Gris</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoLineaGris || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoLineaGris || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Canto Externo</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoCantoExterno || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoCantoExterno || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Canto Interno</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoCantoInterno || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoCantoInterno || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Puntos Lagrimales</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoPuntosLagrimales || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoPuntosLagrimales || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
 
-    <!-- Imagen de Campimetría - siguiendo el patrón de binocularidad -->
-    <div class="metodo-grafico-imagen">
-      <h3>Imagen de Campimetría</h3>
-      <!-- Priorizar mostrar la imagen en base64 si está disponible -->
-      <img 
-        *ngIf="historia.campimetria?.imagenBase64" 
-        [src]="historia.campimetria?.imagenBase64" 
-        alt="Campimetría" 
-        class="img-fluid">
-      <!-- Si no hay base64 pero hay ID, mostrar desde URL -->
-      <img 
-        *ngIf="!historia.campimetria?.imagenBase64 && historia.campimetria?.imagenID" 
-        [src]="obtenerUrlImagen(historia.campimetria?.imagenID)" 
-        alt="Campimetría" 
-        class="img-fluid">
-      <!-- Mensaje si no hay imagen -->
-      <p *ngIf="!historia.campimetria?.imagenBase64 && !historia.campimetria?.imagenID" class="text-muted">
-        No hay imagen disponible
-      </p>
-    </div>
-  </section>
+      <h3>Conjuntiva</h3>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Conjuntiva Tarsal</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoConjuntivaTarsal || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoConjuntivaTarsal || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Conjuntiva Bulbar</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoConjuntivaBulbar || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoConjuntivaBulbar || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Fondo de Saco</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoFondoSaco || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoFondoSaco || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-  <!-- Biomicroscopía -->
-  <section class="info-section">
-    <h2>Biomicroscopía</h2>
+      <h3>Córnea y Segmento Anterior</h3>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Limbo</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoLimbo || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoLimbo || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Córnea</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoCorneaBiomicroscopia || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoCorneaBiomicroscopia || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Cámara Anterior</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoCamaraAnterior || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoCamaraAnterior || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Iris</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoIris || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoIris || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Cristalino</strong></td>
+              <td>{{ historia.biomicroscopia.ojoDerechoCristalino || '-' }}</td>
+              <td>{{ historia.biomicroscopia.ojoIzquierdoCristalino || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-    <h3>Anexos</h3>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Pestañas</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoPestanas || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoPestanas || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Párpados/Índice</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoParpadosIndice || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoParpadosIndice || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Borde Palpebral</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoBordePalpebral || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoBordePalpebral || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Línea Gris</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoLineaGris || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoLineaGris || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Canto Externo</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoCantoExterno || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoCantoExterno || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Canto Interno</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoCantoInterno || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoCantoInterno || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Puntos Lagrimales</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoPuntosLagrimales || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoPuntosLagrimales || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Oftalmoscopía -->
+    <section class="info-section" *ngIf="historia.oftalmoscopia">
+      <h2>Oftalmoscopía</h2>
+      <div class="table-responsive">
+        <table class="table-agudeza">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>OD</th>
+              <th>OI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Papila</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoPapila || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoPapila || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Excavación</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoExcavacion || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoExcavacion || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Radio</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoRadio || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoRadio || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Profundidad</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoProfundidad || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoProfundidad || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Vasos</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoVasos || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoVasos || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>RELAV</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoRELAV || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoRELAV || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Mácula</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoMacula || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoMacula || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Reflejo</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoReflejo || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoReflejo || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>Retina Periférica</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoRetinaPeriferica || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoRetinaPeriferica || '-' }}</td>
+            </tr>
+            <tr>
+              <td><strong>ISNT</strong></td>
+              <td>{{ historia.oftalmoscopia.ojoDerechoISNT || '-' }}</td>
+              <td>{{ historia.oftalmoscopia.ojoIzquierdoISNT || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <h3>Conjuntiva</h3>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Conjuntiva Tarsal</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoConjuntivaTarsal || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoConjuntivaTarsal || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Conjuntiva Bulbar</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoConjuntivaBulbar || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoConjuntivaBulbar || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Fondo de Saco</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoFondoSaco || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoFondoSaco || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="metodo-grafico-imagen">
+        <h3>Imágenes de Oftalmoscopía - Ojo Derecho</h3>
+        <img 
+          *ngIf="historia.oftalmoscopia.ojoDerechoImagenBase64" 
+          [src]="historia.oftalmoscopia.ojoDerechoImagenBase64" 
+          alt="Oftalmoscopía OD" 
+          class="img-fluid">
+        <img 
+          *ngIf="!historia.oftalmoscopia.ojoDerechoImagenBase64 && historia.oftalmoscopia.ojoDerechoImagenID" 
+          [src]="obtenerUrlImagen(historia.oftalmoscopia.ojoDerechoImagenID)" 
+          alt="Oftalmoscopía OD" 
+          class="img-fluid">
+        <p *ngIf="!historia.oftalmoscopia.ojoDerechoImagenBase64 && !historia.oftalmoscopia.ojoDerechoImagenID" class="text-muted">
+          No hay imagen disponible
+        </p>
+      </div>
 
-    <h3>Córnea y Segmento Anterior</h3>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Limbo</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoLimbo || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoLimbo || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Córnea</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoCorneaBiomicroscopia || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoCorneaBiomicroscopia || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Cámara Anterior</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoCamaraAnterior || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoCamaraAnterior || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Iris</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoIris || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoIris || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Cristalino</strong></td>
-            <td>{{ historia.biomicroscopia?.ojoDerechoCristalino || '-' }}</td>
-            <td>{{ historia.biomicroscopia?.ojoIzquierdoCristalino || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- Oftalmoscopía -->
-  <section class="info-section">
-    <h2>Oftalmoscopía</h2>
-    <div class="table-responsive">
-      <table class="table-agudeza">
-        <thead>
-          <tr>
-            <th>Parámetro</th>
-            <th>OD</th>
-            <th>OI</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Papila</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoPapila || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoPapila || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Excavación</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoExcavacion || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoExcavacion || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Radio</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoRadio || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoRadio || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Profundidad</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoProfundidad || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoProfundidad || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Vasos</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoVasos || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoVasos || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>RELAV</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoRELAV || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoRELAV || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Mácula</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoMacula || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoMacula || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Reflejo</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoReflejo || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoReflejo || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>Retina Periférica</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoRetinaPeriferica || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoRetinaPeriferica || '-' }}</td>
-          </tr>
-          <tr>
-            <td><strong>ISNT</strong></td>
-            <td>{{ historia.oftalmoscopia?.ojoDerechoISNT || '-' }}</td>
-            <td>{{ historia.oftalmoscopia?.ojoIzquierdoISNT || '-' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Imágenes de Oftalmoscopía - con el mismo formato de binocularidad -->
-    <div class="metodo-grafico-imagen">
-      <h3>Imágenes de Oftalmoscopía - Ojo Derecho</h3>
-      <!-- Priorizar mostrar la imagen en base64 si está disponible -->
-      <img 
-        *ngIf="historia.oftalmoscopia?.ojoDerechoImagenBase64" 
-        [src]="historia.oftalmoscopia?.ojoDerechoImagenBase64" 
-        alt="Oftalmoscopía OD" 
-        class="img-fluid">
-      <!-- Si no hay base64 pero hay ID, mostrar desde URL -->
-      <img 
-        *ngIf="!historia.oftalmoscopia?.ojoDerechoImagenBase64 && historia.oftalmoscopia?.ojoDerechoImagenID" 
-        [src]="obtenerUrlImagen(historia.oftalmoscopia?.ojoDerechoImagenID)" 
-        alt="Oftalmoscopía OD" 
-        class="img-fluid">
-      <!-- Mensaje si no hay imagen -->
-      <p *ngIf="!historia.oftalmoscopia?.ojoDerechoImagenBase64 && !historia.oftalmoscopia?.ojoDerechoImagenID" class="text-muted">
-        No hay imagen disponible
-      </p>
-    </div>
-
-    <div class="metodo-grafico-imagen">
-      <h3>Imágenes de Oftalmoscopía - Ojo Izquierdo</h3>
-      <!-- Priorizar mostrar la imagen en base64 si está disponible -->
-      <img 
-        *ngIf="historia.oftalmoscopia?.ojoIzquierdoImagenBase64" 
-        [src]="historia.oftalmoscopia?.ojoIzquierdoImagenBase64" 
-        alt="Oftalmoscopía OI" 
-        class="img-fluid">
-      <!-- Si no hay base64 pero hay ID, mostrar desde URL -->
-      <img 
-        *ngIf="!historia.oftalmoscopia?.ojoIzquierdoImagenBase64 && historia.oftalmoscopia?.ojoIzquierdoImagenID" 
-        [src]="obtenerUrlImagen(historia.oftalmoscopia?.ojoIzquierdoImagenID)" 
-        alt="Oftalmoscopía OI" 
-        class="img-fluid">
-      <!-- Mensaje si no hay imagen -->
-      <p *ngIf="!historia.oftalmoscopia?.ojoIzquierdoImagenBase64 && !historia.oftalmoscopia?.ojoIzquierdoImagenID" class="text-muted">
-        No hay imagen disponible
-      </p>
-    </div>
-  </section>
+      <div class="metodo-grafico-imagen">
+        <h3>Imágenes de Oftalmoscopía - Ojo Izquierdo</h3>
+        <img 
+          *ngIf="historia.oftalmoscopia.ojoIzquierdoImagenBase64" 
+          [src]="historia.oftalmoscopia.ojoIzquierdoImagenBase64" 
+          alt="Oftalmoscopía OI" 
+          class="img-fluid">
+        <img 
+          *ngIf="!historia.oftalmoscopia.ojoIzquierdoImagenBase64 && historia.oftalmoscopia.ojoIzquierdoImagenID" 
+          [src]="obtenerUrlImagen(historia.oftalmoscopia.ojoIzquierdoImagenID)" 
+          alt="Oftalmoscopía OI" 
+          class="img-fluid">
+        <p *ngIf="!historia.oftalmoscopia.ojoIzquierdoImagenBase64 && !historia.oftalmoscopia.ojoIzquierdoImagenID" class="text-muted">
+          No hay imagen disponible
+        </p>
+      </div>
+    </section>
+  </div>
   
-  <!-- Botón para agregar datos cuando no hay información en ninguna sección -->
-  <div class="no-data" *ngIf="!tieneDatosAlteraciones()">
+  <!-- Mensaje cuando no hay datos de detección de alteraciones -->
+  <div class="no-data" *ngIf="!historia.gridAmsler && !historia.tonometria && !historia.paquimetria && !historia.campimetria && !historia.biomicroscopia && !historia.oftalmoscopia">
     <i class="fas fa-exclamation-triangle"></i>
     <p>No se ha registrado información de detección de alteraciones para esta historia clínica.</p>
     <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">

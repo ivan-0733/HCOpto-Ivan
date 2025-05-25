@@ -1260,7 +1260,7 @@ try {
               datos.ojoIzquierdoEsfera,
               datos.ojoIzquierdoCilindro,
               datos.ojoIzquierdoEje,
-              mapTipoLenteToId(datos.tipoBifocalMultifocalID), 
+              datos.tipoBifocalMultifocalID,, 
               datos.valorADD,
               datos.distanciaRango,
               datos.centroOptico,
