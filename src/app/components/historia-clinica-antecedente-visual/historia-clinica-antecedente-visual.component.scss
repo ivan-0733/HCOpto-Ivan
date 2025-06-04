@@ -1,183 +1,615 @@
 @import '../../styles/variables';
 
+// Variables para tema oscuro
+$dark-bg-card: #2a2a2a;
+$dark-selected-bg: #1e1e1e;
+$light-selected-bg: #f0f0f0;
+$hover-bg-light: #f0f0f0; // Fondo para hover en modo claro
+$hover-bg-dark: #1a1a1a; // Fondo para hover en modo oscuro
+$accent-color-dark: $ipn-guinda;
+$accent-color-dark2: $ipn-guinda-light;
+
+// VARIABLE GLOBAL PARA ESPACIADO CONSISTENTE
+$form-spacing: 1rem;
+
 .antecedente-visual-container {
-  padding: $spacing-lg;
-  background-color: $bg-white;
-  border-radius: $border-radius;
-  box-shadow: $shadow-sm;
-  margin-bottom: $spacing-lg;
+  background-color: $bg-primary;
+  max-width: 1200px;
+}
 
-  h2 {
-    color: $primary;
-    font-weight: $font-weight-bold;
-    margin-bottom: $spacing-md;
-    padding-bottom: $spacing-sm;
-    border-bottom: 1px solid $border-color;
-  }
+// Título principal dentro del contenedor
+.content-title {
+  padding: 1rem 1rem 0;
+  margin-bottom: 1rem;
 
-  .info-text {
-    color: $text-secondary;
-    margin-bottom: $spacing-md;
-    font-size: 0.9rem;
-  }
-
-  .loading-container {
+  h1 {
+    font-size: 1.8rem;
+    color: $ipn-guinda;
+    margin: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: $spacing-xl 0;
 
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid $ipn-gray;
-      border-top: 4px solid $primary;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: $spacing-md;
+    i {
+      margin-right: 0.75rem;
+      color: $ipn-guinda;
+    }
+  }
+}
+
+// Estados de carga, error y éxito (simplificados)
+.loading-container,
+.error-container {
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $text-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+}
+
+.error-container {
+  color: $danger;
+
+  i {
+    color: $danger;
+  }
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: #dff6ea;
+  color: #27ae60;
+  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+
+  i {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.fade-out {
+  animation: fadeOutAnimation 5s forwards;
+}
+
+@keyframes fadeOutAnimation {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.section-divider {
+  height: 1px;
+  background-color: $border-color;
+  margin: 0.85rem 0 1.2rem 0;
+  border-radius: 2px;
+}
+
+// Contenido del formulario
+.form-content {
+  width: 100%;
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  overflow: hidden;
+}
+
+// Secciones del formulario (siguiendo el patrón de perfil)
+.form-section {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  padding: 1.2rem 1.2rem 0.05rem; // Mismo padding final que form
+  overflow: hidden;
+  margin-left: 0rem;
+
+  // Primera sección (Agudeza Visual) con espacio debajo
+  &:nth-child(1) {
+    margin-bottom: 0.15rem;
+  }
+
+  // Segunda sección (Lensometría)
+  &:nth-child(2) {
+    margin-bottom: 0.6rem;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $ipn-guinda;
+    margin: 0rem 0 0.6rem;
+    padding-bottom: 0rem;
+
+    i {
+      color: $ipn-guinda;
+      margin-right: 0.75rem;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Subsecciones de agudeza visual
+.agudeza-subsection {
+  margin-bottom: 0.8rem;
+}
+
+// Filas de formulario con espaciado consistente
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $form-spacing;
+  width: 100%;
+  margin-bottom: 0rem;
+
+  .form-group {
+    flex: 1 1 0;
+
+  }
+}
+
+// Grupos de formulario con espaciado consistente
+.form-group {
+  margin-bottom: $form-spacing;
+  width: 100%;
+
+  label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: $text-primary;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    transition: all 0.2s;
+    color: $text-primary;
+    background-color: $bg-primary;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $ipn-guinda;
+      box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
     }
 
-    p {
+    &.is-invalid {
+      border-color: $danger;
+      background-color: rgba($danger, 0.02);
+    }
+
+    &::placeholder {
       color: $text-secondary;
-      font-weight: $font-weight-medium;
     }
   }
 
-  .form-content {
-    .form-section {
-      background-color: $light-success;
-      border-radius: $border-radius;
-      padding: $spacing-md;
-      margin-bottom: $spacing-lg;
-      border: 1px solid $border-color;
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    transition: all 0.2s;
+    color: $text-primary;
+    background-color: $bg-primary;
+    box-sizing: border-box;
 
-      h3 {
-        color: $primary;
-        font-size: 1.2rem;
-        margin-bottom: $spacing-md;
-        padding-bottom: $spacing-xs;
-        border-bottom: 1px solid $ipn-gray-dark;
+    &:focus {
+      outline: none;
+      border-color: $ipn-guinda;
+      box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
+    }
+
+    &.is-invalid {
+      border-color: $danger;
+      background-color: rgba($danger, 0.02);
+    }
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+  }
+
+  .invalid-feedback {
+    font-size: 0.85rem;
+    color: $danger;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    &:before {
+      content: "error";
+      font-family: 'Material Icons';
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+// Tablas de agudeza visual y lensometría
+.table-responsive {
+  margin-bottom: $form-spacing;
+  overflow-x: auto;
+  border-radius: $border-radius;
+
+  // Estilo para el scrollbar en escritorio - EXACTAMENTE IGUAL QUE DASHBOARD
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; // Quitar el track gris
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+
+    &:hover {
+      background: #555;
+    }
+  }
+
+  // Solo mostrar scrollbar cuando sea necesario
+  &::-webkit-scrollbar-thumb:horizontal {
+    background: #888;
+  }
+
+  &::-webkit-scrollbar-thumb:hover:horizontal {
+    background: #555;
+  }
+}
+
+.table-agudeza,
+.table-lensometria {
+  width: 100%;
+  min-width: 550px; // Aumentado desde 500px para que aparezca antes (50px más)
+  border-collapse: collapse;
+  margin-bottom: 0.7rem;
+  background-color: $bg-primary;
+
+  th, td {
+    padding: 0; // Eliminado padding para que los inputs ocupen todo el espacio
+    border: 1px solid $border-color;
+    text-align: center;
+    font-size: 0.9rem;
+    vertical-align: middle;
+    height: 35px; // Altura fija para consistencia
+  }
+
+  th {
+    background-color: $ipn-guinda;
+    color: $ipn-secondary;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0rem; // Mantener padding solo en headers
+
+    &:first-child {
+      min-width: 180px; // ANCHO CONSISTENTE PARA TODAS LAS PRIMERAS COLUMNAS
+      text-align: center;
+      padding: 0.5rem;
+    }
+  }
+
+  td {
+    &:first-child {
+      background-color: rgba($ipn-guinda, 0.05);
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
+      min-width: 180px; // MISMO ANCHO CONSISTENTE PARA TODAS LAS PRIMERAS COLUMNAS
+      padding: 0.5rem;
+    }
+
+    .form-control {
+      margin: 0;
+      padding: 0.5rem; // Padding interno del input
+      text-align: center;
+      width: 100%; // Asegurar que ocupe todo el ancho
+      height: 100%; // Asegurar que ocupe toda la altura
+      min-width: unset; // Quitar restricción de ancho mínimo
+      border: none; // Sin borde propio, usar el de la celda
+      background-color: $bg-primary;
+      color: $text-primary;
+      box-sizing: border-box;
+      border-radius: 0; // Sin bordes redondeados
+
+      &:focus {
+        outline: 2px solid $ipn-guinda;
+        outline-offset: -2px;
+        border: none;
+        box-shadow: none;
       }
+    }
+  }
 
-      h4 {
+  tbody tr {
+    transition: background-color 0.2s;
+
+    // HOVER PARA MODO CLARO - EXACTAMENTE IGUAL QUE DASHBOARD
+    &:hover {
+      background-color: $hover-bg-light;
+    }
+  }
+}
+
+// Animación de carga
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Modo oscuro
+:host-context(.dark-theme) {
+  .antecedente-visual-container {
+    background-color: $bg-primary;
+  }
+
+  .content-title h1 {
+    color: $accent-color-dark2;
+
+    i {
+      color: $accent-color-dark2;
+    }
+  }
+
+  .section-divider {
+    height: 2px;
+    background-color: #3a3a3a;
+  }
+
+  .form-content,
+  .form-section {
+    background-color: $dark-bg-card;
+    border-radius: $border-radius;
+  }
+
+  // Inputs, selects y formularios con fondo consistente
+  .form-group input,
+  .form-group select,
+  .form-group .form-control,
+  .table-agudeza .form-control,
+  .table-lensometria .form-control {
+    background-color: $bg-primary;
+    border-color: $border-color;
+    color: $text-primary;
+
+    &:focus {
+      border-color: $accent-color-dark2;
+    }
+
+    &.is-invalid {
+      background-color: $bg-primary;
+    }
+  }
+
+  .success-message {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #6effb2;
+  }
+
+  .loading-container,
+  .error-container {
+    background-color: $dark-bg-card;
+  }
+
+  .section-title i,
+  .section-title {
+    color: $accent-color-dark2;
+  }
+
+  // Tablas en modo oscuro
+  .table-agudeza,
+  .table-lensometria {
+    background-color: $bg-primary;
+    border-color: $border-color;
+
+    th {
+      background-color: $accent-color-dark;
+      color: $ipn-secondary;
+    }
+
+    td {
+      border-color: $border-color;
+
+      &:first-child {
+        background-color: rgba($accent-color-dark, 0.1);
         color: $text-primary;
-        margin: $spacing-md 0 $spacing-sm;
-        font-weight: $font-weight-medium;
       }
+    }
 
-      .form-row {
-        display: flex;
-        flex-wrap: wrap;
-        margin-right: -$spacing-sm;
-        margin-left: -$spacing-sm;
-        margin-bottom: $spacing-md;
-
-        .form-group {
-          flex: 0 0 100%;
-          max-width: 100%;
-          padding-right: $spacing-sm;
-          padding-left: $spacing-sm;
-          margin-bottom: $spacing-md;
-
-          @media (min-width: $breakpoint-md) {
-            flex: 0 0 50%;
-            max-width: 50%;
-
-            &.col-md-3 {
-              flex: 0 0 25%;
-              max-width: 25%;
-            }
-
-            &.col-md-4 {
-              flex: 0 0 33.333333%;
-              max-width: 33.333333%;
-            }
-
-            &.col-md-6 {
-              flex: 0 0 50%;
-              max-width: 50%;
-            }
-          }
-
-          label {
-            display: block;
-            margin-bottom: $spacing-xs;
-            color: $text-primary;
-            font-weight: $font-weight-medium;
-          }
-
-          .form-control {
-            display: block;
-            width: 100%;
-            padding: $spacing-sm $spacing-md;
-            font-size: 1rem;
-            line-height: 1.5;
-            color: $text-primary;
-            background-color: $ipn-white;
-            background-clip: padding-box;
-            border: 1px solid $border-color;
-            border-radius: $border-radius-sm;
-            transition: $transition-base;
-
-            &:focus {
-              border-color: $primary-light;
-              outline: 0;
-              box-shadow: 0 0 0 0.2rem rgba($primary, 0.25);
-            }
-
-            &.form-control-xs {
-              padding: $spacing-xs $spacing-sm;
-              font-size: 0.9rem;
-            }
-          }
-        }
+    tbody tr {
+      // HOVER PARA MODO OSCURO - EXACTAMENTE IGUAL QUE DASHBOARD
+      &:hover {
+        background-color: #1e1e1e;
       }
+    }
+  }
 
-      .table-responsive {
-        margin-bottom: $spacing-md;
-        overflow-x: auto;
-      }
+  // Scrollbar en modo oscuro - EXACTAMENTE IGUAL QUE DASHBOARD
+  .table-responsive {
+    &::-webkit-scrollbar-track {
+      background: transparent; // Quitar el track en modo oscuro
+    }
 
-      .table-agudeza,
-      .table-lensometria {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: $spacing-md;
+    &::-webkit-scrollbar-thumb {
+      background: #666;
 
-        th, td {
-          padding: $spacing-sm;
-          border: 1px solid $border-color;
-          text-align: center;
-          font-size: 0.9rem;
-        }
-
-        th {
-          background-color: $ipn-gray;
-          color: $text-primary;
-          font-weight: $font-weight-bold;
-        }
-
-        td {
-          vertical-align: middle;
-
-          .form-control {
-            margin: 0;
-            padding: $spacing-xs;
-            text-align: center;
-            min-width: 80px;
-          }
-        }
-      }
-
-      .lensometria-datos-adicionales {
-        margin-top: $spacing-lg;
+      &:hover {
+        background: #999;
       }
     }
   }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+// Media queries para responsividad con espaciado consistente
+@media (max-width: 768px) {
+  .content-title {
+    padding: 1rem 1rem 0;
+
+    h1 {
+      font-size: 1.6rem;
+    }
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0; // Sin gap entre elementos porque form-group ya tiene margin-bottom
+    margin-bottom: 0; // Sin margin-bottom adicional
+    width: 100%;
+
+    .form-group {
+      min-width: auto;
+      width: 100%;
+      flex: none; // Remover flex para evitar comportamientos inesperados
+      margin-bottom: $form-spacing !important; // Forzar espaciado consistente en todos los campos
+    }
+  }
+
+  // Mejorar el scroll horizontal en móviles - EXACTAMENTE IGUAL QUE DASHBOARD
+  .table-responsive {
+    margin: 0 -1.2rem $form-spacing; // Añadir margin-bottom consistente
+    padding: 0 1.2rem; // Mantener el padding interno
+    border-radius: 0; // Sin bordes redondeados en móvil
+
+    // SCROLLBAR QUE DESAPARECE CUANDO NO HAY MOVIMIENTO - EXACTAMENTE IGUAL QUE DASHBOARD
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent; // Sin track visible
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: transparent; // Invisible por defecto
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    // Solo mostrar scrollbar durante el scroll
+    &:hover::-webkit-scrollbar-thumb {
+      background: #888;
+    }
+
+    &:active::-webkit-scrollbar-thumb {
+      background: #888;
+    }
+
+    // Para Firefox
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+      scrollbar-color: #888 transparent;
+    }
+  }
+
+  .table-agudeza,
+  .table-lensometria {
+    min-width: 650px; // Aumentado para activar scroll antes y mantener tamaños consistentes
+
+    th, td {
+      height: 40px; // Altura reducida para móviles
+      font-size: 0.85rem;
+
+      &:first-child {
+        min-width: 160px; // ANCHO CONSISTENTE REDUCIDO PARA MÓVILES
+        font-size: 0.8rem;
+      }
+    }
+
+    th {
+      padding: 0.4rem; // Reducido para móviles
+
+      &:first-child {
+        padding: 0.4rem; // Mismo padding centrado
+        min-width: 160px; // ANCHO CONSISTENTE
+      }
+    }
+
+    td {
+      &:first-child {
+        padding: 0.3rem; // Centrado sin padding lateral extra
+        min-width: 160px; // ANCHO CONSISTENTE
+      }
+
+      .form-control {
+        padding: 0.3rem;
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  // Asegurar que las subsecciones se vean bien en móvil
+  .agudeza-subsection {
+    margin-bottom: 0rem;
+  }
+
+  // Scrollbar en modo oscuro para móviles - EXACTAMENTE IGUAL QUE DASHBOARD
+  :host-context(.dark-theme) {
+    .table-responsive {
+      &::-webkit-scrollbar-track {
+        background: transparent; // Sin track en modo oscuro
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: transparent; // Invisible por defecto
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+      }
+
+      // Solo mostrar scrollbar durante el scroll en modo oscuro
+      &:hover::-webkit-scrollbar-thumb {
+        background: #666;
+      }
+
+      &:active::-webkit-scrollbar-thumb {
+        background: #666;
+      }
+
+      // Para Firefox en modo oscuro
+      scrollbar-color: transparent transparent;
+
+      &:hover {
+        scrollbar-color: #666 transparent;
+      }
+    }
+  }
 }

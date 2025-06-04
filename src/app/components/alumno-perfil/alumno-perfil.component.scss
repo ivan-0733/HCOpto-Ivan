@@ -339,7 +339,7 @@ $accent-color-dark2: $ipn-guinda-light;
     margin-bottom: 1.8rem;
     background-color: $bg-primary; // Cambiado para soporte de tema
     border-radius: $border-radius;
-    padding: 1.5rem 1rem;
+    padding: 1rem 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 
@@ -355,7 +355,7 @@ $accent-color-dark2: $ipn-guinda-light;
     font-size: 1.2rem;
     font-weight: 600;
     color: $ipn-guinda;
-    margin: 0 0 1.25rem;
+    margin: 0 0 0.5rem;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid rgba($ipn-guinda, 0.2);
 
@@ -462,12 +462,6 @@ $accent-color-dark2: $ipn-guinda-light;
 
     .match-icon {
       color: $success;
-    }
-  }
-
-  .password-input-container:focus-within {
-    .password-toggle {
-      color: $ipn-guinda;
     }
   }
 
@@ -899,12 +893,6 @@ $accent-color-dark2: $ipn-guinda-light;
   .password-requirements li i:not(.requirement-met i),
   .password-info .info-icon {
     color: $ipn-guinda-light;
-  }
-
-  .password-input-container:focus-within {
-    .password-toggle {
-      color: $accent-color-dark2;
-    }
   }
 
   .password-toggle {

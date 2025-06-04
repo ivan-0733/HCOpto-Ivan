@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HistoriaClinicaService } from '../../services/historia-clinica.service';
@@ -14,12 +14,18 @@ import { finalize } from 'rxjs/operators';
     ReactiveFormsModule
   ]
 })
-export class ExamenPreliminarComponent implements OnInit, OnChanges {
+export class ExamenPreliminarComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() historiaId: number | null = null;
   @Input() hideButtons = false;
   @Output() completed = new EventEmitter<boolean>();
   @Output() nextSection = new EventEmitter<void>();
   @Output() formReady = new EventEmitter<FormGroup>();
+
+  // Referencias a los textareas para auto-resize
+  @ViewChild('ojoDerechoAnexosRef') ojoDerechoAnexosRef!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('ojoIzquierdoAnexosRef') ojoIzquierdoAnexosRef!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('ojoDerechoSegmentoAnteriorRef') ojoDerechoSegmentoAnteriorRef!: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('ojoIzquierdoSegmentoAnteriorRef') ojoIzquierdoSegmentoAnteriorRef!: ElementRef<HTMLTextAreaElement>;
 
   // Formularios para cada subsección
   alineacionForm!: FormGroup;
@@ -32,6 +38,11 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
   error = '';
   success = '';
 
+  // Configuración para auto-resize
+  private readonly minHeight = 100; // Altura mínima en px
+  private readonly maxHeight = 500; // Altura máxima en px
+  private readonly lineHeight = 24; // Altura de línea aproximada en px
+
   constructor(
     private fb: FormBuilder,
     private historiaService: HistoriaClinicaService
@@ -43,12 +54,27 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
     if (this.historiaId) {
       this.cargarDatosExistentes();
     }
-    
+
     // Emitir los formularios para que el componente padre pueda acceder a ellos
     this.formReady.emit(this.alineacionForm);
     this.formReady.emit(this.motilidadForm);
     this.formReady.emit(this.exploracionForm);
     this.formReady.emit(this.viaPupilarForm);
+
+    // Suscribirse a cambios en el formulario para auto-resize
+    this.exploracionForm.valueChanges.subscribe(() => {
+      // Usar setTimeout para asegurar que el DOM se actualice antes del resize
+      setTimeout(() => {
+        this.autoResizeAllTextareas();
+      }, 0);
+    });
+  }
+
+  ngAfterViewInit(): void {
+    // Aplicar auto-resize inicial después de que la vista se inicialice
+    setTimeout(() => {
+      this.autoResizeAllTextareas();
+    }, 100);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -57,6 +83,54 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
         this.cargarDatosExistentes();
       }
     }
+  }
+
+  /**
+   * Función para auto-resize de un textarea específico
+   * @param textareaRef Referencia al elemento textarea
+   */
+  autoResize(textareaRef: ElementRef<HTMLTextAreaElement> | HTMLTextAreaElement): void {
+    const textarea = textareaRef instanceof ElementRef ? textareaRef.nativeElement : textareaRef;
+
+    if (!textarea) {
+      return;
+    }
+
+    // Resetear altura para obtener scrollHeight correcto
+    textarea.style.height = 'auto';
+
+    // Calcular nueva altura basada en contenido
+    const scrollHeight = textarea.scrollHeight;
+    let newHeight = Math.max(this.minHeight, scrollHeight);
+
+    // Aplicar altura máxima si es necesario
+    if (newHeight > this.maxHeight) {
+      newHeight = this.maxHeight;
+      textarea.style.overflowY = 'auto'; // Mostrar scroll si excede máximo
+    } else {
+      textarea.style.overflowY = 'hidden'; // Ocultar scroll si no excede
+    }
+
+    // Aplicar nueva altura
+    textarea.style.height = newHeight + 'px';
+  }
+
+  /**
+   * Aplicar auto-resize a todos los textareas
+   */
+  private autoResizeAllTextareas(): void {
+    const textareas = [
+      this.ojoDerechoAnexosRef,
+      this.ojoIzquierdoAnexosRef,
+      this.ojoDerechoSegmentoAnteriorRef,
+      this.ojoIzquierdoSegmentoAnteriorRef
+    ];
+
+    textareas.forEach(textareaRef => {
+      if (textareaRef?.nativeElement) {
+        this.autoResize(textareaRef);
+      }
+    });
   }
 
   private initForms(): void {
@@ -115,9 +189,9 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
 
   cargarDatosExistentes(): void {
     if (!this.historiaId) return;
-    
+
     this.loading = true;
-    
+
     this.historiaService.obtenerHistoriaClinica(this.historiaId)
       .pipe(finalize(() => {
         this.loading = false;
@@ -134,7 +208,7 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
               metodoID: historia.alineacionOcular.MetodoID || ''
             });
           }
-          
+
           // Cargar datos de motilidad
           if (historia.motilidad) {
             this.motilidadForm.patchValue({
@@ -145,7 +219,7 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
               fijacion: historia.motilidad.Fijacion || ''
             });
           }
-          
+
           // Cargar datos de exploración física
           if (historia.exploracionFisica) {
             this.exploracionForm.patchValue({
@@ -154,8 +228,13 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
               ojoDerechoSegmentoAnterior: historia.exploracionFisica.OjoDerechoSegmentoAnterior || '',
               ojoIzquierdoSegmentoAnterior: historia.exploracionFisica.OjoIzquierdoSegmentoAnterior || ''
             });
+
+            // Aplicar auto-resize después de cargar datos
+            setTimeout(() => {
+              this.autoResizeAllTextareas();
+            }, 100);
           }
-          
+
           // Cargar datos de vía pupilar
           if (historia.viaPupilar) {
             this.viaPupilarForm.patchValue({
@@ -183,7 +262,7 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
               dominanciaOcularID: historia.viaPupilar.DominanciaOcularID || ''
             });
           }
-          
+
           // Emitir que los datos se han cargado correctamente
           this.completed.emit(true);
         },
@@ -255,7 +334,7 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
       .then(() => {
         this.success = 'Examen preliminar guardado correctamente.';
         this.completed.emit(true);
-        
+
         setTimeout(() => {
           this.nextSection.emit();
         }, 1500);
@@ -273,20 +352,20 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges {
   cancelar(): void {
     this.completed.emit(false);
   }
-  
+
   // Métodos para acceder a los datos de cada formulario
   getAlineacionData(): any {
     return this.alineacionForm.value;
   }
-  
+
   getMotilidadData(): any {
     return this.motilidadForm.value;
   }
-  
+
   getExploracionData(): any {
     return this.exploracionForm.value;
   }
-  
+
   getViaPupilarData(): any {
     return this.viaPupilarForm.value;
   }

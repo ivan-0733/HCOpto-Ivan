@@ -193,7 +193,7 @@ $form-spacing: 1rem;
 .section-divider {
   height: 1px;
   background-color: $border-color;
-  margin: 0.5rem 1rem;
+  margin: 0 0 1.1rem 0;
   border-radius: 2px;
 }
 
@@ -204,6 +204,7 @@ $form-spacing: 1rem;
   border-radius: $border-radius;
   box-shadow: $box-shadow-sm;
   overflow: hidden;
+  padding-bottom: 0.45rem;  // ← Agrega esta línea
 }
 
 // Secciones del formulario (siguiendo el patrón de perfil)
@@ -213,6 +214,7 @@ $form-spacing: 1rem;
   padding: 1.2rem 1.2rem 0rem;
   overflow: hidden;
   margin-left: 0rem;
+  margin-bottom: 0rem;
 
     // Segunda sección (después del section-divider) con menos padding-top
     &:nth-child(3) {
@@ -226,7 +228,7 @@ $form-spacing: 1rem;
     font-size: 1.2rem;
     font-weight: 600;
     color: $ipn-guinda;
-    margin: 0 0 1.25rem;
+    margin: 0 0 0.6rem;
     padding-bottom: 0.25rem;
     border-bottom: 1px solid rgba($ipn-guinda, 0.2);
 
@@ -244,10 +246,11 @@ $form-spacing: 1rem;
   align-items: center;
   padding: 1rem;
   border-radius: $border-radius;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   font-size: 1rem;
   background-color: rgba(220, 220, 220, 0.25);
   border-left: 4px solid $ipn-guinda;
+  margin-top: 1.25rem;
 
   .info-icon {
     color: $ipn-guinda;

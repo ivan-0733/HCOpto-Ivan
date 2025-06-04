@@ -14,6 +14,8 @@ $border-color: var(--border-color);
 $dark-bg-card: #2a2a2a;
 $accent-color-dark: $ipn-guinda; // Color de acento para modo oscuro (mismo que encabezados de tabla)
 $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+$hover-bg-light: #f0f0f0; // Fondo para hover en modo claro
+$hover-bg-dark: #1e1e1e; // Fondo para hover en modo oscuro
 
 // Fondo principal mantiene color original
 .login-container {
@@ -82,7 +84,7 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
     }
 
     &:hover {
-      background: rgba($ipn-guinda, 0.05);
+      background-color: $hover-bg-light;
     }
 
     &.active {
@@ -129,6 +131,49 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   }
 }
 
+// Contenedor para el campo de contraseña con toggle
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--input-bg);
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    font-size: 1rem;
+    color: $text-primary;
+    transition: border-color 0.2s;
+    padding-right: 40px; // Añade espacio para el ícono
+
+    &:focus {
+      border-color: $ipn-guinda;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
+    }
+
+    &.is-invalid {
+      border-color: $danger;
+    }
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 10px;
+    color: $text-secondary;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    font-size: 20px;
+    line-height: 1;
+
+    &:hover {
+      color: $ipn-guinda;
+    }
+  }
+}
+
 .form-control {
   width: 100%;
   padding: 0.75rem;
@@ -147,7 +192,6 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
 
   &.is-invalid {
     border-color: $danger;
-    background-color: rgba($danger, 0.02);
   }
 }
 
@@ -168,7 +212,6 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
 
   &:hover {
     background: $ipn-guinda-claro;
@@ -211,7 +254,6 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   .error-icon {
     color: $danger;
     font-size: 20px;
-
     flex-shrink: 0;
   }
 
@@ -243,9 +285,9 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
   }
 }
 
-// Alineación vertical de elementos
-.form-group{
-  padding-right: 27px; // Mismo margen derecho
+// Alineación vertical de elementos - CORREGIDO
+.form-group:not(:has(.password-input-container)){
+  padding-right: 27px; // Aplicar padding solo a form-groups que NO contienen password-input-container
 }
 
 @keyframes errorAppear {
@@ -289,12 +331,11 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
     }
 
     &:hover {
-      background-color: rgba($ipn-guinda, 0.1);
+      background-color: #1a1a1a;
     }
 
     &.active {
-      background-color: $ipn-guinda;
-      border-color: $accent-color-dark;
+      background-color: lighten(#731635,10%);
       color: $ipn-secondary;
 
       i {
@@ -309,12 +350,40 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
     color: $text-primary;
 
     &:focus {
-      border-color: $ipn-guinda;
+      border-color: $accent-color-dark2;
     }
 
     &.is-invalid {
       border-color: $danger;
-      background-color: rgba($danger, 0.02);
+    }
+  }
+
+  .login-button {
+    background-color: lighten(#731635,10%);
+  }
+
+  // Estilos específicos para el contenedor de contraseña en modo oscuro
+  .password-input-container {
+    input {
+      background-color: var(--input-bg);
+      border-color: $border-color;
+      color: $text-primary;
+
+      &:focus {
+        border-color: $accent-color-dark2;
+      }
+
+      &.is-invalid {
+        border-color: $danger;
+      }
+    }
+
+    .password-toggle {
+      color: $text-secondary;
+
+      &:hover {
+        color: $accent-color-dark2 !important;
+      }
     }
   }
 
