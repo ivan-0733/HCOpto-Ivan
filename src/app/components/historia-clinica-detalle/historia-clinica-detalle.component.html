@@ -515,7 +515,7 @@
               </ul>
             </div>
           </div>
-          
+
           <div class="info-grid">
             <div class="info-item">
               <h3>Características Pupilares</h3>
@@ -554,7 +554,7 @@
 <div *ngIf="currentTab === 'estado-refractivo'" class="tab-pane">
   <section class="info-section" *ngIf="historia.estadoRefractivo">
     <h2>Queratometría y Retinoscopía</h2>
-    
+
     <div class="info-grid">
       <div class="info-item">
         <h3>OD Queratometría</h3>
@@ -581,7 +581,7 @@
         <p>{{ historia.estadoRefractivo.OjoIzquierdoAstigmatismoJaval || 'No registrado' }}</p>
       </div>
     </div>
-    
+
     <h3>Retinoscopía</h3>
     <div class="table-responsive">
       <table class="table-lensometria">
@@ -610,10 +610,10 @@
       </table>
     </div>
   </section>
-  
+
   <section class="info-section" *ngIf="historia.estadoRefractivo">
     <h2>Subjetivo y Balance Binoculares</h2>
-    
+
     <h3>Subjetivo</h3>
     <div class="table-responsive">
       <table class="table-lensometria">
@@ -641,7 +641,7 @@
         </tbody>
       </table>
     </div>
-    
+
     <h3>Balance Binoculares</h3>
     <div class="table-responsive">
       <table class="table-lensometria">
@@ -669,7 +669,7 @@
         </tbody>
       </table>
     </div>
-    
+
     <div class="info-grid">
       <div class="info-item">
         <h3>OD AV Lejana</h3>
@@ -681,10 +681,10 @@
       </div>
     </div>
   </section>
-  
+
   <section class="info-section" *ngIf="historia.subjetivoCerca">
     <h2>Subjetivo de Cerca</h2>
-    
+
     <div class="table-responsive">
       <table class="table-agudeza">
         <thead>
@@ -723,7 +723,7 @@
         </tbody>
       </table>
     </div>
-    
+
     <div class="info-grid">
       <div class="info-item">
         <h3>Valor ADD</h3>
@@ -743,7 +743,7 @@
       </div>
     </div>
   </section>
-  
+
   <div class="no-data" *ngIf="!historia.estadoRefractivo && !historia.subjetivoCerca">
     <i class="fas fa-glasses"></i>
     <p>No se ha registrado información de estado refractivo para esta historia clínica.</p>
@@ -865,7 +865,7 @@
   <!-- Subsección de Vergencias -->
   <section class="info-section">
     <h2>Vergencias</h2>
-    
+
     <h3>Vergencias Positivas</h3>
     <div class="table-responsive">
       <table class="table-agudeza">
@@ -949,7 +949,7 @@
           </table>
         </div>
       </div>
-      
+
       <div class="grid-section">
         <h3>Infravergencias</h3>
         <div class="table-responsive">
@@ -982,7 +982,7 @@
   <!-- Subsección de Método Gráfico -->
   <section class="info-section">
     <h2>Método Gráfico</h2>
-    
+
     <div class="info-grid">
       <div class="info-item">
         <h3>Integración Binocular</h3>
@@ -1001,20 +1001,20 @@
         <p>{{ obtenerTipoVision(historia.metodoGrafico?.tipoVisionID) }}</p>
       </div>
     </div>
-    
+
     <!-- Imagen de método gráfico - mostrar base64 o URL según disponibilidad -->
     <div class="metodo-grafico-imagen">
       <h3>Imagen</h3>
       <!-- Priorizar mostrar la imagen en base64 si está disponible -->
-      <img 
-        *ngIf="historia.metodoGrafico?.imagenBase64" 
-        [src]="historia.metodoGrafico?.imagenBase64"  
+      <img
+        *ngIf="historia.metodoGrafico?.imagenBase64"
+        [src]="historia.metodoGrafico?.imagenBase64"
         alt="Imagen de método gráfico"
         class="img-fluid">
       <!-- Si no hay base64 pero hay ID, mostrar desde URL -->
-      <img 
-        *ngIf="!historia.metodoGrafico?.imagenBase64 && historia.metodoGrafico?.imagenID" 
-        [src]="obtenerUrlImagen(historia.metodoGrafico?.imagenID)" 
+      <img
+        *ngIf="!historia.metodoGrafico?.imagenBase64 && historia.metodoGrafico?.imagenID"
+        [src]="obtenerUrlImagen(historia.metodoGrafico?.imagenID)"
         alt="Imagen de método gráfico"
         class="img-fluid">
       <!-- Mensaje si no hay imagen -->

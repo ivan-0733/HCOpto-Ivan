@@ -71,7 +71,7 @@ loadHistoriaClinica(): void {
 
 cargarImagenMetodoGrafico(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -80,7 +80,7 @@ cargarImagenMetodoGrafico(imagenID: number): void {
           if (!base64.startsWith('data:image')) {
             base64 = `data:image/png;base64,${base64}`;
           }
-          
+
           // Actualizar la imagen en el objeto
           if (this.historia && this.historia.metodoGrafico) {
             this.historia.metodoGrafico.imagenBase64 = base64;
@@ -108,7 +108,7 @@ getButtonClass(tab: string): string {
 obtenerClaseEstado(estado: string): string {
   switch (estado) {
     case 'En proceso':
-      return 'estado-proceso';
+      return 'estado-corregido';
     case 'Revisión':
       return 'estado-revision';
     case 'Corrección':
@@ -185,7 +185,7 @@ obtenerNombreTipoMedicion(tipoMedicion: string): string {
     'CON_RX_ANTERIOR_CERCA': 'Con RX Anterior Cerca',
     'CAP_VISUAL': 'Capacidad Visual'
   };
-  
+
   return tipos[tipoMedicion] || tipoMedicion;
 }
 
@@ -199,7 +199,7 @@ esMedicionCerca(tipoMedicion: string): boolean {
 
 obtenerTipoLente(tipoID: number | string | null | undefined): string {
   if (!tipoID) return 'Monocal';
-  
+
   const tipos: {[key: string]: string} = {
     'MONOCAL': 'Monocal',
     'BIFOCAL': 'Bifocal',
@@ -208,20 +208,20 @@ obtenerTipoLente(tipoID: number | string | null | undefined): string {
     '18': 'Multifocal',
     '19': 'Monocal'
   };
-  
+
   return tipos[tipoID.toString()] || 'Tipo desconocido';
 }
 
 obtenerNombreMetodo(metodoID: number | null | undefined): string {
   if (!metodoID) return '-';
-  
+
   const metodos: {[key: number]: string} = {
     1: 'Pantalleo',
     2: 'Thorrigton',
     3: 'Maddox',
     4: 'Von Graeffe'
   };
-  
+
   return metodos[metodoID] || '-';
 }
 
@@ -229,45 +229,45 @@ obtenerNombreMetodo(metodoID: number | null | undefined): string {
 
 tieneReflejosOD(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
-  
-  return viaPupilar.OjoDerechoFotomotorPresente || 
-          viaPupilar.OjoDerechoConsensualPresente || 
+
+  return viaPupilar.OjoDerechoFotomotorPresente ||
+          viaPupilar.OjoDerechoConsensualPresente ||
           viaPupilar.OjoDerechoAcomodativoPresente ||
-          viaPupilar.OjoDerechoFotomotorAusente || 
-          viaPupilar.OjoDerechoConsensualAusente || 
+          viaPupilar.OjoDerechoFotomotorAusente ||
+          viaPupilar.OjoDerechoConsensualAusente ||
           viaPupilar.OjoDerechoAcomodativoAusente;
 }
 
 tieneReflejosOI(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
-  
-  return viaPupilar.OjoIzquierdoFotomotorPresente || 
-          viaPupilar.OjoIzquierdoConsensualPresente || 
+
+  return viaPupilar.OjoIzquierdoFotomotorPresente ||
+          viaPupilar.OjoIzquierdoConsensualPresente ||
           viaPupilar.OjoIzquierdoAcomodativoPresente ||
-          viaPupilar.OjoIzquierdoFotomotorAusente || 
-          viaPupilar.OjoIzquierdoConsensualAusente || 
+          viaPupilar.OjoIzquierdoFotomotorAusente ||
+          viaPupilar.OjoIzquierdoConsensualAusente ||
           viaPupilar.OjoIzquierdoAcomodativoAusente;
 }
 
 tieneCaracteristicasPupilares(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
-  
-  return viaPupilar.EsIsocoria || 
-          viaPupilar.EsAnisocoria || 
+
+  return viaPupilar.EsIsocoria ||
+          viaPupilar.EsAnisocoria ||
           viaPupilar.RespuestaAcomodacion ||
-          viaPupilar.PupilasIguales || 
-          viaPupilar.PupilasRedondas || 
+          viaPupilar.PupilasIguales ||
+          viaPupilar.PupilasRedondas ||
           viaPupilar.RespuestaLuz;
 }
 
 obtenerDominanciaOcular(dominanciaID: number | null | undefined): string {
   if (!dominanciaID) return 'No especificada';
-  
+
   const dominancias: {[key: number]: string} = {
     29: 'Ojo Derecho (OD)',
     30: 'Ojo Izquierdo (OI)'
   };
-  
+
   return dominancias[dominanciaID] || 'Desconocida';
 }
 
@@ -289,20 +289,20 @@ formatearGrados(grados: any): string {
 
 verificarSubjetivoCerca(): boolean {
   if (!this.historia || !this.historia.subjetivoCerca) return false;
-  
+
   const subjetivoCerca = this.historia.subjetivoCerca;
   return !!(
-    subjetivoCerca.OjoDerechoM || 
-    subjetivoCerca.OjoIzquierdoM || 
+    subjetivoCerca.OjoDerechoM ||
+    subjetivoCerca.OjoIzquierdoM ||
     subjetivoCerca.AmbosOjosM ||
-    subjetivoCerca.OjoDerechoJacger || 
-    subjetivoCerca.OjoIzquierdoJacger || 
+    subjetivoCerca.OjoDerechoJacger ||
+    subjetivoCerca.OjoIzquierdoJacger ||
     subjetivoCerca.AmbosOjosJacger ||
-    subjetivoCerca.OjoDerechoPuntos || 
-    subjetivoCerca.OjoIzquierdoPuntos || 
+    subjetivoCerca.OjoDerechoPuntos ||
+    subjetivoCerca.OjoIzquierdoPuntos ||
     subjetivoCerca.AmbosOjosPuntos ||
-    subjetivoCerca.OjoDerechoSnellen || 
-    subjetivoCerca.OjoIzquierdoSnellen || 
+    subjetivoCerca.OjoDerechoSnellen ||
+    subjetivoCerca.OjoIzquierdoSnellen ||
     subjetivoCerca.AmbosOjosSnellen ||
     subjetivoCerca.ValorADD ||
     subjetivoCerca.AV ||
@@ -314,7 +314,7 @@ verificarSubjetivoCerca(): boolean {
 // Verifica si existen datos de binocularidad
 tieneDatosBinocularidad(): boolean {
   if (!this.historia) return false;
-  
+
   // Función auxiliar para verificar si un valor tiene datos significativos
   const tieneValor = (val: any): boolean => {
     if (val === null || val === undefined) return false;
@@ -326,19 +326,19 @@ tieneDatosBinocularidad(): boolean {
 
   // Verificar datos en binocularidad
   const hasBinocularidadData = !!(
-    this.historia.binocularidad && 
+    this.historia.binocularidad &&
     Object.values(this.historia.binocularidad).some(tieneValor)
   );
 
   // Verificar datos en forias
   const hasForiasData = !!(
-    this.historia.forias && 
+    this.historia.forias &&
     Object.values(this.historia.forias).some(tieneValor)
   );
 
   // Verificar datos en vergencias
   const hasVergenciasData = !!(
-    this.historia.vergencias && 
+    this.historia.vergencias &&
     Object.values(this.historia.vergencias).some(tieneValor)
   );
 
@@ -357,26 +357,26 @@ tieneDatosBinocularidad(): boolean {
 // Obtiene el nombre del método de medición para forias
 obtenerTipoTest(tipoID: number | null | undefined): string {
   if (!tipoID) return '-';
-  
+
   const tipos: {[key: number]: string} = {
     35: 'Pola Mirror',
     36: 'Otro',
     37: 'P. de Worth'
   };
-  
+
   return tipos[tipoID] || '-';
 }
 
 // Obtiene el tipo de visión estereoscópica
 obtenerTipoVision(tipoVisionID: number | null | undefined): string {
   if (!tipoVisionID) return '-';
-  
+
   const tiposVision: {[key: number]: string} = {
     38: 'Titmus',
     39: 'Random',
     40: 'Otro'
   };
-  
+
   return tiposVision[tipoVisionID] || '-';
 }
 
@@ -389,7 +389,7 @@ obtenerUrlImagen(imagenID: number | null | undefined): string {
 // método para cargar la imagen en base64
 cargarImagenBase64(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -400,7 +400,7 @@ cargarImagenBase64(imagenID: number): void {
           if (this.historia && !this.historia.metodoGrafico) {
             this.historia.metodoGrafico = {};
           }
-          
+
           if (this.historia && this.historia.metodoGrafico) {
             this.historia.metodoGrafico.imagenBase64 = base64;
             console.log('Imagen cargada correctamente en base64');
@@ -417,19 +417,19 @@ cargarImagenBase64(imagenID: number): void {
 
 onImageError(event: Event): void {
   const imgElement = event.target as HTMLImageElement;
-  
+
   // Marcar como error
   imgElement.classList.add('image-error');
-  
+
   // Cambiar a una imagen de placeholder
   imgElement.src = 'assets/images/image-not-found.png';
-  
+
   // Actualizar el caption
   const caption = imgElement.nextElementSibling;
   if (caption && caption.classList.contains('image-caption')) {
     caption.textContent = 'Error al cargar la imagen';
   }
-  
+
   console.error('Error al cargar la imagen desde URL');
 }
 
@@ -448,7 +448,7 @@ private getBlobAsBase64(url: string): Promise<string> {
 
 recargarImagen(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.loading = true;
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .pipe(finalize(() => this.loading = false))
@@ -467,13 +467,13 @@ recargarImagen(imagenID: number): void {
 // Helper method to check if amplitud acomodacion has any data
 tieneDatosAmplitudAcomodacion(binocularidad: any): boolean {
   if (!binocularidad) return false;
-  
+
   return !!(
-    binocularidad.ojoDerechoAmpAcomCm || 
-    binocularidad.ojoDerechoAmpAcomD || 
-    binocularidad.ojoIzquierdoAmpAcomCm || 
-    binocularidad.ojoIzquierdoAmpAcomD || 
-    binocularidad.ambosOjosAmpAcomCm || 
+    binocularidad.ojoDerechoAmpAcomCm ||
+    binocularidad.ojoDerechoAmpAcomD ||
+    binocularidad.ojoIzquierdoAmpAcomCm ||
+    binocularidad.ojoIzquierdoAmpAcomD ||
+    binocularidad.ambosOjosAmpAcomCm ||
     binocularidad.ambosOjosAmpAcomD
   );
 }
@@ -481,13 +481,13 @@ tieneDatosAmplitudAcomodacion(binocularidad: any): boolean {
 // Helper method to check if vergencias positivas has any data
 tieneDatosVergenciasPositivas(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.positivasLejosBorroso || 
-    vergencias.positivasLejosRuptura || 
-    vergencias.positivasLejosRecuperacion || 
-    vergencias.positivasCercaBorroso || 
-    vergencias.positivasCercaRuptura || 
+    vergencias.positivasLejosBorroso ||
+    vergencias.positivasLejosRuptura ||
+    vergencias.positivasLejosRecuperacion ||
+    vergencias.positivasCercaBorroso ||
+    vergencias.positivasCercaRuptura ||
     vergencias.positivasCercaRecuperacion
   );
 }
@@ -495,13 +495,13 @@ tieneDatosVergenciasPositivas(vergencias: any): boolean {
 // Helper method to check if vergencias negativas has any data
 tieneDatosVergenciasNegativas(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.negativasLejosBorroso || 
-    vergencias.negativasLejosRuptura || 
-    vergencias.negativasLejosRecuperacion || 
-    vergencias.negativasCercaBorroso || 
-    vergencias.negativasCercaRuptura || 
+    vergencias.negativasLejosBorroso ||
+    vergencias.negativasLejosRuptura ||
+    vergencias.negativasLejosRecuperacion ||
+    vergencias.negativasCercaBorroso ||
+    vergencias.negativasCercaRuptura ||
     vergencias.negativasCercaRecuperacion
   );
 }
@@ -509,18 +509,18 @@ tieneDatosVergenciasNegativas(vergencias: any): boolean {
 // Helper method to check if vergencias verticales has any data
 tieneDatosVergenciasVerticales(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return this.tieneDatosSupravergencias(vergencias) || this.tieneDatosInfravergencias(vergencias);
 }
 
 // Helper method to check if supravergencias has any data
 tieneDatosSupravergencias(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.supravergenciasLejosRuptura || 
-    vergencias.supravergenciasLejosRecuperacion || 
-    vergencias.supravergenciasCercaRuptura || 
+    vergencias.supravergenciasLejosRuptura ||
+    vergencias.supravergenciasLejosRecuperacion ||
+    vergencias.supravergenciasCercaRuptura ||
     vergencias.supravergenciasCercaRecuperacion
   );
 }
@@ -528,11 +528,11 @@ tieneDatosSupravergencias(vergencias: any): boolean {
 // Helper method to check if infravergencias has any data
 tieneDatosInfravergencias(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.infravergenciasLejosRuptura || 
-    vergencias.infravergenciasLejosRecuperacion || 
-    vergencias.infravergenciasCercaRuptura || 
+    vergencias.infravergenciasLejosRuptura ||
+    vergencias.infravergenciasLejosRecuperacion ||
+    vergencias.infravergenciasCercaRuptura ||
     vergencias.infravergenciasCercaRecuperacion
   );
 }

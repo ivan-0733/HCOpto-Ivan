@@ -34,16 +34,17 @@ $ipn-error: #d93025;
 
   // Estados y acciones
   --error-color: #{$ipn-error};
-  --success-color: #34a853;
+  --success-color: #2ecc71;
   --warning-color: #fbbc05;
   --info-color: #4285f4;
 
   // Estados específicos de historias clínicas
-  --estado-proceso: #F9A825;
-  --estado-revision: #1E88E5;
-  --estado-correccion: #E53935;
-  --estado-finalizado: #43A047;
-  --estado-archivado: #757575;
+  --estado-corregido: #f39c12;
+  --estado-revision: #3498db;
+  --estado-correccion: #e74c3c;
+  --estado-finalizado: #2ecc71;
+  --estado-archivado: #808080;
+  --estado-nuevo: #8E24AA;
 
   // Elementos de navegación
   --nav-bg: #{$ipn-guinda};
@@ -107,11 +108,12 @@ $ipn-error: #d93025;
   --info-color: #8ab4f8;
 
   // Estados específicos de historias clínicas
-  --estado-proceso: #FBC02D;
-  --estado-revision: #42A5F5;
-  --estado-correccion: #EF5350;
-  --estado-finalizado: #66BB6A;
-  --estado-archivado: #9E9E9E;
+  --estado-corregido: #f39c12;
+  --estado-revision: #3498db;
+  --estado-correccion: #e74c3c;
+  --estado-finalizado: #2ecc71;
+  --estado-archivado: #808080;
+  --estado-nuevo: #8E24AA;
 
   // Elementos de navegación
   --nav-bg: #1a1a1a;
@@ -169,11 +171,12 @@ $success-color: var(--success-color);
 $warning-color: var(--warning-color);
 $info-color: var(--info-color);
 
-$estado-proceso: var(--estado-proceso);
+$estado-corregido: var(--estado-corregido);
 $estado-revision: var(--estado-revision);
 $estado-correccion: var(--estado-correccion);
 $estado-finalizado: var(--estado-finalizado);
 $estado-archivado: var(--estado-archivado);
+$estado-nuevo: var(--estado-nuevo);
 
 $nav-bg: var(--nav-bg);
 $nav-text: var(--nav-text);

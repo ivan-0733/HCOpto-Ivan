@@ -28,34 +28,31 @@
       }
 
       .estado-badge {
-        font-size: 0.9rem;
-        padding: 4px 12px;
+        display: inline-block;
+        padding: 0.3rem 0.6rem;
         border-radius: 20px;
-        margin-left: $spacing-md;
-        display: inline-flex;
-        align-items: center;
-        white-space: nowrap;
+        font-size: 0.8rem;
+        color: #fff;
+        margin-left: 1rem;
 
-        &.estado-proceso {
-          background-color: rgba($warning, 0.15);
-          color: $warning-dark;
+        &.estado-corregido {
+          background-color: $estado-corregido;
         }
 
         &.estado-revision {
-          background-color: rgba($info, 0.15);
-          color: $info-dark;
+          background-color: $estado-revision;
         }
 
         &.estado-correccion {
-          background-color: rgba($danger, 0.15);
-          // Fix: Don't use darken with CSS variables
-          color: $danger;
+          background-color: $estado-correccion;
         }
 
         &.estado-finalizado {
-          background-color: rgba($success, 0.15);
-          // Fix: Don't use darken with CSS variables
-          color: $success-dark;
+          background-color: $estado-finalizado;
+        }
+
+        &.estado-nuevo {
+          background-color: $estado-nuevo;
         }
       }
     }

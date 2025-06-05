@@ -9,7 +9,8 @@ const historiaClinicaRoutes = require('./routes/historiaClinicaRoutes');
 const { errorHandler } = require('./utils/errorHandler');
 const multer = require('multer');
 const path = require('path');
-
+// Asegúrate de incluir las rutas de profesor
+const profesorRoutes = require('./routes/profesorRoutes');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -38,6 +39,9 @@ app.use('/api/historias-clinicas', historiaClinicaRoutes);
 app.get('/api/saludo', (req, res) => {
 res.json({ mensaje: 'Hola desde el backend de HCOpto, SALUDOS A REYES SANDOVAL' });
 });
+
+// En la sección de rutas
+app.use('/api/profesores', profesorRoutes);
 
 // Ruta para 404 - No encontrado
 app.all('*', (req, res, next) => {

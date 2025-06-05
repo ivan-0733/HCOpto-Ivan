@@ -4,7 +4,7 @@
     <div class="header-title">
       <h1>
         <i class="fas fa-tachometer-alt"></i>
-        Dashboard
+        Dashboard Profesor
       </h1>
       <p *ngIf="perfil">Bienvenido, <strong>{{ perfil.Nombre }} {{ perfil.ApellidoPaterno }} {{ perfil.ApellidoMaterno }}</strong></p>
     </div>
@@ -35,6 +35,7 @@
         </div>
         <div class="materia-card-content">
           <h3>{{ materia.NombreMateria }}</h3>
+          <small>Grupo {{ materia.Grupo }} - {{ materia.CantidadAlumnos }} alumnos</small>
         </div>
       </div>
     </div>
@@ -99,7 +100,7 @@
   <!-- Mensaje de ayuda -->
   <div class="help-message" *ngIf="!loading && !error && historiasClinicas && historiasClinicas.length > 0">
     <i class="material-icons info-icon">info</i>
-    <p>Aquí puedes ver todas tus historias clínicas. Usa los filtros para encontrar historias específicas</p>
+    <p>Aquí puedes ver todas las historias clínicas de tus alumnos. Usa los filtros para encontrar historias específicas</p>
   </div>
 
 <!-- Filtros - solo se muestran cuando no hay error -->
@@ -154,6 +155,21 @@
     </select>
   </div>
 
+  <!-- Filtro de búsqueda de alumno - NUEVO -->
+  <div class="filtro">
+    <label for="filtroAlumno">Buscar alumno:</label>
+    <div class="input-with-icon">
+      <i class="fas fa-user-graduate"></i>
+      <input
+        type="text"
+        id="filtroAlumno"
+        [(ngModel)]="filtroAlumno"
+        placeholder="Nombre o boleta del alumno"
+        (ngModelChange)="onFiltroAlumnoChange()"
+      >
+    </div>
+  </div>
+
   <div class="filtro">
     <label for="filtroPaciente">Buscar paciente:</label>
     <div class="input-with-icon">
@@ -178,7 +194,7 @@
 
   <div class="empty-container" *ngIf="!loading && !error && filtrarHistorias().length === 0">
     <i class="fas fa-folder-open"></i>
-    <p *ngIf="historiasClinicas.length === 0">No tienes historias clínicas registradas.</p>
+    <p *ngIf="historiasClinicas.length === 0">No hay historias clínicas registradas por tus alumnos.</p>
     <p *ngIf="historiasClinicas.length > 0">No se encontraron historias clínicas con los filtros seleccionados.</p>
   </div>
 
@@ -190,6 +206,7 @@
           <tr>
             <th>ID</th>
             <th>Fecha</th>
+            <th>Alumno</th> <!-- Nueva columna -->
             <th>Paciente</th>
             <th>Edad</th>
             <th>Estado</th>
@@ -202,6 +219,20 @@
           <tr *ngFor="let historia of obtenerHistoriasPaginaActual()">
             <td>{{ historia.ID }}</td>
             <td>{{ historia.Fecha | date:'dd/MM/yyyy' }}</td>
+            <!-- Nueva columna de alumno -->
+            <td>
+              <div class="alumno-info">
+                <span class="nombre-completo">{{ historia.AlumnoNombre }} {{ historia.AlumnoApellidoPaterno }}
+                  <span *ngIf="historia.AlumnoApellidoMaterno">{{ historia.AlumnoApellidoMaterno }}</span>
+                </span>
+                <span *ngIf="historia.AlumnoCorreo" class="contacto-alumno">
+                  <i class="fas fa-envelope"></i> {{ historia.AlumnoCorreo }}
+                </span>
+                <span *ngIf="historia.AlumnoBoleta" class="contacto-alumno">
+                  <i class="fas fa-id-card"></i> Boleta: {{ historia.AlumnoBoleta }}
+                </span>
+              </div>
+            </td>
             <td>
               <div class="paciente-info">
                 <span class="nombre-completo">{{ historia.Nombre }} {{ historia.ApellidoPaterno }}
@@ -235,8 +266,8 @@
               </button>
               <button class="btn-icon btn-edit" (click)="editarHistoria(historia.ID)"
                       [disabled]="historia.Archivado || historia.Estado === 'Finalizado'"
-                      title="Editar Historia Clínica">
-                <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">edit</i>
+                      title="Revisar Historia Clínica">
+                <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">rate_review</i>
               </button>
             </td>
           </tr>
