@@ -558,7 +558,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.alineacionOcular) {
       await connection.query(
         `INSERT INTO AlineacionOcular (
-          HistorialID, LejosHorizontal, LejoVertical, CercaHorizontal, CercaVertical, MetodoID
+          HistorialID, LejosHorizontal, LejosVertical, CercaHorizontal, CercaVertical, MetodoID
         ) VALUES (?, ?, ?, ?, ?, ?)`,
         [
           historiaID,
