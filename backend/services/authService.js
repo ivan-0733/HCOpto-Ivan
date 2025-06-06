@@ -8,8 +8,6 @@ const db = require('../config/database.js');
 const authService = {
   /**
    * Verifica si existe un alumno con la boleta especificada
-   * @param {string} boleta - Número de boleta del alumno
-   * @returns {Promise<boolean>} - true si existe, false en caso contrario
    */
   async verificarExistenciaAlumno(boleta) {
     try {
@@ -17,7 +15,7 @@ const authService = {
         `SELECT COUNT(*) as count
         FROM AlumnosInfo a
         JOIN Usuarios u ON a.UsuarioID = u.ID
-        WHERE a.NumeroBoleta = ?`,  // Removed the EstaActivo condition
+        WHERE a.NumeroBoleta = ?`,
         [boleta]
       );
 
@@ -29,10 +27,27 @@ const authService = {
   },
 
   /**
+   * Verifica si existe un profesor con el número de empleado especificado
+   */
+  async verificarExistenciaProfesor(numeroEmpleado) {
+    try {
+      const [profesores] = await db.query(
+        `SELECT COUNT(*) as count
+        FROM ProfesoresInfo p
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE p.NumeroEmpleado = ?`,
+        [numeroEmpleado]
+      );
+
+      return profesores[0].count > 0;
+    } catch (error) {
+      console.error('Error al verificar existencia de profesor:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Verifica si el correo proporcionado corresponde a la boleta
-   * @param {string} boleta - Número de boleta del alumno
-   * @param {string} correo - Correo electrónico
-   * @returns {Promise<boolean>} - true si corresponde, false en caso contrario
    */
   async verificarCorreoBoleta(boleta, correo) {
     try {
@@ -53,9 +68,28 @@ const authService = {
   },
 
   /**
+   * Verifica si el correo proporcionado corresponde al número de empleado
+   */
+  async verificarCorreoNumeroEmpleado(numeroEmpleado, correo) {
+    try {
+      const [profesores] = await db.query(
+        `SELECT COUNT(*) as count
+        FROM ProfesoresInfo p
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE p.NumeroEmpleado = ?
+        AND u.CorreoElectronico = ?`,
+        [numeroEmpleado, correo]
+      );
+
+      return profesores[0].count > 0;
+    } catch (error) {
+      console.error('Error al verificar correo y número de empleado:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Verifica si existe un usuario con el correo especificado
-   * @param {string} correo - Correo electrónico
-   * @returns {Promise<boolean>} - true si existe, false en caso contrario
    */
   async verificarExistenciaCorreo(correo) {
     try {
@@ -75,10 +109,6 @@ const authService = {
 
   /**
    * Verifica si la contraseña es correcta para un alumno
-   * @param {string} boleta - Número de boleta del alumno
-   * @param {string} correo - Correo electrónico del alumno
-   * @param {string} password - Contraseña a verificar
-   * @returns {Promise<boolean>} - true si la contraseña es correcta
    */
   async verificarPasswordAlumno(boleta, correo, password) {
     try {
@@ -105,10 +135,34 @@ const authService = {
   },
 
   /**
+   * Verifica si la contraseña es correcta para un profesor
+   */
+  async verificarPasswordProfesor(numeroEmpleado, correo, password) {
+    try {
+      const [profesores] = await db.query(
+        `SELECT u.ContraseñaHash
+        FROM ProfesoresInfo p
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE p.NumeroEmpleado = ?
+        AND u.CorreoElectronico = ?
+        AND u.EstaActivo = TRUE`,
+        [numeroEmpleado, correo]
+      );
+
+      if (profesores.length === 0) {
+        return false;
+      }
+
+      const profesor = profesores[0];
+      return await this.verificarPassword(password, profesor.ContraseñaHash);
+    } catch (error) {
+      console.error('Error al verificar contraseña de profesor:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Verifica si la cuenta de un alumno está activa
-   * @param {string} boleta - Número de boleta del alumno
-   * @param {string} correo - Correo electrónico
-   * @returns {Promise<boolean>} - true si la cuenta está activa
    */
   async verificarCuentaActiva(boleta) {
     try {
@@ -132,10 +186,31 @@ const authService = {
   },
 
   /**
+   * Verifica si la cuenta de un profesor está activa
+   */
+  async verificarCuentaActivaProfesor(numeroEmpleado) {
+    try {
+      const [usuarios] = await db.query(
+        `SELECT u.EstaActivo
+        FROM ProfesoresInfo p
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE p.NumeroEmpleado = ?`,
+        [numeroEmpleado]
+      );
+
+      if (usuarios.length === 0) {
+        return false;
+      }
+
+      return usuarios[0].EstaActivo;
+    } catch (error) {
+      console.error('Error al verificar estado de cuenta de profesor:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Obtiene los datos de un alumno por boleta y correo
-   * @param {string} boleta - Número de boleta del alumno
-   * @param {string} correo - Correo electrónico del alumno
-   * @returns {Promise<Object|null>} - Datos del alumno o null si no existe
    */
   async obtenerDatosAlumno(boleta, correo) {
     try {
@@ -162,47 +237,34 @@ const authService = {
   },
 
   /**
-   * Verifica las credenciales de un alumno y devuelve los datos si son correctos
-   * @param {string} boleta - Número de boleta del alumno
-   * @param {string} correo - Correo electrónico del alumno
-   * @param {string} password - Contraseña del alumno
-   * @returns {Promise<Object|null>} - Datos del alumno o null si las credenciales son incorrectas
+   * Obtiene los datos de un profesor por número de empleado y correo
    */
-  async verificarCredencialesAlumno(boleta, correo, password) {
+  async obtenerDatosProfesor(numeroEmpleado, correo) {
     try {
-      const [alumnos] = await db.query(
-        `SELECT a.ID AS AlumnoInfoID, a.NumeroBoleta, a.SemestreActual,
-                u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico, u.ContraseñaHash
-        FROM AlumnosInfo a
-        JOIN Usuarios u ON a.UsuarioID = u.ID
-        WHERE a.NumeroBoleta = ? AND u.CorreoElectronico = ?
+      const [profesores] = await db.query(
+        `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
+                u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico
+        FROM ProfesoresInfo p
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE p.NumeroEmpleado = ?
+        AND u.CorreoElectronico = ?
         AND u.EstaActivo = TRUE`,
-        [boleta, correo]
+        [numeroEmpleado, correo]
       );
 
-      if (alumnos.length === 0) {
+      if (profesores.length === 0) {
         return null;
       }
 
-      const alumno = alumnos[0];
-
-      // Verificar la contraseña antes de devolver los datos
-      if (!alumno.ContraseñaHash || !(await this.verificarPassword(password, alumno.ContraseñaHash))) {
-        return null;
-      }
-
-      return alumno;
+      return profesores[0];
     } catch (error) {
-      console.error('Error al verificar credenciales:', error);
+      console.error('Error al obtener datos del profesor:', error);
       throw error;
     }
   },
 
   /**
    * Compara una contraseña plana con el hash almacenado
-   * @param {string} password - Contraseña plana
-   * @param {string} hashedPassword - Hash de la contraseña almacenada
-   * @returns {Promise<boolean>} - true si la contraseña es correcta
    */
   async verificarPassword(password, hashedPassword) {
     // Verificar que ambos argumentos existan
@@ -220,9 +282,6 @@ const authService = {
 
   /**
    * Genera un token JWT para un usuario
-   * @param {number} usuarioId - ID del usuario
-   * @param {string} role - Rol del usuario (alumno, profesor, investigador)
-   * @returns {string} - Token JWT
    */
   generarToken(usuarioId, role) {
     return jwt.sign(
@@ -234,8 +293,6 @@ const authService = {
 
   /**
    * Actualiza la fecha de último acceso de un usuario
-   * @param {number} usuarioId - ID del usuario
-   * @returns {Promise<void>}
    */
   async actualizarUltimoAcceso(usuarioId) {
     try {
@@ -251,8 +308,6 @@ const authService = {
 
   /**
    * Verifica si un token JWT es válido
-   * @param {string} token - Token JWT
-   * @returns {Promise<Object|null>} - Datos del token decodificado o null si no es válido
    */
   async verificarToken(token) {
     try {
@@ -265,9 +320,6 @@ const authService = {
 
   /**
    * Obtiene los datos de un usuario por su ID
-   * @param {number} usuarioId - ID del usuario
-   * @param {string} role - Rol del usuario (alumno, profesor, investigador)
-   * @returns {Promise<Object|null>} - Datos del usuario o null si no existe
    */
   async obtenerUsuarioPorId(usuarioId, role) {
     try {

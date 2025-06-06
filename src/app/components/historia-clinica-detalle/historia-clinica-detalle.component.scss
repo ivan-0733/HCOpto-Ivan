@@ -28,34 +28,31 @@
       }
 
       .estado-badge {
-        font-size: 0.9rem;
-        padding: 4px 12px;
+        display: inline-block;
+        padding: 0.3rem 0.6rem;
         border-radius: 20px;
-        margin-left: $spacing-md;
-        display: inline-flex;
-        align-items: center;
-        white-space: nowrap;
+        font-size: 0.8rem;
+        color: #fff;
+        margin-left: 1rem;
 
-        &.estado-proceso {
-          background-color: rgba($warning, 0.15);
-          color: $warning-dark;
+        &.estado-corregido {
+          background-color: $estado-corregido;
         }
 
         &.estado-revision {
-          background-color: rgba($info, 0.15);
-          color: $info-dark;
+          background-color: $estado-revision;
         }
 
         &.estado-correccion {
-          background-color: rgba($danger, 0.15);
-          // Fix: Don't use darken with CSS variables
-          color: $danger;
+          background-color: $estado-correccion;
         }
 
         &.estado-finalizado {
-          background-color: rgba($success, 0.15);
-          // Fix: Don't use darken with CSS variables
-          color: $success-dark;
+          background-color: $estado-finalizado;
+        }
+
+        &.estado-nuevo {
+          background-color: $estado-nuevo;
         }
       }
     }
@@ -705,11 +702,11 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  
+
   li {
     padding: 2px 0;
     position: relative;
-    
+
     &:before {
       content: "•";
       color: $ipn-guinda;
@@ -746,11 +743,11 @@
   margin-bottom: 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid $border-color;
-  
+
   &:last-child {
     border-bottom: none;
   }
-  
+
   h3 {
     color: $ipn-guinda;
     margin-bottom: 1rem;
@@ -760,7 +757,7 @@
 
 .agudeza-adicional {
   margin-top: 0.5rem;
-  
+
   strong {
     font-weight: $font-weight-medium;
   }
@@ -824,7 +821,7 @@
     box-shadow: none;
     page-break-inside: avoid;
   }
-  
+
   .metodo-grafico-imagen {
     background-color: transparent;
     box-shadow: none;
@@ -847,23 +844,23 @@
 .table-agudeza, .table-lensometria, .table-receta {
   width: 100%;
   border-collapse: collapse;
-  
+
   th, td {
     padding: 8px 12px;
     text-align: left;
     border-bottom: 1px solid $border-color;
   }
-  
+
   th {
     background-color: $bg-gray;
     font-weight: $font-weight-medium;
     color: $text-primary;
   }
-  
+
   tr:last-child td {
     border-bottom: none;
   }
-  
+
   tr:nth-child(even) {
     background-color: rgba($bg-gray, 0.4);
   }
@@ -914,14 +911,14 @@
   margin-bottom: 1rem;
   color: $text-primary;
   border-collapse: collapse;
-  
+
   th, td {
     padding: 0.75rem;
     vertical-align: top;
     border-top: 1px solid $border-color;
     text-align: left;
   }
-  
+
   thead th {
     vertical-align: bottom;
     border-bottom: 2px solid $border-color;
@@ -943,12 +940,12 @@
   list-style: none;
   padding-left: 0;
   margin: 0;
-  
+
   li {
     position: relative;
     padding-left: 1.5rem;
     margin-bottom: 0.25rem;
-    
+
     &:before {
       content: '\f00c';
       font-family: 'Font Awesome 5 Free';

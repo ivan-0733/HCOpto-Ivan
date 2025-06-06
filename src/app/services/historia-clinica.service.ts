@@ -26,10 +26,14 @@ export interface HistoriaClinica {
   GrupoMateria: string;       // Added this property
   PeriodoEscolarID?: number;  // Added this property
 
+  // Información del alumno que creó la historia clínica
   AlumnoNombre: string;
   AlumnoApellidoPaterno: string;
   AlumnoApellidoMaterno: string | null;
+  AlumnoBoleta: string;
+  AlumnoCorreo: string;
 
+  // Información del profesor (para cuando el alumno ve las historias)
   ProfesorNombre: string;
   ProfesorApellidoPaterno: string;
   ProfesorApellidoMaterno: string | null;
@@ -59,7 +63,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   lensometria?: any;
   recetaFinal?: any;
   comentarios?: any[];
-  
+
   // Nuevas propiedades para examen preliminar
   alineacionOcular?: {
     LejosHorizontal?: string;
@@ -68,7 +72,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     CercaVertical?: string;
     MetodoID?: number;
   };
-  
+
   motilidad?: {
     Versiones?: string;
     Ducciones?: string;
@@ -76,14 +80,14 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     Persecucion?: string;
     Fijacion?: string;
   };
-  
+
   exploracionFisica?: {
     OjoDerechoAnexos?: string;
     OjoIzquierdoAnexos?: string;
     OjoDerechoSegmentoAnterior?: string;
     OjoIzquierdoSegmentoAnterior?: string;
   };
-  
+
   viaPupilar?: {
     OjoDerechoDiametro?: number;
     OjoIzquierdoDiametro?: number;
@@ -117,21 +121,21 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     OjoIzquierdoAstigmatismoCorneal?: number;
     OjoDerechoAstigmatismoJaval?: string;
     OjoIzquierdoAstigmatismoJaval?: string;
-    
+
     OjoDerechoRetinoscopiaEsfera?: number;
     OjoDerechoRetinosciopiaCilindro?: number;
     OjoDerechoRetinoscopiaEje?: number;
     OjoIzquierdoRetinoscopiaEsfera?: number;
     OjoIzquierdoRetinosciopiaCilindro?: number;
     OjoIzquierdoRetinoscopiaEje?: number;
-    
+
     OjoDerechoSubjetivoEsfera?: number;
     OjoDerechoSubjetivoCilindro?: number;
     OjoDerechoSubjetivoEje?: number;
     OjoIzquierdoSubjetivoEsfera?: number;
     OjoIzquierdoSubjetivoCilindro?: number;
     OjoIzquierdoSubjetivoEje?: number;
-    
+
     OjoDerechoBalanceBinocularesEsfera?: number;
     OjoDerechoBalanceBinocularesCilindro?: number;
     OjoDerechoBalanceBinocularesEje?: number;
@@ -141,7 +145,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     OjoDerechoAVLejana?: string;
     OjoIzquierdoAVLejana?: string;
   };
-  
+
   subjetivoCerca?: {
     OjoDerechoM?: string;
     OjoIzquierdoM?: string;
@@ -228,7 +232,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoDerechoVisionCromatica?: string;
     ojoIzquierdoVisionCromatica?: string;
   };
-  
+
   tonometria?: {
     metodoAnestesico?: string;
     fecha?: string;
@@ -237,14 +241,14 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoIzquierdo?: number;
     tipoID?: number;
   };
-  
+
   paquimetria?: {
     ojoDerechoCCT?: number;
     ojoIzquierdoCCT?: number;
     ojoDerechoPIOCorregida?: number;
     ojoIzquierdoPIOCorregida?: number;
   };
-  
+
   campimetria?: {
     distancia?: number;
     tamanoColorIndice?: string;
@@ -252,7 +256,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     imagenID?: number;
     imagenBase64?: string;
   };
-  
+
   biomicroscopia?: {
     ojoDerechoPestanas?: string;
     ojoIzquierdoPestanas?: string;
@@ -284,7 +288,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoIzquierdoIris?: string;
     ojoDerechoCristalino?: string;
     ojoIzquierdoCristalino?: string;
-    
+
     // IDs de imagen
     ojoDerechoImagenID?: number;
     ojoIzquierdoImagenID?: number;
@@ -292,7 +296,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoIzquierdoImagenID2?: number;
     ojoDerechoImagenID3?: number;
     ojoIzquierdoImagenID3?: number;
-    
+
     // Base64 de imágenes
     ojoDerechoImagenBase64?: string;
     ojoIzquierdoImagenBase64?: string;
@@ -301,7 +305,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     ojoDerechoImagenBase64_3?: string;
     ojoIzquierdoImagenBase64_3?: string;
   };
-  
+
   oftalmoscopia?: {
     ojoDerechoPapila?: string;
     ojoIzquierdoPapila?: string;
@@ -417,7 +421,7 @@ export class HistoriaClinicaService {
   // Actualizar una sección específica de la historia clínica
   actualizarSeccion(id: number, seccion: string, datos: any): Observable<any> {
     console.log(`Actualizando sección ${seccion} para historia ${id} con datos:`, datos);
-    
+
     return this.http.patch<ApiResponse<any>>(`${this.apiUrl}/${id}/secciones/${seccion}`, datos)
       .pipe(
         map(response => {
@@ -470,16 +474,16 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
     formData.append('imagen', file);
     formData.append('seccionID', seccionID);
     formData.append('tipoImagenID', tipoImagenID);
-    
+
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${historiaId}/imagenes`, formData)
       .pipe(
         map(response => response.data)
       );
   }
-  
+
 
   subirMultiplesImagenes(
-    historiaId: string, 
+    historiaId: string,
     imagenes: Array<{
       file: File;
       seccionID: string;
@@ -488,7 +492,7 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
     }>
   ): Observable<any> {
     const formData = new FormData();
-    
+
     imagenes.forEach((imagen, index) => {
       formData.append(`files[${index}]`, imagen.file);
       formData.append(`secciones[${index}]`, imagen.seccionID);
@@ -506,12 +510,12 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
     if (!imagenId) {
       return throwError(() => new Error('ID de imagen no proporcionado'));
     }
-    
+
     return this.http.get(`${this.apiUrl}/imagenes/${imagenId}`, {
       responseType: 'blob'
     });
   }
-  
+
   // Método para convertir un Blob a base64
   convertirImagenABase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -521,35 +525,35 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
       reader.readAsDataURL(blob);
     });
   }
-  
+
   // Método para obtener una imagen como base64
   obtenerImagenBase64(imageId: number): Observable<string> {
     if (!imageId) {
       return throwError(() => new Error('ID de imagen no proporcionado'));
     }
-  
+
     const url = `${this.apiUrl}/imagenes/${imageId}`;
-    
-    return this.http.get(url, { 
-      responseType: 'blob' 
+
+    return this.http.get(url, {
+      responseType: 'blob'
     }).pipe(
       switchMap(blob => {
         if (!blob || blob.size === 0) {
           return throwError(() => new Error('La respuesta no contiene datos de imagen'));
         }
-  
+
         return new Observable<string>(observer => {
           const reader = new FileReader();
-          
+
           reader.onloadend = () => {
             observer.next(reader.result as string);
             observer.complete();
           };
-          
+
           reader.onerror = error => {
             observer.error(new Error('Error al convertir la imagen a base64: ' + error));
           };
-          
+
           reader.readAsDataURL(blob);
         });
       }),

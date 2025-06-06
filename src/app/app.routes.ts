@@ -50,7 +50,7 @@ export const routes: Routes = [
       }
     ]
   },
-  // Rutas para profesor (por implementar)
+  // ✅ CORREGIDO - Rutas para profesor
   {
     path: 'profesor',
     canActivate: [authGuard],
@@ -58,8 +58,33 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./components/alumno-dashboard/alumno-dashboard.component').then(m => m.AlumnoDashboardComponent),
+        loadComponent: () => import('./components/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent),
         title: 'HCOpto - Dashboard Profesor'
+      },
+      {
+        path: 'historias',
+        loadComponent: () => import('./components/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent),
+        title: 'HCOpto - Historias Clínicas'
+      },
+      {
+        path: 'historias/:id',
+        loadComponent: () => import('./components/historia-clinica-detalle/historia-clinica-detalle.component').then(m => m.HistoriaClinicaDetalleComponent),
+        title: 'HCOpto - Ver Historia Clínica'
+      },
+      {
+        path: 'historias/:id/editar',
+        loadComponent: () => import('./components/historia-clinica-container/historia-clinica-container.component').then(m => m.HistoriaClinicaContainerComponent),
+        title: 'HCOpto - Revisar Historia Clínica'
+      },
+      {
+        path: 'alumnos',
+        loadComponent: () => import('./components/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent),
+        title: 'HCOpto - Mis Alumnos'
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./components/alumno-perfil/alumno-perfil.component').then(m => m.AlumnoPerfilComponent),
+        title: 'HCOpto - Mi Perfil'
       },
       {
         path: '',

@@ -52,9 +52,10 @@
       <!-- Sección de datos generales -->
       <div class="form-section">
         <h3 class="section-title">
-          <i class="material-icons">info</i>
+          <i class="material-icons">assignment</i>
           Información General
         </h3>
+        <div class="section-divider"></div>
 
         <div class="form-group">
           <label for="materiaProfesorID">Materia y Grupo *</label>
@@ -106,15 +107,13 @@
         </div>
       </div>
 
-      <!-- Línea divisoria -->
-    <div class="section-divider"></div>
-
       <!-- Sección de paciente -->
       <div class="form-section">
         <h3 class="section-title">
           <i class="material-icons">person</i>
           Información del Paciente
         </h3>
+        <div class="section-divider"></div>
 
         <!-- Búsqueda de paciente existente -->
         <div class="paciente-search" *ngIf="!pacienteSeleccionado && !isEditing">

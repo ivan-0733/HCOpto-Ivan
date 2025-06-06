@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit, OnDestroy { // Añadir OnDestroy
   error: string = '';
   selectedRole: string = 'alumno';
   currentYear: number = new Date().getFullYear();
+  showPassword = false; // Variable para controlar la visibilidad de la contraseña
 
   constructor(
     private formBuilder: FormBuilder,
@@ -46,6 +47,11 @@ export class LoginComponent implements OnInit, OnDestroy { // Añadir OnDestroy
 
   ngOnDestroy(): void { // Añadir ciclo de vida OnDestroy
     this.themeService.clearTemporaryTheme(); // Restaurar tema original
+  }
+
+  // Método para alternar la visibilidad de la contraseña
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
   }
 
   // Cambiar la estructura del formulario según el rol seleccionado

@@ -17,14 +17,15 @@ import { finalize } from 'rxjs/operators';
 
 export class AntecedenteVisualComponent implements OnInit, OnChanges {
   @Input() historiaId: number | null = null;
-  @Input() hideButtons = false;
   @Output() nextSection = new EventEmitter<void>();
   @Output() datosGuardados = new EventEmitter<any>();
   @Output() formReady = new EventEmitter<any>();
+  @Output() completed = new EventEmitter<boolean>();
 
   agudezaVisual!: FormGroup;
   lensometria!: FormGroup;
   loading = false;
+  submitting = false;
   datosCargados = false;
   error = '';
   success = '';
@@ -46,14 +47,14 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
     if (this.historiaId) {
       this.cargarDatosExistentes();
     }
-    
+
     // Emitir ambos formularios juntos
     this.formReady.emit(this.agudezaVisual);
     this.formReady.emit(this.lensometria);
-    
+
     // Agregar este log para depurar
     console.log('Tipos de lente disponibles:', this.tiposLente);
-    
+
     // Agregar este listener para ver cuándo cambia el valor
     this.lensometria.get('tipoBifocalMultifocalID')?.valueChanges.subscribe(value => {
       console.log('Tipo de lente seleccionado:', value);
@@ -84,7 +85,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       sinRxLejosODDecimal: [''],
       sinRxLejosOIDecimal: [''],
       sinRxLejosAODecimal: [''],
-      
+
       // Con RX Anterior Lejos
       conRxLejosODSnellen: [''],
       conRxLejosOISnellen: [''],
@@ -98,7 +99,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       conRxLejosODDecimal: [''],
       conRxLejosOIDecimal: [''],
       conRxLejosAODecimal: [''],
-      
+
       // Sin RX Cerca
       sinRxCercaODM: [''],
       sinRxCercaOIM: [''],
@@ -109,7 +110,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       sinRxCercaODPuntos: [''],
       sinRxCercaOIPuntos: [''],
       sinRxCercaAOPuntos: [''],
-      
+
       // Con RX Anterior Cerca
       conRxCercaODM: [''],
       conRxCercaOIM: [''],
@@ -120,7 +121,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       conRxCercaODPuntos: [''],
       conRxCercaOIPuntos: [''],
       conRxCercaAOPuntos: [''],
-      
+
       // Capacidad Visual
       capacidadVisualOD: [''],
       capacidadVisualOI: [''],
@@ -145,7 +146,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
 
   prepareAgudezaVisualData(): any[] {
     const formData = this.agudezaVisual.value;
-    
+
     // Crear un array con los diferentes tipos de medición
     // Ya no filtramos elementos vacíos para que siempre se envíen los 5 tipos
     return [
@@ -165,7 +166,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
         ojoIzquierdoMAR: formData.sinRxLejosOIMAR || '',
         ambosOjosMAR: formData.sinRxLejosAOMAR || ''
       },
-      // 2. CON_RX_ANTERIOR_LEJOS 
+      // 2. CON_RX_ANTERIOR_LEJOS
       {
         tipoMedicion: 'CON_RX_ANTERIOR_LEJOS',
         ojoDerechoSnellen: formData.conRxLejosODSnellen || '',
@@ -220,9 +221,9 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
 
   cargarDatosExistentes(): void {
     if (!this.historiaId) return;
-    
+
     this.loading = true;
-    
+
     this.historiaService.obtenerHistoriaClinica(this.historiaId)
       .pipe(finalize(() => {
         this.loading = false;
@@ -234,7 +235,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
             // Process each tipo de medición
             historia.agudezaVisual.forEach((agudeza: any) => {
               const tipoMedicion = agudeza.TipoMedicion || agudeza.tipoMedicion;
-              
+
               if (tipoMedicion === 'SIN_RX_LEJOS') {
                 this.agudezaVisual.patchValue({
                   sinRxLejosODSnellen: agudeza.OjoDerechoSnellen || agudeza.ojoDerechoSnellen || '',
@@ -299,10 +300,10 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
               }
             });
           }
-          
+
           if (historia.lensometria) {
             const lensometriaData = historia.lensometria;
-            
+
             this.lensometria.patchValue({
               ojoDerechoEsfera: lensometriaData.OjoDerechoEsfera || lensometriaData.ojoDerechoEsfera || '',
               ojoDerechoCilindro: lensometriaData.OjoDerechoCilindro || lensometriaData.ojoDerechoCilindro || '',
@@ -316,7 +317,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
               centroOptico: lensometriaData.CentroOptico || lensometriaData.centroOptico || ''
             });
           }
-          
+
           this.datosGuardados.emit(true);
         },
         error: (err) => {
@@ -327,8 +328,50 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
       });
   }
 
-  cancelar(): void {
-    this.datosGuardados.emit(false);
+  guardarAntecedenteVisual(): void {
+    if (!this.historiaId) {
+      this.error = 'ID de historia clínica no válido.';
+      return;
+    }
+
+    this.submitting = true;
+    this.error = '';
+    this.success = '';
+
+    // Preparar datos para enviar
+    const datosAntecedente = {
+      agudezaVisual: this.prepareAgudezaVisualData(),
+      lensometria: this.lensometria.value
+    };
+
+    this.historiaService.actualizarSeccion(
+      this.historiaId,
+      'antecedente-visual',
+      datosAntecedente
+    )
+    .pipe(
+      finalize(() => {
+        this.submitting = false;
+      })
+    )
+    .subscribe({
+      next: () => {
+        this.success = 'Antecedente visual guardado correctamente.';
+        this.completed.emit(true);
+        this.datosGuardados.emit(true);
+
+        // Avanzar a la siguiente sección después de un breve retraso
+        setTimeout(() => {
+          this.nextSection.emit();
+        }, 1500);
+      },
+      error: (error) => {
+        this.error = 'Error al guardar el antecedente visual: ' + (error.message || 'Intente nuevamente');
+        console.error('Error al guardar antecedente visual:', error);
+        this.completed.emit(false);
+        this.datosGuardados.emit(false);
+      }
+    });
   }
 
   getLensometriaData(): any {

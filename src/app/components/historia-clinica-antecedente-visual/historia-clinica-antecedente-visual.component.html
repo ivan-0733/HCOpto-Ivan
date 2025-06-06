@@ -1,26 +1,40 @@
 <div class="antecedente-visual-container">
-  <h2>Antecedente Visual</h2>
-  <p class="info-text">Registre la agudeza visual y lensometría del paciente.</p>
+  <!-- Error state simple -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+  </div>
 
-  <!-- Indicador de carga -->
-  <div *ngIf="loading" class="loading-container">
+  <!-- Success message simple -->
+  <div class="success-message fade-out" *ngIf="success">
+    <i class="fas fa-check-circle"></i>
+    <p>{{ success }}</p>
+  </div>
+
+  <!-- Loading container -->
+  <div class="loading-container" *ngIf="loading">
     <div class="spinner"></div>
     <p>Cargando datos...</p>
   </div>
 
+  <!-- Formulario -->
   <div *ngIf="!loading" class="form-content">
     <!-- Sección de Agudeza Visual -->
     <div class="form-section">
-      <h3>Agudeza Visual</h3>
+      <h3 class="section-title">
+        <i class="material-icons">visibility</i>
+        Agudeza Visual
+      </h3>
+      <div class="section-divider"></div>
+
       <form [formGroup]="agudezaVisual">
         <!-- Medición Sin RX Lejos -->
-        <div class="agudeza-section">
-          <h4>Sin RX Lejos</h4>
+        <div class="agudeza-subsection">
           <div class="table-responsive">
             <table class="table-agudeza">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>Sin RX Lejos</th>
                   <th>OD</th>
                   <th>OI</th>
                   <th>AO</th>
@@ -81,13 +95,12 @@
         </div>
 
         <!-- Medición Con RX Anterior Lejos -->
-        <div class="agudeza-section">
-          <h4>Con RX Anterior Lejos</h4>
+        <div class="agudeza-subsection">
           <div class="table-responsive">
             <table class="table-agudeza">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>Con RX Anterior Lejos</th>
                   <th>OD</th>
                   <th>OI</th>
                   <th>AO</th>
@@ -148,13 +161,12 @@
         </div>
 
         <!-- Medición Sin RX Cerca -->
-        <div class="agudeza-section">
-          <h4>Sin RX Cerca</h4>
+        <div class="agudeza-subsection">
           <div class="table-responsive">
             <table class="table-agudeza">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>Sin RX Cerca</th>
                   <th>OD</th>
                   <th>OI</th>
                   <th>AO</th>
@@ -203,13 +215,12 @@
         </div>
 
         <!-- Medición Con RX Anterior Cerca -->
-        <div class="agudeza-section">
-          <h4>Con RX Anterior Cerca</h4>
+        <div class="agudeza-subsection">
           <div class="table-responsive">
             <table class="table-agudeza">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>Con RX Anterior Cerca</th>
                   <th>OD</th>
                   <th>OI</th>
                   <th>AO</th>
@@ -258,13 +269,12 @@
         </div>
 
         <!-- Capacidad Visual -->
-        <div class="agudeza-section">
-          <h4>Capacidad Visual</h4>
+        <div class="agudeza-subsection">
           <div class="table-responsive">
             <table class="table-agudeza">
               <thead>
                 <tr>
-                  <th></th>
+                  <th>Capacidad Visual</th>
                   <th>OD</th>
                   <th>OI</th>
                   <th>AO</th>
@@ -286,9 +296,10 @@
               </tbody>
             </table>
           </div>
-          <div class="form-group diametro-group">
+
+          <div class="form-group">
             <label for="diametroMM">Diámetro (mm)</label>
-            <input type="number" id="diametroMM" formControlName="diametroMM" class="form-control form-control-xs">
+            <input type="number" id="diametroMM" formControlName="diametroMM" class="form-control">
           </div>
         </div>
       </form>
@@ -296,13 +307,18 @@
 
     <!-- Sección de Lensometría -->
     <div class="form-section">
-      <h3>Lensometría</h3>
+      <h3 class="section-title">
+        <i class="material-icons">settings</i>
+        Lensometría
+      </h3>
+      <div class="section-divider"></div>
+
       <form [formGroup]="lensometria">
         <div class="table-responsive">
           <table class="table-lensometria">
             <thead>
               <tr>
-                <th></th>
+                <th>Lensometría</th>
                 <th>Esfera</th>
                 <th>Cilindro</th>
                 <th>Eje</th>
@@ -312,60 +328,56 @@
               <tr>
                 <td><strong>OD</strong></td>
                 <td>
-                  <input type="text" formControlName="ojoDerechoEsfera" class="form-control form-control-xs">
+                  <input type="text" formControlName="ojoDerechoEsfera" class="form-control">
                 </td>
                 <td>
-                  <input type="text" formControlName="ojoDerechoCilindro" class="form-control form-control-xs">
+                  <input type="text" formControlName="ojoDerechoCilindro" class="form-control">
                 </td>
                 <td>
-                  <input type="number" formControlName="ojoDerechoEje" class="form-control form-control-xs" min="0" max="180">
+                  <input type="number" formControlName="ojoDerechoEje" class="form-control" min="0" max="180">
                 </td>
               </tr>
               <tr>
                 <td><strong>OI</strong></td>
                 <td>
-                  <input type="text" formControlName="ojoIzquierdoEsfera" class="form-control form-control-xs">
+                  <input type="text" formControlName="ojoIzquierdoEsfera" class="form-control">
                 </td>
                 <td>
-                  <input type="text" formControlName="ojoIzquierdoCilindro" class="form-control form-control-xs">
+                  <input type="text" formControlName="ojoIzquierdoCilindro" class="form-control">
                 </td>
                 <td>
-                  <input type="number" formControlName="ojoIzquierdoEje" class="form-control form-control-xs" min="0" max="180">
+                  <input type="number" formControlName="ojoIzquierdoEje" class="form-control" min="0" max="180">
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="lensometria-datos-adicionales">
-          <div class="form-row">
-            <div class="form-group col-md-3">
-              <label for="tipoBifocalMultifocalID">Tipo de Lente</label>
-              <select id="tipoBifocalMultifocalID" formControlName="tipoBifocalMultifocalID" class="form-control form-control-xs">
-                <option [ngValue]="null">Seleccionar tipo</option>
-                <option *ngFor="let tipo of tiposLente" [ngValue]="tipo.ID">{{ tipo.Valor }}</option>
-              </select>
-            </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tipoBifocalMultifocalID">Tipo de Lente</label>
+            <select id="tipoBifocalMultifocalID" formControlName="tipoBifocalMultifocalID" class="form-control">
+              <option [ngValue]="null">Seleccionar tipo</option>
+              <option *ngFor="let tipo of tiposLente" [ngValue]="tipo.ID">{{ tipo.Valor }}</option>
+            </select>
+          </div>
 
-            <div class="form-group col-md-3">
-              <label for="valorADD">ADD</label>
-              <input type="text" id="valorADD" formControlName="valorADD" class="form-control form-control-xs">
-            </div>
-          
-            <div class="form-group col-md-3">
-              <label for="distanciaRango">Distancia/Rango</label>
-              <input type="text" id="distanciaRango" formControlName="distanciaRango" class="form-control form-control-xs">
-            </div>
+          <div class="form-group">
+            <label for="valorADD">ADD</label>
+            <input type="text" id="valorADD" formControlName="valorADD" class="form-control">
+          </div>
 
-            <div class="form-group col-md-3">
-              <label for="centroOptico">Centro Óptico</label>
-              <input type="number" id="centroOptico" formControlName="centroOptico" class="form-control form-control-xs">
-            </div>
+          <div class="form-group">
+            <label for="distanciaRango">Distancia/Rango</label>
+            <input type="text" id="distanciaRango" formControlName="distanciaRango" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="centroOptico">Centro Óptico</label>
+            <input type="number" id="centroOptico" formControlName="centroOptico" class="form-control">
           </div>
         </div>
       </form>
     </div>
-    
-
   </div>
 </div>

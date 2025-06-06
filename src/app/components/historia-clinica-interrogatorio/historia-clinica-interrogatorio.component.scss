@@ -1,168 +1,506 @@
 @import '../../styles/variables';
 
+// Variables para tema oscuro
+$dark-bg-card: #2a2a2a;
+$dark-selected-bg: #1e1e1e;
+$light-selected-bg: #f0f0f0;
+$hover-bg-light: #f0f0f0;
+$hover-bg-dark: #1e1e1e;
+$accent-color-dark: $ipn-guinda;
+$accent-color-dark2: $ipn-guinda-light;
+
+// VARIABLE GLOBAL PARA ESPACIADO CONSISTENTE
+$form-spacing: 1rem;
+
 .interrogatorio-container {
-  max-width: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: $bg-primary;
+  max-width: 1200px;
+}
 
-  h2 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: $ipn-guinda;
-    padding-bottom: 0.5rem;
-    display: inline-block;
+// Header (idéntico al patrón de otros componentes)
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .header-title {
+    h1 {
+      font-size: 1.8rem;
+      color: $ipn-guinda;
+      margin: 0;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 0rem;
+        color: $ipn-guinda;
+      }
+    }
   }
 
-  .info-text {
-    color: #666;
-    margin-bottom: 1.5rem;
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+
+    button {
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: $border-radius;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 0.5rem;
+      }
+
+      &.btn-primary {
+        background-color: $ipn-guinda;
+        color: $ipn-secondary;
+        border: none;
+
+        &:hover {
+          background-color: lighten(#731635,10%);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      &.btn-secondary {
+        background-color: $bg-primary;
+        color: $text-primary;
+        border: 1px solid $border-color;
+
+        &:hover {
+          background-color: $light-selected-bg;
+        }
+      }
+    }
+  }
+}
+
+// Estados de carga, error y éxito (idénticos a otros componentes)
+.loading-container,
+.error-container {
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $text-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
   }
 
-  .error-message, .success-message {
-    padding: 0.75rem 1rem;
-    border-radius: 4px;
+  i {
+    font-size: 3rem;
     margin-bottom: 1rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  button {
+    margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
+  }
+}
+
+.error-container {
+  color: $danger;
+
+  i {
+    color: $danger;
+  }
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: #dff6ea;
+  color: #27ae60;
+  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+
+  i {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.fade-out {
+  animation: fadeOutAnimation 5s forwards;
+}
+
+@keyframes fadeOutAnimation {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+// Botón de reintentar
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.1);
+  }
+}
+
+.section-divider {
+  height: 1px;
+  background-color: $border-color;
+  margin: 0 0 1.1rem 0;
+  border-radius: 2px;
+}
+
+// Contenido del formulario
+.form-content {
+  width: 100%;
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  overflow: hidden;
+  padding-bottom: 0.45rem;  // ← Agrega esta línea
+}
+
+// Secciones del formulario (siguiendo el patrón de perfil)
+.form-section {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  padding: 1.2rem 1.2rem 0rem;
+  overflow: hidden;
+  margin-left: 0rem;
+  margin-bottom: 0rem;
+
+  .section-title {
     display: flex;
     align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $ipn-guinda;
+    margin: 0 0 0.6rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid rgba($ipn-guinda, 0.2);
+
+    i {
+      color: $ipn-guinda;
+      margin-right: 0.75rem;
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Información de texto
+.info-text {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  background-color: rgba(220, 220, 220, 0.25);
+  border-left: 4px solid $ipn-guinda;
+
+  .info-icon {
+    color: $ipn-guinda;
+    margin-right: 0.55rem;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  p {
+    margin: 0;
+    color: $text-primary;
+    line-height: 1.4;
+  }
+}
+
+// Grupos de formulario con espaciado consistente
+.form-group {
+  margin-bottom: $form-spacing;
+  width: 100%;
+
+  label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: $text-primary;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    transition: all 0.2s;
+    color: $text-primary;
+    background-color: $bg-primary;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: $ipn-guinda;
+      box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
+    }
+
+    &.is-invalid {
+      border-color: $danger;
+      background-color: rgba($danger, 0.02);
+    }
+
+    &::placeholder {
+      color: $text-secondary;
+    }
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: none;
+  }
+
+  .invalid-feedback {
+    font-size: 0.85rem;
+    color: $danger;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+
+    &:before {
+      content: "error";
+      font-family: 'Material Icons';
+      margin-right: 0.5rem;
+      font-size: 1rem;
+    }
+  }
+}
+
+// Botones de acción
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-top: 1px solid $border-color;
+  background-color: rgba($ipn-guinda, 0.05);
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: $border-radius;
+    cursor: pointer;
+    transition: all 0.2s;
 
     i {
       margin-right: 0.5rem;
     }
-  }
 
-  .error-message {
-    background-color: #ffebee;
-    color: #d32f2f;
-    border-left: 4px solid #d32f2f;
-  }
+    &.btn-primary {
+      background-color: $ipn-guinda;
+      color: $ipn-secondary;
+      border: none;
 
-  .success-message {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border-left: 4px solid #2e7d32;
-  }
+      &:hover {
+        background-color: lighten(#731635,10%);
+      }
 
-  .loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-radius: 50%;
-      border-top-color: #3f51b5;
-      animation: spin 1s ease-in-out infinite;
-      margin-bottom: 1rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  }
-
-  form {
-    .form-row {
-      margin-bottom: 1.5rem;
-
-      .form-group {
-        width: 100%;
-
-        label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-weight: 500;
-          color: #333;
-        }
-
-        textarea {
-          width: 100%;
-          min-height: 100px;
-          padding: 0.75rem;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          font-size: 1rem;
-          resize: vertical;
-
-          &:focus {
-            outline: none;
-            border-color: #3f51b5;
-            box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
-          }
-
-          &.is-invalid {
-            border-color: #d32f2f;
-          }
-        }
-
-        .invalid-feedback {
-          color: #d32f2f;
-          font-size: 0.875rem;
-          margin-top: 0.25rem;
-        }
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
     }
 
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #eaeaea;
+    &.btn-secondary {
+      background-color: transparent;
+      color: $text-primary;
+      border: 1px solid $border-color;
+
+      &:hover {
+        background-color: $light-selected-bg;
+      }
     }
   }
 }
 
-.btn-primary {
-  background-color: #3f51b5;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #303f9f;
-  }
-
-  &:disabled {
-    background-color: #c5cae9;
-    cursor: not-allowed;
-  }
-
-  .spinner-border {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid white;
-    border-right-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.75s linear infinite;
-    margin-right: 0.5rem;
-    vertical-align: middle;
+// Animación de carga
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.btn-secondary {
-  background-color: #f2f2f2;
-  color: #333;
-  border: 1px solid #ddd;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+// Modo oscuro
+:host-context(.dark-theme) {
+  .interrogatorio-container {
+    background-color: $bg-primary;
+  }
 
-  &:hover {
-    background-color: #e0e0e0;
+  .content-header .header-title h1 {
+    color: $accent-color-dark2;
+
+    i {
+      color: $accent-color-dark2;
+    }
+  }
+
+  .section-divider {
+    height: 2px;
+    background-color: #3a3a3a;
+  }
+
+  .header-actions {
+    .btn-secondary {
+      background-color: $dark-bg-card;
+      color: $text-primary;
+      border-color: $border-color;
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .form-content,
+  .form-section {
+    background-color: $dark-bg-card;
+    border-radius: $border-radius;
+  }
+
+  // Inputs, selects y textareas con fondo consistente
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    background-color: $bg-primary;
+
+    &:focus {
+      border-color: $accent-color-dark2;
+    }
+
+    // Estado de error también con fondo consistente
+    &.is-invalid {
+      border-color: $danger;
+      background-color: $bg-primary;
+    }
+  }
+
+  .success-message {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #6effb2;
+  }
+
+  .info-text {
+    background-color: #3a3a3a;
+    border-left: 4px solid $ipn-guinda;
+
+    .info-icon {
+      color: $accent-color-dark2;
+    }
+  }
+
+  .loading-container,
+  .error-container {
+    background-color: $dark-bg-card;
+
+    .btn-retry {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .section-title i,
+  .section-title,
+  .info-text .info-icon {
+    color: $accent-color-dark2;
+  }
+
+  .form-actions {
+    background-color: rgba($accent-color-dark, 0.1);
+
+    .btn-secondary {
+      background-color: transparent;
+      color: $text-primary;
+      border-color: $border-color;
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+}
+
+// Media queries para responsividad con espaciado consistente
+@media (max-width: 768px) {
+  .content-header {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+
+    .header-actions {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .form-section {
+    padding: 1.2rem 1.2rem 0.05rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: $form-spacing;
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
   }
 }
