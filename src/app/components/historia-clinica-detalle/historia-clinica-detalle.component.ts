@@ -25,6 +25,8 @@ currentTab = 'datos-generales';
 loading = true;
 error = '';
 
+esProfesor = false;
+
 constructor(
   private historiaClinicaService: HistoriaClinicaService,
   private route: ActivatedRoute,

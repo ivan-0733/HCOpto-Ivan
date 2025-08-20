@@ -84,6 +84,15 @@ export class ProfesorService {
       );
   }
 
+  
+// Obtener una historia clínica específica por ID 
+obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
+  return this.http.get<ApiResponse<HistoriaClinica>>(`${this.apiUrl}/historias-clinicas/${id}`)
+    .pipe(
+      map(response => response.data)
+    );
+}
+
   // Obtener estadísticas de historias clínicas
   obtenerEstadisticasHistorias(): Observable<EstadisticasHistorias> {
     return this.http.get<ApiResponse<EstadisticasHistorias>>(`${this.apiUrl}/historias-clinicas/estadisticas`)

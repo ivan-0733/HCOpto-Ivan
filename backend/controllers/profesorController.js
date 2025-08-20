@@ -48,6 +48,30 @@ const profesorController = {
   }),
 
   /**
+ * Obtener una historia clínica específica por ID (desde perspectiva del profesor)
+ */
+obtenerHistoriaClinica: catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const profesorId = req.usuario.ProfesorInfoID;
+
+  console.log(`Profesor Controller: Obteniendo historia clínica ID=${id} para profesorId=${profesorId}`);
+
+  const historia = await historiaClinicaService.obtenerHistoriaClinicaPorIdProfesor(id, profesorId);
+
+  if (!historia) {
+    return res.status(404).json({
+      status: 'error',
+      message: 'Historia clínica no encontrada o no tienes permiso para acceder a ella'
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: historia
+  });
+}),
+
+  /**
    * Obtener estadísticas de historias clínicas del profesor
    */
   obtenerEstadisticasHistorias: catchAsync(async (req, res) => {

@@ -40,3 +40,7 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+#Excluir las carpetas
+uploads/
+backend/uploads/

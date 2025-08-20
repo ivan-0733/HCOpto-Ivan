@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { Router } from '@angular/router';
 
 export interface HistoriaClinica {
   ID: number;
@@ -385,7 +386,7 @@ export interface ApiResponse<T> {
 export class HistoriaClinicaService {
   private apiUrl = `${environment.apiUrl}/historias-clinicas`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router: Router) { }
 
   // Obtener todas las historias clínicas del alumno
   obtenerHistoriasClinicas(): Observable<HistoriaClinica[]> {
@@ -396,12 +397,46 @@ export class HistoriaClinicaService {
   }
 
   // Obtener una historia clínica por su ID
-  obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
+  // Obtener una historia clínica por su ID (detecta automáticamente si es profesor o alumno)
+obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
+  // Detectar si estamos en una ruta de profesor
+  const currentUrl = this.router.url;
+  const esProfesor = currentUrl.includes('/profesor');
+  
+  console.log(`🌐 SERVICE - Obteniendo historia ID: ${id}`);
+  console.log(`🌐 SERVICE - URL actual: ${currentUrl}`);
+  console.log(`🌐 SERVICE - Es profesor: ${esProfesor}`);
+  
+  if (esProfesor) {
+    // Si es profesor, usar el endpoint de profesores
+    const profesorApiUrl = `${environment.apiUrl}/profesores`;
+    const url = `${profesorApiUrl}/historias-clinicas/${id}`;
+    console.log(`🌐 SERVICE - URL para profesor: ${url}`);
+    
+    return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(url)
+      .pipe(
+        map(response => {
+          console.log(`✅ SERVICE - Respuesta recibida:`, response);
+          return response.data;
+        }),
+        catchError(error => {
+          console.error(`❌ SERVICE - Error en request:`, error);
+          return throwError(() => error);
+        })
+      );
+  } else {
+    // Si es alumno, usar el método original
+    console.log(`🌐 SERVICE - URL para alumno: ${this.apiUrl}/${id}`);
     return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(`${this.apiUrl}/${id}`)
       .pipe(
         map(response => response.data)
       );
   }
+}
+
+
+
+  
 
   // Crear una nueva historia clínica
   crearHistoriaClinica(datos: any): Observable<HistoriaClinicaDetalle> {

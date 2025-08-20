@@ -20,7 +20,15 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
               mp.ProfesorInfoID AS ProfesorID,
               m.Nombre AS NombreMateria,
               mp.Grupo AS GrupoMateria,
-              hc.MateriaProfesorID
+              hc.MateriaProfesorID,
+
+              -- Datos del Alumno desde AlumnosInfo
+              a.Nombre AS AlumnoNombre,
+              a.ApellidoPaterno AS AlumnoApellidoPaterno,
+              a.ApellidoMaterno AS AlumnoApellidoMaterno,
+              a.NumeroBoleta AS AlumnoBoleta,
+              ua.CorreoElectronico AS AlumnoCorreo
+
       FROM HistorialesClinicos hc
           JOIN Pacientes p ON hc.PacienteID = p.ID
           JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
@@ -28,6 +36,8 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
           JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
           JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
           JOIN Materias m ON mp.MateriaID = m.ID
+          JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+          JOIN Usuarios ua ON a.UsuarioID = ua.ID
           WHERE hc.AlumnoID = ?
           ORDER BY hc.Fecha DESC`,
       [alumnoId]
@@ -373,24 +383,24 @@ else if (table === 'Recomendaciones' && results.length > 0) {
  */
 async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
   const connection = await db.pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-  
+
     // 1. Crear el paciente si no existe
     let pacienteId;
-  
+
     if (datosHistoria.paciente.id) {
     // Si se proporciona un ID de paciente, verificar que exista
     const [pacientes] = await connection.query(
         'SELECT ID FROM Pacientes WHERE ID = ?',
         [datosHistoria.paciente.id]
     );
-  
+
     if (pacientes.length === 0) {
         throw new Error('El paciente no existe');
     }
-  
+
     pacienteId = datosHistoria.paciente.id;
     } else {
     // Verificar si el paciente ya existe por correo o teléfono
@@ -398,7 +408,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
         'SELECT ID FROM Pacientes WHERE CorreoElectronico = ? OR TelefonoCelular = ?',
         [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
     );
-  
+
     if (pacientesExistentes.length > 0) {
         pacienteId = pacientesExistentes[0].ID;
     } else {
@@ -429,19 +439,19 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
             datosHistoria.paciente.telefono
         ]
         );
-  
+
         pacienteId = resultPaciente.insertId;
     }
     }
-  
+
 
     // 2. Crear el registro de la historia clínica con estado "En proceso"
     const [estadoEnProceso] = await connection.query(
       "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = 'En proceso'"
     );
-    
+
     const estadoId = estadoEnProceso.length > 0 ? estadoEnProceso[0].ID : 43; // 43 como predeterminado si no se encuentra
-    
+
     const [historiaResult] = await connection.query(
       `INSERT INTO HistorialesClinicos (
         PacienteID, AlumnoID, MateriaProfesorID, Fecha, EstadoID,
@@ -455,7 +465,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
         estadoId,
         false,
         datosHistoria.consultorioID,
-        datosHistoria.PeriodoEscolarID || datosHistoria.periodoEscolarID, 
+        datosHistoria.PeriodoEscolarID || datosHistoria.periodoEscolarID,
       ]
     );
 
@@ -488,7 +498,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
       for (const agudeza of secciones.agudezaVisual) {
         await connection.query(
           `INSERT INTO AgudezaVisual (
-            HistorialID, TipoMedicion, 
+            HistorialID, TipoMedicion,
             OjoDerechoSnellen, OjoDerechoMetros, OjoDerechoDecimal, OjoDerechoMAR,
             OjoIzquierdoSnellen, OjoIzquierdoMetros, OjoIzquierdoDecimal, OjoIzquierdoMAR,
             AmbosOjosSnellen, AmbosOjosMetros, AmbosOjosDecimal, AmbosOjosMAR,
@@ -546,7 +556,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           secciones.lensometria.ojoIzquierdoEsfera || null,
           secciones.lensometria.ojoIzquierdoCilindro || null,
           secciones.lensometria.ojoIzquierdoEje || null,
-          secciones.lensometria.tipoBifocalMultifocalID, 
+          secciones.lensometria.tipoBifocalMultifocalID,
           secciones.lensometria.valorADD || null,
           secciones.lensometria.distanciaRango || null,
           secciones.lensometria.centroOptico || null
@@ -592,7 +602,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.exploracionFisica) {
       await connection.query(
         `INSERT INTO ExploracionFisica (
-          HistorialID, OjoDerechoAnexos, OjoIzquierdoAnexos, 
+          HistorialID, OjoDerechoAnexos, OjoIzquierdoAnexos,
           OjoDerechoSegmentoAnterior, OjoIzquierdoSegmentoAnterior
         ) VALUES (?, ?, ?, ?, ?)`,
         [
@@ -614,7 +624,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           OjoIzquierdoFotomotorPresente, OjoIzquierdoConsensualPresente, OjoIzquierdoAcomodativoPresente,
           OjoDerechoFotomotorAusente, OjoDerechoConsensualAusente, OjoDerechoAcomodativoAusente,
           OjoIzquierdoFotomotorAusente, OjoIzquierdoConsensualAusente, OjoIzquierdoAcomodativoAusente,
-          EsIsocoria, EsAnisocoria, RespuestaAcomodacion, PupilasIguales, PupilasRedondas, 
+          EsIsocoria, EsAnisocoria, RespuestaAcomodacion, PupilasIguales, PupilasRedondas,
           RespuestaLuz, DIP, DominanciaOcularID
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -649,7 +659,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.estadoRefractivo) {
       await connection.query(
         `INSERT INTO EstadoRefractivo (
-          HistorialID, OjoDerechoQueratometria, OjoIzquierdoQueratometria, 
+          HistorialID, OjoDerechoQueratometria, OjoIzquierdoQueratometria,
           OjoDerechoAstigmatismoCorneal, OjoIzquierdoAstigmatismoCorneal,
           OjoDerechoAstigmatismoJaval, OjoIzquierdoAstigmatismoJaval,
           OjoDerechoRetinoscopiaEsfera, OjoDerechoRetinosciopiaCilindro, OjoDerechoRetinoscopiaEje,
@@ -754,8 +764,8 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.forias) {
       await connection.query(
         `INSERT INTO Forias (
-          HistorialID, HorizontalesLejos, HorizontalesCerca, 
-          VerticalLejos, VerticalCerca, MetodoMedicionID, 
+          HistorialID, HorizontalesLejos, HorizontalesCerca,
+          VerticalLejos, VerticalCerca, MetodoMedicionID,
           CAACalculada, CAAMedida
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -814,7 +824,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
     if (secciones.metodoGrafico) {
       await connection.query(
         `INSERT INTO MetodoGrafico (
-          HistorialID, IntegracionBinocular, TipoID, 
+          HistorialID, IntegracionBinocular, TipoID,
           VisionEstereoscopica, TipoVisionID, ImagenID
         ) VALUES (?, ?, ?, ?, ?, ?)`,
         [
@@ -895,7 +905,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
       ]
       );
     }
-      
+
     // Detección de Alteraciones - Biomicroscopía
     if (secciones.biomicroscopia) {
       await connection.query(
@@ -910,7 +920,7 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
           OjoDerechoCristalino, OjoIzquierdoCristalino
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          historiaID, 
+          historiaID,
           secciones.biomicroscopia.ojoDerechoPestanas || null,
           secciones.biomicroscopia.ojoIzquierdoPestanas || null,
           secciones.biomicroscopia.ojoDerechoParpadosIndice || null,
@@ -1161,7 +1171,7 @@ try {
       break;
 
   case 'agudezaVisual':
-      //checar si existen 
+      //checar si existen
       const [agudezaVisuals] = await connection.query(
           'SELECT ID FROM agudezaVisual WHERE HistorialID = ?',
           [historiaId]
@@ -1215,7 +1225,7 @@ try {
           'SELECT ID FROM Lensometria WHERE HistorialID = ?',
           [historiaId]
         );
-      
+
         if (lensometrias.length === 0) {
           // Crear nuevo registro de lensometría
           await connection.query(
@@ -1277,7 +1287,7 @@ try {
         vergencias,    // datos para tabla Vergencias
         metodoGrafico  // datos para tabla MetodoGrafico
       } = datos;
-    
+
       // Tabla Binocularidad
       const [binocularidadExiste] = await connection.query(
         'SELECT ID FROM Binocularidad WHERE HistorialID = ?',
@@ -1309,7 +1319,7 @@ try {
             historiaId]
         );
       }
-    
+
       // Tabla Forias
       await connection.query('DELETE FROM Forias WHERE HistorialID = ?', [historiaId]);
       await connection.query(
@@ -1319,7 +1329,7 @@ try {
         [historiaId, forias.HorizontalesLejos, forias.HorizontalesCerca, forias.VerticalLejos, forias.VerticalCerca,
           forias.MetodoMedicionID, forias.CAA, forias.CAACalculada, forias.CAAMedida]
       );
-    
+
       // Tabla Vergencias
       await connection.query('DELETE FROM Vergencias WHERE HistorialID = ?', [historiaId]);
       await connection.query(
@@ -1342,7 +1352,7 @@ try {
           vergencias.InfravergenciasLejosRuptura, vergencias.InfravergenciasLejosRecuperacion,
           vergencias.InfravergenciasCercaRuptura, vergencias.InfravergenciasCercaRecuperacion]
       );
-    
+
       // Tabla MetodoGrafico
       await connection.query('DELETE FROM MetodoGrafico WHERE HistorialID = ?', [historiaId]);
       await connection.query(
@@ -1367,7 +1377,7 @@ try {
     'SELECT ID FROM GridAmsler WHERE HistorialID = ?',
     [historiaId]
   );
-  
+
   if (gridExiste.length === 0) {
     await connection.query(
       `INSERT INTO GridAmsler (
@@ -1408,7 +1418,7 @@ try {
     'SELECT ID FROM Tonometria WHERE HistorialID = ?',
     [historiaId]
   );
-  
+
   if (tonometriaExiste.length === 0) {
     await connection.query(
       `INSERT INTO Tonometria (
@@ -1451,7 +1461,7 @@ try {
     'SELECT ID FROM Paquimetria WHERE HistorialID = ?',
     [historiaId]
   );
-  
+
   if (paquimetriaExiste.length === 0) {
     await connection.query(
       `INSERT INTO Paquimetria (
@@ -1488,7 +1498,7 @@ try {
     'SELECT ID FROM Campimetria WHERE HistorialID = ?',
     [historiaId]
   );
-  
+
   if (campimetriaExiste.length === 0) {
     await connection.query(
       `INSERT INTO Campimetria (
@@ -1525,7 +1535,7 @@ try {
     'SELECT ID FROM Biomicroscopia WHERE HistorialID = ?',
     [historiaId]
   );
-  
+
   if (biomicroscopiaExiste.length === 0) {
     await connection.query(
       `INSERT INTO Biomicroscopia (
@@ -1632,7 +1642,7 @@ try {
     'SELECT ID FROM Oftalmoscopia WHERE HistorialID = ?',
     [historiaId]
   );
-  
+
   if (oftalmoscopiaExiste.length === 0) {
     await connection.query(
       `INSERT INTO Oftalmoscopia (
@@ -1760,7 +1770,7 @@ try {
       );
       }
       break;
-    
+
 case 'recomendaciones':
   // Verificar si ya existen recomendaciones para esta historia
   const [recomendaciones] = await connection.query(
@@ -1783,7 +1793,7 @@ case 'recomendaciones':
     );
   }
   break;
-  
+
   case 'planTratamiento':
       // Verificar si ya existe un plan de tratamiento para esta historia
       const [planes] = await connection.query(
@@ -2005,6 +2015,100 @@ async actualizarMetodoGraficoConImagen(historiaId, imagenId) {
 },
 
 /**
+ * Obtiene estadísticas de historias clínicas por profesor
+ * @param {number} profesorId - ID del profesor
+ * @returns {Promise<Object>} - Estadísticas de historias clínicas del profesor
+ */
+async obtenerEstadisticasPorProfesor(profesorId) {
+  try {
+    // Obtener total de historias y conteo por estado para el profesor
+    const [estadisticas] = await db.query(
+      `SELECT
+          (SELECT COUNT(*)
+          FROM HistorialesClinicos hc2
+          JOIN MateriasProfesor mp2 ON hc2.MateriaProfesorID = mp2.ID
+          WHERE mp2.ProfesorInfoID = ?) AS total,
+          (SELECT COUNT(*)
+          FROM HistorialesClinicos hc3
+          JOIN MateriasProfesor mp3 ON hc3.MateriaProfesorID = mp3.ID
+          WHERE mp3.ProfesorInfoID = ? AND hc3.Archivado = TRUE) AS archivadas,
+          cg.Valor AS estado,
+          COUNT(hc.ID) AS cantidad
+      FROM HistorialesClinicos hc
+      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+      WHERE mp.ProfesorInfoID = ?
+      GROUP BY hc.EstadoID, cg.Valor`,
+      [profesorId, profesorId, profesorId]
+    );
+
+    // Formatear respuesta
+    const total = estadisticas.length > 0 ? estadisticas[0].total : 0;
+    const archivadas = estadisticas.length > 0 ? estadisticas[0].archivadas : 0;
+
+    const porEstado = estadisticas.map(item => ({
+      estado: item.estado,
+      cantidad: item.cantidad
+    }));
+
+    return {
+      total,
+      archivadas,
+      porEstado
+    };
+  } catch (error) {
+    console.error('Error al obtener estadísticas del profesor:', error);
+    throw error;
+  }
+},
+
+/**
+ * Obtiene todas las historias clínicas de los alumnos asignados a un profesor
+ * @param {number} profesorId - ID del profesor (de ProfesoresInfo)
+ * @returns {Promise<Array>} - Lista de historias clínicas de los alumnos del profesor
+ */
+async obtenerHistoriasClinicasPorProfesor(profesorId) {
+  try {
+    const [historias] = await db.query(
+      `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
+              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
+              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
+              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
+              mp.ProfesorInfoID AS ProfesorID,
+              m.Nombre AS NombreMateria,
+              mp.Grupo AS GrupoMateria,
+              hc.MateriaProfesorID,
+
+              -- Datos del Alumno desde AlumnosInfo
+              a.Nombre AS AlumnoNombre,
+              a.ApellidoPaterno AS AlumnoApellidoPaterno,
+              a.ApellidoMaterno AS AlumnoApellidoMaterno,
+              a.NumeroBoleta AS AlumnoBoleta,
+              ua.CorreoElectronico AS AlumnoCorreo
+
+      FROM HistorialesClinicos hc
+          JOIN Pacientes p ON hc.PacienteID = p.ID
+          JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+          JOIN Consultorios c ON hc.ConsultorioID = c.ID
+          JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+          JOIN Materias m ON mp.MateriaID = m.ID
+          JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+          JOIN Usuarios ua ON a.UsuarioID = ua.ID
+          WHERE mp.ProfesorInfoID = ?
+          ORDER BY hc.Fecha DESC`,
+      [profesorId]
+    );
+
+    console.log('Historias clínicas del profesor obtenidas:', historias.length);
+    return historias;
+  } catch (error) {
+    console.error('Error al obtener historias clínicas del profesor:', error);
+    throw error;
+  }
+},
+
+/**
  * Obtiene estadísticas de historias clínicas por alumno
  * @param {number} alumnoId - ID del alumno
  * @returns {Promise<Object>} - Estadísticas de historias clínicas
@@ -2043,6 +2147,344 @@ try {
   console.error('Error al obtener estadísticas:', error);
   throw error;
 }
+},
+
+/**
+ * Obtiene una historia clínica por su ID desde la perspectiva del profesor
+ * Valida que la historia pertenezca a un alumno asignado al profesor
+ * @param {number} id - ID de la historia clínica
+ * @param {number} profesorId - ID del profesor para verificar permisos
+ * @returns {Promise<Object|null>} - Datos de la historia clínica o null si no existe
+ */
+async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
+  try {
+    console.log(`Obteniendo historia ID=${id} para profesorId=${profesorId}`);
+
+    // Primero verificar que la historia existe y el profesor tiene acceso a ella
+    const [verificacion] = await db.query(
+      `SELECT hc.ID 
+      FROM HistorialesClinicos hc
+      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+      WHERE hc.ID = ? AND mp.ProfesorInfoID = ?`,
+      [id, profesorId]
+    );
+
+    if (verificacion.length === 0) {
+      console.log(`Historia no encontrada ID=${id} para profesorId=${profesorId} o sin permisos`);
+      return null;
+    }
+
+    console.log(`✅ Verificación exitosa - Historia ID=${id} existe y profesor ${profesorId} tiene acceso`);
+
+    // Usar la misma lógica que obtenerHistoriaClinicaPorId pero con validación de profesor
+    const [historias] = await db.query(
+      `SELECT
+        hc.ID,
+        hc.Fecha,
+        hc.Archivado,
+        hc.FechaArchivado,
+        hc.EstadoID,
+
+        -- Datos del Paciente
+        p.ID AS PacienteID,
+        p.Nombre AS Nombre,
+        p.ApellidoPaterno AS ApellidoPaterno,
+        p.ApellidoMaterno AS ApellidoMaterno,
+        p.GeneroID,
+        p.Edad,
+        p.EstadoCivilID,
+        p.EscolaridadID,
+        p.Ocupacion,
+        p.DireccionLinea1,
+        p.DireccionLinea2,
+        p.Ciudad,
+        p.EstadoID AS PacienteEstadoID,
+        p.CodigoPostal,
+        p.Pais,
+        p.CorreoElectronico,
+        p.TelefonoCelular,
+        p.Telefono,
+
+        -- Datos del Catálogo
+        cg.Valor AS Estado,
+
+        -- Consultorio y semestre
+        c.Nombre AS Consultorio,
+        pe.Codigo AS PeriodoEscolar,
+
+        -- Datos de la materia y grupo
+        m.Nombre AS NombreMateria,
+        mp.Grupo AS GrupoMateria,
+        mp.ID AS MateriaProfesorID,
+
+        -- Datos del Alumno desde AlumnosInfo
+        a.Nombre AS AlumnoNombre,
+        a.ApellidoPaterno AS AlumnoApellidoPaterno,
+        a.ApellidoMaterno AS AlumnoApellidoMaterno,
+
+        -- Datos del Profesor desde ProfesoresInfo
+        pr.Nombre AS ProfesorNombre,
+        pr.ApellidoPaterno AS ProfesorApellidoPaterno,
+        pr.ApellidoMaterno AS ProfesorApellidoMaterno,
+        pr.ID AS ProfesorID
+
+        FROM HistorialesClinicos hc
+        JOIN Pacientes p ON hc.PacienteID = p.ID
+        JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+        JOIN Consultorios c ON hc.ConsultorioID = c.ID
+        JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+        JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+        JOIN Usuarios ua ON a.UsuarioID = ua.ID
+        JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+        JOIN Materias m ON mp.MateriaID = m.ID
+        JOIN ProfesoresInfo pr ON mp.ProfesorInfoID = pr.ID
+        JOIN Usuarios up ON pr.UsuarioID = up.ID
+
+        WHERE hc.ID = ? AND mp.ProfesorInfoID = ?`,
+      [id, profesorId]
+    );
+
+    if (historias.length === 0) {
+      return null;
+    }
+
+    const historia = historias[0];
+
+    // Reutilizar la misma lógica de fetchRelatedData del método obtenerHistoriaClinicaPorId
+    const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') => {
+  try {
+    const [results] = await db.query(
+      `SELECT * FROM ${table} WHERE ${whereColumn} = ?`,
+      [id]
+    );
+    
+    // Procesamiento especial para ciertas tablas
+    if (table === 'MetodoGrafico' && results.length > 0) {
+      // Normalizar nombres de propiedades del método gráfico
+      historia[fieldName] = {
+        integracionBinocular: results[0].IntegracionBinocular,
+        tipoID: results[0].TipoID,
+        visionEstereoscopica: results[0].VisionEstereoscopica,
+        tipoVisionID: results[0].TipoVisionID,
+        imagenID: results[0].ImagenID
+      };
+    } 
+    // Normalizar GridAmsler
+    else if (table === 'GridAmsler' && results.length > 0) {
+      historia[fieldName] = {
+        numeroCartilla: results[0].NumeroCartilla,
+        ojoDerechoSensibilidadContraste: results[0].OjoDerechoSensibilidadContraste,
+        ojoIzquierdoSensibilidadContraste: results[0].OjoIzquierdoSensibilidadContraste,
+        ojoDerechoVisionCromatica: results[0].OjoDerechoVisionCromatica,
+        ojoIzquierdoVisionCromatica: results[0].OjoIzquierdoVisionCromatica
+      };
+    }
+    // Normalizar Tonometria - CORREGIDO: usar los campos correctos de la BD
+    else if (table === 'Tonometria' && results.length > 0) {
+      historia[fieldName] = {
+        metodoAnestesico: results[0].MetodoAnestesico,
+        fecha: results[0].Fecha,
+        hora: results[0].Hora,
+        ojoDerecho: results[0].OjoDerecho,        // Campo correcto según BD
+        ojoIzquierdo: results[0].OjoIzquierdo,    // Campo correcto según BD
+        tipoID: results[0].TipoID
+      };
+    }
+    // Normalizar Paquimetria
+    else if (table === 'Paquimetria' && results.length > 0) {
+      historia[fieldName] = {
+        ojoDerechoCCT: results[0].OjoDerechoCCT,
+        ojoIzquierdoCCT: results[0].OjoIzquierdoCCT,
+        ojoDerechoPIOCorregida: results[0].OjoDerechoPIOCorregida,
+        ojoIzquierdoPIOCorregida: results[0].OjoIzquierdoPIOCorregida
+      };
+    }
+    // Normalizar Campimetria
+    else if (table === 'Campimetria' && results.length > 0) {
+      historia[fieldName] = {
+        distancia: results[0].Distancia,
+        tamanoColorIndice: results[0].TamanoColorIndice,
+        tamanoColorPuntoFijacion: results[0].TamanoColorPuntoFijacion,
+        imagenID: results[0].ImagenID
+      };
+    }
+    // Normalizar Biomicroscopia
+    else if (table === 'Biomicroscopia' && results.length > 0) {
+      historia[fieldName] = {
+        ojoDerechoPestanas: results[0].OjoDerechoPestanas,
+        ojoIzquierdoPestanas: results[0].OjoIzquierdoPestanas,
+        ojoDerechoParpadosIndice: results[0].OjoDerechoParpadosIndice,
+        ojoIzquierdoParpadosIndice: results[0].OjoIzquierdoParpadosIndice,
+        ojoDerechoBordePalpebral: results[0].OjoDerechoBordePalpebral,
+        ojoIzquierdoBordePalpebral: results[0].OjoIzquierdoBordePalpebral,
+        ojoDerechoLineaGris: results[0].OjoDerechoLineaGris,
+        ojoIzquierdoLineaGris: results[0].OjoIzquierdoLineaGris,
+        ojoDerechoCantoExterno: results[0].OjoDerechoCantoExterno,
+        ojoIzquierdoCantoExterno: results[0].OjoIzquierdoCantoExterno,
+        ojoDerechoCantoInterno: results[0].OjoDerechoCantoInterno,
+        ojoIzquierdoCantoInterno: results[0].OjoIzquierdoCantoInterno,
+        ojoDerechoPuntosLagrimales: results[0].OjoDerechoPuntosLagrimales,
+        ojoIzquierdoPuntosLagrimales: results[0].OjoIzquierdoPuntosLagrimales,
+        ojoDerechoConjuntivaTarsal: results[0].OjoDerechoConjuntivaTarsal,
+        ojoIzquierdoConjuntivaTarsal: results[0].OjoIzquierdoConjuntivaTarsal,
+        ojoDerechoConjuntivaBulbar: results[0].OjoDerechoConjuntivaBulbar,
+        ojoIzquierdoConjuntivaBulbar: results[0].OjoIzquierdoConjuntivaBulbar,
+        ojoDerechoFondoSaco: results[0].OjoDerechoFondoSaco,
+        ojoIzquierdoFondoSaco: results[0].OjoIzquierdoFondoSaco,
+        ojoDerechoLimbo: results[0].OjoDerechoLimbo,
+        ojoIzquierdoLimbo: results[0].OjoIzquierdoLimbo,
+        ojoDerechoCorneaBiomicroscopia: results[0].OjoDerechoCorneaBiomicroscopia,
+        ojoIzquierdoCorneaBiomicroscopia: results[0].OjoIzquierdoCorneaBiomicroscopia,
+        ojoDerechoCamaraAnterior: results[0].OjoDerechoCamaraAnterior,
+        ojoIzquierdoCamaraAnterior: results[0].OjoIzquierdoCamaraAnterior,
+        ojoDerechoIris: results[0].OjoDerechoIris,
+        ojoIzquierdoIris: results[0].OjoIzquierdoIris,
+        ojoDerechoCristalino: results[0].OjoDerechoCristalino,
+        ojoIzquierdoCristalino: results[0].OjoIzquierdoCristalino
+      };
+    }
+    // Normalizar Oftalmoscopia
+    else if (table === 'Oftalmoscopia' && results.length > 0) {
+      historia[fieldName] = {
+        ojoDerechoPapila: results[0].OjoDerechoPapila,
+        ojoIzquierdoPapila: results[0].OjoIzquierdoPapila,
+        ojoDerechoExcavacion: results[0].OjoDerechoExcavacion,
+        ojoIzquierdoExcavacion: results[0].OjoIzquierdoExcavacion,
+        ojoDerechoRadio: results[0].OjoDerechoRadio,
+        ojoIzquierdoRadio: results[0].OjoIzquierdoRadio,
+        ojoDerechoProfundidad: results[0].OjoDerechoProfundidad,
+        ojoIzquierdoProfundidad: results[0].OjoIzquierdoProfundidad,
+        ojoDerechoVasos: results[0].OjoDerechoVasos,
+        ojoIzquierdoVasos: results[0].OjoIzquierdoVasos,
+        ojoDerechoRELAV: results[0].OjoDerechoRELAV,
+        ojoIzquierdoRELAV: results[0].OjoIzquierdoRELAV,
+        ojoDerechoMacula: results[0].OjoDerechoMacula,
+        ojoIzquierdoMacula: results[0].OjoIzquierdoMacula,
+        ojoDerechoReflejo: results[0].OjoDerechoReflejo,
+        ojoIzquierdoReflejo: results[0].OjoIzquierdoReflejo,
+        ojoDerechoRetinaPeriferica: results[0].OjoDerechoRetinaPeriferica,
+        ojoIzquierdoRetinaPeriferica: results[0].OjoIzquierdoRetinaPeriferica,
+        ojoDerechoISNT: results[0].OjoDerechoISNT,
+        ojoIzquierdoISNT: results[0].OjoIzquierdoISNT,
+        ojoDerechoImagenID: results[0].OjoDerechoImagenID,
+        ojoIzquierdoImagenID: results[0].OjoIzquierdoImagenID
+      };
+    }
+    // Normalizar Diagnostico
+    else if (table === 'Diagnostico' && results.length > 0) {
+      historia[fieldName] = {
+        OjoDerechoRefractivo: results[0].OjoDerechoRefractivo,
+        OjoIzquierdoRefractivo: results[0].OjoIzquierdoRefractivo,
+        OjoDerechoPatologico: results[0].OjoDerechoPatologico,
+        OjoIzquierdoPatologico: results[0].OjoIzquierdoPatologico,
+        Binocular: results[0].Binocular,
+        Sensorial: results[0].Sensorial
+      };
+    }
+    // Normalizar PlanTratamiento
+    else if (table === 'PlanTratamiento' && results.length > 0) {
+      historia[fieldName] = {
+        Descripcion: results[0].Descripcion
+      };
+    }
+    // Normalizar Pronostico
+    else if (table === 'Pronostico' && results.length > 0) {
+      historia[fieldName] = {
+        Descripcion: results[0].Descripcion
+      };
+    }
+    // Normalizar Recomendaciones
+    else if (table === 'Recomendaciones' && results.length > 0) {
+      historia[fieldName] = {
+        Descripcion: results[0].Descripcion,
+        ProximaCita: results[0].ProximaCita
+      };
+    }
+    // Para AgudezaVisual que es un array
+    else if (table === 'AgudezaVisual') {
+      historia[fieldName] = results.length > 0 ? results : [];
+    } 
+    // Para todas las demás tablas
+    else {
+      historia[fieldName] = results.length > 0 ? results[0] : null;
+    }
+  } catch (err) {
+    console.error(`Error en ${table}:`, err.message);
+    historia[fieldName] = table === 'AgudezaVisual' ? [] : null;
+  }
+};
+
+// PROMISE.ALL COMPLETO - Reemplazar el Promise.all existente con este:
+await Promise.all([
+  fetchRelatedData('Interrogatorio', 'interrogatorio'),
+  fetchRelatedData('AgudezaVisual', 'agudezaVisual'),
+  fetchRelatedData('Lensometria', 'lensometria'),
+  fetchRelatedData('AlineacionOcular', 'alineacionOcular'),
+  fetchRelatedData('Motilidad', 'motilidad'),
+  fetchRelatedData('ExploracionFisica', 'exploracionFisica'),
+  fetchRelatedData('ViaPupilar', 'viaPupilar'),
+  fetchRelatedData('EstadoRefractivo', 'estadoRefractivo'),
+  fetchRelatedData('SubjetivoCerca', 'subjetivoCerca'),
+  fetchRelatedData('Binocularidad', 'binocularidad'),
+  fetchRelatedData('Forias', 'forias'),
+  fetchRelatedData('Vergencias', 'vergencias'),
+  fetchRelatedData('MetodoGrafico', 'metodoGrafico'),
+  fetchRelatedData('GridAmsler', 'gridAmsler'),
+  fetchRelatedData('Tonometria', 'tonometria'),
+  fetchRelatedData('Paquimetria', 'paquimetria'),
+  fetchRelatedData('Campimetria', 'campimetria'),
+  fetchRelatedData('Biomicroscopia', 'biomicroscopia'),
+  fetchRelatedData('Oftalmoscopia', 'oftalmoscopia'),
+  fetchRelatedData('Diagnostico', 'diagnostico'),
+  fetchRelatedData('PlanTratamiento', 'planTratamiento'),
+  fetchRelatedData('Pronostico', 'pronostico'),
+  fetchRelatedData('Recomendaciones', 'recomendaciones'),
+  fetchRelatedData('RecetaFinal', 'recetaFinal')
+]);
+
+  // SECCIÓN DE COMENTARIOS - Agregar después del Promise.all:
+  // Obtener comentarios y respuestas con manejo de errores
+  try {
+    const [comentarios] = await db.query(
+      `SELECT cp.*, u.NombreUsuario AS ProfesorNombre
+        FROM ComentariosProfesor cp
+        JOIN ProfesoresInfo p ON cp.ProfesorID = p.ID
+        JOIN Usuarios u ON p.UsuarioID = u.ID
+        WHERE cp.HistorialID = ?
+        ORDER BY cp.FechaComentario`,
+      [id]
+    );
+
+    historia.comentarios = await Promise.all(
+      comentarios.map(async (comentario) => {
+        try {
+          const [respuestas] = await db.query(
+            `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
+              FROM RespuestasComentarios rc
+              JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
+              JOIN Usuarios u ON a.UsuarioID = u.ID
+              WHERE rc.ComentarioID = ?
+              ORDER BY rc.FechaRespuesta`,
+            [comentario.ID]
+          );
+          return { ...comentario, respuestas };
+        } catch (err) {
+          console.error('Error obteniendo respuestas:', err.message);
+          return { ...comentario, respuestas: [] };
+        }
+      })
+    );
+  } catch (err) {
+    console.error('Error obteniendo comentarios:', err.message);
+    historia.comentarios = [];
+  }
+  
+  return historia;
+
+  } catch (error) {
+    console.error('Error al obtener historia cli­nica para profesor:', error);
+    throw error;
+  }
 },
 
 /**

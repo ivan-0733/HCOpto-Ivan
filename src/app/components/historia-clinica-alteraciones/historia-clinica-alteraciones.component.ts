@@ -564,33 +564,31 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
   });
 }
 
+  // // Obtener sección ID según el tipo de imagen
+  // private getSeccionIdByImageType(imageType: string): string {
+  //   switch (imageType) {
+  //     case 'campimetria':
+  //       return '9'; // ID de sección Campimetría
+  //     case 'oftalmoscopiaOD':
+  //     case 'oftalmoscopiaOI':
+  //       return '11'; // ID de sección Oftalmoscopía
+  //     default:
+  //       return '7'; // Por defecto
+  //   }
+  // }
 
-
-  // Obtener sección ID según el tipo de imagen
-  private getSeccionIdByImageType(imageType: string): string {
-    switch (imageType) {
-      case 'campimetria':
-        return '9'; // ID de sección Campimetría
-      case 'oftalmoscopiaOD':
-      case 'oftalmoscopiaOI':
-        return '11'; // ID de sección Oftalmoscopía
-      default:
-        return '7'; // Por defecto
-    }
-  }
-
-  // Obtener tipo de imagen ID según el tipo de imagen
-  private getTipoImagenIdByImageType(imageType: string): string {
-    switch (imageType) {
-      case 'campimetria':
-        return '3'; // Tipo Campimetría
-      case 'oftalmoscopiaOD':
-      case 'oftalmoscopiaOI':
-        return '5'; // Tipo Oftalmoscopía
-      default:
-        return '1'; // Por defecto
-    }
-  }
+  // // Obtener tipo de imagen ID según el tipo de imagen
+  // private getTipoImagenIdByImageType(imageType: string): string {
+  //   switch (imageType) {
+  //     case 'campimetria':
+  //       return '3'; // Tipo Campimetría
+  //     case 'oftalmoscopiaOD':
+  //     case 'oftalmoscopiaOI':
+  //       return '5'; // Tipo Oftalmoscopía
+  //     default:
+  //       return '1'; // Por defecto
+  //   }
+  // }
 
   // Actualizar el ID de imagen en el formulario correspondiente
   private actualizarImagenId(imageId: number, imageType: string): void {
@@ -609,29 +607,6 @@ private async subirImagen(imageType: string, file: File): Promise<void> {
   }
 }
 
-  // Obtener nombre de sección por ID
-  private getSeccionNameById(seccionId: string): string {
-    switch (seccionId) {
-      case '7': return 'grid-amsler';
-      case '8': return 'tonometria';
-      case '9': return 'campimetria';
-      case '10': return 'biomicroscopia';
-      case '11': return 'oftalmoscopia';
-      default: return '';
-    }
-  }
-
-  // Obtener formulario por nombre de sección
-  private getFormBySeccionName(seccionName: string): FormGroup {
-    switch (seccionName) {
-      case 'grid-amsler': return this.gridAmslerForm;
-      case 'tonometria': return this.tonometriaForm;
-      case 'campimetria': return this.campimetriaForm;
-      case 'biomicroscopia': return this.biomicroscopiaForm;
-      case 'oftalmoscopia': return this.oftalmoscopiaForm;
-      default: return this.gridAmslerForm; // Valor por defecto
-    }
-  }
 
   private actualizarFormularioConImagen(imageType: string, base64: string | null): void {
     // Determinar qué formulario y qué campo actualizar según el tipo de imagen

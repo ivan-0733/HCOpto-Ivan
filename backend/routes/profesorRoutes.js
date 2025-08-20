@@ -32,4 +32,7 @@ router.get('/todas-materias', profesorController.obtenerTodasMaterias);
 // Ruta para obtener período escolar actual
 router.get('/periodo-actual', profesorController.obtenerPeriodoEscolar);
 
+// Obtener una historia clínica específica por ID
+router.get('/historias-clinicas/:id', authController.verificarAuth, authController.verificarRol('profesor'), profesorController.obtenerHistoriaClinica);
+
 module.exports = router;
