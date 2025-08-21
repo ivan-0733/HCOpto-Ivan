@@ -64,7 +64,7 @@ loadHistoriaClinica(): void {
         if (historia.metodoGrafico && historia.metodoGrafico.imagenID) {
           this.cargarImagenMetodoGrafico(historia.metodoGrafico.imagenID);
         }
-        
+
         // Cargar imágenes de detección de alteraciones
         this.cargarImagenesDeteccionAlteraciones();
       },
@@ -77,7 +77,7 @@ loadHistoriaClinica(): void {
 
 cargarImagenMetodoGrafico(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -86,7 +86,7 @@ cargarImagenMetodoGrafico(imagenID: number): void {
           if (!base64.startsWith('data:image')) {
             base64 = `data:image/png;base64,${base64}`;
           }
-          
+
           // Actualizar la imagen en el objeto
           if (this.historia && this.historia.metodoGrafico) {
             this.historia.metodoGrafico.imagenBase64 = base64;
@@ -114,7 +114,7 @@ getButtonClass(tab: string): string {
 obtenerClaseEstado(estado: string): string {
   switch (estado) {
     case 'En proceso':
-      return 'estado-proceso';
+      return 'estado-corregido';
     case 'Revisión':
       return 'estado-revision';
     case 'Corrección':
@@ -191,7 +191,7 @@ obtenerNombreTipoMedicion(tipoMedicion: string): string {
     'CON_RX_ANTERIOR_CERCA': 'Con RX Anterior Cerca',
     'CAP_VISUAL': 'Capacidad Visual'
   };
-  
+
   return tipos[tipoMedicion] || tipoMedicion;
 }
 
@@ -205,71 +205,71 @@ esMedicionCerca(tipoMedicion: string): boolean {
 
 obtenerTipoLente(tipoID: number | null | undefined): string {
   if (!tipoID) return '-';
-  
+
   const tipos: {[key: number]: string} = {
     1: 'Bifocal',
-    2: 'Multifocal', 
+    2: 'Multifocal',
     3: 'Monocal'
   };
-  
+
   return tipos[tipoID] || '-';
 }
 
 obtenerNombreMetodo(metodoID: number | null | undefined): string {
   if (!metodoID) return '-';
-  
+
   const metodos: {[key: number]: string} = {
     1: 'Pantalleo',
     2: 'Thorrigton',
     3: 'Maddox',
     4: 'Von Graeffe'
   };
-  
+
   return metodos[metodoID] || '-';
 }
 
 
 tieneReflejosOD(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
-  
-  return viaPupilar.OjoDerechoFotomotorPresente || 
-        viaPupilar.OjoDerechoConsensualPresente || 
+
+  return viaPupilar.OjoDerechoFotomotorPresente ||
+        viaPupilar.OjoDerechoConsensualPresente ||
         viaPupilar.OjoDerechoAcomodativoPresente ||
-        viaPupilar.OjoDerechoFotomotorAusente || 
-        viaPupilar.OjoDerechoConsensualAusente || 
+        viaPupilar.OjoDerechoFotomotorAusente ||
+        viaPupilar.OjoDerechoConsensualAusente ||
         viaPupilar.OjoDerechoAcomodativoAusente;
 }
 
 tieneReflejosOI(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
-  
-  return viaPupilar.OjoIzquierdoFotomotorPresente || 
-          viaPupilar.OjoIzquierdoConsensualPresente || 
+
+  return viaPupilar.OjoIzquierdoFotomotorPresente ||
+          viaPupilar.OjoIzquierdoConsensualPresente ||
           viaPupilar.OjoIzquierdoAcomodativoPresente ||
-          viaPupilar.OjoIzquierdoFotomotorAusente || 
-          viaPupilar.OjoIzquierdoConsensualAusente || 
+          viaPupilar.OjoIzquierdoFotomotorAusente ||
+          viaPupilar.OjoIzquierdoConsensualAusente ||
           viaPupilar.OjoIzquierdoAcomodativoAusente;
 }
 
 tieneCaracteristicasPupilares(viaPupilar: any): boolean {
   if (!viaPupilar) return false;
-  
-  return viaPupilar.EsIsocoria || 
-          viaPupilar.EsAnisocoria || 
+
+  return viaPupilar.EsIsocoria ||
+          viaPupilar.EsAnisocoria ||
           viaPupilar.RespuestaAcomodacion ||
-          viaPupilar.PupilasIguales || 
-          viaPupilar.PupilasRedondas || 
+          viaPupilar.PupilasIguales ||
+          viaPupilar.PupilasRedondas ||
           viaPupilar.RespuestaLuz;
 }
 
 obtenerDominanciaOcular(dominanciaID: number | null | undefined): string {
   if (!dominanciaID) return 'No especificada';
-  
+
   const dominancias: {[key: number]: string} = {
     29: 'Ojo Derecho (OD)',
     30: 'Ojo Izquierdo (OI)'
   };
-  
+
   return dominancias[dominanciaID] || 'Desconocida';
 }
 
@@ -291,20 +291,20 @@ formatearGrados(grados: any): string {
 
 verificarSubjetivoCerca(): boolean {
   if (!this.historia || !this.historia.subjetivoCerca) return false;
-  
+
   const subjetivoCerca = this.historia.subjetivoCerca;
   return !!(
-    subjetivoCerca.OjoDerechoM || 
-    subjetivoCerca.OjoIzquierdoM || 
+    subjetivoCerca.OjoDerechoM ||
+    subjetivoCerca.OjoIzquierdoM ||
     subjetivoCerca.AmbosOjosM ||
-    subjetivoCerca.OjoDerechoJacger || 
-    subjetivoCerca.OjoIzquierdoJacger || 
+    subjetivoCerca.OjoDerechoJacger ||
+    subjetivoCerca.OjoIzquierdoJacger ||
     subjetivoCerca.AmbosOjosJacger ||
-    subjetivoCerca.OjoDerechoPuntos || 
-    subjetivoCerca.OjoIzquierdoPuntos || 
+    subjetivoCerca.OjoDerechoPuntos ||
+    subjetivoCerca.OjoIzquierdoPuntos ||
     subjetivoCerca.AmbosOjosPuntos ||
-    subjetivoCerca.OjoDerechoSnellen || 
-    subjetivoCerca.OjoIzquierdoSnellen || 
+    subjetivoCerca.OjoDerechoSnellen ||
+    subjetivoCerca.OjoIzquierdoSnellen ||
     subjetivoCerca.AmbosOjosSnellen ||
     subjetivoCerca.ValorADD ||
     subjetivoCerca.AV ||
@@ -316,7 +316,7 @@ verificarSubjetivoCerca(): boolean {
 // Verifica si existen datos de binocularidad
 tieneDatosBinocularidad(): boolean {
   if (!this.historia) return false;
-  
+
   // Función auxiliar para verificar si un valor tiene datos significativos
   const tieneValor = (val: any): boolean => {
     if (val === null || val === undefined) return false;
@@ -328,19 +328,19 @@ tieneDatosBinocularidad(): boolean {
 
   // Verificar datos en binocularidad
   const hasBinocularidadData = !!(
-    this.historia.binocularidad && 
+    this.historia.binocularidad &&
     Object.values(this.historia.binocularidad).some(tieneValor)
   );
 
   // Verificar datos en forias
   const hasForiasData = !!(
-    this.historia.forias && 
+    this.historia.forias &&
     Object.values(this.historia.forias).some(tieneValor)
   );
 
   // Verificar datos en vergencias
   const hasVergenciasData = !!(
-    this.historia.vergencias && 
+    this.historia.vergencias &&
     Object.values(this.historia.vergencias).some(tieneValor)
   );
 
@@ -359,26 +359,26 @@ tieneDatosBinocularidad(): boolean {
 // Obtiene el nombre del método de medición para forias
 obtenerTipoTest(tipoID: number | null | undefined): string {
   if (!tipoID) return '-';
-  
+
   const tipos: {[key: number]: string} = {
     35: 'Pola Mirror',
     36: 'Otro',
     37: 'P. de Worth'
   };
-  
+
   return tipos[tipoID] || '-';
 }
 
 // Obtiene el tipo de visión estereoscópica
 obtenerTipoVision(tipoVisionID: number | null | undefined): string {
   if (!tipoVisionID) return '-';
-  
+
   const tiposVision: {[key: number]: string} = {
     38: 'Titmus',
     39: 'Random',
     40: 'Otro'
   };
-  
+
   return tiposVision[tipoVisionID] || '-';
 }
 
@@ -391,7 +391,7 @@ obtenerUrlImagen(imagenID: number | null | undefined): string {
 // método para cargar la imagen en base64
 cargarImagenBase64(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -402,7 +402,7 @@ cargarImagenBase64(imagenID: number): void {
           if (this.historia && !this.historia.metodoGrafico) {
             this.historia.metodoGrafico = {};
           }
-          
+
           if (this.historia && this.historia.metodoGrafico) {
             this.historia.metodoGrafico.imagenBase64 = base64;
             console.log('Imagen cargada correctamente en base64');
@@ -419,19 +419,19 @@ cargarImagenBase64(imagenID: number): void {
 
 onImageError(event: Event): void {
   const imgElement = event.target as HTMLImageElement;
-  
+
   // Marcar como error
   imgElement.classList.add('image-error');
-  
+
   // Cambiar a una imagen de placeholder
   imgElement.src = 'assets/images/image-not-found.png';
-  
+
   // Actualizar el caption
   const caption = imgElement.nextElementSibling;
   if (caption && caption.classList.contains('image-caption')) {
     caption.textContent = 'Error al cargar la imagen';
   }
-  
+
   console.error('Error al cargar la imagen desde URL');
 }
 
@@ -450,7 +450,7 @@ private getBlobAsBase64(url: string): Promise<string> {
 
 recargarImagen(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.loading = true;
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .pipe(finalize(() => this.loading = false))
@@ -469,13 +469,13 @@ recargarImagen(imagenID: number): void {
 // Helper method to check if amplitud acomodacion has any data
 tieneDatosAmplitudAcomodacion(binocularidad: any): boolean {
   if (!binocularidad) return false;
-  
+
   return !!(
-    binocularidad.ojoDerechoAmpAcomCm || 
-    binocularidad.ojoDerechoAmpAcomD || 
-    binocularidad.ojoIzquierdoAmpAcomCm || 
-    binocularidad.ojoIzquierdoAmpAcomD || 
-    binocularidad.ambosOjosAmpAcomCm || 
+    binocularidad.ojoDerechoAmpAcomCm ||
+    binocularidad.ojoDerechoAmpAcomD ||
+    binocularidad.ojoIzquierdoAmpAcomCm ||
+    binocularidad.ojoIzquierdoAmpAcomD ||
+    binocularidad.ambosOjosAmpAcomCm ||
     binocularidad.ambosOjosAmpAcomD
   );
 }
@@ -483,13 +483,13 @@ tieneDatosAmplitudAcomodacion(binocularidad: any): boolean {
 // Helper method to check if vergencias positivas has any data
 tieneDatosVergenciasPositivas(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.positivasLejosBorroso || 
-    vergencias.positivasLejosRuptura || 
-    vergencias.positivasLejosRecuperacion || 
-    vergencias.positivasCercaBorroso || 
-    vergencias.positivasCercaRuptura || 
+    vergencias.positivasLejosBorroso ||
+    vergencias.positivasLejosRuptura ||
+    vergencias.positivasLejosRecuperacion ||
+    vergencias.positivasCercaBorroso ||
+    vergencias.positivasCercaRuptura ||
     vergencias.positivasCercaRecuperacion
   );
 }
@@ -497,13 +497,13 @@ tieneDatosVergenciasPositivas(vergencias: any): boolean {
 // Helper method to check if vergencias negativas has any data
 tieneDatosVergenciasNegativas(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.negativasLejosBorroso || 
-    vergencias.negativasLejosRuptura || 
-    vergencias.negativasLejosRecuperacion || 
-    vergencias.negativasCercaBorroso || 
-    vergencias.negativasCercaRuptura || 
+    vergencias.negativasLejosBorroso ||
+    vergencias.negativasLejosRuptura ||
+    vergencias.negativasLejosRecuperacion ||
+    vergencias.negativasCercaBorroso ||
+    vergencias.negativasCercaRuptura ||
     vergencias.negativasCercaRecuperacion
   );
 }
@@ -511,18 +511,18 @@ tieneDatosVergenciasNegativas(vergencias: any): boolean {
 // Helper method to check if vergencias verticales has any data
 tieneDatosVergenciasVerticales(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return this.tieneDatosSupravergencias(vergencias) || this.tieneDatosInfravergencias(vergencias);
 }
 
 // Helper method to check if supravergencias has any data
 tieneDatosSupravergencias(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.supravergenciasLejosRuptura || 
-    vergencias.supravergenciasLejosRecuperacion || 
-    vergencias.supravergenciasCercaRuptura || 
+    vergencias.supravergenciasLejosRuptura ||
+    vergencias.supravergenciasLejosRecuperacion ||
+    vergencias.supravergenciasCercaRuptura ||
     vergencias.supravergenciasCercaRecuperacion
   );
 }
@@ -530,11 +530,11 @@ tieneDatosSupravergencias(vergencias: any): boolean {
 // Helper method to check if infravergencias has any data
 tieneDatosInfravergencias(vergencias: any): boolean {
   if (!vergencias) return false;
-  
+
   return !!(
-    vergencias.infravergenciasLejosRuptura || 
-    vergencias.infravergenciasLejosRecuperacion || 
-    vergencias.infravergenciasCercaRuptura || 
+    vergencias.infravergenciasLejosRuptura ||
+    vergencias.infravergenciasLejosRecuperacion ||
+    vergencias.infravergenciasCercaRuptura ||
     vergencias.infravergenciasCercaRecuperacion
   );
 }
@@ -542,7 +542,7 @@ tieneDatosInfravergencias(vergencias: any): boolean {
 // Verificar si hay datos de detección de alteraciones
 tieneDatosAlteraciones(): boolean {
   if (!this.historia) return false;
-  
+
   // Función auxiliar para verificar si un valor tiene datos significativos
   const tieneValor = (val: any): boolean => {
     if (val === null || val === undefined) return false;
@@ -554,19 +554,19 @@ tieneDatosAlteraciones(): boolean {
 
   // Verificar datos en Grid de Amsler
   const hasGridAmslerData = !!(
-    this.historia.gridAmsler && 
+    this.historia.gridAmsler &&
     Object.values(this.historia.gridAmsler).some(tieneValor)
   );
 
   // Verificar datos en Tonometría
   const hasTonometriaData = !!(
-    this.historia.tonometria && 
+    this.historia.tonometria &&
     Object.values(this.historia.tonometria).some(tieneValor)
   );
 
   // Verificar datos en Paquimetría
   const hasPaquimetriaData = !!(
-    this.historia.paquimetria && 
+    this.historia.paquimetria &&
     Object.values(this.historia.paquimetria).some(tieneValor)
   );
 
@@ -581,7 +581,7 @@ tieneDatosAlteraciones(): boolean {
 
   // Verificar datos en Biomicroscopía
   const hasBiomicroscopiaData = !!(
-    this.historia.biomicroscopia && 
+    this.historia.biomicroscopia &&
     Object.values(this.historia.biomicroscopia).some(tieneValor)
   );
 
@@ -602,7 +602,7 @@ tieneDatosAlteraciones(): boolean {
 // Verificar si hay datos de diagnóstico
 tieneDatosDiagnostico(): boolean {
   if (!this.historia) return false;
-  
+
   // Función auxiliar para verificar si un valor tiene datos significativos
   const tieneValor = (val: any): boolean => {
     if (val === null || val === undefined) return false;
@@ -614,25 +614,25 @@ tieneDatosDiagnostico(): boolean {
 
   // Verificar datos en Diagnóstico
   const hasDiagnosticoData = !!(
-    this.historia.diagnostico && 
+    this.historia.diagnostico &&
     Object.values(this.historia.diagnostico).some(tieneValor)
   );
 
   // Verificar datos en Plan de Tratamiento
   const hasPlanTratamientoData = !!(
-    this.historia.planTratamiento && 
+    this.historia.planTratamiento &&
     Object.values(this.historia.planTratamiento).some(tieneValor)
   );
 
   // Verificar datos en Pronóstico
   const hasPronosticoData = !!(
-    this.historia.pronostico && 
+    this.historia.pronostico &&
     Object.values(this.historia.pronostico).some(tieneValor)
   );
 
   // Verificar datos en Recomendaciones
   const hasRecomendacionesData = !!(
-    this.historia.recomendaciones && 
+    this.historia.recomendaciones &&
     Object.values(this.historia.recomendaciones).some(tieneValor)
   );
 
@@ -642,30 +642,30 @@ tieneDatosDiagnostico(): boolean {
 // Obtener el tipo de tonometría según el ID
 obtenerTipoTonometria(tipoID: number | null | undefined): string {
   if (!tipoID) return 'No especificado';
-  
+
   const tipos: {[key: number]: string} = {
     31: 'Aplanación',
     32: 'Identación',
     33: 'Aire'
   };
-  
+
   return tipos[tipoID] || 'Desconocido';
 }
 
 // Método para cargar imágenes desde el servidor
 cargarImagenesDeteccionAlteraciones(): void {
   if (!this.historia) return;
-  
+
   // Cargar imagen de campimetría si hay ID pero no base64
   if (this.historia.campimetria?.imagenID && !this.historia.campimetria?.imagenBase64) {
     this.cargarImagenCampimetria(this.historia.campimetria.imagenID);
   }
-  
+
   // Cargar imágenes de oftalmoscopía si hay IDs pero no base64
   if (this.historia.oftalmoscopia?.ojoDerechoImagenID && !this.historia.oftalmoscopia?.ojoDerechoImagenBase64) {
     this.cargarImagenOftalmoscopiaOD(this.historia.oftalmoscopia.ojoDerechoImagenID);
   }
-  
+
   if (this.historia.oftalmoscopia?.ojoIzquierdoImagenID && !this.historia.oftalmoscopia?.ojoIzquierdoImagenBase64) {
     this.cargarImagenOftalmoscopiaOI(this.historia.oftalmoscopia.ojoIzquierdoImagenID);
   }
@@ -674,7 +674,7 @@ cargarImagenesDeteccionAlteraciones(): void {
 // Método para cargar la imagen de campimetría
 cargarImagenCampimetria(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -683,7 +683,7 @@ cargarImagenCampimetria(imagenID: number): void {
           if (!base64.startsWith('data:image')) {
             base64 = `data:image/png;base64,${base64}`;
           }
-          
+
           // Actualizar en el objeto historia
           if (this.historia && this.historia.campimetria) {
             this.historia.campimetria.imagenBase64 = base64;
@@ -702,7 +702,7 @@ cargarImagenCampimetria(imagenID: number): void {
 // Método para cargar la imagen de oftalmoscopía OD
 cargarImagenOftalmoscopiaOD(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -711,7 +711,7 @@ cargarImagenOftalmoscopiaOD(imagenID: number): void {
           if (!base64.startsWith('data:image')) {
             base64 = `data:image/png;base64,${base64}`;
           }
-          
+
           // Actualizar en el objeto historia
           if (this.historia && this.historia.oftalmoscopia) {
             this.historia.oftalmoscopia.ojoDerechoImagenBase64 = base64;
@@ -730,7 +730,7 @@ cargarImagenOftalmoscopiaOD(imagenID: number): void {
 // Método para cargar la imagen de oftalmoscopía OI
 cargarImagenOftalmoscopiaOI(imagenID: number): void {
   if (!imagenID) return;
-  
+
   this.historiaClinicaService.obtenerImagenBase64(imagenID)
     .subscribe({
       next: (base64) => {
@@ -739,7 +739,7 @@ cargarImagenOftalmoscopiaOI(imagenID: number): void {
           if (!base64.startsWith('data:image')) {
             base64 = `data:image/png;base64,${base64}`;
           }
-          
+
           // Actualizar en el objeto historia
           if (this.historia && this.historia.oftalmoscopia) {
             this.historia.oftalmoscopia.ojoIzquierdoImagenBase64 = base64;
