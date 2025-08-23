@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, HostListener } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, HostListener, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormGroup, Validators } from '@angular/forms';
@@ -39,7 +39,7 @@ RecetaFinalComponent
 ]
 })
 
-export class HistoriaClinicaContainerComponent implements OnInit, AfterViewInit {
+export class HistoriaClinicaContainerComponent implements OnInit, AfterViewInit, OnDestroy {
 // ViewChild para acceder al contenedor de tabs
 @ViewChild('tabsContainer') tabsContainer!: ElementRef<HTMLDivElement>;
 
@@ -169,22 +169,40 @@ formValues: {[key: string]: any} = {
 constructor(
 private route: ActivatedRoute,
 private router: Router,
-private historiaClinicaService: HistoriaClinicaService
+private historiaClinicaService: HistoriaClinicaService,
+private changeDetectorRef: ChangeDetectorRef
 ) { }
 
 ngOnInit(): void {
-this.route.params.subscribe(params => {
-  if (params['id']) {
-    this.historiaId = +params['id'];
-    this.isNewHistoria = false;
-    this.title = `Editar Historia Clínica #${this.historiaId}`;
-    this.loadHistoriaStatus();
-  } else {
-    // Caso de nueva historia
-    this.isNewHistoria = true;
-    this.currentSection = 'datos-generales';
-  }
-});
+  this.route.params.subscribe(params => {
+    if (params['id']) {
+      this.historiaId = +params['id'];
+      this.isNewHistoria = false;
+      this.title = `Editar Historia Clínica #${this.historiaId}`;
+
+      // Intentar recuperar estado guardado localmente primero
+      const statusKey = `historia_${this.historiaId}_status`;
+      const savedStatus = localStorage.getItem(statusKey);
+
+      if (savedStatus) {
+        try {
+          this.sectionStatus = JSON.parse(savedStatus);
+          console.log('Estado recuperado de localStorage:', this.sectionStatus);
+        } catch (e) {
+          console.error('Error al recuperar estado guardado:', e);
+        }
+      }
+
+      // Luego cargar del servidor para actualizar
+      this.loadHistoriaStatus();
+    } else {
+      // Caso de nueva historia
+      this.isNewHistoria = true;
+      this.currentSection = 'datos-generales';
+      // Inicializar el estado de las secciones para nueva historia
+      this.initializeNewHistoriaStatus();
+    }
+  });
 }
 
 // Método para recibir el formulario de datos generales y restaurar sus valores si existen
@@ -368,6 +386,24 @@ onAntecedenteVisualFormReady(form: FormGroup): void {
   }
 }
 
+// Método para inicializar el estado de secciones para nueva historia clínica
+private initializeNewHistoriaStatus(): void {
+  // Inicializar todas las secciones como no completadas
+  this.sectionStatus = {
+    'datos-generales': false,
+    'interrogatorio': false,
+    'antecedente-visual': false,
+    'examen-preliminar': false,
+    'estado-refractivo': false,
+    'binocularidad': false,
+    'deteccion-alteraciones': false,
+    'diagnostico': false,
+    'receta': false
+  };
+
+  console.log('Estado de secciones inicializado para nueva historia:', this.sectionStatus);
+}
+
 // Métodos para recibir los formularios de examen preliminar
 onExamenPreliminarFormReady(form: FormGroup): void {
 // Verificar el tipo de formulario recibido analizando sus controles
@@ -460,6 +496,24 @@ else if (form.contains('valorADD')) {
     this.formValues['subjetivo-cerca'] = values;
   });
 }
+}
+
+ngOnDestroy(): void {
+  // Limpiar suscripciones
+  if (this.scrollSub) {
+    this.scrollSub.unsubscribe();
+  }
+  if (this.resizeSub) {
+    this.resizeSub.unsubscribe();
+  }
+
+  // Opcional: Limpiar localStorage si la historia está completa
+  // o si el usuario lo prefiere
+  if (this.historiaId && this.calculateProgress() === 100) {
+    const statusKey = `historia_${this.historiaId}_status`;
+    localStorage.removeItem(statusKey);
+    console.log('Estado de progreso limpiado del localStorage');
+  }
 }
 
 // Métodos para recibir los formularios de binocularidad
@@ -1139,26 +1193,26 @@ crearNuevaHistoria(): void {
   const secciones = {
     interrogatorio: this.formValues['interrogatorio'],
     // Estructurar agudeza visual correctamente
-    agudezaVisual: this.formValues['agudeza-visual'] ? 
+    agudezaVisual: this.formValues['agudeza-visual'] ?
     this.convertirFormDataAAgudezaVisual(this.formValues['agudeza-visual']) : [],
     lensometria: this.formValues['lensometria'],
-    
+
     // Examen preliminar
     alineacionOcular: this.formValues['alineacion-ocular'],
     motilidad: this.formValues['motilidad'],
     exploracionFisica: this.formValues['exploracion-fisica'],
     viaPupilar: this.formValues['via-pupilar'],
-    
+
     // Estado refractivo
     estadoRefractivo: this.formValues['estado-refractivo'],
     subjetivoCerca: this.formValues['subjetivo-cerca'],
-    
+
     // Binocularidad - eliminamos imagenBase64 para evitar envío de datos grandes
     binocularidad: this.formValues['binocularidad'],
     forias: this.formValues['forias'],
     vergencias: this.formValues['vergencias'],
     metodoGrafico: { ...this.formValues['metodo-grafico'] },
-    
+
     // Detección de alteraciones
     gridAmsler: this.formValues['grid-amsler'],
     tonometria: this.formValues['tonometria'],
@@ -1166,7 +1220,7 @@ crearNuevaHistoria(): void {
     campimetria: this.formValues['campimetria'],
     biomicroscopia: this.formValues['biomicroscopia'],
     oftalmoscopia: this.formValues['oftalmoscopia'],
-    
+
     // Diagnostico y receta
     diagnostico: this.formValues['diagnostico'],
     planTratamiento: this.formValues['plan-tratamiento'],
@@ -1199,13 +1253,13 @@ crearNuevaHistoria(): void {
         if (newHistoriaId) {
           this.onHistoriaCreated(newHistoriaId);
           this.success = 'Historia clínica creada correctamente.';
-          
+
           // Marcar todas las secciones enviadas como completadas
           for (const seccionKey in secciones) {
             if (
-              Object.prototype.hasOwnProperty.call(secciones, seccionKey) && 
-              secciones[seccionKey as keyof typeof secciones] && 
-              typeof secciones[seccionKey as keyof typeof secciones] === 'object' && 
+              Object.prototype.hasOwnProperty.call(secciones, seccionKey) &&
+              secciones[seccionKey as keyof typeof secciones] &&
+              typeof secciones[seccionKey as keyof typeof secciones] === 'object' &&
               Object.keys(secciones[seccionKey as keyof typeof secciones]).length > 0
             ) {
               // Convertir nombre de sección a formato de sectionStatus
@@ -1215,16 +1269,16 @@ crearNuevaHistoria(): void {
               }
             }
           }
-          
+
           // Ahora subir las imágenes si existen
           const promesasImagenes: Promise<void>[] = [];
-          
+
           // Subir imagen de método gráfico si existe
           if (imagenesBase64.metodoGrafico) {
             promesasImagenes.push(
               this.uploadBase64Image(
-                newHistoriaId, 
-                imagenesBase64.metodoGrafico, 
+                newHistoriaId,
+                imagenesBase64.metodoGrafico,
                 '12',  // Section ID for binocularidad
                 '2'    // Image type ID for metodo grafico
               ).then(imageId => {
@@ -1259,8 +1313,8 @@ crearNuevaHistoria(): void {
           if (imagenesBase64.campimetria) {
           promesasImagenes.push(
             this.uploadBase64Image(
-              newHistoriaId, 
-              imagenesBase64.campimetria, 
+              newHistoriaId,
+              imagenesBase64.campimetria,
               '9',  // Section ID for campimetría
               '3'   // Image type ID for campimetría
             ).then(imageId => {
@@ -1268,7 +1322,7 @@ crearNuevaHistoria(): void {
                 // Actualizar la sección con el nuevo ID de imagen
                 return new Promise<void>((resolve) => {
                   this.historiaClinicaService.actualizarSeccion(
-                    newHistoriaId, 
+                    newHistoriaId,
                     'campimetria',
                     {
                       ...this.formValues['campimetria'],
@@ -1295,8 +1349,8 @@ crearNuevaHistoria(): void {
         if (imagenesBase64.oftalmoscopiaOD) {
         promesasImagenes.push(
           this.uploadBase64Image(
-            newHistoriaId, 
-            imagenesBase64.oftalmoscopiaOD, 
+            newHistoriaId,
+            imagenesBase64.oftalmoscopiaOD,
             '11',  // Section ID for oftalmoscopía
             '5',   // Image type ID for oftalmoscopía
             true   // Es ojo derecho
@@ -1309,7 +1363,7 @@ crearNuevaHistoria(): void {
                   ojoDerechoImagenID: imageId,
                   ojoDerechoImagenBase64: undefined
                 };
-                
+
                 this.historiaClinicaService.actualizarSeccion(
                   newHistoriaId,
                   'oftalmoscopia',
@@ -1334,8 +1388,8 @@ crearNuevaHistoria(): void {
         if (imagenesBase64.oftalmoscopiaOI) {
         promesasImagenes.push(
           this.uploadBase64Image(
-            newHistoriaId, 
-            imagenesBase64.oftalmoscopiaOI, 
+            newHistoriaId,
+            imagenesBase64.oftalmoscopiaOI,
             '11',  // Section ID for oftalmoscopía
             '5',   // Image type ID for oftalmoscopía
             false  // Es ojo izquierdo
@@ -1348,7 +1402,7 @@ crearNuevaHistoria(): void {
                   ojoIzquierdoImagenID: imageId,
                   ojoIzquierdoImagenBase64: undefined
                 };
-                
+
                 this.historiaClinicaService.actualizarSeccion(
                   newHistoriaId,
                   'oftalmoscopia',
@@ -1369,7 +1423,7 @@ crearNuevaHistoria(): void {
           })
         );
       }
-          
+
         Promise.all(promesasImagenes)
         .then(() => {
           console.log('Todas las imágenes procesadas correctamente');
@@ -1466,7 +1520,7 @@ this.historiaClinicaService.actualizarSeccion(this.historiaId, 'datos-generales'
             this.sectionStatus['datos-generales'] = true;
 
             setTimeout(() => {
-            if (this.historiaId) { 
+            if (this.historiaId) {
               this.router.navigate(['/alumno/historias', this.historiaId], { replaceUrl: true });
             }
           }, 3000);
@@ -2205,25 +2259,45 @@ this.router.navigate(['/alumno/dashboard']);
 
 // Método para manejar la creación de una historia
 onHistoriaCreated(id: number): void {
-this.historiaId = id;
-this.isNewHistoria = false;
-this.title = `Editar Historia Clínica #${id}`;
-// Actualizar la URL para reflejar la edición sin recargar
-//this.router.navigate(['/alumno/historias', id], { replaceUrl: true });
+  this.historiaId = id;
+  this.isNewHistoria = false;
+  this.title = `Editar Historia Clínica #${id}`;
+
+  // Marcar datos-generales como completado ya que se acaba de crear
+  this.sectionStatus['datos-generales'] = true;
+
+  // Guardar el estado inicial
+  const statusKey = `historia_${this.historiaId}_status`;
+  localStorage.setItem(statusKey, JSON.stringify(this.sectionStatus));
+
+  // Forzar actualización de la barra de progreso
+  this.changeDetectorRef.detectChanges();
+
+  // Actualizar la URL para reflejar la edición sin recargar
+  //this.router.navigate(['/alumno/historias', id], { replaceUrl: true });
 }
 
 // Método para manejar la compleción de una sección
+// Método para manejar la compleción de una sección
 onSectionCompleted(section: string, completed: boolean): void {
-this.sectionStatus[section] = completed;
-console.log(`Sección ${section} marcada como ${completed ? 'completada' : 'incompleta'}`);
+  this.sectionStatus[section] = completed;
+  console.log(`Sección ${section} marcada como ${completed ? 'completada' : 'incompleta'}`);
+  console.log(`Progreso actualizado: ${this.calculateProgress()}%`);
 
-// Si la sección se completó exitosamente, podríamos mostrar un mensaje
-if (completed) {
-  this.success = `Sección ${section} guardada correctamente`;
-  setTimeout(() => {
-    this.success = '';
-  }, 3000);
-}
+  // Si es una nueva historia y tenemos ID, actualizar el estado
+  if (this.historiaId && completed) {
+    // Guardar el estado en localStorage para persistencia temporal
+    const statusKey = `historia_${this.historiaId}_status`;
+    localStorage.setItem(statusKey, JSON.stringify(this.sectionStatus));
+  }
+
+  // Si la sección se completó exitosamente, podríamos mostrar un mensaje
+  if (completed) {
+    this.success = `Sección ${section} guardada correctamente`;
+    setTimeout(() => {
+      this.success = '';
+    }, 3000);
+  }
 }
 
 // Método para navegar a la siguiente sección

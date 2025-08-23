@@ -146,7 +146,7 @@ const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') =
       `SELECT * FROM ${table} WHERE ${whereColumn} = ?`,
       [id]
     );
-    
+
     // Procesamiento especial para ciertas tablas
     if (table === 'MetodoGrafico' && results.length > 0) {
       // Normalizar nombres de propiedades del método gráfico para que el frontend pueda leerlas
@@ -157,7 +157,7 @@ const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') =
         tipoVisionID: results[0].TipoVisionID,
         imagenID: results[0].ImagenID
       };
-    } 
+    }
     // Normalizar GridAmsler
     else if (table === 'GridAmsler' && results.length > 0) {
       historia[fieldName] = {
@@ -299,10 +299,10 @@ else if (table === 'Recomendaciones' && results.length > 0) {
     historia[fieldName] = table === 'AgudezaVisual' ? [] : null;
   }
 
-  
-    
 
-  
+
+
+
 };
 
   // Obtener datos relacionados
@@ -1270,7 +1270,7 @@ try {
               datos.ojoIzquierdoEsfera,
               datos.ojoIzquierdoCilindro,
               datos.ojoIzquierdoEje,
-              datos.tipoBifocalMultifocalID,, 
+              datos.tipoBifocalMultifocalID,,
               datos.valorADD,
               datos.distanciaRango,
               datos.centroOptico,
@@ -1361,7 +1361,7 @@ try {
         [historiaId, metodoGrafico.IntegracionBinocular, metodoGrafico.TipoID,
           metodoGrafico.VisionEstereoscopica, metodoGrafico.TipoVisionID, metodoGrafico.ImagenID]
       );
-    
+
     case 'deteccion-alteraciones':
       const {
         gridAmsler,        // datos para tabla GridAmsler
@@ -2162,7 +2162,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
 
     // Primero verificar que la historia existe y el profesor tiene acceso a ella
     const [verificacion] = await db.query(
-      `SELECT hc.ID 
+      `SELECT hc.ID
       FROM HistorialesClinicos hc
       JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
       WHERE hc.ID = ? AND mp.ProfesorInfoID = ?`,
@@ -2257,7 +2257,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
       `SELECT * FROM ${table} WHERE ${whereColumn} = ?`,
       [id]
     );
-    
+
     // Procesamiento especial para ciertas tablas
     if (table === 'MetodoGrafico' && results.length > 0) {
       // Normalizar nombres de propiedades del método gráfico
@@ -2268,7 +2268,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
         tipoVisionID: results[0].TipoVisionID,
         imagenID: results[0].ImagenID
       };
-    } 
+    }
     // Normalizar GridAmsler
     else if (table === 'GridAmsler' && results.length > 0) {
       historia[fieldName] = {
@@ -2403,7 +2403,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
     // Para AgudezaVisual que es un array
     else if (table === 'AgudezaVisual') {
       historia[fieldName] = results.length > 0 ? results : [];
-    } 
+    }
     // Para todas las demás tablas
     else {
       historia[fieldName] = results.length > 0 ? results[0] : null;
@@ -2478,7 +2478,7 @@ await Promise.all([
     console.error('Error obteniendo comentarios:', err.message);
     historia.comentarios = [];
   }
-  
+
   return historia;
 
   } catch (error) {

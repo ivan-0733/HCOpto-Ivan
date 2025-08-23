@@ -146,12 +146,14 @@ $light-selected-bg: #f0f0f0; // Fondo gris claro para elementos seleccionados en
     }
   }
 
+
   .stat-card-content {
     h3 {
       font-size: 1.1rem;
       color: $text-primary;
       margin: 0 0 0.5rem;
       text-align: center;
+      margin-right: -5rem; // Compensar el margin-right del icono para centrar visualmente
     }
 
     .stat-value {
@@ -159,7 +161,8 @@ $light-selected-bg: #f0f0f0; // Fondo gris claro para elementos seleccionados en
       text-align: center;
       font-weight: 700;
       margin: 0;
-      color: $text-primary; // Cambiado para soporte de tema
+      color: $text-primary;
+      margin-right: -5rem; // Aplicar la misma compensación al valor
     }
   }
 

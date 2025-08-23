@@ -242,7 +242,7 @@ async obtenerProfesoresAsignados(alumnoId) {
           p.Nombre,
           p.ApellidoPaterno,
           p.ApellidoMaterno,
-          p.NombreMateria,
+          m.Nombre AS NombreMateria,
           u.NombreUsuario,
           u.CorreoElectronico,
           u.TelefonoCelular,
@@ -251,6 +251,7 @@ async obtenerProfesoresAsignados(alumnoId) {
       FROM MateriasAlumno ma
       JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
       JOIN ProfesoresInfo p ON mp.ProfesorInfoID = p.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
       JOIN Usuarios u ON p.UsuarioID = u.ID
       JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
       WHERE ma.AlumnoInfoID = ?

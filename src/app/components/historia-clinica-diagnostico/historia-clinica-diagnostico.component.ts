@@ -43,7 +43,7 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
     if (this.historiaId) {
       this.cargarDatosExistentes();
     }
-    
+
     // Emitir los formularios para que el componente padre pueda acceder a ellos
     this.formReady.emit(this.diagnosticoForm);
     this.formReady.emit(this.planTratamientoForm);
@@ -89,9 +89,9 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
 
   cargarDatosExistentes(): void {
     if (!this.historiaId) return;
-    
+
     this.loading = true;
-    
+
     this.historiaService.obtenerHistoriaClinica(this.historiaId)
       .pipe(finalize(() => {
         this.loading = false;
@@ -109,21 +109,21 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
               sensorial: historia.diagnostico.Sensorial || ''
             });
           }
-          
+
           // Cargar datos de plan de tratamiento
           if (historia.planTratamiento) {
             this.planTratamientoForm.patchValue({
               descripcion: historia.planTratamiento.Descripcion || ''
             });
           }
-          
+
           // Cargar datos de pronóstico
           if (historia.pronostico) {
             this.pronosticoForm.patchValue({
               descripcion: historia.pronostico.Descripcion || ''
             });
           }
-          
+
           // Cargar datos de recomendaciones
           if (historia.recomendaciones) {
             this.recomendacionesForm.patchValue({
@@ -131,7 +131,7 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
               proximaCita: historia.recomendaciones.ProximaCita || ''
             });
           }
-          
+
           // Emitir que los datos se han cargado correctamente
           this.completed.emit(true);
         },
@@ -208,7 +208,7 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
       .then(() => {
         this.success = 'Diagnóstico y plan guardados correctamente.';
         this.completed.emit(true);
-        
+
         setTimeout(() => {
           this.nextSection.emit();
         }, 1500);
@@ -226,20 +226,20 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
   cancelar(): void {
     this.completed.emit(false);
   }
-  
+
   // Métodos para acceder a los datos de cada formulario
   getDiagnosticoData(): any {
     return this.diagnosticoForm.value;
   }
-  
+
   getPlanTratamientoData(): any {
     return this.planTratamientoForm.value;
   }
-  
+
   getPronosticoData(): any {
     return this.pronosticoForm.value;
   }
-  
+
   getRecomendacionesData(): any {
   return this.recomendacionesForm.value;
   }

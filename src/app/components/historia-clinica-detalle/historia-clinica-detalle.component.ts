@@ -113,7 +113,9 @@ getButtonClass(tab: string): string {
 
 obtenerClaseEstado(estado: string): string {
   switch (estado) {
-    case 'En proceso':
+    case 'Nuevo':
+      return 'estado-nuevo';
+    case 'Corregido':
       return 'estado-corregido';
     case 'Revisión':
       return 'estado-revision';

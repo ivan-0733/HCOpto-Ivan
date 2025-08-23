@@ -514,6 +514,10 @@ export class ProfesorDashboardComponent implements OnInit {
   obtenerEstadosConValores(): { estado: string; cantidad: number; }[] {
     if (!this.estadisticas || !this.estadisticas.porEstado) return [];
 
+    // Definir el orden deseado de los estados
+    const ordenEstados = ['Nuevo', 'Corregido', 'En proceso', 'Revisión', 'Corrección', 'Finalizado'];
+
+    // Filtrar estados con valores mayores que cero
     const estadosFiltrados = this.estadisticas.porEstado.filter(estado => {
       if (estado.estado === 'Finalizado') {
         return this.obtenerFinalizadasNoArchivadas() > 0;
@@ -522,7 +526,17 @@ export class ProfesorDashboardComponent implements OnInit {
       }
     });
 
-    return estadosFiltrados;
+    // Ordenar según el orden definido
+    return estadosFiltrados.sort((a, b) => {
+      const indexA = ordenEstados.indexOf(a.estado);
+      const indexB = ordenEstados.indexOf(b.estado);
+
+      // Si el estado no está en el orden definido, ponerlo al final
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+
+      return indexA - indexB;
+    });
   }
 
   verHistoria(id: number): void {
@@ -649,7 +663,9 @@ export class ProfesorDashboardComponent implements OnInit {
 
   obtenerClaseEstado(estado: string): string {
     switch (estado) {
-      case 'En proceso':
+      case 'Nuevo':
+        return 'estado-nuevo';
+      case 'Corregido':
         return 'estado-corregido';
       case 'Revisión':
         return 'estado-revision';
