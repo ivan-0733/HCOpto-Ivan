@@ -1,0 +1,463 @@
+@import '../../styles/variables';
+
+// Variables para el tema oscuro
+$dark-bg-card: #2a2a2a; // Fondo gris para cards en modo oscuro
+$dark-selected-bg: #1e1e1e; // Fondo más oscuro para cards seleccionadas en modo oscuro
+$light-selected-bg: #f0f0f0; // Fondo gris claro para cards seleccionadas en modo claro
+$hover-bg-light: #f0f0f0; // Fondo para hover en registros de tabla en modo claro
+$hover-bg-dark: #1e1e1e; // Fondo para hover en registros de tabla en modo oscuro
+$accent-color-dark: $ipn-guinda; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+$accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+
+// Contenedor principal
+.profesores-container {
+  padding: 1.5rem;
+  background-color: $ipn-white;
+  min-height: calc(100vh - $nav-height);
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Header del contenido
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0rem;
+
+  .header-title {
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: $ipn-guinda;
+      display: flex;
+      align-items: center;
+
+      i {
+        color: $ipn-guinda;
+        margin-right: 0rem;
+      }
+    }
+  }
+}
+
+.titulo-completo {
+  display: inline;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.content-header:not(:first-child) {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 2px solid $ipn-guinda;
+  position: relative;
+
+  // Para modo oscuro
+  :host-context(.dark-theme) & {
+    border-top-color: $accent-color-dark2;
+  }
+}
+
+// Estados de carga, error y vacío
+.loading-container,
+.error-container,
+.empty-container {
+  padding: 3rem;
+  margin: 2rem auto 0rem;
+  max-width: 600px;
+  text-align: center;
+  background-color: $ipn-white;
+  color: $ipn-guinda-dark;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 0rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    color: $ipn-gray-dark;
+  }
+
+  button {
+    margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
+  }
+}
+
+// En tu CSS
+
+.profesor-info p {
+  flex-wrap: nowrap;
+  overflow: hidden;
+
+  i {
+    flex-shrink: 0;
+  }
+}
+
+.profesor-contact.description {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+  text-align: left;
+
+  .description-content {
+    white-space: normal;
+  }
+
+  .content-wrapper {
+    display: inline;
+  }
+
+  .description-label {
+    text-decoration: underline;
+    white-space: nowrap;
+    margin-right: 0.3em;
+  }
+
+  i {
+    position: absolute;
+    left: 0;
+    margin-right: 1rem;
+  }
+
+  .description-label {
+    text-decoration: underline;
+    white-space: nowrap; // Evita el salto de línea en la etiqueta
+    display: inline-block;
+    margin-right: 0.3em;
+  }
+
+  .description-text {
+    display: inline;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    vertical-align: top;
+  }
+
+  // Hack para line-clamp en contenedores inline
+  &:after {
+    content: "";
+    display: -webkit-box;
+    display: box; /* Propiedad estándar */
+    -webkit-box-orient: vertical;
+    box-orient: vertical; /* Propiedad estándar */
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* Propiedad estándar */
+}
+}
+
+.error-container {
+  color: $danger;
+
+  i {
+    color: $danger;
+  }
+}
+
+.empty-container {
+  color: $ipn-gray-dark;
+
+  i {
+    color: $ipn-gray-dark;
+  }
+}
+
+// Lista de profesores
+.profesores-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+// Tarjeta de profesor
+.profesor-card {
+  position: relative;
+  background-color: $ipn-white;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 1.5rem 2.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left: none;
+  width: 100%;
+  box-sizing: border-box;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  min-width: 0;
+  height: auto;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1rem;
+    background-color: $ipn-guinda;
+    border-top-left-radius: $border-radius;
+    border-bottom-left-radius: $border-radius;
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-md;
+  }
+
+  .perfil-avatar {
+    width: 5rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $ipn-guinda; // Cambiado para soporte de tema
+    border-radius: 50%;
+    box-shadow: $box-shadow-sm;
+    margin-right: 1.5rem;
+
+    i {
+      font-size: 70px;
+      color: $ipn-white;
+    }
+  }
+
+  .profesor-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    margin-top: 0.5rem;
+
+    h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $ipn-guinda-dark;
+    }
+
+    p {
+      margin: 0 0 0.5rem;
+      font-size: 1.1rem;
+      color: black;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 0.5rem;
+        width: 1rem;
+        text-align: center;
+        color: $ipn-gray-dark;
+      }
+
+      &.profesor-id {
+        font-weight: 600;
+        color: black;
+        margin-bottom: 0.75rem;
+
+        i {
+          color: $ipn-guinda;
+        }
+      }
+
+      &.profesor-contact {
+        color: black;
+      }
+
+      &.profesor-since {
+        margin-top: 0.25rem;
+        font-size: 1rem;
+        color: $ipn-gray-dark;
+      }
+    }
+  }
+}
+
+// Animación de carga
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Botón de reintentar
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.1);
+  }
+}
+
+// Media queries
+@media (max-width: 992px) {
+  .profesores-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 800px) {
+  .profesores-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Modo oscuro
+:host-context(.dark-theme) {
+  .profesores-container {
+    background-color: $bg-primary;
+    color: $text-primary;
+  }
+
+  .content-header .header-title h1{
+    color: $accent-color-dark2 !important;
+
+    i {
+      color: $accent-color-dark2 !important;
+    }
+  }
+
+  .loading-container,
+  .error-container,
+  .empty-container {
+    background-color: $dark-bg-card;
+    color: $text-primary;
+
+    .spinner {
+      border-color: rgba($accent-color-dark, 0.3);
+      border-top-color: $accent-color-dark;
+    }
+
+    .secondary-text {
+      color: $text-secondary;
+    }
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .error-container {
+    color: $danger;
+    border-color: $danger;
+
+    i {
+      color: $danger;
+    }
+  }
+
+  .empty-container {
+    color: $text-secondary;
+
+    i {
+      color: $text-secondary;
+    }
+  }
+
+  .profesor-card {
+    background-color: $dark-bg-card;
+
+    &::before {
+      background-color: $accent-color-dark;
+    }
+
+    .perfil-avatar {
+      background-color: $ipn-guinda;
+
+      i {
+        color:#fff;
+      }
+    }
+
+    .profesor-info {
+      h3 {
+        color:  $accent-color-dark2 !important;
+      }
+
+      p {
+        color: $text-primary !important;
+
+        i {
+          color: white !important;
+        }
+
+        &.profesor-id {
+          color: $text-primary !important;
+
+          i {
+            color: $accent-color-dark !important;
+          }
+        }
+
+        &.profesor-since {
+          color: $ipn-gray-dark !important;
+        }
+      }
+    }
+  }
+
+  .btn-retry {
+    border-color: $danger;
+    color: $danger;
+
+    &:hover {
+      background-color: rgba($danger, 0.15);
+    }
+  }
+}

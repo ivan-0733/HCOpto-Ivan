@@ -66,7 +66,7 @@ const routes: Routes = [
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
-      }
+      },
     ]
   },
   // Rutas para administrador (por implementar)

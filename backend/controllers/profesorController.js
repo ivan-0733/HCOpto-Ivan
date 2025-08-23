@@ -167,6 +167,47 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
   }),
 
   /**
+   * Obtener alumnos de una materia específica del profesor
+   */
+  obtenerAlumnosPorMateria: catchAsync(async (req, res) => {
+    const profesorId = req.usuario.ProfesorInfoID;
+    const materiaId = req.params.materiaId;
+
+    // Verificar que la materia pertenece al profesor
+    const materiaProfesor = await profesorService.verificarMateriaProfesor(profesorId, materiaId);
+
+    if (!materiaProfesor) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'No tienes acceso a esta materia'
+      });
+    }
+
+    const alumnos = await profesorService.obtenerAlumnosPorMateria(materiaId);
+
+    res.status(200).json({
+      status: 'success',
+      results: alumnos.length,
+      data: alumnos
+    });
+  }),
+
+  /**
+   * Obtener materias con sus alumnos (método alternativo)
+   */
+  obtenerMateriasConAlumnos: catchAsync(async (req, res) => {
+    const profesorId = req.usuario.ProfesorInfoID;
+
+    const materiasConAlumnos = await profesorService.obtenerMateriasConAlumnos(profesorId);
+
+    res.status(200).json({
+      status: 'success',
+      results: materiasConAlumnos.length,
+      data: materiasConAlumnos
+    });
+  }),
+
+  /**
    * Actualizar datos del perfil
    */
   actualizarPerfil: catchAsync(async (req, res) => {

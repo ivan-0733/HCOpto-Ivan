@@ -35,4 +35,8 @@ router.get('/periodo-actual', profesorController.obtenerPeriodoEscolar);
 // Obtener una historia clínica específica por ID
 router.get('/historias-clinicas/:id', profesorController.obtenerHistoriaClinica);
 
+// Agregar estas rutas al final del archivo (antes de module.exports):
+router.get('/materias/:materiaId/alumnos', profesorController.obtenerAlumnosPorMateria);
+router.get('/materias-con-alumnos', profesorController.obtenerMateriasConAlumnos);
+
 module.exports = router;

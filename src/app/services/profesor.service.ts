@@ -21,6 +21,19 @@ export interface ProfesorPerfil {
   FechaUltimoAcceso?: string;
 }
 
+export interface AlumnoDetalle {
+  ID: number;
+  AlumnoInfoID: number;
+  MateriaProfesorID: number;
+  NumeroBoleta: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+  CorreoElectronico?: string;
+  TelefonoCelular?: string;
+  FechaInscripcion: string;
+}
+
 export interface AlumnoAsignado {
   ID: number;
   AlumnoInfoID: number;
@@ -33,6 +46,16 @@ export interface AlumnoAsignado {
   Grupo: string;
   PeriodoEscolar: string;
   FechaInscripcion: string;
+  // AGREGAR estas propiedades:
+  CorreoElectronico?: string;
+  TelefonoCelular?: string;
+}
+
+export interface MateriaProfesorConAlumnos extends MateriaProfesor {
+  Alumnos?: AlumnoAsignado[]; // Usar tu interface existente
+  FechaAsignacion?: string;
+  EjeFormativo?: string;
+  Descripcion?: string;
 }
 
 export interface MateriaProfesor {
@@ -144,6 +167,30 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
     return this.http.put<ApiResponse<any>>(`${this.apiUrl}/perfil`, datos)
       .pipe(
         map(response => response.data)
+      );
+  }
+
+  // Obtener alumnos de una materia específica
+  obtenerAlumnosPorMateria(materiaProfesorId: number): Observable<AlumnoAsignado[]> {
+    return this.http.get<ApiResponse<AlumnoAsignado[]>>(`${this.apiUrl}/materias/${materiaProfesorId}/alumnos`)
+      .pipe(
+        map(response => response.data || []),
+        catchError(error => {
+          console.error('Error al obtener alumnos por materia:', error);
+          return of([]);
+        })
+      );
+  }
+
+  // Obtener materias con sus alumnos
+  obtenerMateriasConAlumnos(): Observable<MateriaProfesorConAlumnos[]> {
+    return this.http.get<ApiResponse<MateriaProfesorConAlumnos[]>>(`${this.apiUrl}/materias-con-alumnos`)
+      .pipe(
+        map(response => response.data || []),
+        catchError(error => {
+          console.error('Error al obtener materias con alumnos:', error);
+          return of([]);
+        })
       );
   }
 

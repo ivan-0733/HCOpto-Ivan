@@ -78,7 +78,7 @@ export const routes: Routes = [
       },
       {
         path: 'alumnos',
-        loadComponent: () => import('./components/profesor-dashboard/profesor-dashboard.component').then(m => m.ProfesorDashboardComponent),
+        loadComponent: () => import('./components/profesor-alumnos/profesor-alumnos.component').then(m => m.ProfesorAlumnosComponent),
         title: 'HCOpto - Mis Alumnos'
       },
       {

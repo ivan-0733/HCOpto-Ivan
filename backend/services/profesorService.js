@@ -42,87 +42,174 @@ const profesorService = {
   },
 
   /**
- * Obtiene las historias clínicas de los alumnos asignados al profesor
- */
-async obtenerHistoriasClinicasAlumnos(profesorId) {
-  try {
-    const [historias] = await db.query(`
-      SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-             p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-             p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-             cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
-             mp.ProfesorInfoID AS ProfesorID,
-             m.Nombre AS NombreMateria,
-             mp.Grupo AS GrupoMateria,
-             hc.MateriaProfesorID,
-             a.Nombre AS AlumnoNombre,
-             a.ApellidoPaterno AS AlumnoApellidoPaterno,
-             a.ApellidoMaterno AS AlumnoApellidoMaterno
-      FROM HistorialesClinicos hc
-      JOIN Pacientes p ON hc.PacienteID = p.ID
-      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-      JOIN Consultorios c ON hc.ConsultorioID = c.ID
-      JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
-      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-      JOIN Materias m ON mp.MateriaID = m.ID
-      JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
-      WHERE mp.ProfesorInfoID = ?
-      ORDER BY hc.Fecha DESC`,
-      [profesorId]
-    );
+   * Obtiene las historias clínicas de los alumnos asignados al profesor
+   */
+  async obtenerHistoriasClinicasAlumnos(profesorId) {
+    try {
+      const [historias] = await db.query(`
+        SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
+              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
+              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
+              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
+              mp.ProfesorInfoID AS ProfesorID,
+              m.Nombre AS NombreMateria,
+              mp.Grupo AS GrupoMateria,
+              hc.MateriaProfesorID,
+              a.Nombre AS AlumnoNombre,
+              a.ApellidoPaterno AS AlumnoApellidoPaterno,
+              a.ApellidoMaterno AS AlumnoApellidoMaterno
+        FROM HistorialesClinicos hc
+        JOIN Pacientes p ON hc.PacienteID = p.ID
+        JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+        JOIN Consultorios c ON hc.ConsultorioID = c.ID
+        JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+        JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+        JOIN Materias m ON mp.MateriaID = m.ID
+        JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+        WHERE mp.ProfesorInfoID = ?
+        ORDER BY hc.Fecha DESC`,
+        [profesorId]
+      );
 
-    return historias;
-  } catch (error) {
-    console.error('Error al obtener historias clínicas de alumnos:', error);
-    throw error;
-  }
-},
+      return historias;
+    } catch (error) {
+      console.error('Error al obtener historias clínicas de alumnos:', error);
+      throw error;
+    }
+  },
 
-/**
- * Obtiene estadísticas de historias clínicas de los alumnos del profesor
- */
-async obtenerEstadisticasHistorias(profesorId) {
-  try {
-    // Obtener total de historias y conteo por estado
-    const [estadisticas] = await db.query(`
-      SELECT
-        (SELECT COUNT(*)
-         FROM HistorialesClinicos hc
-         JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-         WHERE mp.ProfesorInfoID = ?) AS total,
-        (SELECT COUNT(*)
-         FROM HistorialesClinicos hc
-         JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-         WHERE mp.ProfesorInfoID = ? AND hc.Archivado = TRUE) AS archivadas,
-        cg.Valor AS estado,
-        COUNT(hc.ID) AS cantidad
-      FROM HistorialesClinicos hc
-      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-      WHERE mp.ProfesorInfoID = ?
-      GROUP BY hc.EstadoID, cg.Valor`,
-      [profesorId, profesorId, profesorId]
-    );
+  /**
+   * Obtiene estadísticas de historias clínicas de los alumnos del profesor
+   */
+  async obtenerEstadisticasHistorias(profesorId) {
+    try {
+      // Obtener total de historias y conteo por estado
+      const [estadisticas] = await db.query(`
+        SELECT
+          (SELECT COUNT(*)
+          FROM HistorialesClinicos hc
+          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+          WHERE mp.ProfesorInfoID = ?) AS total,
+          (SELECT COUNT(*)
+          FROM HistorialesClinicos hc
+          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+          WHERE mp.ProfesorInfoID = ? AND hc.Archivado = TRUE) AS archivadas,
+          cg.Valor AS estado,
+          COUNT(hc.ID) AS cantidad
+        FROM HistorialesClinicos hc
+        JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+        JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+        WHERE mp.ProfesorInfoID = ?
+        GROUP BY hc.EstadoID, cg.Valor`,
+        [profesorId, profesorId, profesorId]
+      );
 
-    // Formatear respuesta
-    const total = estadisticas.length > 0 ? estadisticas[0].total : 0;
-    const archivadas = estadisticas.length > 0 ? estadisticas[0].archivadas : 0;
+      // Formatear respuesta
+      const total = estadisticas.length > 0 ? estadisticas[0].total : 0;
+      const archivadas = estadisticas.length > 0 ? estadisticas[0].archivadas : 0;
 
-    const porEstado = estadisticas.map(item => ({
-      estado: item.estado,
-      cantidad: item.cantidad
-    }));
+      const porEstado = estadisticas.map(item => ({
+        estado: item.estado,
+        cantidad: item.cantidad
+      }));
 
-    return {
-      total,
-      archivadas,
-      porEstado
-    };
-  } catch (error) {
-    console.error('Error al obtener estadísticas de historias:', error);
-    throw error;
-  }
-},
+      return {
+        total,
+        archivadas,
+        porEstado
+      };
+    } catch (error) {
+      console.error('Error al obtener estadísticas de historias:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Verifica que una materia pertenece a un profesor
+   */
+  async verificarMateriaProfesor(profesorId, materiaId) {
+    try {
+      const [resultado] = await db.query(`
+        SELECT mp.ID
+        FROM MateriasProfesor mp
+        JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
+        WHERE mp.ProfesorInfoID = ?
+        AND mp.ID = ?
+        AND pe.EsActual = TRUE`,
+        [profesorId, materiaId]
+      );
+
+      return resultado.length > 0 ? resultado[0] : null;
+    } catch (error) {
+      console.error('Error al verificar materia del profesor:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene los alumnos de una materia específica CON correo y teléfono
+   */
+  async obtenerAlumnosPorMateria(materiaId) {
+    try {
+      const [alumnos] = await db.query(`
+        SELECT
+          a.ID,
+          a.ID AS AlumnoInfoID,
+          ma.MateriaProfesorID,
+          a.NumeroBoleta,
+          a.Nombre,
+          a.ApellidoPaterno,
+          a.ApellidoMaterno,
+          u.CorreoElectronico,
+          u.TelefonoCelular,
+          ma.FechaInscripcion,
+          m.Nombre AS NombreMateria,
+          mp.Grupo,
+          pe.Codigo AS PeriodoEscolar
+        FROM MateriasAlumno ma
+        JOIN AlumnosInfo a ON ma.AlumnoInfoID = a.ID
+        JOIN Usuarios u ON a.UsuarioID = u.ID
+        JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
+        JOIN Materias m ON mp.MateriaID = m.ID
+        JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
+        WHERE ma.MateriaProfesorID = ?
+        AND u.EstaActivo = TRUE
+        ORDER BY a.ApellidoPaterno, a.ApellidoMaterno, a.Nombre`,
+        [materiaId]
+      );
+
+      return alumnos;
+    } catch (error) {
+      console.error('Error al obtener alumnos por materia:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Obtiene materias con todos sus alumnos (método alternativo optimizado)
+   */
+  async obtenerMateriasConAlumnos(profesorId) {
+    try {
+      // Obtener las materias del profesor
+      const materias = await this.obtenerMateriasProfesor(profesorId);
+
+      // Para cada materia, obtener sus alumnos
+      const materiasConAlumnos = await Promise.all(
+        materias.map(async (materia) => {
+          const alumnos = await this.obtenerAlumnosPorMateria(materia.ID);
+          return {
+            ...materia,
+            Alumnos: alumnos
+          };
+        })
+      );
+
+      return materiasConAlumnos;
+    } catch (error) {
+      console.error('Error al obtener materias con alumnos:', error);
+      throw error;
+    }
+  },
 
   /**
    * Obtiene los alumnos asignados a un profesor
@@ -131,11 +218,14 @@ async obtenerEstadisticasHistorias(profesorId) {
     try {
       const [alumnos] = await db.query(`
         SELECT DISTINCT
+          a.ID,
           a.ID AS AlumnoInfoID,
           a.NumeroBoleta,
           a.Nombre,
           a.ApellidoPaterno,
           a.ApellidoMaterno,
+          u.CorreoElectronico,  -- AGREGADO
+          u.TelefonoCelular,    -- AGREGADO
           m.Nombre AS NombreMateria,
           mp.Grupo,
           pe.Codigo AS PeriodoEscolar,
@@ -144,10 +234,12 @@ async obtenerEstadisticasHistorias(profesorId) {
         FROM MateriasAlumno ma
         JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
         JOIN AlumnosInfo a ON ma.AlumnoInfoID = a.ID
+        JOIN Usuarios u ON a.UsuarioID = u.ID  -- AGREGADO JOIN
         JOIN Materias m ON mp.MateriaID = m.ID
         JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
         WHERE mp.ProfesorInfoID = ?
         AND pe.EsActual = TRUE
+        AND u.EstaActivo = TRUE  -- AGREGADO
         ORDER BY m.Nombre, a.ApellidoPaterno, a.ApellidoMaterno, a.Nombre`,
         [profesorId]
       );
