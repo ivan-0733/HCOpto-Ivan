@@ -27,14 +27,15 @@
 
       <!-- Cards para cada materia -->
       <div class="materia-card"
-           *ngFor="let materia of materias"
-           (click)="aplicarFiltroMateria(materia.ID)"
-           [ngClass]="{'selected': materiaSeleccionadaId === materia.ID}">
+          *ngFor="let materia of materias"
+          (click)="aplicarFiltroMateria(materia.ID)"
+          [ngClass]="{'selected': materiaSeleccionadaId === materia.ID}">
         <div class="materia-card-icon">
           <i class="material-icons">book</i>
         </div>
         <div class="materia-card-content">
           <h3>{{ materia.NombreMateria }}</h3>
+          <small>Sección {{ materia.Grupo }} - Prof. {{ materia.NombreProfesor }}</small>
         </div>
       </div>
     </div>

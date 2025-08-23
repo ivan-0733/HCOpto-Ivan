@@ -58,11 +58,11 @@
         <div class="section-divider"></div>
 
         <div class="form-group">
-          <label for="materiaProfesorID">Materia y Grupo *</label>
+          <label for="materiaProfesorID">Materia y Sección *</label>
           <select id="materiaProfesorID" formControlName="materiaProfesorID" [ngClass]="{'is-invalid': historiaForm.get('materiaProfesorID')?.invalid && historiaForm.get('materiaProfesorID')?.touched}">
             <option value="">Selecciona una materia</option>
             <option *ngFor="let materia of materias" [value]="materia.MateriaProfesorID">
-              {{ materia.NombreMateria }} - Grupo {{ materia.Grupo }} (Prof. {{ materia.NombreProfesor }})
+              {{ materia.NombreMateria }} - Sección {{ materia.Grupo }} (Prof. {{ materia.NombreProfesor }})
             </option>
           </select>
           <div class="invalid-feedback" *ngIf="historiaForm.get('materiaProfesorID')?.invalid && historiaForm.get('materiaProfesorID')?.touched">
