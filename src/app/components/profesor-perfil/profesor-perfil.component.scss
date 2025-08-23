@@ -1,0 +1,972 @@
+@import '../../styles/variables';
+
+// Variables adicionales para tema oscuro
+$dark-bg-card: #2a2a2a; // Fondo gris para cards en modo oscuro
+$dark-selected-bg: #1e1e1e; // Fondo más oscuro para elementos seleccionados
+$light-selected-bg: #f0f0f0; // Fondo gris claro para elementos seleccionados en modo claro
+$hover-bg-light: #f0f0f0; // Fondo para hover en modo claro
+$hover-bg-dark: #1e1e1e; // Fondo para hover en modo oscuro
+$accent-color-dark2: $ipn-guinda-light;
+
+.perfil-container {
+  padding: 1.5rem;
+  background-color: $bg-primary; // Cambiado para soporte de tema
+  min-height: calc(100vh - $nav-height);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Header
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .header-title {
+    h1 {
+      font-size: 1.8rem;
+      color: $ipn-guinda; // Cambiado a color IPN
+      margin: 0;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 0rem;
+        color: $ipn-guinda; // Cambiado a color IPN
+      }
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+.loading-container,
+.error-container {
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 600px;
+  text-align: center;
+  background-color: $bg-primary; // Cambiado para soporte de tema
+  color: $text-primary; // Cambiado para soporte de tema
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  button {
+    margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
+  }
+}
+
+.error-container {
+  color: $danger;
+
+  i {
+    color: $danger;
+  }
+}
+
+.success-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: #dff6ea; /* fondo claro, suave basado en #2ecc71 */
+  color: #27ae60;            /* texto verde fuerte */
+  border-radius: $border-radius;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid $success;
+
+  i {
+    font-size: 1.5rem;
+    margin-right: 0.25rem;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.fade-out {
+  animation: fadeOutAnimation 5s forwards;
+}
+
+@keyframes fadeOutAnimation {
+  0% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.perfil-content {
+  width: 100%;
+  background-color: $bg-primary; // Cambiado para soporte de tema
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+  overflow: hidden;
+}
+
+.perfil-header {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  background-color: $ipn-guinda;
+  border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
+
+  .perfil-avatar {
+    width: 5rem;
+    height: 5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $bg-primary; // Cambiado para soporte de tema
+    border-radius: 50%;
+    box-shadow: $box-shadow-sm;
+    margin-right: 1.5rem;
+
+    i {
+      font-size: 2.5rem;
+      color: $ipn-guinda;
+    }
+  }
+
+  .perfil-basic-info {
+    flex: 1;
+
+    h2 {
+      margin: 0 0 0.25rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $ipn-secondary; // Cambiado a color IPN blanco
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin: 0.25rem 0;
+      display: flex;
+      align-items: center;
+      color: rgba(#fff, 0.5);
+
+      &.boleta {
+        font-weight: 600;
+        color: $ipn-secondary; // Cambiado a color IPN blanco
+      }
+
+      // Busca la clase .semestre-badge en tu archivo SCSS y reemplázala con:
+      .semestre-badge {
+        margin-left: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        background-color: rgba(#fff, 0.2);
+        color: #fff !important;
+        font-weight: 600;
+        font-size: 0.8rem;
+        border-radius: 0.6rem;
+      }
+    }
+  }
+
+  .perfil-actions {
+    button {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      background-color: lighten(#731635,8%);
+      color: $ipn-secondary; // Cambiado a color IPN blanco
+      font-weight: 600;
+      border: none;
+      border-radius: $border-radius;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      margin-right: 1rem;
+
+      &:hover {
+        background-color: lighten(#731635,10%);
+      }
+    }
+  }
+}
+
+
+// Estados de carga, error y vacío
+.error-container{
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 400px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $ipn-guinda-dark;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 0rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    color: $ipn-gray-dark;
+  }
+
+  button {
+    margin-top: 1.5rem;
+  }
+}
+
+.loading-container {
+  i, .spinner {
+    color: $ipn-guinda; // Cambiado a color IPN
+  }
+}
+
+.error-container {
+  color: $danger;
+  border-color: $danger;
+}
+
+// Estilos para mensajes de error - Mantenidos para ser consistentes en ambos temas
+.error-message {
+  background-color: rgba($danger, 0.05); // Cambiado para soporte de tema
+  border-left: 4px solid $danger;
+  color: $danger;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  border-radius: $border-radius;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 100%;
+  overflow: hidden;
+  animation: errorAppear 0.3s ease-in;
+  background-color: rgba(220, 220, 220, 0.25);
+  font-size: 1rem;
+}
+
+@keyframes errorAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-alert {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba($danger, 0.1);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.error-icon {
+  color: $danger;
+  font-size: 20px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.error-message span {
+  flex: 1;
+  line-height: 1.4;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.error-message .btn-retry {
+  margin-left: 10px;
+}
+
+.perfil-form {
+  padding: 1.5rem;
+  border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
+
+  .form-section {
+    margin-top: 0.1rem;
+    margin-bottom: 1.8rem;
+    background-color: $bg-primary; // Cambiado para soporte de tema
+    border-radius: $border-radius;
+    padding: 1rem 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    &.password-section {
+      background-color: rgba($ipn-guinda, 0.03);
+      border-left: 4px solid $ipn-guinda;
+    }
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: $ipn-guinda;
+    margin: 0 0 0.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba($ipn-guinda, 0.2);
+
+    i {
+      color: $ipn-guinda;
+      margin-right: 0.75rem;
+      font-size: 1.5rem;
+    }
+  }
+
+  .password-info {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: $border-radius;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    background-color: rgba(220, 220, 220, 0.25);
+    border-left: 4px solid $ipn-guinda;
+
+    .info-icon {
+      color: $ipn-guinda;
+      margin-right: 0.55rem;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    p {
+      margin: 0;
+      color: $text-primary; // Cambiado para soporte de tema
+      line-height: 1.4;
+    }
+  }
+
+
+  .password-form-horizontal {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem; /* Reducido desde 0rem para dar un mínimo espacio pero mantenerlo compacto */
+    justify-content: flex-start;
+    margin-right: 0; /* Asegura que no haya margen extra a la derecha */
+    padding-right: 0; /* Asegura que no haya padding extra a la derecha */
+
+    .form-group {
+      flex: 1 1 0;
+      min-width: 200px;
+      max-width: calc(33.33% - 0.3rem); /* Reducido el espacio entre elementos */
+      max-width: unset; /* Eliminamos el max-width restrictivo de 33.33% */
+      margin-right: 0; /* Elimina el margen derecho para alinear con password-info */
+
+      .invalid-feedback {
+        font-size: 0.85rem;
+        color: $danger;
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem; /* Reducido desde 2rem para ser más compacto */
+        margin-left: 0.1rem;
+
+        &:before {
+          content: "error";
+          font-family: 'Material Icons';
+          font-size: 1rem;
+          display: inline-flex;
+          align-items: center;
+        }
+      }
+    }
+  }
+
+  .password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      padding-right: 70px;
+      color: $text-primary; // Cambiado para soporte de tema
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      border: 1px solid $border-color; // Cambiado para soporte de tema
+    }
+
+    .password-icon {
+      position: absolute;
+      right: 10px;
+      color: $text-secondary; // Cambiado para soporte de tema
+      cursor: default;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      color: $text-secondary; // Cambiado para soporte de tema
+      cursor: pointer;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: $ipn-guinda;
+      }
+    }
+
+    .match-icon {
+      color: $success;
+    }
+  }
+
+  .password-input-container.show-password {
+    .password-icon {
+      color: $ipn-guinda;
+    }
+  }
+
+  .material-icons.password-toggle,
+  .material-icons.password-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .password-requirements {
+    width: calc(100% - 3rem);
+    background-color: rgba($ipn-guinda, 0.05);
+    border-radius: $border-radius;
+    padding: 1rem;
+    flex-basis: 100%;
+
+    h4 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      color: $text-primary; // Cambiado para soporte de tema
+      font-weight: 600;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        color: $text-primary; // Cambiado para soporte de tema
+        line-height: 1.4;
+        transition: color 0.3s ease;
+
+        i {
+          color: $ipn-guinda;
+          margin-right: 0.5rem;
+          font-size: 1rem;
+          flex-shrink: 0;
+          transition: color 0.3s ease;
+        }
+
+        &.requirement-met {
+          i {
+            color: $success;
+          }
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 0.5rem;
+    width: 100%;
+    margin-right: 1.65rem;
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: $text-primary; // Cambiado para soporte de tema
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid $border-color; // Cambiado para soporte de tema
+      border-radius: $border-radius;
+      transition: all 0.2s;
+      color: $text-primary; // Cambiado para soporte de tema
+      background-color: $bg-primary; // Cambiado para soporte de tema
+
+      &:focus {
+        outline: none;
+        border-color: $ipn-guinda;
+        box-shadow: 0 0 0 2px rgba($ipn-guinda, 0.25);
+      }
+
+      &.is-invalid {
+        border-color: $danger;
+        background-color: rgba($danger, 0.02);
+      }
+    }
+
+    .invalid-feedback {
+      font-size: 0.85rem;
+      color: $danger;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+      margin-left: 0.1rem;
+
+      &:before {
+        content: "error";
+        font-family: 'Material Icons';
+        margin-right: 0.5rem;
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid $border-color; // Cambiado para soporte de tema
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      border-radius: $border-radius;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &.btn-primary {
+        background-color: $ipn-guinda;
+        color: $ipn-secondary; // Cambiado a color IPN blanco
+        border: none;
+
+        &:hover {
+          background-color: lighten(#731635,10%);
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      &.btn-secondary {
+        background-color: transparent;
+        color: $text-primary; // Cambiado para soporte de tema
+        border: 1px solid $border-color; // Cambiado para soporte de tema
+
+        &:hover {
+          background-color: $light-selected-bg;
+        }
+      }
+    }
+  }
+}
+
+.readonly-field {
+  padding: 0.5rem;
+  background-color: rgba($text-secondary, 0.05); // Cambiado para soporte de tema
+  border: 1px solid $border-color; // Cambiado para soporte de tema
+  border-radius: 4px;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  color: $text-primary; // Cambiado para soporte de tema
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-right: 0rem;
+  margin-left: 0.25rem;
+  width: calc(100% - 0.2rem); // Ajustamos el ancho para dejar 2rem de margen derecho
+
+  .form-group {
+    flex: 1 1 0;
+    min-width: 200px; // Permite que los campos pasen a la siguiente fila cuando no hay suficiente espacio
+  }
+}
+
+.perfil-details {
+  padding: 1.5rem;
+
+  .info-section {
+    margin-bottom: 1.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $ipn-guinda; // Cambiado para soporte de tema
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid $ipn-guinda; // Cambiado para soporte de tema
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+
+      .info-item {
+        label {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: $text-secondary; // Cambiado para soporte de tema
+          margin-bottom: 0.25rem;
+        }
+
+        p {
+          margin: 0;
+          font-weight: 500;
+          color: $text-primary; // Cambiado para soporte de tema
+
+          .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border-radius: 1rem;
+
+            &.active {
+              background-color: rgba($success, 0.1);
+              color: $success;
+            }
+
+            &.inactive {
+              background-color: rgba($danger, 0.1);
+              color: $danger;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Media queries para responsive
+@media (max-width: 768px) {
+  .form-row {
+    flex-direction: column;
+    padding: 0;
+    margin-right: 0; // Eliminamos este margen que estaba causando problemas
+    margin-left: 0.25rem;
+    width: calc(100% - 1.85rem); // Ajustamos el ancho para dejar 2rem de margen derecho
+
+    .form-group {
+      max-width: 100%;
+      margin-right: 0; // Aseguramos que los grupos no tengan margen derecho adicional
+    }
+  }
+
+  .perfil-container {
+    padding: 1.5rem 1.5rem 1.5rem 1.5rem; // Aseguramos padding uniforme
+  }
+
+  .perfil-form {
+    padding: 1.5rem 2rem 1.5rem 1.5rem; // Ajustamos el padding del formulario
+
+    .form-group {
+      margin-right: 0; // Removemos margen derecho de los grupos para evitar desbordamiento
+      width: 100%; // Aseguramos que ocupen todo el ancho disponible
+    }
+  }
+
+  .password-form-horizontal {
+    flex-direction: column;
+    padding: 0 !important;
+    gap: 1rem;
+    width: 100%; // Aseguramos ancho completo
+
+    .form-group {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-right: 0 !important;
+    }
+  }
+
+  .error-message {
+    padding: 10px;
+  }
+
+  .error-alert {
+    padding: 6px 0;
+  }
+}
+
+// Añadido: Estilos específicos para el modo oscuro
+:host-context(.dark-theme) {
+
+  .perfil-form{
+    background-color: $dark-bg-card;
+  }
+
+  .header-title h1 {
+    color: $accent-color-dark2 !important; // Color para modo oscuro
+  }
+
+  .perfil-basic-info p {
+    color: #c0c0c0; // Mantener el mismo color que en modo claro
+  }
+
+  .perfil-content,
+  .form-section {
+    background-color: #3a3a3a; // Usar la variable de fondo oscuro para cards
+
+    &.password-section{
+      background-color: #3a3a3a;
+    }
+  }
+
+  .success-message{
+    background-color: rgba(46, 204, 113, 0.15); // #2ecc71 con opacidad
+    color: #6effb2; // versión más clara de #2ecc71
+  }
+
+  // Campos de formulario
+  .form-group {
+    input, select {
+      background-color: $dark-bg-card;
+      border-color: $border-color;
+      color: $text-primary;
+
+      &:focus {
+        border-color: $ipn-guinda-light;
+      }
+    }
+
+    label {
+      color: $text-primary;
+    }
+  }
+
+  // Secciones de perfil
+  .perfil-header {
+    .perfil-avatar {
+      background-color: #fff;
+
+      i {
+        color: $ipn-guinda;
+      }
+    }
+  }
+
+  // Campos de solo lectura
+  .readonly-field {
+    background-color: $dark-selected-bg;
+    border-color: $border-color;
+    color: $text-primary;
+  }
+
+  .password-info{
+    background-color: #4a4a4a;
+    border-left: 4px solid $ipn-guinda;
+  }
+  .password-requirements {
+    background-color: rgba($ipn-guinda, 0.1);
+
+    p, li {
+      color: $text-primary;
+    }
+  }
+
+  // Contenedores de carga y error
+  .loading-container,
+  .error-container {
+    background-color: $dark-bg-card;
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  // Mensajes de error
+  .error-message {
+    background-color: #4a4a4a;
+  }
+
+  // Iconos y acentos
+  .section-title i,
+  .section-title,
+  .info-icon,
+  .password-requirements li i:not(.requirement-met i),
+  .password-info .info-icon {
+    color: $ipn-guinda-light;
+  }
+
+  .password-toggle {
+    &:hover {
+      color: $accent-color-dark2 !important;
+    }
+  }
+
+  // Botones
+  .btn-primary {
+    &:hover:not(:disabled) {
+      background-color: $ipn-guinda-light;
+    }
+  }
+
+  // Por esta versión más específica
+  .form-actions {
+    button {
+      &.btn-secondary {
+        background-color: transparent;
+        color: $text-primary;
+        border-color: $border-color;
+
+        &:hover {
+          background-color: $hover-bg-dark;
+        }
+      }
+    }
+  }
+
+  .estado-badge{
+    color: black;
+  }
+
+  // Títulos y textos
+  .perfil-details .info-item p {
+    color: $text-primary;
+  }
+
+  .perfil-details{
+    background-color: $dark-bg-card;
+  }
+
+  .info-section h3 {
+    border-bottom: 1px solid $accent-color-dark2 !important; // Línea más clara para el modo oscuro
+    color: $accent-color-dark2 !important;
+  }
+
+  .perfil-details .info-item label {
+    color: $text-secondary;
+  }
+}
+
+// Agregar al final de alumno-perfil.component.scss
+.estado-badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #fff;
+
+  &.estado-finalizado {
+    background-color: $success;
+  }
+
+  &.estado-correccion {
+    background-color: $danger;
+  }
+
+  &.estado-corregido {
+    background-color: $warning;
+  }
+
+  &.estado-revision {
+    background-color: $info;
+  }
+}

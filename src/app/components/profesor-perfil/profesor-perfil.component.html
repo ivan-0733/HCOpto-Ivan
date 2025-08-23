@@ -38,7 +38,7 @@
       </div>
       <div class="perfil-basic-info">
         <h2>{{ perfil.NombreUsuario }}</h2>
-        <p class="boleta">Boleta: {{ perfil.NumeroBoleta }}</p>
+        <p class="boleta">Empleado: {{ perfil.NumeroEmpleado }}</p>
         <p class="semestre">Periodo: <span class="semestre-badge">{{ semestreTexto }}</span></p>
       </div>
       <div class="perfil-actions" *ngIf="!isEditing">
@@ -242,16 +242,16 @@
         <h3>Información Académica</h3>
         <div class="info-grid">
           <div class="info-item">
-            <label>Número de Boleta:</label>
-            <p>{{ perfil.NumeroBoleta }}</p>
+            <label>Número de Empleado:</label>
+            <p>{{ perfil.NumeroEmpleado }}</p>
           </div>
           <div class="info-item">
-            <label>Materias Inscritas:</label>
+            <label>Materias Asignadas:</label>
             <p>{{ numeroMaterias ?? 'N/A' }}</p>
           </div>
           <div class="info-item">
-            <label>Profesores Asignados:</label>
-            <p>{{ profesoresUnicos ?? 'N/A' }}</p>
+            <label>Alumnos Asignados:</label>
+            <p>{{ alumnosUnicos ?? 'N/A' }}</p>
           </div>
           <div class="info-item">
             <label>Estado de Cuenta:</label>
@@ -266,11 +266,11 @@
             <p>{{ semestreTexto }}</p>
           </div>
           <div class="info-item">
-            <label>Inicio de Semestre:</label>
+            <label>Inicio de Periodo:</label>
             <p>{{ formatDate(fechaInicioPeriodo) }}</p>
           </div>
           <div class="info-item">
-            <label>Fin de Semestre:</label>
+            <label>Fin de Periodo:</label>
             <p>{{ formatDate(fechaFinPeriodo) }}</p>
           </div>
         </div>

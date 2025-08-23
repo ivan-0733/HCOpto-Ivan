@@ -84,8 +84,8 @@ export class ProfesorService {
       );
   }
 
-  
-// Obtener una historia clínica específica por ID 
+
+// Obtener una historia clínica específica por ID
 obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
   return this.http.get<ApiResponse<HistoriaClinica>>(`${this.apiUrl}/historias-clinicas/${id}`)
     .pipe(
@@ -133,9 +133,18 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
       );
   }
 
-  // Actualizar perfil del profesor
-  actualizarPerfil(datos: { nombreUsuario?: string; correoElectronico?: string; telefonoCelular?: string }): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/perfil`, datos);
+  // Agregar este método al ProfesorService si no lo tiene completo:
+  actualizarPerfil(datos: {
+    nombreUsuario?: string;
+    correoElectronico?: string;
+    telefonoCelular?: string;
+    passwordActual?: string;
+    nuevaPassword?: string;
+  }): Observable<any> {
+    return this.http.put<ApiResponse<any>>(`${this.apiUrl}/perfil`, datos)
+      .pipe(
+        map(response => response.data)
+      );
   }
 
   // Actualizar contraseña del profesor

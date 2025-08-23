@@ -10,11 +10,27 @@ const profesorController = {
    * Obtener datos del perfil del profesor logueado
    */
   obtenerPerfil: catchAsync(async (req, res) => {
-    const profesorId = req.usuario.ProfesorInfoID;
+    console.log('🔄 === INICIANDO obtenerPerfil ===');
+    console.log('req.usuario:', req.usuario);
+    console.log('req.role:', req.role);
 
+    const profesorId = req.usuario.ProfesorInfoID;
+    console.log('profesorId extraído:', profesorId);
+
+    if (!profesorId) {
+      console.log('❌ ProfesorInfoID no encontrado en req.usuario');
+      return res.status(400).json({
+        status: 'error',
+        message: 'ID de profesor no encontrado'
+      });
+    }
+
+    console.log('🔄 Llamando a profesorService.obtenerProfesorPorId...');
     const perfil = await profesorService.obtenerProfesorPorId(profesorId);
+    console.log('Perfil obtenido del service:', perfil);
 
     if (!perfil) {
+      console.log('❌ Perfil no encontrado en la base de datos');
       return res.status(404).json({
         status: 'error',
         message: 'Profesor no encontrado'
@@ -26,6 +42,7 @@ const profesorController = {
       delete perfil.ContraseñaHash;
     }
 
+    console.log('✅ Enviando respuesta exitosa del perfil');
     res.status(200).json({
       status: 'success',
       data: perfil

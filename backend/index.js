@@ -9,8 +9,11 @@ const historiaClinicaRoutes = require('./routes/historiaClinicaRoutes');
 const { errorHandler } = require('./utils/errorHandler');
 const multer = require('multer');
 const path = require('path');
-// Asegúrate de incluir las rutas de profesor
+
+// Agregar logs de debugging
+console.log('🔄 Cargando rutas de profesor...');
 const profesorRoutes = require('./routes/profesorRoutes');
+console.log('✅ Rutas de profesor cargadas correctamente');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -24,6 +27,15 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cors(config.cors));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Middleware de logging para todas las requests
+app.use((req, res, next) => {
+  if (req.originalUrl.includes('/api/profesores')) {
+    console.log(`📥 Profesor request: ${req.method} ${req.originalUrl}`);
+    console.log('Headers Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+  }
+  next();
+});
 
 // Verificar conexión a la base de datos
 db.query('SELECT 1')
@@ -41,10 +53,13 @@ res.json({ mensaje: 'Hola desde el backend de HCOpto, SALUDOS A REYES SANDOVAL' 
 });
 
 // En la sección de rutas
+console.log('🔄 Registrando rutas de profesor en /api/profesores...');
 app.use('/api/profesores', profesorRoutes);
+console.log('✅ Rutas de profesor registradas en /api/profesores');
 
 // Ruta para 404 - No encontrado
 app.all('*', (req, res, next) => {
+console.log(`❌ Ruta no encontrada: ${req.method} ${req.originalUrl}`);
 const err = new Error(`No se encontró ${req.originalUrl} en este servidor`);
 err.status = 'fail';
 err.statusCode = 404;
@@ -66,7 +81,3 @@ console.error('ERROR NO CAPTURADO! 💥 Cerrando servidor...');
 console.error(err.name, err.message);
 process.exit(1);
 });
-
-
-
-

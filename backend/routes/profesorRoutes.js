@@ -10,7 +10,7 @@ router.use(authController.verificarRol('profesor'));
 
 // Rutas para el perfil del profesor
 router.get('/perfil', profesorController.obtenerPerfil);
-router.patch('/perfil', profesorController.actualizarPerfil);
+router.put('/perfil', profesorController.actualizarPerfil); // ← Cambiado de PATCH a PUT
 
 // Ruta para actualizar contraseña
 router.patch('/password', profesorController.actualizarPassword);
@@ -33,6 +33,6 @@ router.get('/todas-materias', profesorController.obtenerTodasMaterias);
 router.get('/periodo-actual', profesorController.obtenerPeriodoEscolar);
 
 // Obtener una historia clínica específica por ID
-router.get('/historias-clinicas/:id', authController.verificarAuth, authController.verificarRol('profesor'), profesorController.obtenerHistoriaClinica);
+router.get('/historias-clinicas/:id', profesorController.obtenerHistoriaClinica);
 
 module.exports = router;

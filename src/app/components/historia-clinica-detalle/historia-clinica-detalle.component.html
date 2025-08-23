@@ -5,9 +5,6 @@
       <h1 *ngIf="historia">
         <i class="fas fa-file-medical"></i>
         Historia Clínica #{{ historiaId }}
-        <span class="estado-badge" [ngClass]="obtenerClaseEstado(historia.Estado)">
-          {{ historia.Estado }}
-        </span>
       </h1>
       <p *ngIf="historia">
         Paciente: {{ historia.Nombre }} {{ historia.ApellidoPaterno }} {{ historia.ApellidoMaterno }} |
@@ -116,7 +113,7 @@
             </div>
 
             <div class="info-item">
-              <h3>Estado</h3>
+              <h3>Estado de la Historia Clínica</h3>
               <p>
                 <span class="estado-badge" [ngClass]="obtenerClaseEstado(historia.Estado)">
                   {{ historia.Estado }}

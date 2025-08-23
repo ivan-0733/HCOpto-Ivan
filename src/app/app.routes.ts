@@ -83,7 +83,7 @@ export const routes: Routes = [
       },
       {
         path: 'perfil',
-        loadComponent: () => import('./components/alumno-perfil/alumno-perfil.component').then(m => m.AlumnoPerfilComponent),
+        loadComponent: () => import('./components/profesor-perfil/profesor-perfil.component').then(m => m.ProfesorPerfilComponent),
         title: 'HCOpto - Mi Perfil'
       },
       {

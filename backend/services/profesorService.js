@@ -9,24 +9,34 @@ const profesorService = {
    */
   async obtenerProfesorPorId(profesorInfoId) {
     try {
-      const [profesores] = await db.query(
-        `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
-                p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-                u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
-                u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
-         FROM ProfesoresInfo p
-         JOIN Usuarios u ON p.UsuarioID = u.ID
-         WHERE p.ID = ? AND u.EstaActivo = TRUE`,
-        [profesorInfoId]
-      );
+      console.log('🔄 === SERVICE: obtenerProfesorPorId ===');
+      console.log('profesorInfoId recibido:', profesorInfoId);
+
+      const query = `SELECT p.ID AS ProfesorInfoID, p.NumeroEmpleado,
+              p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
+              u.ID AS UsuarioID, u.NombreUsuario, u.CorreoElectronico,
+              u.EstaActivo, u.TelefonoCelular, u.FechaCreacion, u.FechaUltimoAcceso
+       FROM ProfesoresInfo p
+       JOIN Usuarios u ON p.UsuarioID = u.ID
+       WHERE p.ID = ? AND u.EstaActivo = TRUE`;
+
+      console.log('Query SQL:', query);
+      console.log('Parámetros:', [profesorInfoId]);
+
+      const [profesores] = await db.query(query, [profesorInfoId]);
+
+      console.log('Resultados de la query:', profesores);
+      console.log('Número de resultados:', profesores.length);
 
       if (profesores.length === 0) {
+        console.log('❌ No se encontró profesor con ID:', profesorInfoId);
         return null;
       }
 
+      console.log('✅ Profesor encontrado:', profesores[0]);
       return profesores[0];
     } catch (error) {
-      console.error('Error al obtener profesor por ID:', error);
+      console.error('❌ Error en obtenerProfesorPorId:', error);
       throw error;
     }
   },
