@@ -113,6 +113,25 @@ const adminController = {
   }),
 
   /**
+   * Obtener el período escolar actual
+   */
+  obtenerPeriodoEscolar: catchAsync(async (req, res) => {
+    const periodo = await adminService.obtenerPeriodoEscolarActual();
+
+    if (!periodo) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'No hay un período escolar activo actualmente'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: periodo
+    });
+  }),
+
+  /**
    * Obtener perfil del admin
    */
   obtenerPerfil: catchAsync(async (req, res) => {

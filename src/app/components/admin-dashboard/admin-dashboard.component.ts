@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { AdminService, HistoriaClinicaAdmin, EstadisticasAdmin, MateriaAdmin } from '../../services/admin.service';
 import { AuthService } from '../../services/auth.service';
@@ -33,10 +33,16 @@ export class AdminDashboardComponent implements OnInit {
   // Ordenamiento
   ordenamiento: string = 'recientes';
 
+  periodoEscolar: any = null;
+
   // Paginación
   paginaActual: number = 1;
   registrosPorPagina: number = 5;
   totalPaginas: number = 1;
+
+  materias: MateriaAdmin[] = []; // <- AGREGAR ESTA LÍNEA
+  mostrarMateriasHistoricas: boolean = false; // <- AGREGAR ESTA LÍNEA
+  historiasPorMateria: Map<number, number> = new Map(); // <- AGREGAR ESTA LÍNEA
 
   Math = Math;
 
@@ -85,21 +91,83 @@ export class AdminDashboardComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.adminService.obtenerTodasMaterias().subscribe({
+    // Primero cargar el periodo escolar actual
+    this.adminService.obtenerPeriodoEscolarActual().subscribe({
       next: (response) => {
-        this.todasLasMaterias = response.data.materias;
+        this.periodoEscolar = response.data;
+        console.log('Período escolar actual cargado:', this.periodoEscolar);
 
-        // --- LÓGICA CORREGIDA Y DEFINITIVA ---
-        // Filtramos directamente por la bandera 'EsActual' que viene del backend.
-        // La conversión a `!!m.EsActual` asegura que funcione con 1/0 de la BD.
-        this.materiasDelPeriodoActual = this.todasLasMaterias.filter(m => !!m.EsActual);
+        // Una vez cargado el periodo, cargar las historias
+        this.adminService.obtenerTodasHistorias().subscribe({
+          next: (response) => {
+            this.historiasClinicas = response.data.historias;
+            this.todasLasMaterias = this.extraerMaterias(this.historiasClinicas);
 
-        this.cargarHistoriasYEstadisticas();
+            // MODIFICACIÓN: Filtrar materias solo del periodo activo
+            if (this.periodoEscolar) {
+              this.materias = this.todasLasMaterias.filter(m =>
+                !m.Archivado && m.PeriodoEscolar === this.periodoEscolar.Codigo
+              );
+            } else {
+              this.materias = this.todasLasMaterias.filter(m => !m.Archivado);
+            }
+
+            this.contarHistoriasPorMateria();
+            this.calcularEstadisticasPorMateria();
+
+            if (!this.regresandoDeHistoriaDetalle) {
+              this.loadSavedFilters();
+            }
+
+            this.actualizarEstadisticas();
+            this.calcularTotalPaginas();
+            this.loading = false;
+          },
+          error: (error) => {
+            this.loading = false;
+            this.error = 'Error al cargar las historias clínicas. Por favor, intenta nuevamente.';
+            console.error('Error al cargar historias:', error);
+          }
+        });
       },
       error: (error) => {
-        this.loading = false;
-        this.error = 'Error al cargar las materias. Por favor, intenta nuevamente.';
-        console.error('Error al cargar materias:', error);
+        console.error('Error al cargar período escolar:', error);
+        // Continuar cargando historias aunque falle el periodo
+        this.adminService.obtenerTodasHistorias().subscribe({
+          next: (response) => {
+            this.historiasClinicas = response.data.historias;
+            this.todasLasMaterias = this.extraerMaterias(this.historiasClinicas);
+            this.materias = this.todasLasMaterias.filter(m => !m.Archivado);
+
+            this.contarHistoriasPorMateria();
+            this.calcularEstadisticasPorMateria();
+
+            if (!this.regresandoDeHistoriaDetalle) {
+              this.loadSavedFilters();
+            }
+
+            this.actualizarEstadisticas();
+            this.calcularTotalPaginas();
+            this.loading = false;
+          },
+          error: (error) => {
+            this.loading = false;
+            this.error = 'Error al cargar las historias clínicas. Por favor, intenta nuevamente.';
+            console.error('Error al cargar historias:', error);
+          }
+        });
+      }
+    });
+
+    this.adminService.obtenerEstadisticasGlobales().subscribe({
+      next: (response) => {
+        this.estadisticas = response.data.estadisticas;
+        this.calcularEstadisticasPorMateria();
+        this.actualizarEstadisticas();
+      },
+      error: (error) => {
+        console.error('Error al cargar estadísticas:', error);
+        this.generarEstadisticasLocales();
       }
     });
   }
@@ -417,9 +485,57 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  toggleMateriasHistoricas(): void {
+    this.mostrarMateriasHistoricas = !this.mostrarMateriasHistoricas;
+
+    if (this.mostrarMateriasHistoricas) {
+      this.materias = this.todasLasMaterias;
+    } else {
+      // MODIFICACIÓN: Filtrar por periodo activo
+      if (this.periodoEscolar) {
+        this.materias = this.todasLasMaterias.filter(m =>
+          !m.Archivado && m.PeriodoEscolar === this.periodoEscolar.Codigo
+        );
+      } else {
+        this.materias = this.todasLasMaterias.filter(m => !m.Archivado);
+      }
+
+      if (this.materiaSeleccionadaId) {
+        const materiaSeleccionada = this.materias.find(m => m.ID === this.materiaSeleccionadaId);
+        if (!materiaSeleccionada) {
+          this.materiaSeleccionadaId = null;
+          this.actualizarEstadisticas();
+        }
+      }
+    }
+
+    this.contarHistoriasPorMateria();
+    this.resetearPaginacion();
+    this.saveFilters();
+  }
+
   toggleMenu(historiaId: number, event: Event): void {
     event.stopPropagation();
-    this.menuAbiertoId = this.menuAbiertoId === historiaId ? null : historiaId;
+    if (this.menuAbiertoId === historiaId) {
+      this.menuAbiertoId = null;
+    } else {
+      this.menuAbiertoId = historiaId;
+    }
+  }
+
+  // Método para alternar el submenú
+  toggleSubmenu(event: Event): void {
+    event.stopPropagation();
+    const submenu = (event.target as HTMLElement).parentElement;
+    if (submenu) {
+      submenu.classList.toggle('active');
+    }
+  }
+
+  // Cerrar menú al hacer clic fuera
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    this.menuAbiertoId = null;
   }
 
   cerrarMenu(): void {
@@ -461,24 +577,31 @@ export class AdminDashboardComponent implements OnInit {
     this.cerrarMenu();
 
     const historia = this.historiasClinicas.find(h => h.ID === historiaId);
-    const accion = historia?.Archivado ? 'desarchivar' : 'archivar';
+
+    // Determinar si es archivar o desarchivar
+    const esArchivar = !historia?.Archivado;
+    const accion = esArchivar ? 'archivar' : 'desarchivar';
 
     if (confirm(`¿Estás seguro de ${accion} esta historia clínica?`)) {
-        this.adminService.archivarHistoria(historiaId, !historia?.Archivado).subscribe({
-            next: () => {
-                if (historia) {
-                    historia.Archivado = !historia.Archivado;
-                    historia.FechaUltimaModificacion = new Date().toISOString();
-                }
-                this.calcularEstadisticasPorMateria();
-                this.actualizarEstadisticas();
-                alert(`Historia ${accion}da correctamente`);
-            },
-            error: (error) => {
-                console.error(`Error al ${accion} historia:`, error);
-                alert(`Error al ${accion} la historia`);
+      this.adminService.archivarHistoria(historiaId, esArchivar).subscribe({
+        next: () => {
+          if (historia) {
+            historia.Archivado = esArchivar;
+            // Si se archiva, cambiar estado a Finalizado
+            if (esArchivar) {
+              historia.Estado = 'Finalizado';
             }
-        });
+            historia.FechaUltimaModificacion = new Date().toISOString();
+          }
+          this.calcularEstadisticasPorMateria();
+          this.actualizarEstadisticas();
+          alert(`Historia ${accion}da correctamente`);
+        },
+        error: (error) => {
+          console.error(`Error al ${accion} historia:`, error);
+          alert(`Error al ${accion} la historia`);
+        }
+      });
     }
   }
 
@@ -503,6 +626,10 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  desarchivarHistoria(historiaId: number, event?: Event): void {
+    this.archivarHistoria(historiaId, event); // Usa el mismo método
+  }
+
   private contieneTexto(texto: string | null | undefined, busqueda: string): boolean {
     if (!texto || !busqueda) return false;
     const textoNormalizado = texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -523,6 +650,17 @@ export class AdminDashboardComponent implements OnInit {
             case 'semestre-antiguo': return a.SemestreActual - b.SemestreActual;
             default: return 0;
         }
+    });
+  }
+
+  contarHistoriasPorMateria(): void {
+    this.historiasPorMateria.clear();
+
+    this.materias.forEach(materia => {
+      const count = this.historiasClinicas.filter(h =>
+        h.MateriaProfesorID === materia.MateriaProfesorID && !h.Archivado
+      ).length;
+      this.historiasPorMateria.set(materia.MateriaProfesorID, count);
     });
   }
 
@@ -570,6 +708,35 @@ export class AdminDashboardComponent implements OnInit {
     } else {
       this.estadisticas = this.estadisticasPorMateria.get(null) || this.estadisticas;
     }
+  }
+
+  extraerMaterias(historias: HistoriaClinicaAdmin[]): MateriaAdmin[] {
+    const materiasMap = new Map<number, MateriaAdmin>();
+
+    historias.forEach(h => {
+      if (!materiasMap.has(h.MateriaProfesorID)) {
+        materiasMap.set(h.MateriaProfesorID, {
+          MateriaProfesorID: h.MateriaProfesorID,
+          ID: h.MateriaProfesorID,
+          NombreMateria: h.NombreMateria,
+          Clave: h.ClaveMateria,
+          PeriodoEscolar: h.PeriodoEscolar,
+          Archivado: h.MateriaArchivada,
+          NumeroEmpleado: h.NumeroEmpleado,
+          NombreProfesor: h.NombreProfesor,
+          Grupo: h.GrupoMateria || 'N/A', // <- CAMBIO AQUÍ
+          TotalAlumnos: 0,
+          TotalHistorias: 0
+        });
+      }
+    });
+
+    return Array.from(materiasMap.values()).sort((a, b) => {
+      if (a.PeriodoEscolar !== b.PeriodoEscolar) {
+        return b.PeriodoEscolar.localeCompare(a.PeriodoEscolar);
+      }
+      return a.NombreMateria.localeCompare(b.NombreMateria);
+    });
   }
 
   obtenerEstadosConValores(): { estado: string; cantidad: number }[] {

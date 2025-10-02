@@ -22,7 +22,7 @@ const adminService = {
           p.ApellidoPaterno,
           p.ApellidoMaterno,
           p.CURP,
-          p.IDSiSeCO,
+          p.IDSiSeCO as IDSiSeCo,
           p.Edad,
           DATE_SUB(CURDATE(), INTERVAL p.Edad YEAR) as FechaNacimiento,
           cg_genero.Valor as Genero,
@@ -30,22 +30,23 @@ const adminService = {
           -- Datos del Alumno
           ai.NumeroBoleta,
           CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreAlumno,
+          u_alumno.CorreoElectronico as CorreoAlumno,
           ai.PeriodoEscolarActualID as SemestreActual,
 
           -- Datos del Profesor
           pi.NumeroEmpleado,
           CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
+          u_profesor.CorreoElectronico as CorreoProfesor,
 
           -- Datos de la Materia
           m.Nombre as NombreMateria,
           m.Codigo as ClaveMateria,
           mp.ID as MateriaProfesorID,
+          mp.Grupo as GrupoMateria,
           pe.Codigo as PeriodoEscolar,
 
-          -- ================== INICIO DE LA SOLUCIÓN ==================
-          -- Se obtiene el nombre del consultorio desde la tabla 'Consultorios'
+          -- Consultorio
           con.Nombre as Consultorio,
-          -- =================== FIN DE LA SOLUCIÓN ====================
 
           -- Datos de Comentarios
           (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
@@ -61,17 +62,17 @@ const adminService = {
 
         -- Joins para Alumno
         INNER JOIN AlumnosInfo ai ON hc.AlumnoID = ai.ID
+        INNER JOIN Usuarios u_alumno ON ai.UsuarioID = u_alumno.ID
 
         -- Joins para Materia y Profesor
         INNER JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
         INNER JOIN Materias m ON mp.MateriaID = m.ID
         INNER JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+        INNER JOIN Usuarios u_profesor ON pi.UsuarioID = u_profesor.ID
         INNER JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
 
-        -- ================== INICIO DE LA SOLUCIÓN ==================
-        -- Se añade el JOIN a la tabla 'Consultorios' usando la columna correcta 'ConsultorioID'
+        -- Join para Consultorio
         INNER JOIN Consultorios con ON hc.ConsultorioID = con.ID
-        -- =================== FIN DE LA SOLUCIÓN ====================
 
         ORDER BY hc.CreadoEn DESC
       `;
@@ -168,7 +169,7 @@ const adminService = {
           m.Codigo as Clave,
           CONCAT(pe.Codigo, ' - ', pe.FechaInicio, ' a ', pe.FechaFin) as PeriodoEscolar,
           pe.EsActual, -- <<<<<<<<<<<<<<< ESTA ES LA LÍNEA CLAVE AÑADIDA
-          mp.Grupo,
+          mp.Grupo as GrupoMateria,
           pi.NumeroEmpleado,
           CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
           (SELECT COUNT(DISTINCT AlumnoID) FROM HistorialesClinicos WHERE MateriaProfesorID = mp.ID) as TotalAlumnos,
@@ -232,21 +233,50 @@ const adminService = {
    */
   async toggleArchivarHistoria(historiaId, archivar) {
     try {
-      const fechaArchivado = archivar ? 'NOW()' : 'NULL';
+      if (archivar) {
+        // Al archivar: cambiar estado a Finalizado y archivar
 
-      const [result] = await db.query(
-        `UPDATE HistorialesClinicos SET Archivado = ?, FechaArchivado = ${fechaArchivado}, ActualizadoEn = NOW() WHERE ID = ?`,
-        [archivar, historiaId]
-      );
+        // 1. Obtener el ID del estado "Finalizado"
+        const [estadoFinalizado] = await db.query(
+          "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = 'Finalizado'"
+        );
 
-      if (result.affectedRows === 0) {
-        throw new AppError('Historia clínica no encontrada', 404);
+        if (estadoFinalizado.length === 0) {
+          throw new AppError('Estado Finalizado no encontrado', 404);
+        }
+
+        const estadoFinalizadoId = estadoFinalizado[0].ID;
+
+        // 2. Actualizar estado a Finalizado y archivar
+        const [result] = await db.query(
+          'UPDATE HistorialesClinicos SET EstadoID = ?, Archivado = TRUE, FechaArchivado = NOW(), ActualizadoEn = NOW() WHERE ID = ?',
+          [estadoFinalizadoId, historiaId]
+        );
+
+        if (result.affectedRows === 0) {
+          throw new AppError('Historia clínica no encontrada', 404);
+        }
+
+        return {
+          success: true,
+          message: 'Historia archivada y finalizada correctamente'
+        };
+      } else {
+        // Al desarchivar: solo quitar archivado (mantener el estado)
+        const [result] = await db.query(
+          'UPDATE HistorialesClinicos SET Archivado = FALSE, FechaArchivado = NULL, ActualizadoEn = NOW() WHERE ID = ?',
+          [historiaId]
+        );
+
+        if (result.affectedRows === 0) {
+          throw new AppError('Historia clínica no encontrada', 404);
+        }
+
+        return {
+          success: true,
+          message: 'Historia desarchivada correctamente'
+        };
       }
-
-      return {
-        success: true,
-        message: archivar ? 'Historia archivada correctamente' : 'Historia desarchivada correctamente'
-      };
     } catch (error) {
       console.error('Error al archivar/desarchivar historia:', error);
       throw error;
@@ -254,14 +284,23 @@ const adminService = {
   },
 
   /**
-   * Eliminar historia clínica
+   * Eliminar historia clínica (con todas sus dependencias)
+   */
+  /**
+   * Eliminar historia clínica (con todas sus dependencias)
    */
   async eliminarHistoria(historiaId) {
     try {
-      // Primero eliminar comentarios asociados
+      // 1. Eliminar auditoría (si existe)
+      await db.query('DELETE FROM AuditoriaHistorialesClinicos WHERE HistorialID = ?', [historiaId]);
+
+      // 2. Eliminar comentarios de profesores
       await db.query('DELETE FROM ComentariosProfesor WHERE HistorialID = ?', [historiaId]);
 
-      // Luego eliminar la historia
+      // 3. Eliminar otros registros relacionados si existen
+      // Agrega aquí cualquier otra tabla que tenga FK a HistorialesClinicos
+
+      // 4. Finalmente eliminar la historia clínica
       const [result] = await db.query('DELETE FROM HistorialesClinicos WHERE ID = ?', [historiaId]);
 
       if (result.affectedRows === 0) {
@@ -269,9 +308,10 @@ const adminService = {
       }
 
       return { success: true, message: 'Historia eliminada correctamente' };
+
     } catch (error) {
       console.error('Error al eliminar historia:', error);
-      throw error;
+      throw new AppError('Error al eliminar la historia clínica', 500);
     }
   },
 
@@ -345,6 +385,31 @@ const adminService = {
     } catch (error) {
       console.error('Error al agregar comentario:', error);
       throw new AppError('Error al agregar comentario', 500);
+    }
+  },
+
+  /**
+   * Obtener período escolar actual
+   */
+  async obtenerPeriodoEscolarActual() {
+    try {
+      const [periodos] = await db.query(
+        `SELECT
+          ID,
+          Codigo,
+          FechaInicio,
+          FechaFin,
+          EsActual,
+          FechaInicioSiguiente
+        FROM PeriodosEscolares
+        WHERE EsActual = TRUE
+        LIMIT 1`
+      );
+
+      return periodos.length > 0 ? periodos[0] : null;
+    } catch (error) {
+      console.error('Error al obtener período escolar actual:', error);
+      throw error;
     }
   },
 

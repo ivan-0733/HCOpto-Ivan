@@ -24,4 +24,7 @@ router.post('/historias/:id/comentarios', adminController.agregarComentario);
 // Perfil
 router.get('/perfil', adminController.obtenerPerfil);
 
+// Después de las otras rutas existentes, agrega:
+router.get('/periodo-escolar', adminController.obtenerPeriodoEscolar);
+
 module.exports = router;

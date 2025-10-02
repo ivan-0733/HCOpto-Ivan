@@ -1147,3 +1147,168 @@ $accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mis
     justify-content: center;
     width: 100%;
 }
+
+// ========================================
+// MENÚ DESPLEGABLE (DROPDOWN)
+// ========================================
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px); // Espacio debajo del botón
+  right: 0;
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideDown 0.2s ease-out;
+
+  // Flecha indicadora arriba del menú
+  &::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid $bg-primary;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background-color: transparent;
+    color: $text-primary;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: left;
+    font-size: 0.95rem;
+
+    i {
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+      color: $ipn-guinda;
+    }
+
+    &:hover {
+      background-color: $bg-secondary;
+    }
+
+    &.delete-option {
+      color: $danger;
+
+      i {
+        color: $danger;
+      }
+
+      &:hover {
+        background-color: rgba($danger, 0.1);
+      }
+    }
+  }
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: $border-color;
+  margin: 0.25rem 0;
+}
+
+.dropdown-submenu {
+  position: relative;
+
+  > span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: $text-primary;
+
+    i:first-child {
+      margin-right: 0.75rem;
+      color: $ipn-guinda;
+    }
+
+    // Ícono de flecha hacia abajo usando Material Icons
+    &::after {
+      content: 'keyboard_arrow_down';
+      font-family: 'Material Icons';
+      font-size: 1.2rem;
+      color: $text-secondary;
+      transition: transform 0.2s;
+      margin-left: auto;
+    }
+
+    &:hover {
+      background-color: $bg-secondary;
+    }
+  }
+
+  .submenu-content {
+    display: none;
+    background-color: $bg-secondary;
+    border-top: 1px solid $border-color;
+
+    button {
+      padding-left: 2.5rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  &.active {
+    > span::after {
+      transform: rotate(180deg); // Rotar la flecha cuando está activo
+    }
+
+    .submenu-content {
+      display: block;
+    }
+  }
+}
+
+// Animación del dropdown
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ESTILOS PARA MODO OSCURO
+:host-context(.dark-theme) {
+  .dropdown-menu {
+    background-color: $dark-bg-card;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+    // Flecha en modo oscuro
+    &::before {
+      border-bottom-color: $dark-bg-card;
+    }
+
+    button {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .dropdown-submenu .submenu-content {
+    background-color: $hover-bg-dark;
+  }
+}

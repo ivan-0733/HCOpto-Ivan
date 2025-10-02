@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 
 export interface HistoriaClinicaAdmin {
   ID: number;
+  Fecha: string;
   FechaCreacion: string;
   Estado: string;
   FechaUltimaModificacion: string;
@@ -13,16 +14,19 @@ export interface HistoriaClinicaAdmin {
   ApellidoPaterno: string;
   ApellidoMaterno: string;
   CURP: string;
-  IDSiSeCo: string;
+  IDSiSeCo: string; // <- IMPORTANTE: debe ser exactamente así
   FechaNacimiento: string;
   Genero: string;
   NumeroBoleta: string;
   NombreAlumno: string;
+  CorreoAlumno: string; // <- ESTE CAMPO
   SemestreActual: number;
   NumeroEmpleado: string;
   NombreProfesor: string;
+  CorreoProfesor: string; // <- ESTE CAMPO
   NombreMateria: string;
   ClaveMateria: string;
+  GrupoMateria: string;
   MateriaProfesorID: number;
   PeriodoEscolar: string;
   MateriaArchivada: boolean;
@@ -102,6 +106,10 @@ export class AdminService {
 
   eliminarHistoria(historiaId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/historias/${historiaId}`);
+  }
+
+  obtenerPeriodoEscolarActual(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/periodo-escolar`);
   }
 
   obtenerComentarios(historiaId: number): Observable<{ status: string; data: { comentarios: ComentarioHistoria[] } }> {
