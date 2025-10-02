@@ -47,17 +47,33 @@ const profesorService = {
   async obtenerHistoriasClinicasAlumnos(profesorId) {
     try {
       const [historias] = await db.query(`
-        SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
-              mp.ProfesorInfoID AS ProfesorID,
-              m.Nombre AS NombreMateria,
-              mp.Grupo AS GrupoMateria,
-              hc.MateriaProfesorID,
-              a.Nombre AS AlumnoNombre,
-              a.ApellidoPaterno AS AlumnoApellidoPaterno,
-              a.ApellidoMaterno AS AlumnoApellidoMaterno
+        SELECT
+          hc.ID,
+          hc.Fecha,
+          hc.Archivado,
+          hc.FechaArchivado,
+          hc.EstadoID,
+          p.ID AS PacienteID,
+          p.Nombre,
+          p.ApellidoPaterno,
+          p.ApellidoMaterno,
+          p.CorreoElectronico,
+          p.TelefonoCelular,
+          p.CURP,
+          p.IDSiSeCO,  -- ⭐ AGREGAR ESTE CAMPO
+          p.Edad,
+          cg.Valor AS Estado,
+          c.Nombre AS Consultorio,
+          pe.Codigo AS PeriodoEscolar,
+          mp.ProfesorInfoID AS ProfesorID,
+          m.Nombre AS NombreMateria,
+          mp.Grupo AS GrupoMateria,
+          hc.MateriaProfesorID,
+          a.Nombre AS AlumnoNombre,
+          a.ApellidoPaterno AS AlumnoApellidoPaterno,
+          a.ApellidoMaterno AS AlumnoApellidoMaterno,
+          a.NumeroBoleta AS AlumnoBoleta,  -- También útil para el filtro
+          ua.CorreoElectronico AS AlumnoCorreo
         FROM HistorialesClinicos hc
         JOIN Pacientes p ON hc.PacienteID = p.ID
         JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
@@ -66,10 +82,10 @@ const profesorService = {
         JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
         JOIN Materias m ON mp.MateriaID = m.ID
         JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+        JOIN Usuarios ua ON a.UsuarioID = ua.ID
         WHERE mp.ProfesorInfoID = ?
-        ORDER BY hc.Fecha DESC`,
-        [profesorId]
-      );
+        ORDER BY hc.Fecha DESC
+      `, [profesorId]);
 
       return historias;
     } catch (error) {

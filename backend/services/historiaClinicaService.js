@@ -13,38 +13,39 @@ const historiaClinicaService = {
 async obtenerHistoriasClinicasPorAlumno(alumnoId) {
   try {
     const [historias] = await db.query(
-      `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
-              mp.ProfesorInfoID AS ProfesorID,
-              m.Nombre AS NombreMateria,
-              mp.Grupo AS GrupoMateria,
-              hc.MateriaProfesorID,
-
-              -- Datos del Alumno desde AlumnosInfo
-              a.Nombre AS AlumnoNombre,
-              a.ApellidoPaterno AS AlumnoApellidoPaterno,
-              a.ApellidoMaterno AS AlumnoApellidoMaterno,
-              a.NumeroBoleta AS AlumnoBoleta,
-              ua.CorreoElectronico AS AlumnoCorreo
-
+      `SELECT
+        hc.ID,
+        hc.Fecha,
+        hc.Archivado,
+        hc.FechaArchivado,
+        hc.EstadoID,
+        p.ID AS PacienteID,
+        p.Nombre,
+        p.ApellidoPaterno,
+        p.ApellidoMaterno,
+        p.CorreoElectronico,
+        p.TelefonoCelular,
+        p.CURP,
+        p.IDSiSeCO,  -- ⭐ AGREGAR ESTE CAMPO
+        p.Edad,
+        cg.Valor AS Estado,
+        c.Nombre AS Consultorio,
+        pe.Codigo AS PeriodoEscolar,
+        m.Nombre AS NombreMateria,
+        mp.Grupo AS GrupoMateria,
+        hc.MateriaProfesorID,
+        mp.ProfesorInfoID AS ProfesorID
       FROM HistorialesClinicos hc
-          JOIN Pacientes p ON hc.PacienteID = p.ID
-          JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-          JOIN Consultorios c ON hc.ConsultorioID = c.ID
-          JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
-          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-          JOIN Materias m ON mp.MateriaID = m.ID
-          JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
-          JOIN Usuarios ua ON a.UsuarioID = ua.ID
-          WHERE hc.AlumnoID = ?
-          ORDER BY hc.Fecha DESC`,
+      JOIN Pacientes p ON hc.PacienteID = p.ID
+      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+      JOIN Consultorios c ON hc.ConsultorioID = c.ID
+      JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
+      WHERE hc.AlumnoID = ?
+      ORDER BY hc.Fecha DESC`,
       [alumnoId]
     );
-
-    // Hacer console.log para verificar que ProfesorID está presente en los resultados
-    console.log('Primera historia clínica obtenida:', historias.length > 0 ? historias[0] : 'No hay historias');
 
     return historias;
   } catch (error) {
@@ -2064,7 +2065,10 @@ async obtenerHistoriasClinicasPorProfesor(profesorId) {
     const [historias] = await db.query(
       `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
               p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
+              p.CorreoElectronico, p.TelefonoCelular,
+              p.CURP,          -- ⭐ AGREGAR ESTE CAMPO
+              p.IDSiSeCO,      -- ⭐ AGREGAR ESTE CAMPO
+              p.Edad,
               cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
               mp.ProfesorInfoID AS ProfesorID,
               m.Nombre AS NombreMateria,

@@ -366,10 +366,21 @@ export class ProfesorDashboardComponent implements OnInit {
   /**
    * Verifica si un string contiene otro sin distinción de acentos ni mayúsculas
    */
-  private contieneTexto(texto: string | null | undefined, busqueda: string | null | undefined): boolean {
+  private contieneTexto(texto: string | null | undefined, busqueda: string): boolean {
     if (!texto || !busqueda) return false;
-    const textoNormalizado = this.normalizarString(texto);
-    const busquedaNormalizada = this.normalizarString(busqueda);
+
+    const textoNormalizado = texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+      .trim();
+
+    const busquedaNormalizada = busqueda
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
     return textoNormalizado.includes(busquedaNormalizada);
   }
 
