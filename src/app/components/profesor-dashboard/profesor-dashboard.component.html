@@ -217,7 +217,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let historia of obtenerHistoriasPaginaActual()">
-            <td>{{ historia.ID }}</td>
+            <td>{{ historia.IDSiSeCO || historia.ID }}</td>
             <td>{{ historia.Fecha | date:'dd/MM/yyyy' }}</td>
             <!-- Nueva columna de alumno -->
             <td>

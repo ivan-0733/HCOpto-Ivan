@@ -48,10 +48,10 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
 crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
   // 1. Obtener ID del alumno desde el token
   const alumnoId = req.usuario.AlumnoInfoID;
-  
+
   // 2. Extraer datos del body
   const { datosHistoria, secciones } = req.body;
-  
+
   // 3. Validaciones básicas
   if (!datosHistoria || typeof datosHistoria !== 'object') {
     return res.status(400).json({
@@ -59,11 +59,11 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
       message: 'El formato de datosHistoria es incorrecto'
     });
   }
-  
+
   // 4. Validar campos obligatorios
   const camposRequeridos = ['NombreMateria', 'PeriodoEscolarID'];
   const faltantes = camposRequeridos.filter(campo => !datosHistoria[campo]);
-  
+
   if (faltantes.length > 0) {
     return res.status(400).json({
       status: 'error',
@@ -74,11 +74,11 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
 
   // 5. Validar datos del paciente si es nuevo
   if (!datosHistoria.paciente?.id) {
-    const camposPacienteRequeridos = ['nombre', 'apellidoPaterno', 'generoID', 'edad', 'correoElectronico', 'telefonoCelular'];
+    const camposPacienteRequeridos = ['nombre', 'apellidoPaterno', 'generoID', 'edad', 'curp'];  // ✅ curp es obligatorio, correo y teléfono NO
     const faltantesPaciente = camposPacienteRequeridos.filter(
       campo => !datosHistoria.paciente?.[campo]
     );
-    
+
     if (faltantesPaciente.length > 0) {
       return res.status(400).json({
         status: 'error',
@@ -106,7 +106,7 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
   try {
     // 8. Llamar al servicio
     const historiaCreada = await historiaClinicaService.crearHistoriaClinicaCompleta(
-      datosHistoria, 
+      datosHistoria,
       secciones || {} // Asegurar que secciones siempre sea un objeto
     );
 
@@ -120,8 +120,8 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
   } catch (error) {
     // 10. Manejo de errores
     console.error('Error detallado:', error);
-    
-    const mensajeError = error.message.includes('duplicate') 
+
+    const mensajeError = error.message.includes('duplicate')
       ? 'Ya existe una historia clínica con estos datos'
       : error.message || 'Error al crear historia clínica';
 

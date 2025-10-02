@@ -332,14 +332,26 @@ async obtenerCatalogo(tipoCatalogo) {
  */
 async buscarPacientes(termino) {
   try {
+      // Eliminar acentos y convertir a minúsculas para búsqueda
+      const terminoNormalizado = termino.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
       const [pacientes] = await db.query(
-      `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno,
-              CorreoElectronico, TelefonoCelular, Edad
+          `SELECT ID, Nombre, ApellidoPaterno, ApellidoMaterno,
+                  CorreoElectronico, TelefonoCelular, CURP, IDSiSeCO, Edad
           FROM Pacientes
-          WHERE Nombre LIKE ? OR ApellidoPaterno LIKE ? OR
-              ApellidoMaterno LIKE ? OR CorreoElectronico LIKE ?
+          WHERE LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                  Nombre, 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u'))
+                  LIKE LOWER(?)
+              OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                  ApellidoPaterno, 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u'))
+                  LIKE LOWER(?)
+              OR LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+                  ApellidoMaterno, 'á', 'a'), 'é', 'e'), 'í', 'i'), 'ó', 'o'), 'ú', 'u'))
+                  LIKE LOWER(?)
+              OR UPPER(CURP) LIKE UPPER(?)
+              OR IDSiSeCO LIKE ?
           LIMIT 10`,
-      [`%${termino}%`, `%${termino}%`, `%${termino}%`, `%${termino}%`]
+      [`%${terminoNormalizado}%`, `%${terminoNormalizado}%`, `%${terminoNormalizado}%`, `%${termino}%`, `%${termino}%`]
       );
 
       return pacientes;

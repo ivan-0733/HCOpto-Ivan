@@ -62,14 +62,9 @@ export class LoginComponent implements OnInit, OnDestroy { // Añadir OnDestroy
         correo: ['', [Validators.required, Validators.email]],
         password: ['', Validators.required]
       });
-    } else if (this.selectedRole === 'profesor') {
+    } else { // profesor (admin entra aquí)
       this.loginForm = this.formBuilder.group({
         numeroEmpleado: ['', Validators.required],
-        correo: ['', [Validators.required, Validators.email]],
-        password: ['', Validators.required]
-      });
-    } else { // admin
-      this.loginForm = this.formBuilder.group({
         correo: ['', [Validators.required, Validators.email]],
         password: ['', Validators.required]
       });

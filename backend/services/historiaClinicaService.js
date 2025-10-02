@@ -83,7 +83,8 @@ try {
         p.EscolaridadID,
         p.Ocupacion,
         p.DireccionLinea1,
-        p.DireccionLinea2,
+        p.CURP,
+        p.IDSiSeCO,
         p.Ciudad,
         p.EstadoID AS PacienteEstadoID,
         p.CodigoPostal,
@@ -403,45 +404,36 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
 
     pacienteId = datosHistoria.paciente.id;
     } else {
-    // Verificar si el paciente ya existe por correo o teléfono
-    const [pacientesExistentes] = await connection.query(
-        'SELECT ID FROM Pacientes WHERE CorreoElectronico = ? OR TelefonoCelular = ?',
-        [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
-    );
-
-    if (pacientesExistentes.length > 0) {
-        pacienteId = pacientesExistentes[0].ID;
-    } else {
         // Crear nuevo paciente
         const [resultPaciente] = await connection.query(
-        `INSERT INTO Pacientes (
-            Nombre, ApellidoPaterno, ApellidoMaterno, GeneroID, Edad,
-            EstadoCivilID, EscolaridadID, Ocupacion, DireccionLinea1, DireccionLinea2,
-            Ciudad, EstadoID, CodigoPostal, Pais, CorreoElectronico, TelefonoCelular, Telefono
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            datosHistoria.paciente.nombre,
-            datosHistoria.paciente.apellidoPaterno,
-            datosHistoria.paciente.apellidoMaterno,
-            datosHistoria.paciente.generoID,
-            datosHistoria.paciente.edad,
-            datosHistoria.paciente.estadoCivilID,
-            datosHistoria.paciente.escolaridadID,
-            datosHistoria.paciente.ocupacion,
-            datosHistoria.paciente.direccionLinea1,
-            datosHistoria.paciente.direccionLinea2,
-            datosHistoria.paciente.ciudad,
-            datosHistoria.paciente.estadoID ? parseInt(datosHistoria.paciente.estadoID) : null, // Conversión y manejo de nulos
-            datosHistoria.paciente.codigoPostal,
-            datosHistoria.paciente.pais || 'México',
-            datosHistoria.paciente.correoElectronico,
-            datosHistoria.paciente.telefonoCelular,
-            datosHistoria.paciente.telefono
-        ]
-        );
+          `INSERT INTO Pacientes (
+              Nombre, ApellidoPaterno, ApellidoMaterno, GeneroID, Edad,
+              EstadoCivilID, EscolaridadID, Ocupacion, DireccionLinea1, CURP,
+              Ciudad, EstadoID, CodigoPostal, Pais, CorreoElectronico, TelefonoCelular, Telefono, IDSiSeCO
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+              datosHistoria.paciente.nombre,
+              datosHistoria.paciente.apellidoPaterno,
+              datosHistoria.paciente.apellidoMaterno,
+              datosHistoria.paciente.generoID,
+              datosHistoria.paciente.edad,
+              datosHistoria.paciente.estadoCivilID || null,
+              datosHistoria.paciente.escolaridadID || null,
+              datosHistoria.paciente.ocupacion || null,
+              datosHistoria.paciente.direccionLinea1 || null,
+              datosHistoria.paciente.curp,  // ✅ NUEVO - OBLIGATORIO
+              datosHistoria.paciente.ciudad || null,
+              datosHistoria.paciente.estadoID || null,
+              datosHistoria.paciente.codigoPostal || null,
+              datosHistoria.paciente.pais || 'México',
+              datosHistoria.paciente.correoElectronico || null,
+              datosHistoria.paciente.telefonoCelular || null,
+              datosHistoria.paciente.telefono || null,
+              datosHistoria.paciente.idSiSeCO || null  // ✅ NUEVO - OPCIONAL
+          ]
+      );
 
         pacienteId = resultPaciente.insertId;
-    }
     }
 
 
@@ -2196,7 +2188,8 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
         p.EscolaridadID,
         p.Ocupacion,
         p.DireccionLinea1,
-        p.DireccionLinea2,
+        p.CURP,
+        p.IDSiSeCO,
         p.Ciudad,
         p.EstadoID AS PacienteEstadoID,
         p.CodigoPostal,
