@@ -10,55 +10,70 @@ const adminService = {
       const query = `
         SELECT
           hc.ID,
-          hc.FechaCreacion,
-          hc.Estado,
-          hc.FechaUltimaModificacion,
+          hc.CreadoEn as FechaCreacion,
+          cg_estado.Valor as Estado,
+          hc.EstadoID,
+          hc.ActualizadoEn as FechaUltimaModificacion,
           hc.Archivado,
+          hc.Fecha,
 
           -- Datos del Paciente
           p.Nombre,
           p.ApellidoPaterno,
           p.ApellidoMaterno,
           p.CURP,
-          p.IDSiSeCo,
-          p.FechaNacimiento,
-          p.Genero,
+          p.IDSiSeCO,
+          p.Edad,
+          DATE_SUB(CURDATE(), INTERVAL p.Edad YEAR) as FechaNacimiento,
+          cg_genero.Valor as Genero,
 
           -- Datos del Alumno
           ai.NumeroBoleta,
-          CONCAT(ua.NombreUsuario) as NombreAlumno,
-          ai.SemestreActual,
+          CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreAlumno,
+          ai.PeriodoEscolarActualID as SemestreActual,
 
           -- Datos del Profesor
           pi.NumeroEmpleado,
-          CONCAT(up.NombreUsuario) as NombreProfesor,
+          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
 
           -- Datos de la Materia
-          m.NombreMateria,
-          m.Clave as ClaveMateria,
+          m.Nombre as NombreMateria,
+          m.Codigo as ClaveMateria,
           mp.ID as MateriaProfesorID,
-          mp.PeriodoEscolar,
-          mp.Archivado as MateriaArchivada,
+          pe.Codigo as PeriodoEscolar,
+
+          -- ================== INICIO DE LA SOLUCIÓN ==================
+          -- Se obtiene el nombre del consultorio desde la tabla 'Consultorios'
+          con.Nombre as Consultorio,
+          -- =================== FIN DE LA SOLUCIÓN ====================
 
           -- Datos de Comentarios
-          (SELECT COUNT(*) FROM ComentariosHistorial WHERE HistoriaClinicaID = hc.ID) as TotalComentarios
+          (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
 
         FROM HistorialesClinicos hc
 
+        -- Joins para Estado
+        INNER JOIN CatalogosGenerales cg_estado ON hc.EstadoID = cg_estado.ID
+
         -- Joins para Paciente
         INNER JOIN Pacientes p ON hc.PacienteID = p.ID
+        INNER JOIN CatalogosGenerales cg_genero ON p.GeneroID = cg_genero.ID
 
         -- Joins para Alumno
-        INNER JOIN AlumnoInfo ai ON hc.AlumnoID = ai.ID
-        INNER JOIN Usuarios ua ON ai.UsuarioID = ua.ID
+        INNER JOIN AlumnosInfo ai ON hc.AlumnoID = ai.ID
 
         -- Joins para Materia y Profesor
         INNER JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
         INNER JOIN Materias m ON mp.MateriaID = m.ID
-        INNER JOIN ProfesorInfo pi ON mp.ProfesorID = pi.ID
-        INNER JOIN Usuarios up ON pi.UsuarioID = up.ID
+        INNER JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+        INNER JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
 
-        ORDER BY hc.FechaCreacion DESC
+        -- ================== INICIO DE LA SOLUCIÓN ==================
+        -- Se añade el JOIN a la tabla 'Consultorios' usando la columna correcta 'ConsultorioID'
+        INNER JOIN Consultorios con ON hc.ConsultorioID = con.ID
+        -- =================== FIN DE LA SOLUCIÓN ====================
+
+        ORDER BY hc.CreadoEn DESC
       `;
 
       const [historias] = await db.query(query);
@@ -87,13 +102,14 @@ const adminService = {
       // Historias por estado
       const [porEstado] = await db.query(`
         SELECT
-          Estado as estado,
+          cg.Valor as estado,
           COUNT(*) as cantidad
-        FROM HistorialesClinicos
-        WHERE Archivado = FALSE
-        GROUP BY Estado
+        FROM HistorialesClinicos hc
+        INNER JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+        WHERE hc.Archivado = FALSE
+        GROUP BY hc.EstadoID, cg.Valor
         ORDER BY
-          CASE Estado
+          CASE cg.Valor
             WHEN 'Nuevo' THEN 1
             WHEN 'Corregido' THEN 2
             WHEN 'En proceso' THEN 3
@@ -107,7 +123,7 @@ const adminService = {
       // Total de alumnos activos
       const [totalAlumnos] = await db.query(`
         SELECT COUNT(*) as total
-        FROM AlumnoInfo ai
+        FROM AlumnosInfo ai
         INNER JOIN Usuarios u ON ai.UsuarioID = u.ID
         WHERE u.EstaActivo = TRUE
       `);
@@ -115,14 +131,14 @@ const adminService = {
       // Total de profesores activos
       const [totalProfesores] = await db.query(`
         SELECT COUNT(*) as total
-        FROM ProfesorInfo pi
+        FROM ProfesoresInfo pi
         INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
         WHERE u.EstaActivo = TRUE
       `);
 
-      // Total de materias activas
+      // Total de materias (sin filtro de Archivado porque la columna no existe)
       const [totalMaterias] = await db.query(
-        'SELECT COUNT(*) as total FROM MateriasProfesor WHERE Archivado = FALSE'
+        'SELECT COUNT(*) as total FROM MateriasProfesor'
       );
 
       return {
@@ -148,18 +164,20 @@ const adminService = {
         SELECT
           mp.ID as MateriaProfesorID,
           m.ID,
-          m.NombreMateria,
-          m.Clave,
-          mp.PeriodoEscolar,
-          mp.Archivado,
+          m.Nombre as NombreMateria,
+          m.Codigo as Clave,
+          CONCAT(pe.Codigo, ' - ', pe.FechaInicio, ' a ', pe.FechaFin) as PeriodoEscolar,
+          pe.EsActual, -- <<<<<<<<<<<<<<< ESTA ES LA LÍNEA CLAVE AÑADIDA
+          mp.Grupo,
           pi.NumeroEmpleado,
-          CONCAT(u.NombreUsuario) as NombreProfesor,
+          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
+          (SELECT COUNT(DISTINCT AlumnoID) FROM HistorialesClinicos WHERE MateriaProfesorID = mp.ID) as TotalAlumnos,
           (SELECT COUNT(*) FROM HistorialesClinicos WHERE MateriaProfesorID = mp.ID AND Archivado = FALSE) as TotalHistorias
         FROM MateriasProfesor mp
         INNER JOIN Materias m ON mp.MateriaID = m.ID
-        INNER JOIN ProfesorInfo pi ON mp.ProfesorID = pi.ID
-        INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
-        ORDER BY mp.PeriodoEscolar DESC, m.NombreMateria ASC
+        INNER JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+        INNER JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
+        ORDER BY pe.FechaInicio DESC, m.Nombre ASC
       `;
 
       const [materias] = await db.query(query);
@@ -181,9 +199,21 @@ const adminService = {
         throw new AppError('Estado no válido', 400);
       }
 
+      // Obtener el ID del catálogo para el estado
+      const [estados] = await db.query(
+        "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = ?",
+        [nuevoEstado]
+      );
+
+      if (estados.length === 0) {
+        throw new AppError('Estado no encontrado en el catálogo', 400);
+      }
+
+      const estadoId = estados[0].ID;
+
       const [result] = await db.query(
-        'UPDATE HistorialesClinicos SET Estado = ?, FechaUltimaModificacion = NOW() WHERE ID = ?',
-        [nuevoEstado, historiaId]
+        'UPDATE HistorialesClinicos SET EstadoID = ?, ActualizadoEn = NOW() WHERE ID = ?',
+        [estadoId, historiaId]
       );
 
       if (result.affectedRows === 0) {
@@ -202,8 +232,10 @@ const adminService = {
    */
   async toggleArchivarHistoria(historiaId, archivar) {
     try {
+      const fechaArchivado = archivar ? 'NOW()' : 'NULL';
+
       const [result] = await db.query(
-        'UPDATE HistorialesClinicos SET Archivado = ?, FechaUltimaModificacion = NOW() WHERE ID = ?',
+        `UPDATE HistorialesClinicos SET Archivado = ?, FechaArchivado = ${fechaArchivado}, ActualizadoEn = NOW() WHERE ID = ?`,
         [archivar, historiaId]
       );
 
@@ -225,35 +257,21 @@ const adminService = {
    * Eliminar historia clínica
    */
   async eliminarHistoria(historiaId) {
-    const connection = await db.pool.getConnection();
-
     try {
-      await connection.beginTransaction();
+      // Primero eliminar comentarios asociados
+      await db.query('DELETE FROM ComentariosProfesor WHERE HistorialID = ?', [historiaId]);
 
-      // Eliminar comentarios asociados
-      await connection.query(
-        'DELETE FROM ComentariosHistorial WHERE HistoriaClinicaID = ?',
-        [historiaId]
-      );
-
-      // Eliminar historia clínica
-      const [result] = await connection.query(
-        'DELETE FROM HistorialesClinicos WHERE ID = ?',
-        [historiaId]
-      );
+      // Luego eliminar la historia
+      const [result] = await db.query('DELETE FROM HistorialesClinicos WHERE ID = ?', [historiaId]);
 
       if (result.affectedRows === 0) {
         throw new AppError('Historia clínica no encontrada', 404);
       }
 
-      await connection.commit();
       return { success: true, message: 'Historia eliminada correctamente' };
     } catch (error) {
-      await connection.rollback();
       console.error('Error al eliminar historia:', error);
       throw error;
-    } finally {
-      connection.release();
     }
   },
 
@@ -266,14 +284,15 @@ const adminService = {
         SELECT
           c.ID,
           c.Comentario,
-          c.FechaCreacion,
-          u.NombreUsuario,
+          c.FechaComentario as FechaCreacion,
+          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreUsuario,
           r.NombreRol as Rol
-        FROM ComentariosHistorial c
-        INNER JOIN Usuarios u ON c.UsuarioID = u.ID
+        FROM ComentariosProfesor c
+        INNER JOIN ProfesoresInfo pi ON c.ProfesorID = pi.ID
+        INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
         INNER JOIN Roles r ON u.RolID = r.ID
-        WHERE c.HistoriaClinicaID = ?
-        ORDER BY c.FechaCreacion DESC
+        WHERE c.HistorialID = ?
+        ORDER BY c.FechaComentario DESC
       `;
 
       const [comentarios] = await db.query(query, [historiaId]);
@@ -289,18 +308,40 @@ const adminService = {
    */
   async agregarComentario(historiaId, usuarioId, comentario) {
     try {
-      const [result] = await db.query(
-        'INSERT INTO ComentariosHistorial (HistoriaClinicaID, UsuarioID, Comentario) VALUES (?, ?, ?)',
-        [historiaId, usuarioId, comentario]
+      // Obtener el ProfesorID desde el usuarioId
+      const [profesor] = await db.query(
+        'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?',
+        [usuarioId]
       );
 
-      return {
-        id: result.insertId,
-        historiaId,
-        usuarioId,
-        comentario,
-        fechaCreacion: new Date()
-      };
+      if (profesor.length === 0) {
+        throw new AppError('Profesor no encontrado', 404);
+      }
+
+      const profesorId = profesor[0].ID;
+
+      const [result] = await db.query(
+        'INSERT INTO ComentariosProfesor (HistorialID, ProfesorID, Comentario) VALUES (?, ?, ?)',
+        [historiaId, profesorId, comentario]
+      );
+
+      // Obtener el comentario recién creado
+      const [nuevoComentario] = await db.query(
+        `SELECT
+          c.ID,
+          c.Comentario,
+          c.FechaComentario as FechaCreacion,
+          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreUsuario,
+          r.NombreRol as Rol
+        FROM ComentariosProfesor c
+        INNER JOIN ProfesoresInfo pi ON c.ProfesorID = pi.ID
+        INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
+        INNER JOIN Roles r ON u.RolID = r.ID
+        WHERE c.ID = ?`,
+        [result.insertId]
+      );
+
+      return nuevoComentario[0];
     } catch (error) {
       console.error('Error al agregar comentario:', error);
       throw new AppError('Error al agregar comentario', 500);
@@ -308,11 +349,11 @@ const adminService = {
   },
 
   /**
-   * Obtener perfil del admin
+   * Obtener perfil del administrador
    */
   async obtenerPerfilAdmin(usuarioId) {
     try {
-      const [usuarios] = await db.query(`
+      const query = `
         SELECT
           u.ID as UsuarioID,
           u.NombreUsuario,
@@ -323,16 +364,18 @@ const adminService = {
           r.NombreRol as Rol
         FROM Usuarios u
         INNER JOIN Roles r ON u.RolID = r.ID
-        WHERE u.ID = ? AND r.NombreRol = 'admin'
-      `, [usuarioId]);
+        WHERE u.ID = ?
+      `;
 
-      if (usuarios.length === 0) {
-        throw new AppError('Usuario admin no encontrado', 404);
+      const [perfil] = await db.query(query, [usuarioId]);
+
+      if (perfil.length === 0) {
+        throw new AppError('Perfil de administrador no encontrado', 404);
       }
 
-      return usuarios[0];
+      return perfil[0];
     } catch (error) {
-      console.error('Error al obtener perfil admin:', error);
+      console.error('Error al obtener perfil de admin:', error);
       throw error;
     }
   }

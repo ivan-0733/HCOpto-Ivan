@@ -73,7 +73,7 @@ const authController = {
     // Generar token
     const token = authService.generarToken(alumno.UsuarioID, 'alumno');
 
-    // Devolver respuesta exitosa
+    // ✅ CORREGIDO: Incluir ROL en la respuesta
     res.status(200).json({
       status: 'success',
       token,
@@ -83,7 +83,8 @@ const authController = {
         nombreUsuario: alumno.NombreUsuario,
         correo: alumno.CorreoElectronico,
         boleta: alumno.NumeroBoleta,
-        semestre: alumno.SemestreActual
+        semestre: alumno.SemestreActual,
+        rol: 'alumno'  // ← AGREGADO
       }
     });
   }),
@@ -101,7 +102,7 @@ const authController = {
       });
     }
 
-    // Verificar si es admin
+    // ✅ VERIFICAR SI ES ADMIN PRIMERO
     if (numeroEmpleado === 'admin' && correo === 'admin@admin.ipn' && password === 'admin') {
       // Buscar o crear usuario admin
       let adminUser = await authService.verificarExistenciaAdmin();
@@ -122,7 +123,7 @@ const authController = {
             nombreUsuario: adminUser.nombreUsuario,
             correo: adminUser.correo,
             numeroEmpleado: 'admin',
-            rol: 'admin'
+            rol: 'admin'  // ← Ya estaba correcto
           }
         }
       });
@@ -182,7 +183,7 @@ const authController = {
     // Generar token
     const token = authService.generarToken(profesor.UsuarioID, 'profesor');
 
-    // Devolver respuesta exitosa
+    // ✅ CORREGIDO: Incluir ROL en la respuesta
     res.status(200).json({
       status: 'success',
       token,
@@ -191,7 +192,8 @@ const authController = {
         usuarioId: profesor.UsuarioID,
         nombreUsuario: profesor.NombreUsuario,
         correo: profesor.CorreoElectronico,
-        numeroEmpleado: profesor.NumeroEmpleado
+        numeroEmpleado: profesor.NumeroEmpleado,
+        rol: 'profesor'  // ← AGREGADO
       }
     });
   }),

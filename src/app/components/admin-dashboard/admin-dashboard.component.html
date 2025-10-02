@@ -1,143 +1,99 @@
 <div class="dashboard-container" (click)="cerrarMenu()">
-  <!-- Título -->
-  <h1 class="dashboard-title">Panel de Administración</h1>
+  <header class="content-header">
+    <div class="header-title">
+      <h1>
+        <i class="fas fa-tachometer-alt"></i>
+        Panel de Administración
+      </h1>
+      <p>Bienvenido, <strong>Administrador</strong></p>
+    </div>
+  </header>
 
-  <!-- Mensaje de error -->
   <div class="error-container" *ngIf="error">
-    <i class="fas fa-exclamation-circle"></i>
+    <i class="fas fa-exclamation-triangle"></i>
     <p>{{ error }}</p>
     <button class="btn-retry" (click)="cargarDatos()">
-      <i class="fas fa-sync-alt"></i> Reintentar
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
     </button>
   </div>
 
-  <!-- Estadísticas - Ocultar cuando hay un error -->
-  <div class="estadisticas-grid" *ngIf="!error && estadisticas">
-    <!-- Total de historias -->
-    <div class="stat-card">
-      <div class="stat-icon total">
+  <div class="materias-cards" *ngIf="materiasDelPeriodoActual && materiasDelPeriodoActual.length > 0 && !error">
+    <div class="materias-cards-container">
+      <div class="materia-card" *ngIf="materiasDelPeriodoActual.length > 1"
+           (click)="aplicarFiltroMateria(null)"
+           [ngClass]="{'selected': materiaSeleccionadaId === null}">
+        <div class="materia-card-icon">
+          <i class="material-icons libro-estilizado" style="font-size: 1.85rem;">collections_bookmark</i>
+        </div>
+        <div class="materia-card-content">
+          <h3>Todas las materias</h3>
+        </div>
+      </div>
+
+      <div class="materia-card"
+           *ngFor="let materia of materiasDelPeriodoActual"
+           (click)="aplicarFiltroMateria(materia.MateriaProfesorID)"
+           [ngClass]="{'selected': materiaSeleccionadaId === materia.MateriaProfesorID}">
+        <div class="materia-card-icon">
+          <i class="material-icons">book</i>
+        </div>
+        <div class="materia-card-content">
+          <h3>{{ materia.NombreMateria }}</h3>
+          <small>Sección {{ materia.Grupo }} - {{ materia.TotalAlumnos }} alumnos</small>
+          <small>Prof. {{ materia.NombreProfesor }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-cards" *ngIf="estadisticas && estadisticas.porEstado && !error">
+    <div class="stat-card total"
+        *ngIf="historiasClinicas && historiasClinicas.length > 0"
+        (click)="aplicarFiltroEstado('todos')"
+        [ngClass]="{'selected': filtroEstado === 'todos'}">
+      <div class="stat-card-icon">
         <i class="fas fa-file-medical"></i>
       </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas.total }}</h3>
-        <p>Total de historias</p>
+      <div class="stat-card-content">
+        <h3>N° Historias</h3>
+        <p class="stat-value">{{ obtenerHistoriasNoArchivadas() }}</p>
       </div>
     </div>
 
-    <!-- Total de alumnos -->
-    <div class="stat-card">
-      <div class="stat-icon alumnos">
-        <i class="fas fa-user-graduate"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas.totalAlumnos }}</h3>
-        <p>Alumnos activos</p>
-      </div>
-    </div>
-
-    <!-- Total de profesores -->
-    <div class="stat-card">
-      <div class="stat-icon profesores">
-        <i class="fas fa-chalkboard-teacher"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas.totalProfesores }}</h3>
-        <p>Profesores activos</p>
-      </div>
-    </div>
-
-    <!-- Total de materias -->
-    <div class="stat-card">
-      <div class="stat-icon materias">
-        <i class="fas fa-book"></i>
-      </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas.totalMaterias }}</h3>
-        <p>Materias activas</p>
-      </div>
-    </div>
-
-    <!-- Historias archivadas -->
-    <div class="stat-card clickable" (click)="aplicarFiltroEstado('archivadas')" *ngIf="estadisticas.archivadas > 0">
-      <div class="stat-icon archivadas">
+    <div class="stat-card archivadas"
+        *ngIf="estadisticas.archivadas > 0"
+        (click)="aplicarFiltroEstado('archivadas')"
+        [ngClass]="{'selected': filtroEstado === 'archivadas'}">
+      <div class="stat-card-icon">
         <i class="fas fa-archive"></i>
       </div>
-      <div class="stat-info">
-        <h3>{{ estadisticas.archivadas }}</h3>
-        <p>Historias archivadas</p>
+      <div class="stat-card-content">
+        <h3>Archivados</h3>
+        <p class="stat-value">{{ estadisticas.archivadas || 0 }}</p>
       </div>
     </div>
 
-    <!-- Estados dinámicos -->
-    <div class="stat-card clickable"
-         *ngFor="let estado of obtenerEstadosConValores()"
-         (click)="aplicarFiltroEstado(estado.estado)">
-      <div class="stat-icon" [ngClass]="estado.estado.toLowerCase().replace(' ', '-')">
-        <i class="fas"
-           [ngClass]="{
-             'fa-plus-circle': estado.estado === 'Nuevo',
-             'fa-check-circle': estado.estado === 'Corregido',
-             'fa-spinner': estado.estado === 'En proceso',
-             'fa-eye': estado.estado === 'Revisión',
-             'fa-edit': estado.estado === 'Corrección',
-             'fa-flag-checkered': estado.estado === 'Finalizado'
-           }"></i>
+    <div class="stat-card por-estado"
+        *ngFor="let estado of obtenerEstadosConValores()"
+        (click)="aplicarFiltroEstado(estado.estado)"
+        [ngClass]="{'selected': filtroEstado === estado.estado}">
+      <div class="stat-card-icon" [ngClass]="obtenerClaseEstado(estado.estado)">
+        <i class="fas fa-tasks"></i>
       </div>
-      <div class="stat-info">
-        <h3>{{ estado.cantidad }}</h3>
-        <p>{{ estado.estado }}</p>
+      <div class="stat-card-content">
+        <h3>{{ estado.estado }}</h3>
+        <p class="stat-value" *ngIf="estado.estado !== 'Finalizado'">{{ estado.cantidad }}</p>
+        <p class="stat-value" *ngIf="estado.estado === 'Finalizado'">{{ obtenerFinalizadasNoArchivadas() }}</p>
       </div>
     </div>
   </div>
 
-  <!-- Filtros de materia -->
-  <div class="materias-section" *ngIf="!error">
-    <h2>Materias</h2>
-
-    <div class="materias-container">
-      <div class="materia-card"
-           [class.active]="materiaSeleccionadaId === null && filtroMateriaArchivada === null"
-           (click)="aplicarFiltroMateria(null)">
-        <div class="materia-info">
-          <h3>Todas las materias</h3>
-          <p class="materia-periodo">Todos los periodos</p>
-        </div>
-        <div class="materia-count">
-          <span class="count-badge">{{ estadisticasPorMateria.get(null)?.total || 0 }}</span>
-        </div>
-      </div>
-
-      <div class="materia-card"
-           *ngFor="let materia of materias"
-           [class.active]="materiaSeleccionadaId === materia.ID"
-           (click)="aplicarFiltroMateria(materia.ID)">
-        <div class="materia-info">
-          <h3>{{ materia.NombreMateria }}</h3>
-          <p class="materia-profesor">
-            <i class="fas fa-user"></i> {{ materia.NombreProfesor }} ({{ materia.NumeroEmpleado }})
-          </p>
-          <p class="materia-periodo">{{ materia.PeriodoEscolar }}</p>
-        </div>
-        <div class="materia-count">
-          <span class="count-badge">{{ historiasPorMateria.get(materia.MateriaProfesorID) || 0 }}</span>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn-toggle-historicas" (click)="toggleMateriasHistoricas()">
-      <i class="fas" [ngClass]="mostrarMateriasHistoricas ? 'fa-eye-slash' : 'fa-eye'"></i>
-      {{ mostrarMateriasHistoricas ? 'Ocultar' : 'Mostrar' }} materias históricas
-    </button>
+  <div class="help-message" *ngIf="!loading && !error && historiasClinicas && historiasClinicas.length > 0">
+    <i class="material-icons info-icon">info</i>
+    <p>Aquí puedes ver todas las historias clínicas del sistema. Usa los filtros para encontrar historias específicas</p>
   </div>
 
-  <!-- Sección de historias -->
-  <div class="historias-section" *ngIf="!error">
-    <h2 class="section-title">
-      Aquí puedes ver todas las historias clínicas del sistema
-    </h2>
-  </div>
-
-  <!-- Filtros -->
   <div class="filtros-container" *ngIf="!error">
     <div class="filtro">
       <label for="filtroEstado">Filtrar por estado:</label>
@@ -146,22 +102,29 @@
         [(ngModel)]="filtroEstado"
         (change)="aplicarFiltroEstado(filtroEstado)">
         <option value="todos">Todos los estados</option>
-        <option value="Nuevo">Nuevo</option>
-        <option value="Corregido">Corregido</option>
-        <option value="En proceso">En proceso</option>
-        <option value="Revisión">Revisión</option>
-        <option value="Corrección">Corrección</option>
-        <option value="Finalizado">Finalizado</option>
-        <option value="archivadas">Archivadas</option>
+        <option value="archivadas">Archivados</option>
+        <option *ngFor="let estado of obtenerEstadosConValores()" [value]="estado.estado">
+            {{ estado.estado }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filtro" *ngIf="filtroEstado === 'archivadas'">
+      <label for="filtroMateriaArchivada">Filtrar por materia:</label>
+      <select
+        id="filtroMateriaArchivada"
+        [(ngModel)]="filtroMateriaArchivada"
+        (ngModelChange)="aplicarFiltroMateriaArchivada()">
+        <option [ngValue]="null">Todas las materias</option>
+        <option *ngFor="let materia of obtenerMateriasConHistoriasArchivadas()" [ngValue]="materia.MateriaProfesorID">
+          {{ materia.NombreMateria }} ({{ materia.PeriodoEscolar.split(' - ')[0] }})
+        </option>
       </select>
     </div>
 
     <div class="filtro">
       <label for="ordenamiento">Ordenar por:</label>
-      <select
-        id="ordenamiento"
-        [(ngModel)]="ordenamiento"
-        (change)="aplicarOrdenamiento()">
+      <select id="ordenamiento" [(ngModel)]="ordenamiento" (change)="aplicarOrdenamiento()">
         <option value="recientes">Fecha (más recientes primero)</option>
         <option value="antiguas">Fecha (más antiguas primero)</option>
         <option value="alfabetico-asc">Nombre (A-Z)</option>
@@ -177,13 +140,7 @@
       <label for="filtroProfesor">Buscar profesor:</label>
       <div class="input-with-icon">
         <i class="fas fa-chalkboard-teacher"></i>
-        <input
-          type="text"
-          id="filtroProfesor"
-          [(ngModel)]="filtroProfesor"
-          placeholder="Nombre o Número de Empleado"
-          (ngModelChange)="onFiltroProfesorChange()"
-        >
+        <input type="text" id="filtroProfesor" [(ngModel)]="filtroProfesor" placeholder="Nombre o Número de Empleado" (ngModelChange)="onFiltroProfesorChange()">
       </div>
     </div>
 
@@ -191,13 +148,7 @@
       <label for="filtroAlumno">Buscar alumno:</label>
       <div class="input-with-icon">
         <i class="fas fa-user-graduate"></i>
-        <input
-          type="text"
-          id="filtroAlumno"
-          [(ngModel)]="filtroAlumno"
-          placeholder="Nombre o Boleta"
-          (ngModelChange)="onFiltroAlumnoChange()"
-        >
+        <input type="text" id="filtroAlumno" [(ngModel)]="filtroAlumno" placeholder="Nombre o Boleta" (ngModelChange)="onFiltroAlumnoChange()">
       </div>
     </div>
 
@@ -205,18 +156,11 @@
       <label for="filtroPaciente">Buscar paciente:</label>
       <div class="input-with-icon">
         <i class="fas fa-search"></i>
-        <input
-          type="text"
-          id="filtroPaciente"
-          [(ngModel)]="filtroPaciente"
-          placeholder="Nombre, CURP o ID SiSeCo"
-          (ngModelChange)="onFiltroPacienteChange()"
-        >
+        <input type="text" id="filtroPaciente" [(ngModel)]="filtroPaciente" placeholder="Nombre, CURP o ID SiSeCo" (ngModelChange)="onFiltroPacienteChange()">
       </div>
     </div>
   </div>
 
-  <!-- Tabla de historias clínicas -->
   <div class="tabla-container" *ngIf="!error">
     <div class="loading-container" *ngIf="loading">
       <div class="spinner"></div>
@@ -232,38 +176,23 @@
       <table class="tabla-historias">
         <thead>
           <tr>
-            <th>Paciente</th>
-            <th>Edad</th>
+            <th>ID SiSeCo</th>
+            <th>Fecha</th>
             <th>Alumno</th>
             <th>Profesor</th>
-            <th>Materia</th>
+            <th>Paciente</th>
+            <th>Edad</th>
             <th>Estado</th>
-            <th>Fecha</th>
+            <th>Consultorio</th>
+            <th>Semestre</th>
             <th>Comentarios</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let historia of obtenerHistoriasPaginadas()">
-            <td class="paciente-cell">
-              <div class="paciente-info">
-                <strong>{{ historia.Nombre }} {{ historia.ApellidoPaterno }} {{ historia.ApellidoMaterno }}</strong>
-                <span class="paciente-detalles">
-                  <i class="fas fa-id-card"></i> {{ historia.CURP }}
-                </span>
-                <span class="paciente-detalles" *ngIf="historia.IDSiSeCo">
-                  <i class="fas fa-hashtag"></i> {{ historia.IDSiSeCo }}
-                </span>
-              </div>
-            </td>
-            <td class="edad-cell">
-              <span *ngIf="calcularEdad(historia.FechaNacimiento) !== null">
-                {{ calcularEdad(historia.FechaNacimiento) }} años
-              </span>
-              <span *ngIf="calcularEdad(historia.FechaNacimiento) === null" class="no-data">
-                N/A
-              </span>
-            </td>
+            <td>{{ historia.IDSiSeCo || '-' }}</td>
+            <td>{{ historia.FechaCreacion | date:'dd/MM/yyyy' }}</td>
             <td class="alumno-cell">
               <div class="alumno-info">
                 <strong>{{ historia.NombreAlumno }}</strong>
@@ -283,11 +212,21 @@
                 </span>
               </div>
             </td>
-            <td class="materia-cell">
-              <div class="materia-info-table">
-                <strong>{{ historia.NombreMateria }}</strong>
-                <span class="materia-detalles">{{ historia.PeriodoEscolar }}</span>
+            <td class="paciente-cell">
+              <div class="paciente-info">
+                <strong>{{ historia.Nombre }} {{ historia.ApellidoPaterno }} {{ historia.ApellidoMaterno }}</strong>
+                <span class="paciente-detalles">
+                  <i class="fas fa-id-card"></i> {{ historia.CURP }}
+                </span>
               </div>
+            </td>
+            <td class="edad-cell">
+              <span *ngIf="calcularEdad(historia.FechaNacimiento) !== null">
+                {{ calcularEdad(historia.FechaNacimiento) }} años
+              </span>
+              <span *ngIf="calcularEdad(historia.FechaNacimiento) === null" class="no-data">
+                N/A
+              </span>
             </td>
             <td>
               <span class="badge"
@@ -302,7 +241,8 @@
                 {{ historia.Estado }}
               </span>
             </td>
-            <td>{{ historia.FechaCreacion | date:'dd/MM/yyyy' }}</td>
+            <td>{{ historia.Consultorio || '-' }}</td>
+            <td>{{ historia.PeriodoEscolar }}</td>
             <td class="comentarios-cell">
               <span class="comentarios-badge" *ngIf="historia.TotalComentarios > 0">
                 <i class="fas fa-comments"></i> {{ historia.TotalComentarios }}
@@ -316,13 +256,13 @@
                 <button class="btn-icon btn-ver"
                         (click)="verHistoria(historia.ID)"
                         title="Ver historia clínica">
-                  <i class="fas fa-eye"></i>
+                  <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">visibility</i>
                 </button>
                 <div class="menu-container">
                   <button class="btn-icon btn-menu"
                           (click)="toggleMenu(historia.ID, $event)"
                           title="Más acciones">
-                    <i class="fas fa-ellipsis-v"></i>
+                    <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">more_vert</i>
                   </button>
                   <div class="dropdown-menu" *ngIf="menuAbiertoId === historia.ID">
                     <button (click)="editarHistoria(historia.ID, $event)">
@@ -362,54 +302,42 @@
       </table>
     </div>
 
-    <!-- Paginación -->
     <div class="paginacion-container" *ngIf="!loading && filtrarHistorias().length > 0">
       <div class="paginacion-info">
-        <label for="registrosPorPagina">Mostrar:</label>
+        Mostrando {{ (paginaActual - 1) * registrosPorPagina + 1 }} -
+        {{ Math.min(paginaActual * registrosPorPagina, filtrarHistorias().length) }}
+        de {{ filtrarHistorias().length }} registros
+      </div>
+
+      <div class="paginacion-selector">
+        <label for="registrosPorPagina">Registros por página:</label>
         <select id="registrosPorPagina" [(ngModel)]="registrosPorPagina" (change)="cambiarRegistrosPorPagina()">
-          <option [value]="5">5</option>
-          <option [value]="10">10</option>
-          <option [value]="25">25</option>
-          <option [value]="50">50</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
         </select>
-        <span>registros por página</span>
       </div>
 
-      <div class="paginacion-controles">
-        <button
-          class="btn-pagina"
-          [disabled]="paginaActual === 1"
-          (click)="cambiarPagina(1)">
-          <i class="fas fa-angle-double-left"></i>
+      <div class="paginacion-botones">
+        <button class="btn-pagina" (click)="cambiarPagina(1)" [disabled]="paginaActual === 1" title="Primera página">
+          <i class="material-icons">first_page</i>
         </button>
-        <button
-          class="btn-pagina"
-          [disabled]="paginaActual === 1"
-          (click)="cambiarPagina(paginaActual - 1)">
-          <i class="fas fa-angle-left"></i>
+        <button class="btn-pagina" (click)="cambiarPagina(paginaActual - 1)" [disabled]="paginaActual === 1" title="Página anterior">
+          <i class="material-icons">navigate_before</i>
         </button>
 
-        <span class="pagina-actual">
-          Página {{ paginaActual }} de {{ totalPaginas }}
-        </span>
+        <span class="pagina-actual">{{ paginaActual }} de {{ totalPaginas }}</span>
 
-        <button
-          class="btn-pagina"
-          [disabled]="paginaActual === totalPaginas"
-          (click)="cambiarPagina(paginaActual + 1)">
-          <i class="fas fa-angle-right"></i>
+        <button class="btn-pagina" (click)="cambiarPagina(paginaActual + 1)" [disabled]="paginaActual === totalPaginas" title="Página siguiente">
+          <i class="material-icons">navigate_next</i>
         </button>
-        <button
-          class="btn-pagina"
-          [disabled]="paginaActual === totalPaginas"
-          (click)="cambiarPagina(totalPaginas)">
-          <i class="fas fa-angle-double-right"></i>
+        <button class="btn-pagina" (click)="cambiarPagina(totalPaginas)" [disabled]="paginaActual === totalPaginas" title="Última página">
+          <i class="material-icons">last_page</i>
         </button>
-      </div>
-
-      <div class="paginacion-total">
-        <span>Total: {{ filtrarHistorias().length }} historias</span>
       </div>
     </div>
   </div>
-</div>
+  </div>
+
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

@@ -6,14 +6,15 @@ const db = require('./config/database.js');
 const authRoutes = require('./routes/authRoutes');
 const alumnoRoutes = require('./routes/alumnoRoutes');
 const historiaClinicaRoutes = require('./routes/historiaClinicaRoutes');
+const profesorRoutes = require('./routes/profesorRoutes');
 const { errorHandler } = require('./utils/errorHandler');
 const multer = require('multer');
 const path = require('path');
 
-// Agregar logs de debugging
-console.log('🔄 Cargando rutas de profesor...');
-const profesorRoutes = require('./routes/profesorRoutes');
-console.log('✅ Rutas de profesor cargadas correctamente');
+// ✅ AGREGAR: Importar rutas de admin
+console.log('🔄 Cargando rutas de admin...');
+const adminRoutes = require('./routes/adminRoutes');
+console.log('✅ Rutas de admin cargadas correctamente');
 
 // Cargar variables de entorno
 dotenv.config();
@@ -34,36 +35,41 @@ app.use((req, res, next) => {
     console.log(`📥 Profesor request: ${req.method} ${req.originalUrl}`);
     console.log('Headers Authorization:', req.headers.authorization ? 'Present' : 'Missing');
   }
+  if (req.originalUrl.includes('/api/admin')) {
+    console.log(`📥 Admin request: ${req.method} ${req.originalUrl}`);
+    console.log('Headers Authorization:', req.headers.authorization ? 'Present' : 'Missing');
+  }
   next();
 });
 
 // Verificar conexión a la base de datos
 db.query('SELECT 1')
-.then(() => console.log('✅ Conexión a MySQL establecida'))
-.catch(err => console.error('Error al conectar a MySQL:', err));
+  .then(() => console.log('✅ Conexión a MySQL establecida'))
+  .catch(err => console.error('Error al conectar a MySQL:', err));
 
 // Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/alumnos', alumnoRoutes);
 app.use('/api/historias-clinicas', historiaClinicaRoutes);
+app.use('/api/profesores', profesorRoutes);
+
+// ✅ AGREGAR: Registrar rutas de admin
+console.log('🔄 Registrando rutas de admin en /api/admin...');
+app.use('/api/admin', adminRoutes);
+console.log('✅ Rutas de admin registradas en /api/admin');
 
 // Ruta de prueba
 app.get('/api/saludo', (req, res) => {
-res.json({ mensaje: 'Hola desde el backend de HCOpto, SALUDOS A REYES SANDOVAL' });
+  res.json({ mensaje: 'Hola desde el backend de HCOpto, SALUDOS A REYES SANDOVAL' });
 });
-
-// En la sección de rutas
-console.log('🔄 Registrando rutas de profesor en /api/profesores...');
-app.use('/api/profesores', profesorRoutes);
-console.log('✅ Rutas de profesor registradas en /api/profesores');
 
 // Ruta para 404 - No encontrado
 app.all('*', (req, res, next) => {
-console.log(`❌ Ruta no encontrada: ${req.method} ${req.originalUrl}`);
-const err = new Error(`No se encontró ${req.originalUrl} en este servidor`);
-err.status = 'fail';
-err.statusCode = 404;
-next(err);
+  console.log(`❌ Ruta no encontrada: ${req.method} ${req.originalUrl}`);
+  const err = new Error(`No se encontró ${req.originalUrl} en este servidor`);
+  err.status = 'fail';
+  err.statusCode = 404;
+  next(err);
 });
 
 // Middleware de manejo de errores
@@ -71,13 +77,13 @@ app.use(errorHandler);
 
 // Iniciar servidor
 app.listen(PORT, () => {
-console.log(`✅ Servidor backend corriendo en http://localhost:${PORT}`);
-console.log(`Modo: ${config.server.environment}`);
+  console.log(`✅ Servidor backend corriendo en http://localhost:${PORT}`);
+  console.log(`Modo: ${config.server.environment}`);
 });
 
 // Manejo de errores no capturados
 process.on('unhandledRejection', (err) => {
-console.error('ERROR NO CAPTURADO! 💥 Cerrando servidor...');
-console.error(err.name, err.message);
-process.exit(1);
+  console.error('ERROR NO CAPTURADO! 💥 Cerrando servidor...');
+  console.error(err.name, err.message);
+  process.exit(1);
 });

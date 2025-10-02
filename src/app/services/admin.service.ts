@@ -27,6 +27,7 @@ export interface HistoriaClinicaAdmin {
   PeriodoEscolar: string;
   MateriaArchivada: boolean;
   TotalComentarios: number;
+  Consultorio?: string;
 }
 
 export interface EstadisticasAdmin {
@@ -44,9 +45,12 @@ export interface MateriaAdmin {
   NombreMateria: string;
   Clave: string;
   PeriodoEscolar: string;
+  EsActual?: boolean; // <<<<<<<<<<<<<<< ESTA ES LA LÍNEA CLAVE AÑADIDA
+  Grupo: string;
   Archivado: boolean;
   NumeroEmpleado: string;
   NombreProfesor: string;
+  TotalAlumnos: number;
   TotalHistorias: number;
 }
 
