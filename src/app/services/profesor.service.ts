@@ -83,6 +83,31 @@ export interface ApiResponse<T> {
   results?: number;
 }
 
+export interface AlumnoExistente {
+  ID: number;
+  AlumnoInfoID: number;
+  NumeroBoleta: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+  CorreoElectronico: string;
+  TelefonoCelular?: string;
+}
+
+export interface NuevoAlumnoRequest {
+  numeroBoleta: string;
+  nombre: string;
+  apellidoPaterno: string;
+  apellidoMaterno: string;
+  correoElectronico: string;
+  materiaProfesorId: number;
+}
+
+export interface InscripcionAlumnoRequest {
+  alumnoInfoId: number;
+  materiaProfesorId: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -153,6 +178,69 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/periodo-actual`)
       .pipe(
         map(response => response.data)
+      );
+  }
+
+  // Buscar alumnos existentes
+  buscarAlumnos(termino: string): Observable<AlumnoExistente[]> {
+    return this.http.get<ApiResponse<AlumnoExistente[]>>(`${this.apiUrl}/alumnos/buscar`, {
+      params: { termino }
+    }).pipe(
+      map(response => response.data || []),
+      catchError(error => {
+        console.error('Error al buscar alumnos:', error);
+        return of([]);
+      })
+    );
+  }
+
+  // Verificar si una boleta ya existe
+  verificarBoletaExistente(numeroBoleta: string): Observable<boolean> {
+    return this.http.get<ApiResponse<boolean>>(`${this.apiUrl}/alumnos/verificar-boleta`, {
+      params: { numeroBoleta }
+    }).pipe(
+      map(response => response.data === true),
+      catchError(error => {
+        console.error('Error al verificar boleta:', error);
+        return of(false);
+      })
+    );
+  }
+
+  // Verificar si un correo ya existe
+  verificarCorreoExistente(correoElectronico: string): Observable<boolean> {
+    return this.http.get<ApiResponse<boolean>>(`${this.apiUrl}/alumnos/verificar-correo`, {
+      params: { correoElectronico }
+    }).pipe(
+      map(response => response.data === true),
+      catchError(error => {
+        console.error('Error al verificar correo:', error);
+        return of(false);
+      })
+    );
+  }
+
+  // Crear nuevo alumno e inscribirlo a una materia
+  crearAlumnoEInscribir(nuevoAlumno: NuevoAlumnoRequest): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/alumnos/crear-inscribir`, nuevoAlumno)
+      .pipe(
+        map(response => response.data),
+        catchError(error => {
+          console.error('Error al crear alumno:', error);
+          throw error;
+        })
+      );
+  }
+
+  // Inscribir alumno existente a una materia
+  inscribirAlumnoMateria(inscripcion: InscripcionAlumnoRequest): Observable<any> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/alumnos/inscribir`, inscripcion)
+      .pipe(
+        map(response => response.data),
+        catchError(error => {
+          console.error('Error al inscribir alumno:', error);
+          throw error;
+        })
       );
   }
 

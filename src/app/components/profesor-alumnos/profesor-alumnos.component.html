@@ -56,6 +56,13 @@
         <p class="profesor-since" *ngIf="materia.FechaAsignacion">
           <i class="fas fa-calendar-check"></i> Asignada desde: {{ materia.FechaAsignacion | date:'dd/MM/yyyy' }}
         </p>
+        <!-- BOTÓN AÑADIR ALUMNO MOVIDO AQUÍ -->
+        <div class="profesor-actions">
+          <button class="btn-add-student" (click)="abrirFormularioAgregarAlumno(materia)">
+            <i class="fas fa-user-plus"></i>
+            Añadir Alumno
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -65,6 +72,144 @@
     <i class="fas fa-book-open"></i>
     <p>No tienes materias asignadas actualmente.</p>
     <p class="secondary-text">Comunícate con tu coordinador académico para verificar tu asignación.</p>
+  </div>
+
+  <!-- FORMULARIO PARA AGREGAR NUEVO ALUMNO -->
+  <div class="formulario-agregar-alumno perfil-form" *ngIf="mostrarFormulario">
+    <div class="form-section">
+      <h3 class="section-title">
+        <i class="material-icons">person_add</i>
+        Agregar Nuevo Alumno
+      </h3>
+
+      <!-- MENSAJES DE ERROR/ÉXITO CON EL MISMO ESTILO DEL PERFIL -->
+      <div class="password-info" *ngIf="errorFormulario">
+        <i class="material-icons info-icon">error</i>
+        <p>{{ errorFormulario }}</p>
+      </div>
+
+      <div class="password-info" *ngIf="successMessage" style="background-color: rgba(76, 175, 80, 0.1); border-left-color: #4CAF50;">
+        <i class="material-icons info-icon" style="color: #4CAF50;">check_circle</i>
+        <p style="color: #4CAF50;">{{ successMessage }}</p>
+      </div>
+
+      <!-- Barra de búsqueda -->
+      <div class="search-section" *ngIf="!alumnoEncontrado">
+        <div class="form-group">
+          <label for="busquedaAlumno">Buscar alumno existente</label>
+          <div class="search-container">
+            <input
+              type="text"
+              id="busquedaAlumno"
+              [formControl]="searchControl"
+              placeholder="Buscar por nombre, boleta o correo..."
+              class="search-input">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+        </div>
+
+        <!-- Resultados de búsqueda -->
+        <div class="search-results" *ngIf="resultadosBusqueda.length > 0">
+          <h4>Alumnos encontrados:</h4>
+          <div class="student-result" *ngFor="let alumno of resultadosBusqueda" (click)="seleccionarAlumnoExistente(alumno)">
+            <div class="student-info">
+              <h5>{{ alumno.Nombre }} {{ alumno.ApellidoPaterno }} {{ alumno.ApellidoMaterno }}</h5>
+              <p><strong>Boleta:</strong> {{ alumno.NumeroBoleta }}</p>
+              <p><strong>Correo:</strong> {{ alumno.CorreoElectronico }}</p>
+            </div>
+            <button class="btn-select" type="button">
+              <i class="fas fa-plus"></i>
+              Inscribir
+            </button>
+          </div>
+        </div>
+
+        <div class="no-results" *ngIf="searchControl.value && searchControl.value.length > 2 && resultadosBusqueda.length === 0 && !buscandoAlumno">
+          <p>No se encontraron alumnos. Puedes crear uno nuevo a continuación.</p>
+        </div>
+
+        <div class="loading-search" *ngIf="buscandoAlumno">
+          <div class="spinner-small"></div>
+          <p>Buscando...</p>
+        </div>
+      </div>
+
+      <!-- Formulario para nuevo alumno o alumno seleccionado -->
+      <form [formGroup]="formularioAlumno" (ngSubmit)="onSubmit()" class="student-form">
+
+        <!-- Selección de materia -->
+        <div class="form-group">
+          <label for="materiaSeleccionada">Materia y Sección</label>
+          <select id="materiaSeleccionada" formControlName="materiaProfesorId">
+            <option *ngFor="let materia of materias" [value]="materia.ID">
+              {{ materia.NombreMateria }} - Sección {{ materia.Grupo }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Información del alumno -->
+        <div class="password-form-horizontal">
+          <div class="form-group">
+            <label for="nombreCompleto">Nombre Completo</label>
+            <input
+              type="text"
+              id="nombreCompleto"
+              formControlName="nombreCompleto"
+              [readonly]="alumnoEncontrado"
+              placeholder="Ej: Juan Pérez García"
+              [ngClass]="{'is-invalid': formularioAlumno.get('nombreCompleto')?.invalid && formularioAlumno.get('nombreCompleto')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioAlumno.get('nombreCompleto')?.invalid && formularioAlumno.get('nombreCompleto')?.touched">
+              <span *ngIf="formularioAlumno.get('nombreCompleto')?.errors?.['required']">El nombre es requerido</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="numeroBoleta">Número de Boleta</label>
+            <input
+              type="text"
+              id="numeroBoleta"
+              formControlName="numeroBoleta"
+              [readonly]="alumnoEncontrado"
+              placeholder="Ej: 2021630001"
+              [ngClass]="{'is-invalid': formularioAlumno.get('numeroBoleta')?.invalid && formularioAlumno.get('numeroBoleta')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioAlumno.get('numeroBoleta')?.invalid && formularioAlumno.get('numeroBoleta')?.touched">
+              <span *ngIf="formularioAlumno.get('numeroBoleta')?.errors?.['required']">La boleta es requerida</span>
+              <span *ngIf="formularioAlumno.get('numeroBoleta')?.errors?.['pattern']">La boleta debe tener 10 dígitos</span>
+              <span *ngIf="formularioAlumno.get('numeroBoleta')?.errors?.['boletaExistente']">Esta boleta ya está registrada</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="correoElectronico">Correo Electrónico</label>
+            <input
+              type="email"
+              id="correoElectronico"
+              formControlName="correoElectronico"
+              [readonly]="alumnoEncontrado"
+              placeholder="Ej: juan.perez@alumno.ipn.mx"
+              [ngClass]="{'is-invalid': formularioAlumno.get('correoElectronico')?.invalid && formularioAlumno.get('correoElectronico')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioAlumno.get('correoElectronico')?.invalid && formularioAlumno.get('correoElectronico')?.touched">
+              <span *ngIf="formularioAlumno.get('correoElectronico')?.errors?.['required']">El correo es requerido</span>
+              <span *ngIf="formularioAlumno.get('correoElectronico')?.errors?.['email']">El correo no tiene un formato válido</span>
+              <span *ngIf="formularioAlumno.get('correoElectronico')?.errors?.['correoExistente']">Este correo ya está registrado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones con el mismo estilo del perfil -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelarFormulario()">
+            <i class="fas fa-times"></i>
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="!formularioAlumno.valid || guardandoAlumno">
+            <i class="fas fa-save"></i>
+            <span *ngIf="!guardandoAlumno">{{ alumnoEncontrado ? 'Inscribir Alumno' : 'Crear e Inscribir' }}</span>
+            <span *ngIf="guardandoAlumno">Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <!-- SECCIÓN DE ALUMNOS POR MATERIA -->
@@ -84,39 +229,47 @@
 
     <!-- Alumnos de esta materia -->
     <div class="profesores-list" *ngIf="materia.Alumnos && materia.Alumnos.length > 0">
-      <div class="profesor-card" *ngFor="let alumno of materia.Alumnos">
+      <div class="profesor-card alumno-card" *ngFor="let alumno of materia.Alumnos">
         <div class="perfil-avatar">
-          <i class="material-icons">person_outline</i>
+          <i class="material-icons" style="font-size: 60px;">person</i>
         </div>
         <div class="profesor-info">
-          <h3>{{ alumno.Nombre }} {{ alumno.ApellidoPaterno }} {{ alumno.ApellidoMaterno || '' }}</h3>
+          <h3>{{ alumno.Nombre }} {{ alumno.ApellidoPaterno }} {{ alumno.ApellidoMaterno }}</h3>
           <p class="profesor-id">
             <i class="fas fa-id-card"></i> <strong>Boleta: {{ alumno.NumeroBoleta }}</strong>
           </p>
           <p class="profesor-contact" *ngIf="alumno.CorreoElectronico">
             <i class="fas fa-envelope"></i>
-            <span class="content-wrapper">
-              <span class="description-label" style="text-decoration: underline;">Correo:</span>&nbsp;<span class="description-content">{{ alumno.CorreoElectronico }}</span>
-            </span>
+            <span style="text-decoration: underline;">Correo:</span>&nbsp;{{ alumno.CorreoElectronico }}
           </p>
           <p class="profesor-contact" *ngIf="alumno.TelefonoCelular">
             <i class="fas fa-phone"></i>
-            <span class="content-wrapper">
-              <span class="description-label" style="text-decoration: underline;">Teléfono:</span>&nbsp;<span class="description-content">{{ alumno.TelefonoCelular }}</span>
-            </span>
+            <span style="text-decoration: underline;">Teléfono:</span>&nbsp;{{ alumno.TelefonoCelular }}
           </p>
-          <p class="profesor-since">
-            <i class="fas fa-calendar-check"></i> Asignado desde: {{ alumno.FechaInscripcion | date:'dd/MM/yyyy' }}
+          <p class="profesor-since" *ngIf="alumno.FechaInscripcion">
+            <i class="fas fa-calendar-plus"></i> Inscrito desde: {{ alumno.FechaInscripcion | date:'dd/MM/yyyy' }}
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Empty state para alumnos de esta materia -->
-    <div class="empty-container" *ngIf="!materia.Alumnos || materia.Alumnos.length === 0">
-      <i class="fas fa-user-slash"></i>
-      <p>No hay alumnos inscritos en esta materia.</p>
-      <p class="secondary-text">Los alumnos aparecerán aquí una vez que se inscriban.</p>
+    <!-- Empty state para cada materia sin alumnos -->
+    <div class="empty-container" *ngIf="materia.Alumnos && materia.Alumnos.length === 0">
+      <i class="fas fa-user-plus"></i>
+      <p>No hay alumnos inscritos en {{ materia.NombreMateria }}.</p>
+      <p class="secondary-text">Usa el botón "Añadir Alumno" para inscribir alumnos a esta materia.</p>
+    </div>
+
+    <!-- Loading state para cada materia -->
+    <div class="loading-container" *ngIf="!materia.Alumnos && !error">
+      <div class="spinner"></div>
+      <p>Cargando alumnos de {{ materia.NombreMateria }}...</p>
     </div>
   </ng-container>
+
+  <!-- Loading global -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando materias y alumnos...</p>
+  </div>
 </div>

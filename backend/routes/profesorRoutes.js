@@ -39,4 +39,19 @@ router.get('/historias-clinicas/:id', profesorController.obtenerHistoriaClinica)
 router.get('/materias/:materiaId/alumnos', profesorController.obtenerAlumnosPorMateria);
 router.get('/materias-con-alumnos', profesorController.obtenerMateriasConAlumnos);
 
+// Buscar alumnos existentes
+router.get('/alumnos/buscar', profesorController.buscarAlumnos);
+
+// Verificar si boleta existe
+router.get('/alumnos/verificar-boleta', profesorController.verificarBoletaExistente);
+
+// Verificar si correo existe
+router.get('/alumnos/verificar-correo', profesorController.verificarCorreoExistente);
+
+// Crear nuevo alumno e inscribirlo
+router.post('/alumnos/crear-inscribir', profesorController.crearAlumnoEInscribir);
+
+// Inscribir alumno existente a materia
+router.post('/alumnos/inscribir', profesorController.inscribirAlumnoMateria);
+
 module.exports = router;
