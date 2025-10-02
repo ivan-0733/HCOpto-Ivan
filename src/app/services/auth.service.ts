@@ -60,7 +60,6 @@ export class AuthService {
 
   login(credentials: AuthCredentials, role: string): Observable<AuthResponse> {
     if (!this.isBrowser) {
-      // Si no estamos en un navegador, devolver un observable vacío
       return of({} as AuthResponse);
     }
 
@@ -83,12 +82,15 @@ export class AuthService {
     return this.http.post<AuthResponse>(url, credentials).pipe(
       tap(response => {
         if (response.status === 'success' && response.token) {
+          // CAMBIO: Usar el rol del backend, no el parámetro
+          const rolDelBackend = response.data.usuario?.rol || response.data.rol || role;
+
           const user: Usuario = {
             ...response.data,
-            rol: role
+            ...(response.data.usuario || {}),  // Fusionar datos de usuario si existen
+            rol: rolDelBackend  // ← SOLUCIÓN: usa el rol del backend
           };
 
-          // Solo guardar en localStorage si estamos en un navegador
           if (this.isBrowser) {
             localStorage.setItem('token', response.token);
             localStorage.setItem('currentUser', JSON.stringify(user));

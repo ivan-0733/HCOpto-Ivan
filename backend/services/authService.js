@@ -376,7 +376,83 @@ const authService = {
       console.error('Error al obtener usuario por ID:', error);
       throw error;
     }
+  },
+
+/**
+   * Verificar si existe usuario admin
+   */
+async verificarExistenciaAdmin() {
+  try {
+    const [usuarios] = await db.query(
+      `SELECT u.ID as usuarioId, u.NombreUsuario, u.CorreoElectronico, r.NombreRol as rol
+       FROM Usuarios u
+       JOIN Roles r ON u.RolID = r.ID
+       WHERE u.NombreUsuario = 'admin' AND r.NombreRol = 'admin' AND u.EstaActivo = TRUE`
+    );
+
+    if (usuarios.length > 0) {
+      return {
+        id: usuarios[0].usuarioId,
+        usuarioId: usuarios[0].usuarioId,
+        nombreUsuario: usuarios[0].NombreUsuario,
+        correo: usuarios[0].CorreoElectronico,
+        rol: usuarios[0].rol
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error al verificar existencia de admin:', error);
+    throw error;
   }
+},
+
+/**
+ * Crear usuario admin si no existe
+ */
+async crearUsuarioAdmin() {
+  const connection = await db.pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Obtener ID del rol admin
+    const [roles] = await connection.query(
+      'SELECT ID FROM Roles WHERE NombreRol = "admin"'
+    );
+
+    if (roles.length === 0) {
+      throw new Error('Rol admin no encontrado en la base de datos');
+    }
+
+    const rolAdminID = roles[0].ID;
+
+    // Crear usuario admin
+    const hashedPassword = await bcrypt.hash('admin', 10);
+
+    const [result] = await connection.query(
+      `INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, RolID, EstaActivo)
+       VALUES ('admin', 'admin@admin.ipn', ?, ?, TRUE)`,
+      [hashedPassword, rolAdminID]
+    );
+
+    await connection.commit();
+
+    return {
+      id: result.insertId,
+      usuarioId: result.insertId,
+      nombreUsuario: 'admin',
+      correo: 'admin@admin.ipn',
+      rol: 'admin'
+    };
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al crear usuario admin:', error);
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
 };
 
 module.exports = authService;

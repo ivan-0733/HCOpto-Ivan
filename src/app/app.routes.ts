@@ -116,7 +116,7 @@ export const routes: Routes = [
     },
     {
       path: 'historias/:id/comentarios',
-      loadComponent: () => import('./components/admin-comentarios/admin-comentarios.component').then(m => m. AdminComentariosComponent),
+      loadComponent: () => import('./components/admin-comentarios/admin-comentarios.component').then(m => m.AdminComentariosComponent),
       title: 'HCOpto - Comentarios'
     },
     /*
