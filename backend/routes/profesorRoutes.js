@@ -51,6 +51,9 @@ router.get('/alumnos/verificar-correo', profesorController.verificarCorreoExiste
 // Crear nuevo alumno e inscribirlo
 router.post('/alumnos/crear-inscribir', profesorController.crearAlumnoEInscribir);
 
+// AGREGAR:
+router.delete('/alumnos/eliminar-de-materia', profesorController.eliminarAlumnoDeMateria);
+
 // Inscribir alumno existente a materia
 router.post('/alumnos/inscribir', profesorController.inscribirAlumnoMateria);
 

@@ -608,6 +608,42 @@ const inscribirAlumnoMateria = async (req, res) => {
   }
 };
 
+// Eliminar alumno de una materia (desinscripción)
+const eliminarAlumnoDeMateria = async (req, res) => {
+  try {
+    const profesorId = req.usuario.ProfesorInfoID;
+    const { alumnoInfoId, materiaProfesorId } = req.body;
+
+    // Validaciones básicas
+    if (!alumnoInfoId || !materiaProfesorId) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'ID de alumno y materia son requeridos'
+      });
+    }
+
+    const resultado = await profesorService.eliminarAlumnoDeMateria(
+      alumnoInfoId,
+      materiaProfesorId,
+      profesorId
+    );
+
+    res.status(200).json({
+      status: 'success',
+      message: resultado.message,
+      data: resultado.data
+    });
+
+  } catch (error) {
+    console.error('Error al eliminar alumno de materia:', error);
+
+    return res.status(400).json({
+      status: 'error',
+      message: error.message || 'Error al eliminar alumno de la materia'
+    });
+  }
+};
+
 // También mejora la función crearAlumnoEInscribir para incluir validación de duplicados
 const crearAlumnoEInscribir = async (req, res) => {
   const connection = await db.pool.getConnection();
@@ -754,5 +790,6 @@ module.exports = {
   verificarBoletaExistente,
   verificarCorreoExistente,
   crearAlumnoEInscribir,
-  inscribirAlumnoMateria
+  inscribirAlumnoMateria,
+  eliminarAlumnoDeMateria
 };

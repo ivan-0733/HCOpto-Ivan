@@ -267,22 +267,20 @@ export class ProfesorDashboardComponent implements OnInit {
   filtrarHistorias(): HistoriaClinica[] {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
-    const terminoPaciente = this.filtroPaciente.trim().toLowerCase();
-    const terminoAlumno = this.filtroAlumno.trim().toLowerCase();
+    const terminoPaciente = this.filtroPaciente.trim();
+    const terminoAlumno = this.filtroAlumno.trim();
 
     const historiasFiltradas = this.historiasClinicas.filter(historia => {
-      // Verificar si cumple con el filtro de búsqueda por paciente
-      const nombreCompletoPaciente = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`.toLowerCase();
-      const cumplePaciente = terminoPaciente === '' || nombreCompletoPaciente.includes(terminoPaciente);
+      // Usar contieneTexto() para búsqueda por paciente
+      const nombreCompletoPaciente = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`;
+      const cumplePaciente = terminoPaciente === '' || this.contieneTexto(nombreCompletoPaciente, terminoPaciente);
 
-      // Verificar si cumple con el filtro de búsqueda por alumno (SOLO NOMBRE Y BOLETA)
-      const nombreCompletoAlumno = `${historia.AlumnoNombre} ${historia.AlumnoApellidoPaterno} ${historia.AlumnoApellidoMaterno || ''}`.toLowerCase();
-      const boletaAlumno = historia.AlumnoBoleta?.toLowerCase() || '';
-      // Se elimina la línea: const correoAlumno = historia.AlumnoCorreo?.toLowerCase() || '';
+      // Usar contieneTexto() para búsqueda por alumno (nombre y boleta)
+      const nombreCompletoAlumno = `${historia.AlumnoNombre} ${historia.AlumnoApellidoPaterno} ${historia.AlumnoApellidoMaterno || ''}`;
+      const boletaAlumno = historia.AlumnoBoleta || '';
       const cumpleAlumno = terminoAlumno === '' ||
-        nombreCompletoAlumno.includes(terminoAlumno) ||
-        boletaAlumno.includes(terminoAlumno);
-        // Se elimina: || correoAlumno.includes(terminoAlumno);
+        this.contieneTexto(nombreCompletoAlumno, terminoAlumno) ||
+        this.contieneTexto(boletaAlumno, terminoAlumno);
 
       if (!cumplePaciente || !cumpleAlumno) {
         return false;
@@ -344,6 +342,28 @@ export class ProfesorDashboardComponent implements OnInit {
     };
     console.log('Guardando filtros en localStorage:', filters);
     localStorage.setItem('profesor-dashboard-filters', JSON.stringify(filters));
+  }
+
+  /**
+   * Normaliza un string removiendo acentos y convirtiendo a minúsculas
+   */
+  private normalizarString(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  /**
+   * Verifica si un string contiene otro sin distinción de acentos ni mayúsculas
+   */
+  private contieneTexto(texto: string | null | undefined, busqueda: string | null | undefined): boolean {
+    if (!texto || !busqueda) return false;
+    const textoNormalizado = this.normalizarString(texto);
+    const busquedaNormalizada = this.normalizarString(busqueda);
+    return textoNormalizado.includes(busquedaNormalizada);
   }
 
   private loadSavedFilters(): void {

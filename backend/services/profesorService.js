@@ -495,7 +495,97 @@ const profesorService = {
     } finally {
       connection.release();
     }
+  },
+
+  /**
+ * Elimina un alumno de una materia específica (desinscripción)
+ * Solo elimina la relación en MateriasAlumno, NO elimina al alumno
+ * @param {number} alumnoInfoId - ID del alumno (de AlumnosInfo)
+ * @param {number} materiaProfesorId - ID de la relación materia-profesor
+ * @param {number} profesorId - ID del profesor para verificar permisos
+ * @returns {Promise<Object>} - Resultado de la operación
+ */
+async eliminarAlumnoDeMateria(alumnoInfoId, materiaProfesorId, profesorId) {
+  const connection = await db.pool.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // 1. Verificar que la materia pertenece al profesor
+    const [materiaProfesor] = await connection.query(
+      `SELECT mp.ID, m.Nombre as NombreMateria, m.Codigo as CodigoMateria, mp.Grupo,
+              pi.Nombre as NombreProfesor, pi.ApellidoPaterno as ApellidoProfesor
+       FROM MateriasProfesor mp
+       INNER JOIN Materias m ON mp.MateriaID = m.ID
+       INNER JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+       WHERE mp.ID = ? AND mp.ProfesorInfoID = ?`,
+      [materiaProfesorId, profesorId]
+    );
+
+    if (materiaProfesor.length === 0) {
+      await connection.rollback();
+      throw new Error('No tienes permisos para eliminar alumnos de esta materia');
+    }
+
+    // 2. Obtener información del alumno para el mensaje de confirmación
+    const [alumno] = await connection.query(
+      `SELECT ai.Nombre, ai.ApellidoPaterno, ai.ApellidoMaterno, ai.NumeroBoleta
+       FROM AlumnosInfo ai
+       WHERE ai.ID = ?`,
+      [alumnoInfoId]
+    );
+
+    if (alumno.length === 0) {
+      await connection.rollback();
+      throw new Error('El alumno no existe');
+    }
+
+    // 3. Verificar que el alumno está inscrito en esta materia
+    const [inscripcion] = await connection.query(
+      `SELECT COUNT(*) as count
+       FROM MateriasAlumno
+       WHERE AlumnoInfoID = ? AND MateriaProfesorID = ?`,
+      [alumnoInfoId, materiaProfesorId]
+    );
+
+    if (inscripcion[0].count === 0) {
+      await connection.rollback();
+      const nombreCompleto = `${alumno[0].Nombre} ${alumno[0].ApellidoPaterno} ${alumno[0].ApellidoMaterno || ''}`.trim();
+      throw new Error(`${nombreCompleto} no está inscrito en esta materia`);
+    }
+
+    // 4. ELIMINAR la inscripción (solo la relación, no el alumno)
+    await connection.query(
+      `DELETE FROM MateriasAlumno
+       WHERE AlumnoInfoID = ? AND MateriaProfesorID = ?`,
+      [alumnoInfoId, materiaProfesorId]
+    );
+
+    await connection.commit();
+
+    // 5. Preparar mensaje de éxito
+    const nombreCompleto = `${alumno[0].Nombre} ${alumno[0].ApellidoPaterno} ${alumno[0].ApellidoMaterno || ''}`.trim();
+    const materia = materiaProfesor[0];
+
+    return {
+      success: true,
+      message: `${nombreCompleto} (${alumno[0].NumeroBoleta}) ha sido eliminado de ${materia.CodigoMateria} - ${materia.NombreMateria}, Grupo ${materia.Grupo}`,
+      data: {
+        alumnoNombre: nombreCompleto,
+        numeroBoleta: alumno[0].NumeroBoleta,
+        materia: `${materia.CodigoMateria} - ${materia.NombreMateria}`,
+        grupo: materia.Grupo
+      }
+    };
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al eliminar alumno de materia:', error);
+    throw error;
+  } finally {
+    connection.release();
   }
+}
 };
 
 module.exports = profesorService;
