@@ -232,6 +232,13 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
       );
   }
 
+  /**
+   * Eliminar alumno de una materia (desinscripción)
+   */
+  eliminarAlumnoDeMateria(body: { alumnoInfoId: number; materiaProfesorId: number }): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/alumnos/eliminar-de-materia`, { body });
+  }
+
   // Inscribir alumno existente a una materia
   inscribirAlumnoMateria(inscripcion: InscripcionAlumnoRequest): Observable<any> {
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/alumnos/inscribir`, inscripcion)

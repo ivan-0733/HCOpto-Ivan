@@ -230,6 +230,15 @@
     <!-- Alumnos de esta materia -->
     <div class="profesores-list" *ngIf="materia.Alumnos && materia.Alumnos.length > 0">
       <div class="profesor-card alumno-card" *ngFor="let alumno of materia.Alumnos">
+        <!-- Botón de eliminar en esquina superior derecha -->
+        <button
+          class="btn-delete-alumno"
+          (click)="confirmarEliminarAlumno(alumno, materia)"
+          title="Eliminar alumno de esta materia"
+          type="button">
+          <i class="material-icons">delete</i>
+        </button>
+
         <div class="perfil-avatar">
           <i class="material-icons" style="font-size: 60px;">person</i>
         </div>
@@ -272,4 +281,53 @@
     <div class="spinner"></div>
     <p>Cargando materias y alumnos...</p>
   </div>
+
+  <!-- Modal de confirmación para eliminar alumno -->
+<div class="modal-overlay" *ngIf="mostrarModalEliminar" (click)="cancelarEliminar()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <i class="material-icons modal-icon-warning">warning</i>
+      <h2>Confirmar eliminación</h2>
+    </div>
+
+    <div class="modal-body">
+      <p><strong>¿Estás seguro de que deseas eliminar a este alumno de la materia?</strong></p>
+
+      <div class="alumno-info-modal" *ngIf="alumnoAEliminar">
+        <p><i class="material-icons">person</i> <strong>Alumno:</strong> {{ alumnoAEliminar.Nombre }} {{ alumnoAEliminar.ApellidoPaterno }} {{ alumnoAEliminar.ApellidoMaterno }}</p>
+        <p><i class="material-icons">badge</i> <strong>Boleta:</strong> {{ alumnoAEliminar.NumeroBoleta }}</p>
+      </div>
+
+      <div class="materia-info-modal" *ngIf="materiaDelAlumno">
+        <p><i class="material-icons">school</i> <strong>Materia:</strong> {{ materiaDelAlumno.NombreMateria }}</p>
+        <p *ngIf="materiaDelAlumno.Grupo"><i class="material-icons">group</i> <strong>Grupo:</strong> {{ materiaDelAlumno.Grupo }}</p>
+      </div>
+
+      <div class="warning-message">
+        <i class="material-icons">info</i>
+        <p>Esta acción solo eliminará al alumno de esta materia. El alumno seguirá existiendo en el sistema.</p>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button
+        type="button"
+        class="btn-cancel"
+        (click)="cancelarEliminar()"
+        [disabled]="eliminandoAlumno">
+        <i class="material-icons">close</i>
+        Cancelar
+      </button>
+      <button
+        type="button"
+        class="btn-delete"
+        (click)="eliminarAlumno()"
+        [disabled]="eliminandoAlumno">
+        <i class="material-icons">delete</i>
+        <span *ngIf="!eliminandoAlumno">Eliminar</span>
+        <span *ngIf="eliminandoAlumno">Eliminando...</span>
+      </button>
+    </div>
+  </div>
+</div>
 </div>

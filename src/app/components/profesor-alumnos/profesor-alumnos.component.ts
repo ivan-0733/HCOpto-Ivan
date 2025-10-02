@@ -49,6 +49,12 @@ export class ProfesorAlumnosComponent implements OnInit {
   materiaSeleccionada: MateriaConAlumnos | null = null;
   fechaInscripcion = new Date();
 
+  // Propiedades para eliminar alumno
+  mostrarModalEliminar: boolean = false;
+  alumnoAEliminar: any = null;
+  materiaDelAlumno: any = null;
+  eliminandoAlumno: boolean = false;
+
   // Búsqueda
   resultadosBusqueda: AlumnoExistente[] = [];
   buscandoAlumno = false;
@@ -332,6 +338,85 @@ export class ProfesorAlumnosComponent implements OnInit {
         console.error('Error al crear alumno:', error);
         this.errorFormulario = error.error?.message || 'Error al crear el alumno. Intenta nuevamente.';
         this.guardandoAlumno = false;
+      }
+    });
+  }
+
+  // ==================== MÉTODOS PARA ELIMINAR ALUMNO ====================
+
+  /**
+   * Abre el modal de confirmación para eliminar alumno
+   */
+  confirmarEliminarAlumno(alumno: any, materia: MateriaConAlumnos): void {
+    this.alumnoAEliminar = alumno;
+    this.materiaDelAlumno = materia;
+    this.mostrarModalEliminar = true;
+    this.errorFormulario = '';
+    this.successMessage = '';
+  }
+
+  /**
+   * Cancela la eliminación y cierra el modal
+   */
+  cancelarEliminar(): void {
+    if (!this.eliminandoAlumno) {
+      this.mostrarModalEliminar = false;
+      this.alumnoAEliminar = null;
+      this.materiaDelAlumno = null;
+    }
+  }
+
+  /**
+   * Elimina al alumno de la materia
+   */
+  eliminarAlumno(): void {
+    if (!this.alumnoAEliminar || !this.materiaDelAlumno || this.eliminandoAlumno) {
+      return;
+    }
+
+    this.eliminandoAlumno = true;
+    this.errorFormulario = '';
+    this.successMessage = '';
+
+    const body = {
+      alumnoInfoId: this.alumnoAEliminar.AlumnoInfoID,
+      materiaProfesorId: this.materiaDelAlumno.ID
+    };
+
+    this.profesorService.eliminarAlumnoDeMateria(body).subscribe({
+      next: (response) => {
+        console.log('✅ Alumno eliminado exitosamente:', response);
+
+        // Mostrar mensaje de éxito
+        this.successMessage = response.message || 'Alumno eliminado de la materia exitosamente';
+
+        // Eliminar el alumno de la lista local
+        if (this.materiaDelAlumno.Alumnos) {
+          this.materiaDelAlumno.Alumnos = this.materiaDelAlumno.Alumnos.filter(
+            (a: any) => a.AlumnoInfoID !== this.alumnoAEliminar.AlumnoInfoID
+          );
+        }
+
+        // Cerrar modal
+        this.mostrarModalEliminar = false;
+        this.alumnoAEliminar = null;
+        this.materiaDelAlumno = null;
+        this.eliminandoAlumno = false;
+
+        // Ocultar mensaje después de 5 segundos
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 5000);
+      },
+      error: (error) => {
+        console.error('❌ Error al eliminar alumno:', error);
+        this.errorFormulario = error.error?.message || 'Error al eliminar el alumno de la materia';
+        this.eliminandoAlumno = false;
+
+        // Ocultar mensaje de error después de 5 segundos
+        setTimeout(() => {
+          this.errorFormulario = '';
+        }, 5000);
       }
     });
   }
