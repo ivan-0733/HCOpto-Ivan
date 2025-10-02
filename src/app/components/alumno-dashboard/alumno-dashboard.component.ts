@@ -595,54 +595,61 @@ export class AlumnoDashboardComponent implements OnInit {
     this.saveFilters();
   }
 
-    filtrarHistorias(): HistoriaClinica[] {
-      if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
+  filtrarHistorias(): HistoriaClinica[] {
+    if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
-      const termino = this.filtroPaciente.trim();
+    const termino = this.filtroPaciente.trim();
 
-      const historiasFiltradas = this.historiasClinicas.filter(historia => {
-        // Usar contieneTexto() en lugar de .toLowerCase().includes()
-        const nombreCompleto = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`;
-        const cumplePaciente = termino === '' || this.contieneTexto(nombreCompleto, termino);
+    const historiasFiltradas = this.historiasClinicas.filter(historia => {
 
-        if (!cumplePaciente) {
-          return false;
-        }
+      // ===== INICIO DE LA MODIFICACIÓN =====
+      // Búsqueda por paciente: nombre completo, CURP o ID SiSeCo
+      const nombreCompleto = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`;
+      const cumplePaciente = termino === '' ||
+          this.contieneTexto(nombreCompleto, termino) ||
+          this.contieneTexto(historia.CURP, termino) ||
+          this.contieneTexto(historia.IDSiSeCO, termino);
+      // ===== FIN DE LA MODIFICACIÓN =====
 
-        const estaArchivado = Boolean(historia.Archivado);
+      if (!cumplePaciente) {
+        return false;
+      }
 
-        if (this.filtroEstado === 'Archivado') {
-          if (!estaArchivado) return false;
+      const estaArchivado = Boolean(historia.Archivado);
 
-          if (this.materiaSeleccionadaId !== null) {
-            const materiaEncontrada = this.todasLasMaterias.find(m => m.ID === this.materiaSeleccionadaId);
-            if (materiaEncontrada) {
-              return historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
-            }
-          }
-          else if (this.filtroMateriaArchivada !== null) {
-            return historia.MateriaProfesorID === this.filtroMateriaArchivada;
-          }
-
-          return true;
-        }
-
-        if (estaArchivado) {
-          return false;
-        }
+      if (this.filtroEstado === 'Archivado') {
+        // ... el resto del método no cambia ...
+        if (!estaArchivado) return false;
 
         if (this.materiaSeleccionadaId !== null) {
-          const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
-          if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
-            return false;
+          const materiaEncontrada = this.todasLasMaterias.find(m => m.ID === this.materiaSeleccionadaId);
+          if (materiaEncontrada) {
+            return historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
           }
         }
+        else if (this.filtroMateriaArchivada !== null) {
+          return historia.MateriaProfesorID === this.filtroMateriaArchivada;
+        }
 
-        return this.filtroEstado === 'todos' || historia.Estado === this.filtroEstado;
-      });
+        return true;
+      }
 
-      return this.ordenarHistorias(historiasFiltradas);
-    }
+      if (estaArchivado) {
+        return false;
+      }
+
+      if (this.materiaSeleccionadaId !== null) {
+        const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
+        if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
+          return false;
+        }
+      }
+
+      return this.filtroEstado === 'todos' || historia.Estado === this.filtroEstado;
+    });
+
+    return this.ordenarHistorias(historiasFiltradas);
+  }
 
   // Modify existing filter methods to save state
   aplicarFiltroMateria(materiaId: number | null): void {

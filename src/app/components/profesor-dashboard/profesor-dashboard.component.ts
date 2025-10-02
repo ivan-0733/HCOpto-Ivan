@@ -271,11 +271,18 @@ export class ProfesorDashboardComponent implements OnInit {
     const terminoAlumno = this.filtroAlumno.trim();
 
     const historiasFiltradas = this.historiasClinicas.filter(historia => {
-      // Usar contieneTexto() para búsqueda por paciente
-      const nombreCompletoPaciente = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`;
-      const cumplePaciente = terminoPaciente === '' || this.contieneTexto(nombreCompletoPaciente, terminoPaciente);
+      // ===== INICIO DE LA MODIFICACIÓN =====
 
-      // Usar contieneTexto() para búsqueda por alumno (nombre y boleta)
+      // Búsqueda por paciente: nombre completo, CURP o ID SiSeCo
+      const nombreCompletoPaciente = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`;
+      const cumplePaciente = terminoPaciente === '' ||
+        this.contieneTexto(nombreCompletoPaciente, terminoPaciente) ||
+        this.contieneTexto(historia.CURP, terminoPaciente) ||
+        this.contieneTexto(historia.IDSiSeCO, terminoPaciente);
+
+      // ===== FIN DE LA MODIFICACIÓN =====
+
+      // Búsqueda por alumno (nombre y boleta)
       const nombreCompletoAlumno = `${historia.AlumnoNombre} ${historia.AlumnoApellidoPaterno} ${historia.AlumnoApellidoMaterno || ''}`;
       const boletaAlumno = historia.AlumnoBoleta || '';
       const cumpleAlumno = terminoAlumno === '' ||
