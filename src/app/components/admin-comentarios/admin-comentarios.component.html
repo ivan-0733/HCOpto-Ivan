@@ -1,0 +1,80 @@
+<div class="comentarios-container">
+  <div class="comentarios-header">
+    <h1>
+      <i class="fas fa-comments"></i>
+      Comentarios de Historia Clínica
+    </h1>
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i>
+      Volver al Dashboard
+    </button>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarComentarios()">
+      <i class="fas fa-sync-alt"></i> Reintentar
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando comentarios...</p>
+  </div>
+
+  <!-- Formulario para nuevo comentario -->
+  <div class="nuevo-comentario-section" *ngIf="!loading && !error">
+    <h2>Agregar Comentario</h2>
+    <div class="comentario-form">
+      <textarea
+        [(ngModel)]="nuevoComentario"
+        placeholder="Escribe tu comentario aquí..."
+        rows="4"
+        [disabled]="enviandoComentario"
+      ></textarea>
+      <button
+        class="btn-enviar"
+        (click)="agregarComentario()"
+        [disabled]="enviandoComentario || !nuevoComentario.trim()">
+        <i class="fas" [ngClass]="enviandoComentario ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+        {{ enviandoComentario ? 'Enviando...' : 'Enviar Comentario' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de comentarios -->
+  <div class="comentarios-lista" *ngIf="!loading && !error">
+    <h2>Comentarios ({{ comentarios.length }})</h2>
+
+    <div class="empty-comentarios" *ngIf="comentarios.length === 0">
+      <i class="fas fa-comment-slash"></i>
+      <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
+    </div>
+
+    <div class="comentario-card" *ngFor="let comentario of comentarios">
+      <div class="comentario-header">
+        <div class="usuario-info">
+          <i class="fas"
+             [ngClass]="{
+               'fa-user-graduate': comentario.Rol === 'Alumno',
+               'fa-chalkboard-teacher': comentario.Rol === 'Profesor',
+               'fa-user-shield': comentario.Rol === 'admin'
+             }"></i>
+          <strong>{{ comentario.NombreUsuario }}</strong>
+          <span class="rol-badge" [ngClass]="comentario.Rol.toLowerCase()">
+            {{ comentario.Rol }}
+          </span>
+        </div>
+        <span class="comentario-fecha">
+          {{ formatearFecha(comentario.FechaCreacion) }}
+        </span>
+      </div>
+      <div class="comentario-contenido">
+        <p>{{ comentario.Comentario }}</p>
+      </div>
+    </div>
+  </div>
+</div>

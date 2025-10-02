@@ -72,27 +72,31 @@
         </li>
       </ul>
 
-      <!-- Menú para Admin -->
-      <ul class="nav-menu" *ngIf="isAdmin">
-        <li class="nav-item">
-          <a routerLink="/admin/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
-            <i class="material-icons">dashboard</i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/admin/usuarios" routerLinkActive="active" [routerLinkActiveOptions]="{exact: false}" (click)="closeMenu()">
-            <i class="material-icons">people</i>
-            <span>Usuarios</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/admin/configuracion" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMenu()">
-            <i class="material-icons">settings</i>
-            <span>Configuración</span>
-          </a>
-        </li>
-      </ul>
+      <!-- Dentro del nav, agrega esta sección después de la del profesor -->
+
+      <!-- Menú para Administrador -->
+      <ng-container *ngIf="currentUser && currentUser.rol === 'admin'">
+        <a routerLink="/admin/dashboard" routerLinkActive="active">
+          <i class="fas fa-tachometer-alt"></i>
+          Dashboard
+        </a>
+        <a routerLink="/admin/materias" routerLinkActive="active">
+          <i class="fas fa-book"></i>
+          Materias
+        </a>
+        <a routerLink="/admin/profesores" routerLinkActive="active">
+          <i class="fas fa-chalkboard-teacher"></i>
+          Profesores
+        </a>
+        <a routerLink="/admin/alumnos" routerLinkActive="active">
+          <i class="fas fa-user-graduate"></i>
+          Alumnos
+        </a>
+        <a routerLink="/admin/perfil" routerLinkActive="active">
+          <i class="fas fa-user-shield"></i>
+          Mi Perfil
+        </a>
+      </ng-container>
 
       <!-- Menú de usuario y tema -->
       <div class="nav-user" *ngIf="authService.isAuthenticated()">

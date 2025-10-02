@@ -18,6 +18,8 @@ import { ThemeService, ThemeMode } from '../../services/theme.service';
 })
 export class NavComponent implements OnInit, OnDestroy {
 
+  currentUser: any = null; // ← AGREGAR ESTA LÍNEA
+
   // Añadir estas nuevas propiedades
   @ViewChild('navCollapse') navCollapse!: ElementRef;
   menuHeight: string = '0px';
