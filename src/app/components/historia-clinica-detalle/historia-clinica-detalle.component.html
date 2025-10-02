@@ -153,6 +153,16 @@
             </div>
 
             <div class="info-item">
+              <h3>CURP</h3>
+              <p>{{ historia.CURP || 'No proporcionado' }}</p>
+            </div>
+
+            <div class="info-item">
+              <h3>ID SiSeCO</h3>
+              <p>{{ historia.IDSiSeCO || 'No proporcionado' }}</p>
+            </div>
+
+            <div class="info-item">
               <h3>Edad</h3>
               <p>{{ historia.Edad }} años</p>
             </div>
@@ -164,12 +174,12 @@
 
             <div class="info-item">
               <h3>Correo Electrónico</h3>
-              <p>{{ historia.CorreoElectronico }}</p>
+              <p>{{ historia.CorreoElectronico || 'No proporcionado' }}</p>
             </div>
 
             <div class="info-item">
               <h3>Teléfono Celular</h3>
-              <p>{{ historia.TelefonoCelular }}</p>
+              <p>{{ historia.TelefonoCelular || 'No proporcionado' }}</p>
             </div>
 
             <div class="info-item">
@@ -186,7 +196,6 @@
               <h3>Dirección</h3>
               <p>
                 {{ historia.DireccionLinea1 || 'No proporcionado' }}
-                <span *ngIf="historia.DireccionLinea2">, {{ historia.DireccionLinea2 }}</span>
               </p>
             </div>
 

@@ -874,29 +874,36 @@ loadHistoriaStatus(): void {
         this.sectionStatus['receta'] = !!historia.recetaFinal;
 
         // Cargar los datos del paciente para el formulario de datos generales
+        // Cargar los datos del PACIENTE y de la HISTORIA para el formulario de datos generales
         this.formValues['datos-generales'] = {
-          nombre: historia.Nombre,
-          apellidoPaterno: historia.ApellidoPaterno,
-          apellidoMaterno: historia.ApellidoMaterno || '',
-          edad: historia.Edad,
-          generoID: historia.GeneroID,
-          estadoCivilID: historia.EstadoCivilID,
-          escolaridadID: historia.EscolaridadID,
-          ocupacion: historia.Ocupacion,
-          direccionLinea1: historia.DireccionLinea1,
-          direccionLinea2: historia.DireccionLinea2,
-          ciudad: historia.Ciudad,
-          estadoID: historia.PacienteEstadoID,
-          codigoPostal: historia.CodigoPostal,
-          pais: historia.Pais,
-          correoElectronico: historia.CorreoElectronico,
-          telefonoCelular: historia.TelefonoCelular,
-          telefono: historia.Telefono,
-          // Datos adicionales para la historia clínica
-          profesorID: historia.ProfesorID,
+          // --- Datos de la Historia ---
+          materiaProfesorID: historia.MateriaProfesorID, // ✅ CORREGIDO
           consultorioID: historia.ConsultorioID,
-          semestreID: historia.SemestreID,
-          pacienteID: historia.PacienteID
+          periodoEscolarID: historia.PeriodoEscolarID,   // ✅ CORREGIDO
+          fecha: new Date(historia.Fecha).toISOString().split('T')[0],
+
+          // --- Datos del Paciente (anidados) ---
+          paciente: {
+            id: historia.PacienteID,
+            nombre: historia.Nombre,
+            apellidoPaterno: historia.ApellidoPaterno,
+            apellidoMaterno: historia.ApellidoMaterno || '',
+            generoID: historia.GeneroID,
+            edad: historia.Edad,
+            estadoCivilID: historia.EstadoCivilID,
+            escolaridadID: historia.EscolaridadID,
+            ocupacion: historia.Ocupacion,
+            direccionLinea1: historia.DireccionLinea1,
+            curp: historia.CURP, // ✅ AÑADIDO
+            ciudad: historia.Ciudad,
+            estadoID: historia.PacienteEstadoID,
+            codigoPostal: historia.CodigoPostal,
+            pais: historia.Pais,
+            correoElectronico: historia.CorreoElectronico,
+            telefonoCelular: historia.TelefonoCelular,
+            telefono: historia.Telefono,
+            idSiSeCO: historia.IDSiSeCO // ✅ AÑADIDO
+          }
         };
 
         // Guardar datos del interrogatorio
