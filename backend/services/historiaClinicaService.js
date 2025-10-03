@@ -26,7 +26,7 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
         p.CorreoElectronico,
         p.TelefonoCelular,
         p.CURP,
-        p.IDSiSeCO,  -- ⭐ AGREGAR ESTE CAMPO
+        p.IDSiSeCO,
         p.Edad,
         cg.Valor AS Estado,
         c.Nombre AS Consultorio,
@@ -34,7 +34,11 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
         m.Nombre AS NombreMateria,
         mp.Grupo AS GrupoMateria,
         hc.MateriaProfesorID,
-        mp.ProfesorInfoID AS ProfesorID
+        mp.ProfesorInfoID AS ProfesorID,
+
+        -- ⭐ AGREGAR ESTA LÍNEA (conteo de comentarios)
+        (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
+
       FROM HistorialesClinicos hc
       JOIN Pacientes p ON hc.PacienteID = p.ID
       JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID

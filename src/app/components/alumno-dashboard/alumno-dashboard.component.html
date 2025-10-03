@@ -240,15 +240,33 @@
                 <i class="fas fa-comment-slash"></i> 0
               </span>
             </td>
+            <!-- ACCIONES: Ver + Menú (3 puntos) -->
             <td class="acciones">
-              <button class="btn-icon btn-view" (click)="verHistoria(historia.ID)" title="Ver Historia Clínica Completa">
+              <button class="btn-icon btn-view"
+                      (click)="verHistoria(historia.ID)"
+                      title="Ver Historia Clínica Completa">
                 <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">visibility</i>
               </button>
-              <button class="btn-icon btn-edit" (click)="editarHistoria(historia.ID)"
-                      [disabled]="historia.Archivado || historia.Estado === 'Finalizado'"
-                      title="Editar Historia Clínica">
-                <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">edit</i>
+
+              <button class="btn-icon btn-menu"
+                      (click)="toggleMenu(historia.ID, $event)"
+                      [disabled]="historia.Estado === 'Finalizado' || historia.Archivado || historia.Estado === 'Revisión' "
+                      title="Más acciones">
+                <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">more_vert</i>
               </button>
+
+              <!-- Menú desplegable -->
+              <div class="dropdown-menu" *ngIf="menuAbiertoId === historia.ID">
+                <button (click)="editarHistoria(historia.ID, $event)"
+                        [disabled]="historia.Archivado || historia.Estado === 'Finalizado'">
+                  <i class="fas fa-edit"></i> Editar
+                </button>
+                <div class="dropdown-divider"></div>
+                <button (click)="cambiarEstado(historia.ID, $event)"
+                        [disabled]="!puedeMarcarCorregido(historia)">
+                  <i class="fas fa-check-circle"></i> Marcar como Corregido
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
