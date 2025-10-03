@@ -2185,7 +2185,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
       return null;
     }
 
-    console.log(`✅ Verificación exitosa - Historia ID=${id} existe y profesor ${profesorId} tiene acceso`);
+    console.log(`Verificación exitosa - Historia ID=${id} existe y profesor ${profesorId} tiene acceso`);
 
     // Usar la misma lógica que obtenerHistoriaClinicaPorId pero con validación de profesor
     const [historias] = await db.query(
@@ -2238,7 +2238,10 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
         pr.Nombre AS ProfesorNombre,
         pr.ApellidoPaterno AS ProfesorApellidoPaterno,
         pr.ApellidoMaterno AS ProfesorApellidoMaterno,
-        pr.ID AS ProfesorID
+        pr.ID AS ProfesorID,
+
+        -- Conteo de comentarios
+        (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
 
         FROM HistorialesClinicos hc
         JOIN Pacientes p ON hc.PacienteID = p.ID

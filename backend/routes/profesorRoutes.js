@@ -57,6 +57,12 @@ router.delete('/alumnos/eliminar-de-materia', profesorController.eliminarAlumnoD
 // Inscribir alumno existente a materia
 router.post('/alumnos/inscribir', profesorController.inscribirAlumnoMateria);
 
+// PUT - Cambiar estado de historia
+router.put('/historias/:id/estado', profesorController.cambiarEstadoHistoria);
+
+// PUT - Archivar/Desarchivar historia ✅ AGREGAR ESTA LÍNEA
+router.put('/historias/:id/archivar', profesorController.archivarHistoria);
+
 // ==========================================
 // RUTAS DE COMENTARIOS Y RESPUESTAS
 // ==========================================

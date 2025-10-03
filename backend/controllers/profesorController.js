@@ -43,7 +43,8 @@ const profesorController = {
 
   obtenerHistoriasClinicas: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
-    const historias = await historiaClinicaService.obtenerHistoriasClinicasPorProfesor(profesorId);
+    // Cambiar de historiaClinicaService a profesorService
+    const historias = await profesorService.obtenerHistoriasClinicasAlumnos(profesorId);
 
     res.status(200).json({
       status: 'success',
@@ -408,7 +409,6 @@ const profesorController = {
       });
     }
   }),
-
   obtenerEstadoHistoria: catchAsync(async (req, res) => {
     const { historiaId } = req.params;
 
@@ -441,53 +441,114 @@ const profesorController = {
     }
   }),
 
-  cambiarEstadoHistoria: catchAsync(async (req, res) => {
-    const { historiaId } = req.params;
-    const { estado } = req.body;
+  // Archivar/Desarchivar historia
+  archivarHistoria: catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const { archivar } = req.body;
 
-    const estadosPermitidos = ['Revisión', 'Corrección', 'Finalizado', 'Archivado'];
-    if (!estadosPermitidos.includes(estado)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Estado no válido'
-      });
-    }
+    if (archivar) {
+      // 1. Obtener el ID del estado "Finalizado"
+      const [estadoFinalizado] = await db.query(
+        "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = 'Finalizado'"
+      );
 
-    try {
-      let query;
-      let params;
-
-      if (estado === 'Archivado') {
-        query = `
-          UPDATE HistorialesClinicos
-          SET Estado = 'Finalizado',
-              Archivado = TRUE,
-              FechaArchivado = NOW()
-          WHERE ID = ?
-        `;
-        params = [historiaId];
-      } else {
-        query = `
-          UPDATE HistorialesClinicos
-          SET Estado = ?
-          WHERE ID = ?
-        `;
-        params = [estado, historiaId];
+      if (estadoFinalizado.length === 0) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Estado Finalizado no encontrado'
+        });
       }
 
-      await db.query(query, params);
+      const estadoFinalizadoId = estadoFinalizado[0].ID;
 
-      res.json({
-        success: true,
-        message: 'Estado actualizado exitosamente'
+      // 2. Actualizar estado a Finalizado y archivar
+      const [result] = await db.query(
+        'UPDATE HistorialesClinicos SET EstadoID = ?, Archivado = TRUE, FechaArchivado = NOW(), ActualizadoEn = NOW() WHERE ID = ?',
+        [estadoFinalizadoId, id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Historia clínica no encontrada'
+        });
+      }
+
+      return res.json({
+        status: 'success',
+        message: 'Historia archivada y finalizada correctamente'
       });
-    } catch (error) {
-      console.error('Error al cambiar estado:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error al cambiar estado'
+    } else {
+      // Desarchivar
+      const [result] = await db.query(
+        'UPDATE HistorialesClinicos SET Archivado = FALSE, FechaArchivado = NULL, ActualizadoEn = NOW() WHERE ID = ?',
+        [id]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          status: 'error',
+          message: 'Historia clínica no encontrada'
+        });
+      }
+
+      return res.json({
+        status: 'success',
+        message: 'Historia desarchivada correctamente'
       });
     }
+  }),
+
+  // Cambiar estado de una historia clínica
+  cambiarEstadoHistoria: catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const { estado } = req.body;
+
+    console.log(`Cambiando estado de historia ${id} a: ${estado}`);
+
+    // Validar que el estado sea permitido
+    const estadosPermitidos = ['Revisión', 'Corrección', 'Finalizado'];
+
+    if (!estadosPermitidos.includes(estado)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Estado no válido para profesores'
+      });
+    }
+
+    // 1. Obtener el ID del catálogo para el estado
+    const [estados] = await db.query(
+      "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = ?",
+      [estado]
+    );
+
+    if (estados.length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Estado no encontrado en el catálogo'
+      });
+    }
+
+    const estadoId = estados[0].ID;
+
+    // 2. Actualizar con EstadoID, no con Estado
+    const [result] = await db.query(
+      'UPDATE HistorialesClinicos SET EstadoID = ?, ActualizadoEn = NOW() WHERE ID = ?',
+      [estadoId, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Historia clínica no encontrada'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Estado actualizado correctamente',
+      data: { estadoId, estadoNombre: estado }
+    });
   })
 };
 

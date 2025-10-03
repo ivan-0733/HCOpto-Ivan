@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { HistoriaClinicaService, HistoriaClinica } from '../../services/historia-clinica.service';
 import { ProfesorService, AlumnoAsignado, ProfesorPerfil, MateriaProfesor, EstadisticasHistorias } from '../../services/profesor.service';
@@ -46,6 +46,8 @@ export class ProfesorDashboardComponent implements OnInit {
 
   // Para usar Math en el template
   Math = Math;
+
+  menuAbiertoId: number | null = null;
 
   // Propiedades para filtrado de materias
   materias: MateriaProfesor[] = [];
@@ -579,6 +581,31 @@ export class ProfesorDashboardComponent implements OnInit {
 
   verHistoria(id: number): void {
     this.saveFilters();
+
+    // ✅ CAMBIO AUTOMÁTICO DE ESTADO
+    const historia = this.historiasClinicas.find(h => h.ID === id);
+    if (historia) {
+      const estadosACambiar = ['Nuevo', 'Corregido'];
+
+      // Solo cambiar a Revisión si el estado actual está en la lista
+      if (estadosACambiar.includes(historia.Estado)) {
+        // ⚠️ IMPORTANTE: Usar la misma codificación que el backend
+        this.profesorService.actualizarEstadoHistoria(id, 'Revisión').subscribe({
+          next: () => {
+            historia.Estado = 'Revisión';
+            this.calcularEstadisticasPorMateria();
+            this.actualizarEstadisticas();
+            console.log('Estado cambiado automáticamente a Revisión');
+          },
+          error: (error) => {
+            console.error('❌ Error al actualizar estado automáticamente:', error);
+            // Ver el error completo para debugging
+            console.error('Detalles del error:', JSON.stringify(error));
+          }
+        });
+      }
+    }
+
     this.router.navigate(['/profesor/historias', id]);
   }
 
@@ -798,6 +825,96 @@ export class ProfesorDashboardComponent implements OnInit {
 
       return true;
     }).length;
+  }
+
+  toggleMenu(historiaId: number, event: Event): void {
+    event.stopPropagation();
+    if (this.menuAbiertoId === historiaId) {
+      this.menuAbiertoId = null;
+    } else {
+      this.menuAbiertoId = historiaId;
+    }
+  }
+
+  toggleSubmenu(event: Event): void {
+    event.stopPropagation();
+    const submenu = (event.target as HTMLElement).parentElement;
+    if (submenu) {
+      submenu.classList.toggle('active');
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    this.menuAbiertoId = null;
+  }
+
+  cerrarMenu(): void {
+    this.menuAbiertoId = null;
+  }
+
+  verComentarios(historiaId: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.cerrarMenu();
+    this.saveFilters();
+    this.router.navigate(['/profesor/comentarios', historiaId]);
+  }
+
+  cambiarEstado(historiaId: number, nuevoEstado: string, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.cerrarMenu();
+
+    if (confirm(`¿Estás seguro de cambiar el estado a "${nuevoEstado}"?`)) {
+      this.profesorService.actualizarEstadoHistoria(historiaId, nuevoEstado).subscribe({
+        next: () => {
+          const historia = this.historiasClinicas.find(h => h.ID === historiaId);
+          if (historia) {
+            historia.Estado = nuevoEstado;
+          }
+          this.calcularEstadisticasPorMateria();
+          this.actualizarEstadisticas();
+          alert('Estado actualizado correctamente');
+        },
+        error: (error) => {
+          console.error('Error al actualizar estado:', error);
+          alert('Error al actualizar el estado');
+        }
+      });
+    }
+  }
+
+  archivarHistoria(historiaId: number, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.cerrarMenu();
+
+    const historia = this.historiasClinicas.find(h => h.ID === historiaId);
+    const esArchivar = !historia?.Archivado;
+    const accion = esArchivar ? 'archivar' : 'desarchivar';
+
+    if (confirm(`¿Estás seguro de ${accion} esta historia clínica?`)) {
+      this.profesorService.archivarHistoria(historiaId, esArchivar).subscribe({
+        next: () => {
+          if (historia) {
+            historia.Archivado = esArchivar;
+            if (esArchivar) {
+              historia.Estado = 'Finalizado';
+            }
+          }
+          this.calcularEstadisticasPorMateria();
+          this.actualizarEstadisticas();
+          this.calcularTotalPaginas();
+          alert(`Historia ${accion}da correctamente`);
+        },
+        error: (error) => {
+          console.error(`Error al ${accion} historia:`, error);
+          alert(`Error al ${accion} la historia`);
+        }
+      });
+    }
+  }
+
+  desarchivarHistoria(historiaId: number, event?: Event): void {
+    this.archivarHistoria(historiaId, event);
   }
 
   aplicarFiltroCard(estado: string): void {

@@ -196,6 +196,7 @@
             <th>Estado</th>
             <th>Consultorio</th>
             <th>Semestre</th>
+            <th>N° Comentarios</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -230,6 +231,15 @@
             </td>
             <td>{{ historia.Consultorio }}</td>
             <td>{{ historia.PeriodoEscolar }}</td>
+            <!-- ✅ NUEVA COLUMNA DE COMENTARIOS -->
+            <td class="comentarios-cell">
+              <span *ngIf="historia.TotalComentarios > 0" class="comentarios-badge">
+                <i class="fas fa-comment"></i> {{ historia.TotalComentarios }}
+              </span>
+              <span *ngIf="historia.TotalComentarios === 0" class="no-comentarios">
+                <i class="fas fa-comment-slash"></i> 0
+              </span>
+            </td>
             <td class="acciones">
               <button class="btn-icon btn-view" (click)="verHistoria(historia.ID)" title="Ver Historia Clínica Completa">
                 <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">visibility</i>

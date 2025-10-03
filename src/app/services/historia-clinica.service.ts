@@ -28,6 +28,7 @@ export interface HistoriaClinica {
   NombreMateria: string;
   GrupoMateria: string;
   PeriodoEscolarID?: number;
+  TotalComentarios: number;  // ✅ AGREGAR ESTA LÍNEA
 
   // Información del alumno que creó la historia clínica
   AlumnoNombre: string;

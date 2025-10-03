@@ -41,58 +41,106 @@ const profesorService = {
     }
   },
 
-  /**
-   * Obtiene las historias clínicas de los alumnos asignados al profesor
-   */
-  async obtenerHistoriasClinicasAlumnos(profesorId) {
-    try {
-      const [historias] = await db.query(`
-        SELECT
-          hc.ID,
-          hc.Fecha,
-          hc.Archivado,
-          hc.FechaArchivado,
-          hc.EstadoID,
-          p.ID AS PacienteID,
-          p.Nombre,
-          p.ApellidoPaterno,
-          p.ApellidoMaterno,
-          p.CorreoElectronico,
-          p.TelefonoCelular,
-          p.CURP,
-          p.IDSiSeCO,  -- ⭐ AGREGAR ESTE CAMPO
-          p.Edad,
-          cg.Valor AS Estado,
-          c.Nombre AS Consultorio,
-          pe.Codigo AS PeriodoEscolar,
-          mp.ProfesorInfoID AS ProfesorID,
-          m.Nombre AS NombreMateria,
-          mp.Grupo AS GrupoMateria,
-          hc.MateriaProfesorID,
-          a.Nombre AS AlumnoNombre,
-          a.ApellidoPaterno AS AlumnoApellidoPaterno,
-          a.ApellidoMaterno AS AlumnoApellidoMaterno,
-          a.NumeroBoleta AS AlumnoBoleta,  -- También útil para el filtro
-          ua.CorreoElectronico AS AlumnoCorreo
-        FROM HistorialesClinicos hc
-        JOIN Pacientes p ON hc.PacienteID = p.ID
-        JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-        JOIN Consultorios c ON hc.ConsultorioID = c.ID
-        JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
-        JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-        JOIN Materias m ON mp.MateriaID = m.ID
-        JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
-        JOIN Usuarios ua ON a.UsuarioID = ua.ID
-        WHERE mp.ProfesorInfoID = ?
-        ORDER BY hc.Fecha DESC
-      `, [profesorId]);
+/**
+ * Actualiza el estado de una historia clínica
+ */
+async actualizarEstadoHistoria(historiaId, nuevoEstado) {
+  try {
+    // ✅ AGREGAR CONSOLE.LOG PARA DEBUG
+    console.log('📝 Actualizando estado de historia:', historiaId, 'a:', nuevoEstado);
 
-      return historias;
-    } catch (error) {
-      console.error('Error al obtener historias clínicas de alumnos:', error);
-      throw error;
+    const estadosPermitidos = ['Nuevo', 'Corregido', 'En proceso', 'Revisión', 'Corrección', 'Finalizado'];
+
+    if (!estadosPermitidos.includes(nuevoEstado)) {
+      console.error('❌ Estado no válido:', nuevoEstado);
+      throw new Error('Estado no válido');
     }
-  },
+
+    // Obtener el ID del catálogo para el estado
+    const [estados] = await db.query(
+      "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'ESTADO_HISTORIAL' AND Valor = ?",
+      [nuevoEstado]
+    );
+
+    console.log('🔍 Estados encontrados en BD:', estados);
+
+    if (estados.length === 0) {
+      throw new Error('Estado no encontrado en el catálogo');
+    }
+
+    const estadoId = estados[0].ID;
+
+    const [result] = await db.query(
+      'UPDATE HistorialesClinicos SET EstadoID = ?, ActualizadoEn = NOW() WHERE ID = ?',
+      [estadoId, historiaId]
+    );
+
+    console.log('✅ Estado actualizado, rows affected:', result.affectedRows);
+
+    if (result.affectedRows === 0) {
+      throw new Error('Historia clínica no encontrada');
+    }
+
+    return { success: true, message: 'Estado actualizado correctamente' };
+  } catch (error) {
+    console.error('❌ Error al actualizar estado:', error);
+    throw error;
+  }
+},
+
+/**
+ * Obtiene las historias clínicas de los alumnos asignados al profesor
+ */
+async obtenerHistoriasClinicasAlumnos(profesorId) {
+  try {
+    const [historias] = await db.query(`
+      SELECT
+        hc.ID,
+        hc.Fecha,
+        hc.Archivado,
+        hc.FechaArchivado,
+        hc.EstadoID,
+        p.ID AS PacienteID,
+        p.Nombre,
+        p.ApellidoPaterno,
+        p.ApellidoMaterno,
+        p.CorreoElectronico,
+        p.TelefonoCelular,
+        p.CURP,
+        p.IDSiSeCO,
+        p.Edad,
+        cg.Valor AS Estado,
+        c.Nombre AS Consultorio,
+        pe.Codigo AS PeriodoEscolar,
+        mp.ProfesorInfoID AS ProfesorID,
+        m.Nombre AS NombreMateria,
+        mp.Grupo AS GrupoMateria,
+        hc.MateriaProfesorID,
+        a.Nombre AS AlumnoNombre,
+        a.ApellidoPaterno AS AlumnoApellidoPaterno,
+        a.ApellidoMaterno AS AlumnoApellidoMaterno,
+        a.NumeroBoleta AS AlumnoBoleta,
+        ua.CorreoElectronico AS AlumnoCorreo,
+        (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
+      FROM HistorialesClinicos hc
+      JOIN Pacientes p ON hc.PacienteID = p.ID
+      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+      JOIN Consultorios c ON hc.ConsultorioID = c.ID
+      JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
+      JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
+      JOIN Usuarios ua ON a.UsuarioID = ua.ID
+      WHERE mp.ProfesorInfoID = ?
+      ORDER BY hc.Fecha DESC
+    `, [profesorId]);
+
+    return historias;
+  } catch (error) {
+    console.error('Error al obtener historias clínicas de alumnos:', error);
+    throw error;
+  }
+},
 
   /**
    * Obtiene estadísticas de historias clínicas de los alumnos del profesor
