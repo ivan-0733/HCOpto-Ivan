@@ -1,0 +1,233 @@
+<div class="profesores-container">
+  <!-- Header -->
+  <header class="content-header">
+    <div class="header-title">
+      <h1>
+        <i class="fas fa-chalkboard-teacher"></i>
+        Gestión de Profesores
+      </h1>
+    </div>
+  </header>
+
+  <!-- MENSAJES DE ERROR/ÉXITO GLOBALES -->
+  <div class="password-info" *ngIf="errorFormulario && !mostrarFormulario">
+    <i class="material-icons info-icon">error</i>
+    <p>{{ errorFormulario }}</p>
+  </div>
+
+  <div class="password-info" *ngIf="successMessage && !mostrarFormulario" style="background-color: rgba(76, 175, 80, 0.1); border-left-color: #4CAF50;">
+    <i class="material-icons info-icon" style="color: #4CAF50;">check_circle</i>
+    <p style="color: #4CAF50;">{{ successMessage }}</p>
+  </div>
+
+  <!-- Error state para Profesores -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Profesores list -->
+  <div class="profesores-list" *ngIf="!loading && !error && profesores.length > 0">
+    <div class="profesor-card" *ngFor="let profesor of profesores">
+      <!-- Botón de eliminar en esquina superior derecha -->
+      <button
+        class="btn-delete-alumno"
+        (click)="confirmarEliminarProfesor(profesor)"
+        title="Eliminar profesor"
+        type="button">
+        <i class="material-icons">delete</i>
+      </button>
+
+      <div class="perfil-avatar">
+        <i class="material-icons" style="font-size: 60px;">person</i>
+      </div>
+      <div class="profesor-info">
+        <h3>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }} {{ profesor.ApellidoMaterno }}</h3>
+        <p class="profesor-id">
+          <i class="fas fa-id-badge"></i> <strong>Empleado: {{ profesor.NumeroEmpleado }}</strong>
+        </p>
+        <p class="profesor-contact" *ngIf="profesor.CorreoElectronico">
+          <i class="fas fa-envelope"></i>
+          <span style="text-decoration: underline;">Correo:</span>&nbsp;{{ profesor.CorreoElectronico }}
+        </p>
+        <p class="profesor-contact" *ngIf="profesor.TelefonoCelular">
+          <i class="fas fa-phone"></i>
+          <span style="text-decoration: underline;">Teléfono:</span>&nbsp;{{ profesor.TelefonoCelular }}
+        </p>
+        <p class="profesor-contact">
+          <i class="fas fa-book"></i>
+          <span style="text-decoration: underline;">Materias:</span>&nbsp;{{ profesor.TotalMaterias }}
+        </p>
+        <p class="profesor-contact">
+          <i class="fas fa-file-medical"></i>
+          <span style="text-decoration: underline;">Historias Clínicas:</span>&nbsp;{{ profesor.TotalHistorias }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state para profesores -->
+  <div class="empty-container" *ngIf="!loading && !error && profesores.length === 0">
+    <i class="fas fa-user-tie"></i>
+    <p>No hay profesores registrados actualmente.</p>
+    <p class="secondary-text">Usa el botón "Añadir Profesor" para registrar nuevos profesores.</p>
+  </div>
+
+  <!-- Loading global -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando profesores...</p>
+  </div>
+
+  <!-- BOTÓN AÑADIR PROFESOR CENTRADO -->
+  <div class="boton-agregar-container" *ngIf="!loading && !error && !mostrarFormulario">
+    <button class="btn-add-student" (click)="abrirFormularioAgregarProfesor()">
+      <i class="fas fa-user-plus"></i>
+      Añadir Profesor
+    </button>
+  </div>
+
+  <!-- FORMULARIO PARA AGREGAR NUEVO PROFESOR -->
+  <div class="formulario-agregar-alumno perfil-form" *ngIf="mostrarFormulario">
+    <div class="form-section">
+      <h3 class="section-title">
+        <i class="material-icons">person_add</i>
+        Agregar Nuevo Profesor
+      </h3>
+
+      <!-- MENSAJES DE ERROR/ÉXITO CON EL MISMO ESTILO DEL PERFIL -->
+      <div class="password-info" *ngIf="errorFormulario">
+        <i class="material-icons info-icon">error</i>
+        <p>{{ errorFormulario }}</p>
+      </div>
+
+      <div class="password-info" *ngIf="successMessage" style="background-color: rgba(76, 175, 80, 0.1); border-left-color: #4CAF50;">
+        <i class="material-icons info-icon" style="color: #4CAF50;">check_circle</i>
+        <p style="color: #4CAF50;">{{ successMessage }}</p>
+      </div>
+
+      <!-- Formulario para nuevo profesor -->
+      <form [formGroup]="formularioProfesor" (ngSubmit)="onSubmit()" class="student-form">
+
+        <!-- Información del profesor -->
+        <div class="password-form-horizontal">
+          <div class="form-group">
+            <label for="nombreCompleto">Nombre Completo *</label>
+            <input
+              type="text"
+              id="nombreCompleto"
+              formControlName="nombreCompleto"
+              placeholder="Ej: Juan Pérez García"
+              [ngClass]="{'is-invalid': formularioProfesor.get('nombreCompleto')?.invalid && formularioProfesor.get('nombreCompleto')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioProfesor.get('nombreCompleto')?.invalid && formularioProfesor.get('nombreCompleto')?.touched">
+              <span *ngIf="formularioProfesor.get('nombreCompleto')?.errors?.['required']">El nombre es requerido</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="numeroEmpleado">Número de Empleado *</label>
+            <input
+              type="text"
+              id="numeroEmpleado"
+              formControlName="numeroEmpleado"
+              placeholder="Ej: 123456"
+              [ngClass]="{'is-invalid': formularioProfesor.get('numeroEmpleado')?.invalid && formularioProfesor.get('numeroEmpleado')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioProfesor.get('numeroEmpleado')?.invalid && formularioProfesor.get('numeroEmpleado')?.touched">
+              <span *ngIf="formularioProfesor.get('numeroEmpleado')?.errors?.['required']">El número de empleado es requerido</span>
+              <span *ngIf="formularioProfesor.get('numeroEmpleado')?.errors?.['empleadoExistente']">Este número de empleado ya está registrado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="correoElectronico">Correo Electrónico *</label>
+            <input
+              type="email"
+              id="correoElectronico"
+              formControlName="correoElectronico"
+              placeholder="Ej: juan.perez@ipn.mx"
+              [ngClass]="{'is-invalid': formularioProfesor.get('correoElectronico')?.invalid && formularioProfesor.get('correoElectronico')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioProfesor.get('correoElectronico')?.invalid && formularioProfesor.get('correoElectronico')?.touched">
+              <span *ngIf="formularioProfesor.get('correoElectronico')?.errors?.['required']">El correo es requerido</span>
+              <span *ngIf="formularioProfesor.get('correoElectronico')?.errors?.['email']">El correo no tiene un formato válido</span>
+              <span *ngIf="formularioProfesor.get('correoElectronico')?.errors?.['correoExistente']">Este correo ya está registrado</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="telefonoCelular">Teléfono Celular</label>
+            <input
+              type="text"
+              id="telefonoCelular"
+              formControlName="telefonoCelular"
+              placeholder="Ej: 5512345678"
+              [ngClass]="{'is-invalid': formularioProfesor.get('telefonoCelular')?.invalid && formularioProfesor.get('telefonoCelular')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioProfesor.get('telefonoCelular')?.invalid && formularioProfesor.get('telefonoCelular')?.touched">
+              <span *ngIf="formularioProfesor.get('telefonoCelular')?.errors?.['pattern']">El teléfono debe tener 10 dígitos</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones con el mismo estilo del perfil -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelarFormulario()">
+            <i class="fas fa-times"></i>
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="!formularioProfesor.valid || guardandoProfesor">
+            <i class="fas fa-save"></i>
+            <span *ngIf="!guardandoProfesor">Crear Profesor</span>
+            <span *ngIf="guardandoProfesor">Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación para eliminar profesor -->
+  <div class="modal-overlay" *ngIf="mostrarModalEliminar" (click)="cancelarEliminar()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <i class="material-icons modal-icon-warning">warning</i>
+        <h2>Confirmar eliminación</h2>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>¿Estás seguro de que deseas eliminar a este profesor?</strong></p>
+
+        <div class="alumno-info-modal" *ngIf="profesorAEliminar">
+          <p><i class="material-icons">person</i> <strong>Profesor:</strong> {{ profesorAEliminar.Nombre }} {{ profesorAEliminar.ApellidoPaterno }} {{ profesorAEliminar.ApellidoMaterno }}</p>
+          <p><i class="material-icons">badge</i> <strong>Empleado:</strong> {{ profesorAEliminar.NumeroEmpleado }}</p>
+        </div>
+
+        <div class="warning-message">
+          <i class="material-icons">info</i>
+          <p>Esta acción eliminará al profesor del sistema permanentemente. Esta acción no se puede deshacer.</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cancelarEliminar()"
+          [disabled]="eliminandoProfesor">
+          <i class="material-icons">close</i>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn-delete"
+          (click)="eliminarProfesor()"
+          [disabled]="eliminandoProfesor">
+          <i class="material-icons">delete</i>
+          <span *ngIf="!eliminandoProfesor">Eliminar</span>
+          <span *ngIf="eliminandoProfesor">Eliminando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

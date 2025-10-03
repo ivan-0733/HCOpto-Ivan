@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, map, Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface HistoriaClinicaAdmin {
@@ -34,6 +34,20 @@ export interface HistoriaClinicaAdmin {
   Consultorio?: string;
 }
 
+export interface ProfesorAdmin {
+  ID: number;
+  NumeroEmpleado: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+  CorreoElectronico: string;
+  TelefonoCelular?: string;
+  // Eliminadas: FechaContratacion y EspecialidadPrincipal
+  TotalMaterias: number;
+  TotalHistorias: number;
+  UsuarioID: number;
+}
+
 export interface EstadisticasAdmin {
   total: number;
   archivadas: number;
@@ -56,6 +70,20 @@ export interface MateriaAdmin {
   NombreProfesor: string;
   TotalAlumnos: number;
   TotalHistorias: number;
+}
+
+export interface AlumnoAdmin {
+  ID: number;
+  NumeroBoleta: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+  CorreoElectronico: string;
+  TelefonoCelular?: string;
+  PeriodoEscolarActual?: string;
+  TotalMaterias: number;
+  TotalHistorias: number;
+  UsuarioID: number;
 }
 
 export interface ComentarioHistoria {
@@ -127,5 +155,106 @@ export class AdminService {
 
   obtenerPerfil(): Observable<{ status: string; data: { perfil: AdminPerfil; estadisticas: EstadisticasAdmin } }> {
     return this.http.get<{ status: string; data: { perfil: AdminPerfil; estadisticas: EstadisticasAdmin } }>(`${this.apiUrl}/perfil`);
+  }
+
+  // Agregar estos métodos dentro de la clase AdminService
+  obtenerTodosProfesores(): Observable<{ status: string; data: { profesores: ProfesorAdmin[] } }> {
+    return this.http.get<{ status: string; data: { profesores: ProfesorAdmin[] } }>(`${this.apiUrl}/profesores`);
+  }
+
+  crearProfesor(nuevoProfesor: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/profesores/crear`, nuevoProfesor);
+  }
+
+  verificarEmpleadoExistente(numeroEmpleado: string): Observable<boolean> {
+    console.log('Llamando API para verificar empleado:', numeroEmpleado);
+
+    return this.http.get<any>(`${this.apiUrl}/profesores/verificar-empleado`, {
+      params: { numeroEmpleado }
+    }).pipe(
+      map(response => {
+        console.log('Respuesta API empleado:', response);
+        return response.data === true;
+      }),
+      catchError(error => {
+        console.error('Error en verificación de empleado:', error);
+        return of(false);
+      })
+    );
+  }
+
+  obtenerTodosAlumnos(): Observable<{ status: string; data: { alumnos: AlumnoAdmin[] } }> {
+    return this.http.get<{ status: string; data: { alumnos: AlumnoAdmin[] } }>(`${this.apiUrl}/alumnos`);
+  }
+
+  crearAlumno(nuevoAlumno: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/alumnos/crear`, nuevoAlumno);
+  }
+
+  verificarBoletaExistente(numeroBoleta: string): Observable<boolean> {
+    console.log('Llamando API para verificar boleta:', numeroBoleta);
+
+    return this.http.get<any>(`${this.apiUrl}/alumnos/verificar-boleta`, {
+      params: { numeroBoleta }
+    }).pipe(
+      map(response => {
+        console.log('Respuesta API boleta:', response);
+        return response.data === true;
+      }),
+      catchError(error => {
+        console.error('Error en verificación de boleta:', error);
+        return of(false);
+      })
+    );
+  }
+
+  verificarCorreoAlumnoExistente(correoElectronico: string): Observable<boolean> {
+    console.log('Llamando API para verificar correo alumno:', correoElectronico);
+
+    return this.http.get<any>(`${this.apiUrl}/alumnos/verificar-correo`, {
+      params: { correoElectronico }
+    }).pipe(
+      map(response => {
+        console.log('Respuesta API:', response);
+        return response.data === true;
+      }),
+      catchError(error => {
+        console.error('Error en la petición:', error);
+        return of(false);
+      })
+    );
+  }
+
+  eliminarAlumno(alumnoId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/alumnos/${alumnoId}`);
+  }
+
+  verificarAlumnoTieneHistorias(alumnoId: number): Observable<{ tieneHistorias: boolean; cantidad: number }> {
+    return this.http.get<any>(`${this.apiUrl}/alumnos/${alumnoId}/verificar-historias`);
+  }
+
+  verificarCorreoProfesorExistente(correoElectronico: string): Observable<boolean> {
+    console.log('🚀 Llamando API para verificar correo:', correoElectronico);
+
+    return this.http.get<any>(`${this.apiUrl}/profesores/verificar-correo`, {
+      params: { correoElectronico }
+    }).pipe(
+      map(response => {
+        console.log('📦 Respuesta API:', response);
+        return response.data === true;
+      }),
+      catchError(error => {
+        console.error('❌ Error en la petición:', error);
+        return of(false);
+      })
+    );
+  }
+
+  eliminarProfesor(profesorId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/profesores/${profesorId}`);
+  }
+
+  verificarProfesorTieneHistorias(profesorId: number): Observable<{ tieneHistorias: boolean; cantidad: number }> {
+    return this.http.get<any>(`${this.apiUrl}/profesores/${profesorId}/verificar-historias`)
   }
 }

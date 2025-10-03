@@ -125,16 +125,6 @@ export const routes: Routes = [
       loadComponent: () => import('./components/admin-materias/admin-materias.component').then(m => m.AdminMateriasComponent),
       title: 'HCOpto - Gestión de Materias'
     },
-    {
-      path: 'profesores',
-      loadComponent: () => import('./components/admin-profesores/admin-profesores.component').then(m => m.AdminProfesoresComponent),
-      title: 'HCOpto - Gestión de Profesores'
-    },
-    {
-      path: 'alumnos',
-      loadComponent: () => import('./components/admin-alumnos/admin-alumnos.component').then(m => m.AdminAlumnosComponent),
-      title: 'HCOpto - Gestión de Alumnos'
-    },
     */
     {
       path: 'perfil',
@@ -145,7 +135,17 @@ export const routes: Routes = [
       path: '',
       redirectTo: 'dashboard',
       pathMatch: 'full'
-    }
+    },
+    {
+      path: 'alumnos',
+      loadComponent: () => import('./components/admin-alumnos/admin-alumnos.component').then(m => m.AdminAlumnosComponent),
+      title: 'HCOpto - Gestión de Alumnos'
+    },
+    {
+      path: 'profesores',
+      loadComponent: () => import('./components/admin-profesores/admin-profesores.component').then(m => m.AdminProfesoresComponent),
+      title: 'HCOpto - Gestión de Profesores'
+    },
   ]
 },
   // Ruta por defecto

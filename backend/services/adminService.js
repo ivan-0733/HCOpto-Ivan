@@ -1,5 +1,6 @@
 const db = require('../config/database');
 const { AppError } = require('../utils/errorHandler');
+const bcrypt = require('bcrypt');
 
 const adminService = {
   /**
@@ -465,6 +466,370 @@ async agregarComentario(historiaId, usuarioId, comentario, userRole) {
       throw error;
     }
   },
+
+  async obtenerTodosProfesores() {
+    try {
+      const query = `
+        SELECT
+          pi.ID,
+          pi.NumeroEmpleado,
+          pi.Nombre,
+          pi.ApellidoPaterno,
+          pi.ApellidoMaterno,
+          u.CorreoElectronico,
+          u.TelefonoCelular,
+          pi.UsuarioID,
+          COUNT(DISTINCT mp.ID) as TotalMaterias,
+          COUNT(DISTINCT hc.ID) as TotalHistorias
+        FROM ProfesoresInfo pi
+        INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
+        LEFT JOIN MateriasProfesor mp ON pi.ID = mp.ProfesorInfoID
+        LEFT JOIN HistorialesClinicos hc ON mp.ID = hc.MateriaProfesorID
+        WHERE u.RolID = (SELECT ID FROM Roles WHERE NombreRol = 'profesor')
+        GROUP BY pi.ID, u.CorreoElectronico, u.TelefonoCelular
+        ORDER BY pi.ApellidoPaterno, pi.ApellidoMaterno, pi.Nombre
+      `;
+
+      const [profesores] = await db.query(query);
+      return profesores;
+    } catch (error) {
+      console.error('Error al obtener profesores:', error);
+      throw new AppError('Error al obtener profesores', 500);
+    }
+  },
+
+  async crearProfesor(datos) {
+    try {
+      // 1. Crear usuario - USAR NÚMERO DE EMPLEADO COMO NOMBRE DE USUARIO
+      const [usuarioResult] = await db.query(
+        `INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, TelefonoCelular, RolID)
+         VALUES (?, ?, ?, ?, (SELECT ID FROM Roles WHERE NombreRol = 'profesor'))`,
+        [
+          datos.numeroEmpleado, // ✅ CAMBIO: usar número de empleado
+          datos.correoElectronico,
+          await bcrypt.hash(datos.numeroEmpleado, 10),
+          datos.telefonoCelular
+        ]
+      );
+
+      const usuarioId = usuarioResult.insertId;
+
+      // 2. Crear profesor
+      const [profesorResult] = await db.query(
+        `INSERT INTO ProfesoresInfo
+         (UsuarioID, NumeroEmpleado, Nombre, ApellidoPaterno, ApellidoMaterno)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          usuarioId,
+          datos.numeroEmpleado,
+          datos.nombre,
+          datos.apellidoPaterno,
+          datos.apellidoMaterno
+        ]
+      );
+
+      return {
+        ID: profesorResult.insertId,
+        UsuarioID: usuarioId,
+        ...datos
+      };
+    } catch (error) {
+      console.error('Error al crear profesor:', error);
+
+      if (error.code === 'ER_DUP_ENTRY') {
+        throw new AppError('El número de empleado o correo ya existe', 400);
+      }
+
+      throw new AppError('Error al crear profesor', 500);
+    }
+  },
+
+  async verificarEmpleadoExistente(numeroEmpleado) {
+    try {
+      console.log('Verificando número de empleado:', numeroEmpleado);
+
+      const [result] = await db.query(
+        'SELECT COUNT(*) as count FROM ProfesoresInfo WHERE NumeroEmpleado = ?',
+        [numeroEmpleado]
+      );
+
+      console.log('Resultado verificación empleado:', result[0].count);
+
+      return result[0].count > 0;
+    } catch (error) {
+      console.error('Error al verificar empleado:', error);
+      return false;
+    }
+  },
+
+  async verificarCorreoProfesorExistente(correoElectronico) {
+    try {
+      console.log('🔍 Verificando correo:', correoElectronico); // Debug
+
+      const [result] = await db.query(
+        'SELECT COUNT(*) as count FROM Usuarios WHERE CorreoElectronico = ? AND EstaActivo = TRUE',
+        [correoElectronico]
+      );
+
+      console.log('📊 Resultado:', result[0].count); // Debug
+
+      return result[0].count > 0;
+    } catch (error) {
+      console.error('❌ Error al verificar correo:', error);
+      return false;
+    }
+  },
+
+  async verificarProfesorTieneHistorias(profesorId) {
+    try {
+      const [result] = await db.query(
+        `SELECT COUNT(*) as cantidad
+         FROM HistorialesClinicos hc
+         INNER JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+         WHERE mp.ProfesorInfoID = ?`,
+        [profesorId]
+      );
+
+      const cantidad = result[0].cantidad;
+      return {
+        tieneHistorias: cantidad > 0,
+        cantidad: cantidad
+      };
+    } catch (error) {
+      console.error('Error al verificar historias:', error);
+      throw new AppError('Error al verificar historias', 500);
+    }
+  },
+
+  async eliminarProfesor(profesorId) {
+    try {
+      // 1. Verificar que no tenga historias
+      const verificacion = await this.verificarProfesorTieneHistorias(profesorId);
+      if (verificacion.tieneHistorias) {
+        throw new AppError('No se puede eliminar un profesor con historias clínicas asociadas', 400);
+      }
+
+      // 2. Obtener UsuarioID
+      const [profesor] = await db.query(
+        'SELECT UsuarioID FROM ProfesoresInfo WHERE ID = ?',
+        [profesorId]
+      );
+
+      if (profesor.length === 0) {
+        throw new AppError('Profesor no encontrado', 404);
+      }
+
+      const usuarioId = profesor[0].UsuarioID;
+
+      // 3. Eliminar registros relacionados (estos sí se pueden eliminar)
+      await db.query('DELETE FROM MateriasProfesor WHERE ProfesorInfoID = ?', [profesorId]);
+      await db.query('DELETE FROM ComentariosProfesor WHERE ProfesorID = ?', [profesorId]);
+
+      // 4. Eliminar registro de ProfesoresInfo
+      await db.query('DELETE FROM ProfesoresInfo WHERE ID = ?', [profesorId]);
+
+      // 5. DESACTIVAR usuario en lugar de eliminarlo (respetando el soft delete)
+      await db.query(
+        'UPDATE Usuarios SET EstaActivo = FALSE, FechaBorrado = NOW() WHERE ID = ?',
+        [usuarioId]
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error al eliminar profesor:', error);
+      throw error;
+    }
+  },
+
+  // ==================== GESTIÓN DE ALUMNOS ====================
+
+async obtenerTodosAlumnos() {
+  try {
+    const query = `
+      SELECT
+        ai.ID,
+        ai.NumeroBoleta,
+        ai.Nombre,
+        ai.ApellidoPaterno,
+        ai.ApellidoMaterno,
+        u.CorreoElectronico,
+        u.TelefonoCelular,
+        ai.UsuarioID,
+        pe.Codigo as PeriodoEscolarActual,
+        COUNT(DISTINCT mp.ID) as TotalMaterias,
+        COUNT(DISTINCT hc.ID) as TotalHistorias
+      FROM AlumnosInfo ai
+      INNER JOIN Usuarios u ON ai.UsuarioID = u.ID
+      LEFT JOIN PeriodosEscolares pe ON ai.PeriodoEscolarActualID = pe.ID
+      LEFT JOIN MateriasAlumno ma ON ai.ID = ma.AlumnoInfoID
+      LEFT JOIN MateriasProfesor mp ON ma.MateriaProfesorID = mp.ID
+      LEFT JOIN HistorialesClinicos hc ON ai.ID = hc.AlumnoID
+      WHERE u.RolID = (SELECT ID FROM Roles WHERE NombreRol = 'alumno')
+      GROUP BY ai.ID, u.CorreoElectronico, u.TelefonoCelular, pe.Codigo
+      ORDER BY ai.ApellidoPaterno, ai.ApellidoMaterno, ai.Nombre
+    `;
+
+    const [alumnos] = await db.query(query);
+    return alumnos;
+  } catch (error) {
+    console.error('Error al obtener alumnos:', error);
+    throw new AppError('Error al obtener alumnos', 500);
+  }
+},
+
+async crearAlumno(datos) {
+  try {
+    // 1. Crear usuario - USAR NÚMERO DE BOLETA COMO NOMBRE DE USUARIO
+    const [usuarioResult] = await db.query(
+      `INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, TelefonoCelular, RolID)
+       VALUES (?, ?, ?, ?, (SELECT ID FROM Roles WHERE NombreRol = 'alumno'))`,
+      [
+        datos.numeroBoleta, // ✅ CAMBIO: usar número de boleta
+        datos.correoElectronico,
+        await bcrypt.hash(datos.numeroBoleta, 10),
+        datos.telefonoCelular
+      ]
+    );
+
+    const usuarioId = usuarioResult.insertId;
+
+    // 2. Obtener período escolar actual si no se proporciona
+    let periodoEscolarId = datos.periodoEscolarActualID || null;
+
+    if (!periodoEscolarId) {
+      const [periodoActual] = await db.query(
+        'SELECT ID FROM PeriodosEscolares WHERE EsActual = TRUE LIMIT 1'
+      );
+
+      if (periodoActual.length > 0) {
+        periodoEscolarId = periodoActual[0].ID;
+      }
+    }
+
+    // 3. Crear alumno
+    const [alumnoResult] = await db.query(
+      `INSERT INTO AlumnosInfo
+       (UsuarioID, NumeroBoleta, Nombre, ApellidoPaterno, ApellidoMaterno, PeriodoEscolarActualID)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        usuarioId,
+        datos.numeroBoleta,
+        datos.nombre,
+        datos.apellidoPaterno,
+        datos.apellidoMaterno,
+        periodoEscolarId
+      ]
+    );
+
+    return {
+      ID: alumnoResult.insertId,
+      UsuarioID: usuarioId,
+      ...datos
+    };
+  } catch (error) {
+    console.error('Error al crear alumno:', error);
+
+    if (error.code === 'ER_DUP_ENTRY') {
+      throw new AppError('El número de boleta o correo ya existe', 400);
+    }
+
+    throw new AppError('Error al crear alumno', 500);
+  }
+},
+
+async verificarBoletaExistente(numeroBoleta) {
+  try {
+    console.log('Verificando número de boleta:', numeroBoleta);
+
+    const [result] = await db.query(
+      'SELECT COUNT(*) as count FROM AlumnosInfo WHERE NumeroBoleta = ?',
+      [numeroBoleta]
+    );
+
+    console.log('Resultado verificación boleta:', result[0].count);
+
+    return result[0].count > 0;
+  } catch (error) {
+    console.error('Error al verificar boleta:', error);
+    return false;
+  }
+},
+
+async verificarCorreoAlumnoExistente(correoElectronico) {
+  try {
+    console.log('Verificando correo alumno:', correoElectronico);
+
+    const [result] = await db.query(
+      'SELECT COUNT(*) as count FROM Usuarios WHERE CorreoElectronico = ? AND EstaActivo = TRUE',
+      [correoElectronico]
+    );
+
+    console.log('Resultado:', result[0].count);
+
+    return result[0].count > 0;
+  } catch (error) {
+    console.error('Error al verificar correo:', error);
+    return false;
+  }
+},
+
+async verificarAlumnoTieneHistorias(alumnoId) {
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as cantidad FROM HistorialesClinicos WHERE AlumnoID = ?',
+      [alumnoId]
+    );
+
+    const cantidad = result[0].cantidad;
+    return {
+      tieneHistorias: cantidad > 0,
+      cantidad: cantidad
+    };
+  } catch (error) {
+    console.error('Error al verificar historias:', error);
+    throw new AppError('Error al verificar historias', 500);
+  }
+},
+
+async eliminarAlumno(alumnoId) {
+  try {
+    // 1. Verificar que no tenga historias
+    const verificacion = await this.verificarAlumnoTieneHistorias(alumnoId);
+    if (verificacion.tieneHistorias) {
+      throw new AppError('No se puede eliminar un alumno con historias clínicas asociadas', 400);
+    }
+
+    // 2. Obtener UsuarioID
+    const [alumno] = await db.query(
+      'SELECT UsuarioID FROM AlumnosInfo WHERE ID = ?',
+      [alumnoId]
+    );
+
+    if (alumno.length === 0) {
+      throw new AppError('Alumno no encontrado', 404);
+    }
+
+    const usuarioId = alumno[0].UsuarioID;
+
+    // 3. Eliminar registros relacionados
+    await db.query('DELETE FROM MateriasAlumno WHERE AlumnoInfoID = ?', [alumnoId]);
+    await db.query('DELETE FROM RespuestasComentarios WHERE AlumnoID = ?', [alumnoId]);
+
+    // 4. Eliminar registro de AlumnosInfo
+    await db.query('DELETE FROM AlumnosInfo WHERE ID = ?', [alumnoId]);
+
+    // 5. DESACTIVAR usuario en lugar de eliminarlo
+    await db.query(
+      'UPDATE Usuarios SET EstaActivo = FALSE, FechaBorrado = NOW() WHERE ID = ?',
+      [usuarioId]
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error al eliminar alumno:', error);
+    throw error;
+  }
+},
 
   /**
    * Obtener perfil del administrador
