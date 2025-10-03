@@ -80,12 +80,15 @@
         <i class="fas fa-prescription"></i>
         Receta Final
       </button>
-      <button type="button" [ngClass]="getButtonClass('comentarios')" (click)="changeTab('comentarios')">
-        <i class="fas fa-comments"></i>
-        Comentarios
-        <span class="badge" *ngIf="historia.comentarios && historia.comentarios.length > 0">
-          {{ historia.comentarios.length }}
-        </span>
+      <button type="button"
+      [ngClass]="getButtonClass('comentarios')"
+      class="tab-comentarios"
+      (click)="changeTab('comentarios')">
+      <i class="fas fa-comments"></i>
+      Comentarios
+      <span class="badge" *ngIf="historia.TotalComentarios && historia.TotalComentarios > 0">
+        {{ historia.TotalComentarios }}
+      </span>
       </button>
     </div>
 
