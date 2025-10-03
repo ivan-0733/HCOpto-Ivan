@@ -1698,6 +1698,12 @@
 
           <div *ngIf="esProfesor || esAdmin" class="add-comment-section">
             <h3>Agregar Nuevo Comentario</h3>
+                  <!-- ✅ AGREGAR: Mensaje de éxito -->
+            <div *ngIf="mensajeExito" class="alert alert-success">
+              <i class="fas fa-check-circle"></i>
+              {{ mensajeExito }}
+            </div>
+
             <div class="add-comment-form">
               <label for="nuevoComentario">Comentario:</label>
               <textarea

@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
 import { ComentarioBoxComponent } from '../shared/comentario-box/comentario-box.component'; // ✅ Ajustar esta ruta
 import { AuthService } from '../../services/auth.service';
+import { ProfesorService } from '../../services/profesor.service';
 
 @Component({
 selector: 'app-historia-clinica-detalle',
@@ -30,6 +31,8 @@ loading = true;
 error = '';
 nuevoComentarioTexto: string = '';
 
+mensajeExito: string = '';
+
 esProfesor = false;
 esAdmin = false;
 esAlumno = false;
@@ -38,7 +41,8 @@ constructor(
   private historiaClinicaService: HistoriaClinicaService,
   private route: ActivatedRoute,
   private router: Router,
-  private authService: AuthService
+  private authService: AuthService,
+  private profesorService: ProfesorService
 ) { }
 
 ngOnInit(): void {
@@ -444,6 +448,13 @@ obtenerTipoTest(tipoID: number | null | undefined): string {
   return tipos[tipoID] || '-';
 }
 
+private mostrarMensajeExito(mensaje: string): void {
+  this.mensajeExito = mensaje;
+  setTimeout(() => {
+    this.mensajeExito = '';
+  }, 3000);
+}
+
 /**
  * Obtener nombre de sección por ID
  */
@@ -473,25 +484,44 @@ agregarComentarioGeneral(): void {
     return;
   }
 
-  // Usar seccionId = 0 o null para comentarios generales
-  const comentarioData = {
-    historiaId: this.historiaId,
-    seccionId: null, // o 0 para comentarios generales
-    comentario: this.nuevoComentarioTexto.trim()
-  };
-
-  this.historiaClinicaService.agregarComentario(this.historiaId, comentarioData)
-    .subscribe({
+  // Si es profesor, usar el servicio de profesor
+  if (this.esProfesor || this.esAdmin) {
+    this.profesorService.agregarComentario(
+      this.historiaId,
+      this.nuevoComentarioTexto.trim(),
+      undefined  // ← Cambiar null por undefined para comentarios generales
+    ).subscribe({
       next: (response) => {
         console.log('Comentario agregado exitosamente');
         this.nuevoComentarioTexto = '';
-        this.loadHistoriaClinica(); // Recargar para mostrar el nuevo comentario
+        this.loadHistoriaClinica();
       },
       error: (error) => {
         this.error = 'Error al agregar el comentario. Por favor, intenta nuevamente.';
-        console.error('Error agregando comentario:', error);
+        console.error('Error:', error);
       }
     });
+  } else {
+    // Si es alumno, usar el servicio de historia clínica (respuesta a comentarios)
+    const comentarioData = {
+      historiaId: this.historiaId,
+      seccionId: null,
+      comentario: this.nuevoComentarioTexto.trim()
+    };
+
+    this.historiaClinicaService.agregarComentario(this.historiaId, comentarioData)
+      .subscribe({
+        next: (response) => {
+          console.log('Comentario agregado exitosamente');
+          this.nuevoComentarioTexto = '';
+          this.loadHistoriaClinica();
+        },
+        error: (error) => {
+          this.error = 'Error al agregar el comentario. Por favor, intenta nuevamente.';
+          console.error('Error:', error);
+        }
+      });
+  }
 }
 
 // Obtiene el tipo de visión estereoscópica
