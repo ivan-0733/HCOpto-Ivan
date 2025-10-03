@@ -73,7 +73,7 @@ const authController = {
     // Generar token
     const token = authService.generarToken(alumno.UsuarioID, 'alumno');
 
-    // Devolver respuesta exitosa
+    // ✅ CORREGIDO: Incluir ROL en la respuesta
     res.status(200).json({
       status: 'success',
       token,
@@ -83,7 +83,8 @@ const authController = {
         nombreUsuario: alumno.NombreUsuario,
         correo: alumno.CorreoElectronico,
         boleta: alumno.NumeroBoleta,
-        semestre: alumno.SemestreActual
+        semestre: alumno.SemestreActual,
+        rol: 'alumno'  // ← AGREGADO
       }
     });
   }),
@@ -94,11 +95,37 @@ const authController = {
   loginProfesor: catchAsync(async (req, res) => {
     const { numeroEmpleado, correo, password } = req.body;
 
-    // Validar datos de entrada
     if (!numeroEmpleado || !correo || !password) {
       return res.status(400).json({
         status: 'error',
         message: 'Por favor proporciona número de empleado, correo y contraseña'
+      });
+    }
+
+    // ✅ VERIFICAR SI ES ADMIN PRIMERO
+    if (numeroEmpleado === 'admin' && correo === 'admin@admin.ipn' && password === 'admin') {
+      // Buscar o crear usuario admin
+      let adminUser = await authService.verificarExistenciaAdmin();
+
+      if (!adminUser) {
+        adminUser = await authService.crearUsuarioAdmin();
+      }
+
+      const token = authService.generarToken(adminUser.id, 'admin');
+
+      return res.status(200).json({
+        status: 'success',
+        token,
+        data: {
+          usuario: {
+            id: adminUser.id,
+            usuarioId: adminUser.usuarioId,
+            nombreUsuario: adminUser.nombreUsuario,
+            correo: adminUser.correo,
+            numeroEmpleado: 'admin',
+            rol: 'admin'  // ← Ya estaba correcto
+          }
+        }
       });
     }
 
@@ -156,7 +183,7 @@ const authController = {
     // Generar token
     const token = authService.generarToken(profesor.UsuarioID, 'profesor');
 
-    // Devolver respuesta exitosa
+    // ✅ CORREGIDO: Incluir ROL en la respuesta
     res.status(200).json({
       status: 'success',
       token,
@@ -165,7 +192,8 @@ const authController = {
         usuarioId: profesor.UsuarioID,
         nombreUsuario: profesor.NombreUsuario,
         correo: profesor.CorreoElectronico,
-        numeroEmpleado: profesor.NumeroEmpleado
+        numeroEmpleado: profesor.NumeroEmpleado,
+        rol: 'profesor'  // ← AGREGADO
       }
     });
   }),

@@ -131,7 +131,7 @@
                   type="text"
                   id="busquedaPaciente"
                   [formControl]="busquedaControl"
-                  placeholder="Nombre, apellido o correo (mínimo 3 caracteres)"
+                  placeholder="Escribe nombre, CURP o ID SiSeCO del paciente"
                 >
               </div>
               <button type="button" class="btn-outline" (click)="limpiarPacienteSeleccionado()" *ngIf="pacienteSeleccionado">
@@ -275,7 +275,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="correoElectronico">Correo Electrónico *</label>
+              <label for="correoElectronico">Correo Electrónico</label>
               <input type="email" id="correoElectronico" formControlName="correoElectronico" [ngClass]="{'is-invalid': historiaForm.get('paciente.correoElectronico')?.invalid && historiaForm.get('paciente.correoElectronico')?.touched}">
               <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.correoElectronico')?.invalid && historiaForm.get('paciente.correoElectronico')?.touched">
                 <span *ngIf="historiaForm.get('paciente.correoElectronico')?.errors?.['required']">Por favor, ingresa el correo electrónico del paciente.</span>
@@ -284,7 +284,7 @@
             </div>
 
             <div class="form-group">
-              <label for="telefonoCelular">Teléfono Celular *</label>
+              <label for="telefonoCelular">Teléfono Celular</label>
               <input type="tel" id="telefonoCelular" formControlName="telefonoCelular" [ngClass]="{'is-invalid': historiaForm.get('paciente.telefonoCelular')?.invalid && historiaForm.get('paciente.telefonoCelular')?.touched}">
               <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.telefonoCelular')?.invalid && historiaForm.get('paciente.telefonoCelular')?.touched">
                 Por favor, ingresa el teléfono celular del paciente.
@@ -304,8 +304,38 @@
             </div>
 
             <div class="form-group">
-              <label for="direccionLinea2">Dirección Línea 2</label>
-              <input type="text" id="direccionLinea2" formControlName="direccionLinea2" placeholder="Interior, edificio, etc.">
+              <label for="curp">CURP *</label>
+              <input
+                type="text"
+                id="curp"
+                formControlName="curp"
+                placeholder="18 caracteres"
+                maxlength="18"
+                style="text-transform: uppercase"
+                [ngClass]="{'is-invalid': historiaForm.get('paciente.curp')?.invalid && historiaForm.get('paciente.curp')?.touched}"
+              >
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.curp')?.invalid && historiaForm.get('paciente.curp')?.touched">
+                <div *ngIf="historiaForm.get('paciente.curp')?.errors?.['required']">El CURP es obligatorio.</div>
+                <div *ngIf="historiaForm.get('paciente.curp')?.errors?.['minlength'] || historiaForm.get('paciente.curp')?.errors?.['maxlength']">
+                  El CURP debe tener exactamente 18 caracteres.
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="idSiSeCO">ID SiSeCO</label>
+              <input
+                type="text"
+                id="idSiSeCO"
+                formControlName="idSiSeCO"
+                placeholder="8 dígitos (opcional)"
+                maxlength="8"
+                [ngClass]="{'is-invalid': historiaForm.get('paciente.idSiSeCO')?.invalid && historiaForm.get('paciente.idSiSeCO')?.touched}"
+              >
+              <div class="invalid-feedback" *ngIf="historiaForm.get('paciente.idSiSeCO')?.invalid && historiaForm.get('paciente.idSiSeCO')?.touched">
+                El ID SiSeCO debe tener exactamente 8 dígitos.
+              </div>
+              <small class="form-text text-muted">Campo opcional para compatibilidad con SiSeCO</small>
             </div>
           </div>
 

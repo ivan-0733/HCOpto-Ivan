@@ -279,6 +279,39 @@ export class AlumnoDashboardComponent implements OnInit {
     });
   }
 
+  /**
+   * Normaliza un string removiendo acentos y convirtiendo a minúsculas
+   */
+  private normalizarString(str: string | null | undefined): string {
+    if (!str) return '';
+    return str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  /**
+   * Verifica si un string contiene otro sin distinción de acentos ni mayúsculas
+   */
+  private contieneTexto(texto: string | null | undefined, busqueda: string): boolean {
+    if (!texto || !busqueda) return false;
+
+    const textoNormalizado = texto
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Eliminar acentos
+      .trim();
+
+    const busquedaNormalizada = busqueda
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+
+    return textoNormalizado.includes(busquedaNormalizada);
+  }
+
   obtenerMateriaProfesorIdPorMateria(materiaId: number): number | undefined {
     if (!materiaId) return undefined;
 
@@ -576,49 +609,46 @@ export class AlumnoDashboardComponent implements OnInit {
   filtrarHistorias(): HistoriaClinica[] {
     if (!this.historiasClinicas || this.historiasClinicas.length === 0) return [];
 
-    const termino = this.filtroPaciente.trim().toLowerCase();
+    const termino = this.filtroPaciente.trim();
 
-    // Filtrar historias según criterios
     const historiasFiltradas = this.historiasClinicas.filter(historia => {
-      // Verificar si cumple con el filtro de búsqueda por nombre
-      const nombreCompleto = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`.toLowerCase();
-      const cumplePaciente = termino === '' || nombreCompleto.includes(termino);
+
+      // ===== INICIO DE LA MODIFICACIÓN =====
+      // Búsqueda por paciente: nombre completo, CURP o ID SiSeCo
+      const nombreCompleto = `${historia.Nombre} ${historia.ApellidoPaterno} ${historia.ApellidoMaterno || ''}`;
+      const cumplePaciente = termino === '' ||
+          this.contieneTexto(nombreCompleto, termino) ||
+          this.contieneTexto(historia.CURP, termino) ||
+          this.contieneTexto(historia.IDSiSeCO, termino);
+      // ===== FIN DE LA MODIFICACIÓN =====
 
       if (!cumplePaciente) {
         return false;
       }
 
-      // Comprobar si está archivado
       const estaArchivado = Boolean(historia.Archivado);
 
-      // Si el filtro es de archivadas, mostrar todas independientemente del periodo
       if (this.filtroEstado === 'Archivado') {
-        // Si no está archivada, no mostrarla
+        // ... el resto del método no cambia ...
         if (!estaArchivado) return false;
 
-        // Si hay una materia seleccionada específica (no "Todas las materias")
         if (this.materiaSeleccionadaId !== null) {
-          // Buscar la materia en todas las materias (incluidas históricas)
           const materiaEncontrada = this.todasLasMaterias.find(m => m.ID === this.materiaSeleccionadaId);
           if (materiaEncontrada) {
             return historia.MateriaProfesorID === materiaEncontrada.MateriaProfesorID;
           }
         }
-        // Si está activo el filtro de materia archivada específica
         else if (this.filtroMateriaArchivada !== null) {
           return historia.MateriaProfesorID === this.filtroMateriaArchivada;
         }
 
-        // Si no hay filtro de materia, mostrar todas las archivadas
         return true;
       }
 
-      // Para los demás filtros, no mostrar historias archivadas
       if (estaArchivado) {
         return false;
       }
 
-      // FILTRADO POR MATERIA - SOLO PARA MATERIAS DEL PERIODO ACTUAL
       if (this.materiaSeleccionadaId !== null) {
         const materiaProfesorID = this.obtenerMateriaProfesorIdPorMateria(this.materiaSeleccionadaId);
         if (!materiaProfesorID || historia.MateriaProfesorID !== materiaProfesorID) {
@@ -626,11 +656,9 @@ export class AlumnoDashboardComponent implements OnInit {
         }
       }
 
-      // Filtrar por estado
       return this.filtroEstado === 'todos' || historia.Estado === this.filtroEstado;
     });
 
-    // Ordenar las historias filtradas
     return this.ordenarHistorias(historiasFiltradas);
   }
 

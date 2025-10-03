@@ -1,0 +1,1314 @@
+@import '../../styles/variables';
+
+// Variables
+$primary-color: $ipn-guinda; // Cambiado a color IPN
+$dark-color: $ipn-guinda; // Cambiado a color IPN
+$border-radius: 6px;
+$box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+$light-selected-bg: #f0f0f0; // Fondo gris claro para elementos seleccionados en modo claro
+
+// Dashboard container
+.dashboard-container {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// Header
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .header-title {
+    h1 {
+      font-size: 1.8rem;
+      color: $ipn-guinda; // Cambiado a color IPN
+      margin: 0;
+      display: flex;
+      align-items: center;
+
+      i {
+        margin-right: 0rem;
+        color: $ipn-guinda; // Cambiado a color IPN
+      }
+    }
+
+    p {
+      margin: 0.5rem 0 0;
+      color: $text-secondary; // Cambiado para soporte de tema
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+}
+
+// Button styles
+.btn-primary {
+  background-color: $ipn-guinda; // Cambiado a color IPN
+  color: $ipn-secondary; // Cambiado a color IPN blanco
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: $border-radius;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+
+  i {
+    margin-right: 0.5rem;
+  }
+
+  &:hover {
+    background-color: $ipn-guinda-light; // Cambiado a color IPN light
+  }
+
+  &:disabled {
+    background-color: $ipn-guinda;
+    cursor: not-allowed;
+  }
+}
+
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: $border-radius;
+  border: 1px solid $danger;
+  background-color: transparent;
+  color: $danger;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  i {
+    font-size: 1rem;
+  }
+
+  &:hover {
+    background-color: rgba($danger, 0.1);
+  }
+}
+
+// Stats cards - Modificado para soportar temas
+.stats-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); // Mismo comportamiento responsive
+  gap: 0.3rem;
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $box-shadow;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  transform-origin: top left;
+  margin: 1rem 0rem;
+  box-sizing: border-box;
+  margin-bottom: 0rem;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-md;
+  }
+
+  /* Efecto visual cuando se hace clic */
+  &:active {
+    transform: translateY(-2px);
+  }
+
+  .stat-card-icon {
+    width: 43px;
+    height: 43px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+    background-color: $primary-color;
+
+    i {
+      font-size: 1.6rem;
+      color: #fff;
+    }
+  }
+
+
+  .stat-card-content {
+    h3 {
+      font-size: 1.1rem;
+      color: $text-primary;
+      margin: 0 0 0.5rem;
+      text-align: center;
+      margin-right: -5rem; // Compensar el margin-right del icono para centrar visualmente
+    }
+
+    .stat-value {
+      font-size: 1.4rem;
+      text-align: center;
+      font-weight: 700;
+      margin: 0;
+      color: $text-primary;
+      margin-right: -5rem; // Aplicar la misma compensación al valor
+    }
+  }
+
+  &.total .stat-card-icon {
+    background-color: $dark-color;
+  }
+
+  &.archivadas .stat-card-icon {
+    background-color: $estado-archivado;
+  }
+
+  &.por-estado .stat-card-icon {
+    &.estado-corregido {
+      background-color: $estado-corregido;
+    }
+
+    &.estado-revision {
+      background-color: $estado-revision;
+    }
+
+    &.estado-correccion {
+      background-color: $estado-correccion;
+    }
+
+    &.estado-finalizado {
+      background-color: $estado-finalizado;
+    }
+
+    &.estado-nuevo {
+      background-color: $estado-nuevo;
+    }
+  }
+
+  // Estilo para cuando el card está seleccionado
+  &.selected {
+    background-color: rgba($ipn-guinda, 0.1); // Cambiado para mejor compatibilidad con tema
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    border-left: 3px solid $ipn-guinda;
+  }
+}
+
+// Mensaje de ayuda
+.help-message {
+  background-color: rgba(220, 220, 220, 0.25); // Cambiado para soporte de tema
+  border-left: 4px solid $ipn-guinda; // Cambiado a color IPN
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: $border-radius;
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+
+  i {
+    font-size: 1.5rem;
+    color: $ipn-guinda; // Cambiado a color IPN
+    margin-right: 1rem;
+  }
+
+  p {
+    margin: 0;
+    color: $text-primary; // Cambiado para soporte de tema
+  }
+}
+
+// Filtros
+.filtros-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.7rem;
+  background-color: $bg-primary; // Cambiado para soporte de tema
+  padding: 1.5rem;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  overflow: hidden; // ← previene desbordamientos inesperados
+  max-width: 100%; // ← asegura que nunca se pase del ancho del padre
+  box-sizing: border-box;
+
+  .filtro {
+    flex: 1 1 250px; // ← permite crecimiento flexible pero no menor a 250px
+    max-width: 100%; // ← asegura que nunca se salga de su contenedor padre
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: $ipn-guinda; // Cambiado a color IPN
+      font-weight: 500;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 0.6rem 0.6rem 0.5rem;
+      border: 1px solid $border-color; // Cambiado para soporte de tema
+      border-radius: $border-radius;
+      font-size: 0.95rem;
+      box-sizing: border-box; // ← evita sumar padding al width
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      color: $text-primary; // Cambiado para soporte de tema
+
+      &:focus {
+        outline: none;
+        border-color: $ipn-guinda; // Cambiado a color IPN
+      }
+    }
+
+    .input-with-icon {
+      position: relative;
+      width: 100%; // ← asegura que no se salga
+
+      i {
+        position: absolute;
+        left: 0.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $text-secondary; // Cambiado para soporte de tema
+      }
+
+      input {
+        padding-left: 1rem; // Aumentado para dar espacio al ícono
+        width: 100%; // ← obligatorio para evitar desbordamiento
+        box-sizing: border-box;
+      }
+    }
+  }
+}
+
+.edad-cell {
+  .no-data {
+    font-size: 0.9rem;
+  }
+}
+
+// Título de sección "Aquí puedes ver todas tus..."
+.section-title {
+  color: $ipn-guinda; // Cambiado a color IPN
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+// Tabla de historias
+.tabla-container {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabla-scroll-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  flex: 1;
+
+  // Estilos del scrollbar consistentes para TODAS las pantallas
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; // Sin track visible por defecto
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: transparent; // Invisible por defecto
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+  }
+
+  // Solo mostrar scrollbar durante hover/scroll en MODO CLARO
+  &:hover::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  &:active::-webkit-scrollbar-thumb {
+    background: #888;
+  }
+
+  // Para Firefox (modo claro)
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+
+  &:hover {
+    scrollbar-color: #888 transparent;
+  }
+}
+
+/* Define column widths explicitly */
+.tabla-historias th,
+.tabla-historias td {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1px solid $border-color;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Eliminar position: static y z-index: auto */
+}
+
+/* Fix for the Actions column border issue */
+.tabla-historias td.acciones {
+  display: table-cell; /* Forzar comportamiento normal de celda */
+}
+
+/* Ensure buttons in the actions column don't interfere with borders */
+.tabla-historias .btn-icon {
+  position: relative;
+  z-index: 2; /* Higher than the cell but not affecting borders */
+}
+
+.tabla-historias {
+  min-width: 1100px; /* Set a minimum width for the table */
+  width: 100%;
+  border-collapse: collapse !important; /* Fix for border issues */
+  border-spacing: 0; /* Maintain tight borders */
+
+  th, td {
+    padding: 1rem;
+    text-align: center;
+    border-bottom: 1px solid $border-color; // Cambiado para soporte de tema
+    box-shadow: none !important;
+  }
+
+  th {
+    background-color: $ipn-guinda; // Cambiado a color IPN
+    font-weight: 600;
+    color: $ipn-secondary; // Cambiado a color IPN blanco
+  }
+
+  tbody tr {
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba($ipn-guinda, 0.1); // Cambiado para mejor compatibilidad con tema
+    }
+  }
+
+  .paciente-info, .alumno-info {
+    display: flex;
+    flex-direction: column;
+    font-size: 1.15rem;
+
+    .nombre-completo {
+      font-weight: 500;
+      color: $ipn-guinda; // Cambiado a color IPN
+    }
+
+    .contacto-paciente, .contacto-alumno {
+      font-size: 0.85rem;
+      color: $text-secondary; // Cambiado para soporte de tema
+      margin-top: 0.2rem;
+
+      i {
+        color: $ipn-guinda; // Cambiado a color IPN
+        margin-right: 0.3rem;
+      }
+    }
+  }
+
+  .estado-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #fff;
+
+    &.estado-corregido {
+      background-color: $estado-corregido;
+    }
+
+    &.estado-revision {
+      background-color: $estado-revision;
+    }
+
+    &.estado-correccion {
+      background-color: $estado-correccion;
+    }
+
+    &.estado-finalizado {
+      background-color: $estado-finalizado;
+    }
+
+    &.estado-nuevo {
+      background-color: $estado-nuevo;
+    }
+  }
+
+  .badge.archivado {
+    display: inline-block;
+    margin-left: 0.5rem;
+    background-color: $estado-archivado; // Cambiado a color IPN
+    color: #fff;
+    padding: 0.2rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+  }
+
+  .acciones {
+    display: flex;
+    gap: 0.1rem; // Reducido desde 0.2rem para que estén más pegados
+    justify-content: center; // Centrar los botones
+    width: auto; // Ancho fijo más reducido para la columna
+    white-space: nowrap; // Evita que los botones se apilen
+
+    .btn-icon {
+      width: 58px; // Ligeramente reducido desde 58px
+      height: 58px; // Se mantiene la altura original
+      margin: 0; // Eliminar cualquier margen
+      padding: 0; // Eliminar padding
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      background-color: transparent; // Cambiado para soporte de tema
+
+      i {
+        background-color: $bg-primary !important; // Cambiado para soporte de tema
+        color: $ipn-guinda !important; // Cambiado a color IPN
+        font-size: 1.2rem;
+      }
+
+      &:hover {
+        background-color: rgba($ipn-guinda, 0.1); // Cambiado para soporte de tema
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// Para valores destacados en los registros
+.valor-destacado {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: $ipn-guinda; // Cambiado a color IPN
+}
+
+// Estados de carga, error y vacío
+.loading-container, .empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: $text-secondary; // Cambiado para soporte de tema
+    margin-bottom: 1rem;
+  }
+}
+
+// Estados de carga, error y vacío
+.error-container{
+  padding: 3rem;
+  margin: 2rem auto;
+  max-width: 400px;
+  text-align: center;
+  background-color: $bg-primary;
+  color: $ipn-guinda-dark;
+  border-radius: $border-radius;
+  box-shadow: $box-shadow-sm;
+
+  .spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 4px solid rgba($ipn-guinda, 0.1);
+    border-top-color: $ipn-guinda;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  i {
+    font-size: 3rem;
+    margin-bottom: 0rem;
+    display: block;
+  }
+
+  p {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .secondary-text {
+    font-size: 0.95rem;
+    color: $ipn-gray-dark;
+  }
+
+  button {
+    margin-top: 1.5rem;
+
+    &:hover {
+      background-color: $light-selected-bg;
+    }
+  }
+}
+
+.loading-container {
+  i, .spinner {
+    color: $ipn-guinda; // Cambiado a color IPN
+  }
+}
+
+.error-container {
+  color: $danger;
+  border-color: $danger;
+}
+
+.empty-container {
+  i {
+    color: $ipn-guinda; // Cambiado a color IPN
+    opacity: 0.5;
+  }
+}
+
+// Spinner
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba($ipn-guinda, 0.3); // Cambiado a color IPN
+  border-radius: 50%;
+  border-top-color: $ipn-guinda; // Cambiado a color IPN
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Responsive
+@media (max-width: 350px) {
+  .dashboard-container {
+    padding: 1rem; // Reducir padding principal
+  }
+
+  .materias-cards-container,
+  .materias-cards-large,
+  .materias-cards-additional {
+    grid-template-columns: 1fr; // Una columna en móviles pequeños
+  }
+
+  .materia-card {
+    width: 95%; // Ligeramente más estrecho para mantener márgenes
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .stats-cards {
+    grid-template-columns: 1fr;
+  }
+
+  // CORRECCIÓN ESPECÍFICA PARA TABLA EN <350px
+  .tabla-container {
+    margin: 0 -1rem; // Expandir hasta los bordes del contenedor
+    border-radius: 0; // Sin bordes redondeados
+  }
+
+  .tabla-scroll-container {
+    // Asegurar que el contenido no se salga de los márgenes
+    margin: 0;
+    padding: 0;
+
+    // Forzar que la tabla tenga un ancho mínimo pero controlado
+    .tabla-historias {
+      min-width: 800px; // Reducido desde 1100px para móviles muy pequeños
+    }
+  }
+
+  .tabla-historias {
+    th, td {
+      padding: 0.5rem; // Reducir padding aún más
+      font-size: 0.8rem; // Texto más pequeño
+    }
+
+    .paciente-info, .alumno-info {
+      font-size: 1rem; // Reducir tamaño de fuente
+
+      .nombre-completo {
+        font-size: 0.95rem;
+      }
+
+      .contacto-paciente, .contacto-alumno {
+        font-size: 0.75rem;
+      }
+    }
+
+    .acciones .btn-icon {
+      width: 35px !important;
+      height: 35px !important;
+      margin: 0 8px !important;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .filtros-container {
+    margin: 0 -1rem 1.7rem; // Expandir hasta los bordes
+    border-radius: 0; // Sin bordes redondeados
+
+    .filtro {
+      flex: 1 1 100%; // En móvil, los filtros ocupan el ancho completo
+    }
+  }
+
+  // Paginación también expandida
+  .paginacion-container {
+    margin: 0 -1rem 0; // Expandir hasta los bordes
+    border-radius: 0; // Sin bordes redondeados
+  }
+}
+
+/* Ajustar los botones para que estén horizontales */
+.tabla-historias .acciones .btn-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important; /* Reducir tamaño para que entren bien */
+  height: 40px !important;
+  margin: 0 12px !important;
+  position: static !important; /* Eliminar posicionamiento que causa problemas */
+  z-index: auto !important; /* Eliminar z-index personalizado */
+}
+
+// Paginación
+.paginacion-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0rem;
+  padding: 1rem;
+  background-color: rgba($ipn-guinda, 0.05); // Cambiado para soporte de tema
+  border-radius: $border-radius;
+  font-size: 0.9rem;
+
+  .paginacion-info {
+    color: $text-secondary; // Cambiado para soporte de tema
+  }
+
+  .paginacion-selector {
+    display: flex;
+    align-items: center;
+
+    label {
+      margin-right: 0.5rem;
+      color: $text-secondary; // Cambiado para soporte de tema
+    }
+
+    select {
+      padding: 0.3rem 0.6rem;
+      border: 1px solid $border-color; // Cambiado para soporte de tema
+      border-radius: $border-radius;
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      color: $text-primary; // Cambiado para soporte de tema
+
+      &:focus {
+        outline: none;
+        border-color: $ipn-guinda;
+      }
+    }
+  }
+
+  .paginacion-botones {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .btn-pagina {
+      width: 2.2rem;
+      height: 2.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: $bg-primary; // Cambiado para soporte de tema
+      border: 1px solid $border-color; // Cambiado para soporte de tema
+      border-radius: $border-radius;
+      cursor: pointer;
+      transition: all 0.2s;
+      padding: 0;
+
+      i.material-icons {
+        color: $ipn-guinda;
+        font-size: 1.2rem;
+      }
+
+      &:hover {
+        background-color: $light-selected-bg;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+          background-color: $bg-primary; // Cambiado para soporte de tema
+        }
+      }
+    }
+
+    .pagina-actual {
+      padding: 0.3rem 0.6rem;
+      background-color: $ipn-guinda;
+      color: white;
+      border-radius: $border-radius;
+      font-weight: 500;
+    }
+  }
+}
+
+// Media queries para responsividad
+@media (max-width: 768px) {
+  .paginacion-container {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center; // Cambiado de flex-start a center
+
+    .paginacion-info,
+    .paginacion-selector {
+      align-self: center; // Centrar estos elementos
+      text-align: center; // Asegurar que el texto esté centrado
+    }
+
+    .paginacion-botones {
+      align-self: center; // Ya estaba así, mantenemos
+    }
+  }
+
+  .materias-cards-container,
+  .materias-cards-large,
+  .materias-cards-additional {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); // Celdas un poco más pequeñas en tablets
+  }
+
+  .materia-card {
+    text-align: center;
+
+    .materia-card-icon {
+      margin-right: 0; // Eliminar el margen lateral
+      margin-bottom: 1rem; // Añadir espacio abajo del icono
+    }
+  }
+}
+
+.materias-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); // Mismo comportamiento responsive
+  gap: 0.3rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+// Make the materias cards responsive
+.materias-cards {
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.materias-cards-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); // Exactamente 3 columnas por fila
+  gap: 1rem; // Espacio entre las tarjetas
+  width: 100%;
+}
+
+.materias-cards-large {
+  display: flex;
+  flex: 2;
+  flex-wrap: wrap; // Allow wrapping on smaller screens
+  gap: 0.5rem;
+  min-width: 0; // Allow shrinking below content size
+}
+
+.materia-card {
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $box-shadow;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  transform-origin: top left;
+  margin: 0.3rem 0rem;
+  box-sizing: border-box;
+  margin-bottom: 0rem;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(-2px);
+  }
+
+  &.selected {
+    background-color: rgba($ipn-guinda, 0.1);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    border-left: 3px solid $ipn-guinda;
+  }
+
+  .materia-card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.5rem;
+    background-color: $primary-color;
+
+    i {
+      font-size: 2.2rem;
+      color: #fff;
+    }
+  }
+
+  .materia-card-content {
+    flex: 1;
+
+    h3 {
+      font-size: 1.3rem;
+      color: $text-primary;
+      margin: 0rem;
+      text-align: center;
+    }
+  }
+
+  small {
+    display: block;
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+
+  &.large {
+    flex: 1;
+
+    .materia-card-content {
+      text-align: center;
+
+      h3 {
+        font-size: 1.3rem;
+        margin: 0 0 0.5rem;
+      }
+
+      .stat-value {
+        font-size: 1.3rem;
+      }
+    }
+  }
+}
+
+// Estilos para materias adicionales
+.materias-cards-large, .materias-cards-additional {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); // El mismo patrón responsivo
+  gap: 1rem;
+  width: 100%;
+}
+
+// Añadir clases específicas para el modo oscuro si hay elementos personalizados
+:host-context(.dark-theme) {
+  .btn-icon i {
+    background-color: $bg-primary !important;
+    color: $ipn-guinda !important;
+  }
+}
+
+// Añade esto al final de tu archivo SCSS
+
+// Variables para el tema oscuro
+$dark-bg-card: #2a2a2a; // Fondo gris para cards en modo oscuro
+$dark-selected-bg: #1e1e1e; // Fondo más oscuro para cards seleccionadas en modo oscuro
+$light-selected-bg: #f0f0f0; // Fondo gris claro para cards seleccionadas en modo claro
+$hover-bg-light: #f0f0f0; // Fondo para hover en registros de tabla en modo claro
+$hover-bg-dark: #1e1e1e; // Fondo para hover en registros de tabla en modo oscuro
+$accent-color-dark: $ipn-guinda; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+$accent-color-dark2: $ipn-guinda-light; // Color de acento para modo oscuro (mismo que encabezados de tabla)
+
+// Modificaciones para el modo oscuro
+:host-context(.dark-theme) {
+  // Estilos para cards en modo oscuro
+  .stat-card {
+    background-color: $dark-bg-card;
+
+    &.selected {
+      background-color: $dark-selected-bg;
+    }
+  }
+
+  // Estilos para tablas en modo oscuro
+  .tabla-container {
+    background-color: $dark-bg-card;
+  }
+
+  .error-container{
+    background-color: $dark-bg-card;
+
+    .btn-retry{
+
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  // Estilos para filtros en modo oscuro
+  .filtros-container {
+    background-color: $dark-bg-card;
+  }
+
+  // Estilos para materia cards en modo oscuro
+  .materia-card {
+    background-color: $dark-bg-card;
+
+    &.selected {
+      background-color: $dark-selected-bg;
+    }
+  }
+
+  // Estilos para help-message en modo oscuro
+  .help-message {
+    background-color: $dark-bg-card;
+    border-left: 4px solid $ipn-guinda;
+
+    i {
+      color: $ipn-guinda;
+    }
+  }
+
+  // Modificar el hover de las tablas en modo oscuro
+  .tabla-historias {
+    tbody tr {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  // Scrollbar en modo oscuro - CORREGIDO para usar tabla-scroll-container
+  .tabla-scroll-container {
+    &::-webkit-scrollbar-track {
+      background: transparent; // Sin track en modo oscuro
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: transparent; // Invisible por defecto
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+
+    // Solo mostrar scrollbar durante hover/scroll en modo oscuro
+    &:hover::-webkit-scrollbar-thumb {
+      background: #666;
+    }
+
+    &:active::-webkit-scrollbar-thumb {
+      background: #666;
+    }
+
+    // Para Firefox en modo oscuro
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+      scrollbar-color: #666 transparent;
+    }
+  }
+
+  // Mantén los iconos visibles en modo oscuro
+  .btn-icon i {
+    background-color: transparent !important;
+    color: $accent-color-dark !important;
+  }
+
+  // Unificar colores de acento en modo oscuro
+  .header-title h1,
+  .header-title h1 i,
+  .filtro label,
+  .section-title,
+  .paciente-info .nombre-completo,
+  .paciente-info .contacto-paciente i,
+  .alumno-info .nombre-completo,
+  .alumno-info .contacto-alumno i,
+  .valor-destacado,
+  .paginacion-botones .btn-pagina i.material-icons {
+    color: $accent-color-dark2;
+  }
+
+  .paginacion-botones {
+    .btn-pagina {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .paginacion-container {
+    background-color: $dark-bg-card; // ← AÑADIR
+  }
+
+  .estado-badge{color: black}
+
+  // Bordes con color de acento
+  .help-message,
+  .stat-card.selected,
+  .materia-card.selected {
+    border-left-color: $accent-color-dark;
+  }
+
+  // Fondos con color de acento
+  .stat-card-icon,
+  .materia-card-icon,
+  .materia-card-icon2 {
+    background-color: $accent-color-dark;
+  }
+}
+
+// Modificaciones para cards seleccionadas en modo claro
+.stat-card.selected {
+  background-color: $light-selected-bg;
+  border-left: 3px solid $ipn-guinda;
+}
+
+.materia-card.selected {
+  background-color: $light-selected-bg;
+  border-left: 3px solid $ipn-guinda;
+}
+
+// Modificaciones para el hover en tablas (tanto modo claro como oscuro)
+.tabla-historias {
+  tbody tr {
+    &:hover {
+      background-color: $hover-bg-light;
+    }
+  }
+}
+
+.iconos-apilados {
+  position: relative;
+  display: inline-block;
+}
+.icono-atras {
+  position: absolute;
+  top: -0.2em;
+  left: 0;
+}
+.icono-adelante {
+  position: relative;
+  left: 0.3em;
+}
+
+.libro-estilizado {
+    display: inline-block;
+    transform: scaleX(-1.1) scaleY(1.3); /* Voltea horizontal y alarga verticalmente */
+    font-size: 4em; /* Tamaño base del icono */
+    margin: 20px auto;
+    text-align: center;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2)); /* Opcional: añade profundidad */
+}
+.contenedor {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+// ========================================
+// MENÚ DESPLEGABLE (DROPDOWN)
+// ========================================
+.menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px); // Espacio debajo del botón
+  right: 0;
+  background-color: $bg-primary;
+  border-radius: $border-radius;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  overflow: hidden;
+  z-index: 1000;
+  animation: slideDown 0.2s ease-out;
+
+  // Flecha indicadora arriba del menú
+  &::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid $bg-primary;
+  }
+
+  button {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background-color: transparent;
+    color: $text-primary;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    text-align: left;
+    font-size: 0.95rem;
+
+    i {
+      margin-right: 0.75rem;
+      font-size: 1.1rem;
+      color: $ipn-guinda;
+    }
+
+    &:hover {
+      background-color: $bg-secondary;
+    }
+
+    &.delete-option {
+      color: $danger;
+
+      i {
+        color: $danger;
+      }
+
+      &:hover {
+        background-color: rgba($danger, 0.1);
+      }
+    }
+  }
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: $border-color;
+  margin: 0.25rem 0;
+}
+
+.dropdown-submenu {
+  position: relative;
+
+  > span {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: $text-primary;
+
+    i:first-child {
+      margin-right: 0.75rem;
+      color: $ipn-guinda;
+    }
+
+    // Ícono de flecha hacia abajo usando Material Icons
+    &::after {
+      content: 'keyboard_arrow_down';
+      font-family: 'Material Icons';
+      font-size: 1.2rem;
+      color: $text-secondary;
+      transition: transform 0.2s;
+      margin-left: auto;
+    }
+
+    &:hover {
+      background-color: $bg-secondary;
+    }
+  }
+
+  .submenu-content {
+    display: none;
+    background-color: $bg-secondary;
+    border-top: 1px solid $border-color;
+
+    button {
+      padding-left: 2.5rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  &.active {
+    > span::after {
+      transform: rotate(180deg); // Rotar la flecha cuando está activo
+    }
+
+    .submenu-content {
+      display: block;
+    }
+  }
+}
+
+// Animación del dropdown
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ESTILOS PARA MODO OSCURO
+:host-context(.dark-theme) {
+  .dropdown-menu {
+    background-color: $dark-bg-card;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+    // Flecha en modo oscuro
+    &::before {
+      border-bottom-color: $dark-bg-card;
+    }
+
+    button {
+      &:hover {
+        background-color: $hover-bg-dark;
+      }
+    }
+  }
+
+  .dropdown-submenu .submenu-content {
+    background-color: $hover-bg-dark;
+  }
+}

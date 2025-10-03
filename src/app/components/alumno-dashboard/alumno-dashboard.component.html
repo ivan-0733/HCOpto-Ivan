@@ -163,7 +163,7 @@
         type="text"
         id="filtroPaciente"
         [(ngModel)]="filtroPaciente"
-        placeholder="Nombre del paciente"
+        placeholder="Nombre, CURP o ID SiSeCo"
         (ngModelChange)="onFiltroPacienteChange()"
       >
     </div>
@@ -189,7 +189,7 @@
       <table class="tabla-historias">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>ID SiSeCo</th>
             <th>Fecha</th>
             <th>Paciente</th>
             <th>Edad</th>
@@ -201,7 +201,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let historia of obtenerHistoriasPaginaActual()">
-            <td>{{ historia.ID }}</td>
+            <td>{{ historia.IDSiSeCO || '-' }}</td>
             <td>{{ historia.Fecha | date:'dd/MM/yyyy' }}</td>
             <td>
               <div class="paciente-info">

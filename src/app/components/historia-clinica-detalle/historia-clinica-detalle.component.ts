@@ -5,6 +5,8 @@ import { HistoriaClinicaService, HistoriaClinicaDetalle } from '../../services/h
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { environment } from '../../../environments/environment';
+import { ComentarioBoxComponent } from '../shared/comentario-box/comentario-box.component'; // ✅ Ajustar esta ruta
+import { AuthService } from '../../services/auth.service';
 
 @Component({
 selector: 'app-historia-clinica-detalle',
@@ -14,7 +16,8 @@ standalone: true,
 imports: [
   CommonModule,
   RouterModule,
-  FormsModule
+  FormsModule,
+  ComentarioBoxComponent
 ]
 })
 export class HistoriaClinicaDetalleComponent implements OnInit {
@@ -24,16 +27,31 @@ currentTab = 'datos-generales';
 
 loading = true;
 error = '';
+nuevoComentarioTexto: string = '';
 
 esProfesor = false;
+esAdmin = false;
+esAlumno = false;
 
 constructor(
   private historiaClinicaService: HistoriaClinicaService,
   private route: ActivatedRoute,
-  private router: Router
+  private router: Router,
+  private authService: AuthService
 ) { }
 
 ngOnInit(): void {
+  // Detectar el rol del usuario
+  const userRole = this.authService.getUserRole();
+  console.log('🔍 ROL DETECTADO:', userRole);
+  this.esProfesor = userRole === 'Profesor';
+  this.esAdmin = userRole === 'Admin';
+  this.esAlumno = userRole === 'Alumno';
+
+  console.log('✅ esProfesor:', this.esProfesor);
+  console.log('✅ esAlumno:', this.esAlumno);
+  console.log('✅ esAdmin:', this.esAdmin);
+
   this.route.params.subscribe(params => {
     if (params['id']) {
       this.historiaId = +params['id'];
@@ -59,6 +77,14 @@ loadHistoriaClinica(): void {
       next: (historia) => {
         this.historia = historia;
         console.log('Historia cargada correctamente:', historia);
+
+        // ✅ AGREGAR ESTO: Inicializar propiedades para validación de comentarios
+        if (this.historia.comentarios) {
+          this.historia.comentarios.forEach(comentario => {
+            comentario.nuevaRespuesta = '';
+            comentario.respuestaValida = false;
+          });
+        }
 
         // Cargar imágenes de método gráfico si están disponibles por ID
         if (historia.metodoGrafico && historia.metodoGrafico.imagenID) {
@@ -136,19 +162,11 @@ volverAlDashboard(): void {
   this.router.navigate(['/alumno/dashboard']);
 }
 
-responderComentario(comentarioId: number, respuesta: string): void {
-  if (!this.historiaId) return;
-
-  this.historiaClinicaService.responderComentario(this.historiaId, comentarioId, respuesta).subscribe({
-    next: () => {
-      // Recargar historia para mostrar la respuesta
-      this.loadHistoriaClinica();
-    },
-    error: (error) => {
-      this.error = 'Error al responder el comentario. Por favor, intenta nuevamente.';
-      console.error('Error respondiendo comentario:', error);
-    }
-  });
+onComentarioAgregado(): void {
+  // Opcionalmente recargar los datos si quieres mostrar los comentarios actualizados
+  console.log('Comentario agregado exitosamente');
+  // Si quieres recargar toda la historia:
+  // this.loadHistoriaClinica();
 }
 
 cambiarEstado(nuevoEstadoId: number): void {
@@ -164,6 +182,14 @@ cambiarEstado(nuevoEstadoId: number): void {
       console.error('Error cambiando estado:', error);
     }
   });
+}
+
+/**
+ * Valida si la respuesta tiene contenido válido
+ */
+validarRespuesta(comentario: any): void {
+  const texto = comentario.nuevaRespuesta?.trim() || '';
+  comentario.respuestaValida = texto.length > 0;
 }
 
 imprimirHistoria(): void {
@@ -182,7 +208,37 @@ get nombreCompletoProfesor(): string {
   return `${ProfesorNombre} ${ProfesorApellidoPaterno} ${ProfesorApellidoMaterno ?? ''}`.trim();
 }
 
+/**
+ * Responder a un comentario (solo alumno)
+ */
+responderComentario(comentario: any): void {
+  if (!this.historiaId || !comentario.respuestaValida) {
+    return;
+  }
 
+  const respuesta = comentario.nuevaRespuesta.trim();
+
+  this.historiaClinicaService.responderComentario(this.historiaId, comentario.ID, respuesta)
+    .subscribe({
+      next: (response) => {
+        // Agregar la nueva respuesta a la lista
+        if (!comentario.respuestas) {
+          comentario.respuestas = [];
+        }
+        comentario.respuestas.push(response.data);
+
+        // Limpiar el formulario
+        comentario.nuevaRespuesta = '';
+        comentario.respuestaValida = false;
+
+        console.log('Respuesta enviada correctamente');
+      },
+      error: (error) => {
+        this.error = 'Error al responder el comentario. Por favor, intenta nuevamente.';
+        console.error('Error respondiendo comentario:', error);
+      }
+    });
+}
 
 // Métodos para trabajar con la sección de Antecedente Visual
 obtenerNombreTipoMedicion(tipoMedicion: string): string {
@@ -369,6 +425,56 @@ obtenerTipoTest(tipoID: number | null | undefined): string {
   };
 
   return tipos[tipoID] || '-';
+}
+
+/**
+ * Obtener nombre de sección por ID
+ */
+obtenerNombreSeccion(seccionId: number | null): string {
+  if (!seccionId) return 'General';
+
+  const secciones: {[key: number]: string} = {
+    1: 'Datos Generales',
+    2: 'Interrogatorio',
+    3: 'Antecedente Visual',
+    4: 'Examen Preliminar',
+    8: 'Estado Refractivo',
+    10: 'Binocularidad',
+    14: 'Detección de Alteraciones',
+    20: 'Diagnóstico',
+    24: 'Receta Final'
+  };
+
+  return secciones[seccionId] || 'Sección Desconocida';
+}
+
+/**
+ * Agregar comentario general (sin sección específica)
+ */
+agregarComentarioGeneral(): void {
+  if (!this.historiaId || !this.nuevoComentarioTexto.trim()) {
+    return;
+  }
+
+  // Usar seccionId = 0 o null para comentarios generales
+  const comentarioData = {
+    historiaId: this.historiaId,
+    seccionId: null, // o 0 para comentarios generales
+    comentario: this.nuevoComentarioTexto.trim()
+  };
+
+  this.historiaClinicaService.agregarComentario(this.historiaId, comentarioData)
+    .subscribe({
+      next: (response) => {
+        console.log('Comentario agregado exitosamente');
+        this.nuevoComentarioTexto = '';
+        this.loadHistoriaClinica(); // Recargar para mostrar el nuevo comentario
+      },
+      error: (error) => {
+        this.error = 'Error al agregar el comentario. Por favor, intenta nuevamente.';
+        console.error('Error agregando comentario:', error);
+      }
+    });
 }
 
 // Obtiene el tipo de visión estereoscópica

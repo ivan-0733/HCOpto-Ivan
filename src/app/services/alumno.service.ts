@@ -87,10 +87,22 @@ export interface Paciente {
   ID: number;
   Nombre: string;
   ApellidoPaterno: string;
-  ApellidoMaterno: string | null;
-  CorreoElectronico: string;
-  TelefonoCelular: string;
-  Edad: number;
+  ApellidoMaterno?: string;
+  GeneroID?: number;
+  Edad?: number;
+  EstadoCivilID?: number;  // ✅ OPCIONAL
+  EscolaridadID?: number;  // ✅ OPCIONAL
+  Ocupacion?: string;
+  DireccionLinea1?: string;
+  CURP: string;  // ✅ NUEVO - OBLIGATORIO (antes era DireccionLinea2)
+  Ciudad?: string;
+  EstadoID?: number;
+  CodigoPostal?: string;
+  Pais?: string;
+  CorreoElectronico?: string;  // ✅ OPCIONAL (ya no es UNIQUE)
+  TelefonoCelular?: string;  // ✅ OPCIONAL (ya no es UNIQUE)
+  Telefono?: string;
+  IDSiSeCO?: string;  // ✅ NUEVO - OPCIONAL
 }
 
 export interface ApiResponse<T> {

@@ -10,7 +10,7 @@ router.use(authController.verificarRol('profesor'));
 
 // Rutas para el perfil del profesor
 router.get('/perfil', profesorController.obtenerPerfil);
-router.put('/perfil', profesorController.actualizarPerfil); // ← Cambiado de PATCH a PUT
+router.put('/perfil', profesorController.actualizarPerfil);
 
 // Ruta para actualizar contraseña
 router.patch('/password', profesorController.actualizarPassword);
@@ -35,8 +35,45 @@ router.get('/periodo-actual', profesorController.obtenerPeriodoEscolar);
 // Obtener una historia clínica específica por ID
 router.get('/historias-clinicas/:id', profesorController.obtenerHistoriaClinica);
 
-// Agregar estas rutas al final del archivo (antes de module.exports):
+// Rutas de materias con alumnos
 router.get('/materias/:materiaId/alumnos', profesorController.obtenerAlumnosPorMateria);
 router.get('/materias-con-alumnos', profesorController.obtenerMateriasConAlumnos);
+
+// Buscar alumnos existentes
+router.get('/alumnos/buscar', profesorController.buscarAlumnos);
+
+// Verificar si boleta existe
+router.get('/alumnos/verificar-boleta', profesorController.verificarBoletaExistente);
+
+// Verificar si correo existe
+router.get('/alumnos/verificar-correo', profesorController.verificarCorreoExistente);
+
+// Crear nuevo alumno e inscribirlo
+router.post('/alumnos/crear-inscribir', profesorController.crearAlumnoEInscribir);
+
+// Eliminar alumno de materia
+router.delete('/alumnos/eliminar-de-materia', profesorController.eliminarAlumnoDeMateria);
+
+// Inscribir alumno existente a materia
+router.post('/alumnos/inscribir', profesorController.inscribirAlumnoMateria);
+
+// ==========================================
+// RUTAS DE COMENTARIOS Y RESPUESTAS
+// ==========================================
+
+// POST - Agregar comentario
+router.post('/comentarios', profesorController.agregarComentario);
+
+// GET - Obtener comentarios con respuestas (hilos)
+router.get('/comentarios/:historiaId/con-respuestas', profesorController.obtenerComentariosConRespuestas);
+
+// POST - Agregar respuesta a un comentario
+router.post('/comentarios/:comentarioId/responder', profesorController.agregarRespuesta);
+
+// GET - Obtener estado de historia
+router.get('/historias/:historiaId/estado', profesorController.obtenerEstadoHistoria);
+
+// PUT - Cambiar estado de historia
+router.put('/historias/:historiaId/estado', profesorController.cambiarEstadoHistoria);
 
 module.exports = router;

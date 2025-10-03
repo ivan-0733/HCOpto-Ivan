@@ -12,9 +12,6 @@
       <button [class.active]="selectedRole === 'profesor'" (click)="changeRole('profesor')">
         <i class="fas fa-chalkboard-teacher"></i> Profesor
       </button>
-      <button [class.active]="selectedRole === 'admin'" (click)="changeRole('admin')">
-        <i class="fas fa-user-shield"></i> Admin
-      </button>
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">

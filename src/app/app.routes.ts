@@ -27,7 +27,6 @@ export const routes: Routes = [
         loadComponent: () => import('./components/alumno-perfil/alumno-perfil.component').then(m => m.AlumnoPerfilComponent),
         title: 'HCOpto - Mi Perfil'
       },
-      // Historia Clínica - Usar el contenedor para nueva y edición
       {
         path: 'historias/nueva',
         loadComponent: () => import('./components/historia-clinica-container/historia-clinica-container.component').then(m => m.HistoriaClinicaContainerComponent),
@@ -50,7 +49,6 @@ export const routes: Routes = [
       }
     ]
   },
-  // ✅ CORREGIDO - Rutas para profesor
   {
     path: 'profesor',
     canActivate: [authGuard],
@@ -77,6 +75,11 @@ export const routes: Routes = [
         title: 'HCOpto - Revisar Historia Clínica'
       },
       {
+        path: 'comentarios/:id',  // ✅ CORREGIDO: Mover aquí y usar loadComponent
+        loadComponent: () => import('./components/profesor-comentarios/profesor-comentarios.component').then(m => m.ProfesorComentariosComponent),
+        title: 'HCOpto - Comentarios'
+      },
+      {
         path: 'alumnos',
         loadComponent: () => import('./components/profesor-alumnos/profesor-alumnos.component').then(m => m.ProfesorAlumnosComponent),
         title: 'HCOpto - Mis Alumnos'
@@ -93,7 +96,6 @@ export const routes: Routes = [
       }
     ]
   },
-  // Rutas para administrador (por implementar)
   {
     path: 'admin',
     canActivate: [authGuard],
@@ -101,23 +103,56 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./components/alumno-dashboard/alumno-dashboard.component').then(m => m.AlumnoDashboardComponent),
+        loadComponent: () => import('./components/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent),
         title: 'HCOpto - Panel de Administración'
+      },
+      {
+        path: 'historias/:id',
+        loadComponent: () => import('./components/historia-clinica-detalle/historia-clinica-detalle.component').then(m => m.HistoriaClinicaDetalleComponent),
+        title: 'HCOpto - Ver Historia Clínica'
+      },
+      {
+        path: 'historias/:id/editar',
+        loadComponent: () => import('./components/historia-clinica-container/historia-clinica-container.component').then(m => m.HistoriaClinicaContainerComponent),
+        title: 'HCOpto - Editar Historia Clínica'
+      },
+      {
+        path: 'historias/:id/comentarios',
+        loadComponent: () => import('./components/admin-comentarios/admin-comentarios.component').then(m => m.AdminComentariosComponent),
+        title: 'HCOpto - Comentarios'
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./components/admin-perfil/admin-perfil.component').then(m => m.AdminPerfilComponent),
+        title: 'HCOpto - Mi Perfil'
       },
       {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
+      },
+      {
+        path: 'alumnos',
+        loadComponent: () => import('./components/admin-alumnos/admin-alumnos.component').then(m => m.AdminAlumnosComponent),
+        title: 'HCOpto - Gestión de Alumnos'
+      },
+      {
+        path: 'materias',
+        loadComponent: () => import('./components/admin-materias/admin-materias.component').then(m => m.AdminMateriasComponent),
+        title: 'HCOpto - Gestión de Materias'
+      },
+      {
+        path: 'profesores',
+        loadComponent: () => import('./components/admin-profesores/admin-profesores.component').then(m => m.AdminProfesoresComponent),
+        title: 'HCOpto - Gestión de Profesores'
       }
     ]
   },
-  // Ruta por defecto
   {
     path: '',
     redirectTo: '/login',
     pathMatch: 'full'
   },
-  // Ruta para manejar rutas no encontradas
   {
     path: '**',
     redirectTo: '/login'

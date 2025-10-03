@@ -19,13 +19,15 @@ export interface HistoriaClinica {
   Edad?: number;
   Estado: string;
   Consultorio: string;
-  PeriodoEscolar: string;  // Added this property
+  PeriodoEscolar: string;
   CorreoElectronico?: string;
   TelefonoCelular?: string;
-  MateriaProfesorID: number;  // Added this property
-  NombreMateria: string;      // Added this property
-  GrupoMateria: string;       // Added this property
-  PeriodoEscolarID?: number;  // Added this property
+  CURP?: string;  // ✅ AGREGAR
+  IDSiSeCO?: string;  // ✅ AGREGAR
+  MateriaProfesorID: number;
+  NombreMateria: string;
+  GrupoMateria: string;
+  PeriodoEscolarID?: number;
 
   // Información del alumno que creó la historia clínica
   AlumnoNombre: string;
@@ -44,12 +46,13 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   ProfesorID: number;
   ConsultorioID: number;
   SemestreID: number;
+  PeriodoEscolarID: number;  // ✅ Asegurarse que está
   GeneroID: number;
   EstadoCivilID: number;
   EscolaridadID: number;
   Ocupacion: string;
   DireccionLinea1: string;
-  DireccionLinea2: string;
+  CURP: string;  // ✅ NUEVO - OBLIGATORIO
   Ciudad: string;
   PacienteEstadoID: number;
   CodigoPostal: string;
@@ -57,6 +60,7 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
   CorreoElectronico: string;
   TelefonoCelular: string;
   Telefono: string;
+  IDSiSeCO?: string;  // ✅ NUEVO - OPCIONAL
 
   // Propiedades existentes
   interrogatorio?: any;
@@ -342,20 +346,20 @@ export interface HistoriaClinicaDetalle extends HistoriaClinica {
     Binocular?: string;
     Sensorial?: string;
   };
-  
+
   planTratamiento?: {
     Descripcion?: string;
   };
-  
+
   pronostico?: {
     Descripcion?: string;
   };
-  
+
   recomendaciones?: {
     Descripcion?: string;
     ProximaCita?: Date | string;
   };
-  
+
 
 
 }
@@ -402,17 +406,17 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
   // Detectar si estamos en una ruta de profesor
   const currentUrl = this.router.url;
   const esProfesor = currentUrl.includes('/profesor');
-  
+
   console.log(`🌐 SERVICE - Obteniendo historia ID: ${id}`);
   console.log(`🌐 SERVICE - URL actual: ${currentUrl}`);
   console.log(`🌐 SERVICE - Es profesor: ${esProfesor}`);
-  
+
   if (esProfesor) {
     // Si es profesor, usar el endpoint de profesores
     const profesorApiUrl = `${environment.apiUrl}/profesores`;
     const url = `${profesorApiUrl}/historias-clinicas/${id}`;
     console.log(`🌐 SERVICE - URL para profesor: ${url}`);
-    
+
     return this.http.get<ApiResponse<HistoriaClinicaDetalle>>(url)
       .pipe(
         map(response => {
@@ -436,7 +440,7 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
 
 
 
-  
+
 
   // Crear una nueva historia clínica
   crearHistoriaClinica(datos: any): Observable<HistoriaClinicaDetalle> {
@@ -494,6 +498,18 @@ actualizarHistoriaCompleta(datosHistoriaCompleta: any): Observable<any> {
       .pipe(
         map(response => response.data)
       );
+  }
+
+  /**
+   * Agregar comentario a una historia clínica
+   */
+  agregarComentario(historiaId: number, datos: any): Observable<any> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.apiUrl}/${historiaId}/comentarios`,
+      datos
+    ).pipe(
+      map(response => response.data)
+    );
   }
 
   // Obtener estadísticas de historias clínicas

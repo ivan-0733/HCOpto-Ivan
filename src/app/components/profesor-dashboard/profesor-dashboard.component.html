@@ -164,7 +164,7 @@
         type="text"
         id="filtroAlumno"
         [(ngModel)]="filtroAlumno"
-        placeholder="Nombre o boleta del alumno"
+        placeholder="Nombre o Boleta"
         (ngModelChange)="onFiltroAlumnoChange()"
       >
     </div>
@@ -178,7 +178,7 @@
         type="text"
         id="filtroPaciente"
         [(ngModel)]="filtroPaciente"
-        placeholder="Nombre del paciente"
+        placeholder="Nombre, CURP o ID SiSeCo"
         (ngModelChange)="onFiltroPacienteChange()"
       >
     </div>
@@ -204,7 +204,7 @@
       <table class="tabla-historias">
         <thead>
           <tr>
-            <th>ID</th>
+            <th>ID SiSeCo</th>
             <th>Fecha</th>
             <th>Alumno</th> <!-- Nueva columna -->
             <th>Paciente</th>
@@ -217,7 +217,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let historia of obtenerHistoriasPaginaActual()">
-            <td>{{ historia.ID }}</td>
+            <td>{{ historia.IDSiSeCO || '-' }}</td>
             <td>{{ historia.Fecha | date:'dd/MM/yyyy' }}</td>
             <!-- Nueva columna de alumno -->
             <td>

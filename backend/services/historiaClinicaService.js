@@ -80,38 +80,39 @@ const historiaClinicaService = {
 async obtenerHistoriasClinicasPorAlumno(alumnoId) {
   try {
     const [historias] = await db.query(
-      `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
-              p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
-              cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
-              mp.ProfesorInfoID AS ProfesorID,
-              m.Nombre AS NombreMateria,
-              mp.Grupo AS GrupoMateria,
-              hc.MateriaProfesorID,
-
-              -- Datos del Alumno desde AlumnosInfo
-              a.Nombre AS AlumnoNombre,
-              a.ApellidoPaterno AS AlumnoApellidoPaterno,
-              a.ApellidoMaterno AS AlumnoApellidoMaterno,
-              a.NumeroBoleta AS AlumnoBoleta,
-              ua.CorreoElectronico AS AlumnoCorreo
-
+      `SELECT
+        hc.ID,
+        hc.Fecha,
+        hc.Archivado,
+        hc.FechaArchivado,
+        hc.EstadoID,
+        p.ID AS PacienteID,
+        p.Nombre,
+        p.ApellidoPaterno,
+        p.ApellidoMaterno,
+        p.CorreoElectronico,
+        p.TelefonoCelular,
+        p.CURP,
+        p.IDSiSeCO,  -- ⭐ AGREGAR ESTE CAMPO
+        p.Edad,
+        cg.Valor AS Estado,
+        c.Nombre AS Consultorio,
+        pe.Codigo AS PeriodoEscolar,
+        m.Nombre AS NombreMateria,
+        mp.Grupo AS GrupoMateria,
+        hc.MateriaProfesorID,
+        mp.ProfesorInfoID AS ProfesorID
       FROM HistorialesClinicos hc
-          JOIN Pacientes p ON hc.PacienteID = p.ID
-          JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
-          JOIN Consultorios c ON hc.ConsultorioID = c.ID
-          JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
-          JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
-          JOIN Materias m ON mp.MateriaID = m.ID
-          JOIN AlumnosInfo a ON hc.AlumnoID = a.ID
-          JOIN Usuarios ua ON a.UsuarioID = ua.ID
-          WHERE hc.AlumnoID = ?
-          ORDER BY hc.Fecha DESC`,
+      JOIN Pacientes p ON hc.PacienteID = p.ID
+      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+      JOIN Consultorios c ON hc.ConsultorioID = c.ID
+      JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
+      WHERE hc.AlumnoID = ?
+      ORDER BY hc.Fecha DESC`,
       [alumnoId]
     );
-
-    // Hacer console.log para verificar que ProfesorID está presente en los resultados
-    console.log('Primera historia clínica obtenida:', historias.length > 0 ? historias[0] : 'No hay historias');
 
     return historias;
   } catch (error) {
@@ -151,7 +152,8 @@ try {
         p.EscolaridadID,
         p.Ocupacion,
         p.DireccionLinea1,
-        p.DireccionLinea2,
+        p.CURP,
+        p.IDSiSeCO,
         p.Ciudad,
         p.EstadoID AS PacienteEstadoID,
         p.CodigoPostal,
@@ -414,12 +416,19 @@ else if (table === 'Recomendaciones' && results.length > 0) {
       comentarios.map(async (comentario) => {
         try {
           const [respuestas] = await db.query(
-            `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-              FROM RespuestasComentarios rc
-              JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-              JOIN Usuarios u ON a.UsuarioID = u.ID
-              WHERE rc.ComentarioID = ?
-              ORDER BY rc.FechaRespuesta`,
+            `SELECT rc.*,
+              u.NombreUsuario,
+              CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreCompleto,
+              CASE
+                WHEN pi.ID IS NOT NULL THEN TRUE
+                ELSE FALSE
+              END AS EsProfesor
+        FROM RespuestasComentarios rc
+        JOIN Usuarios u ON rc.UsuarioID = u.ID
+        LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+        LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+        WHERE rc.ComentarioID = ?
+        ORDER BY rc.FechaRespuesta ASC`,
             [comentario.ID]
           );
           return { ...comentario, respuestas };
@@ -469,45 +478,36 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
 
     pacienteId = datosHistoria.paciente.id;
     } else {
-    // Verificar si el paciente ya existe por correo o teléfono
-    const [pacientesExistentes] = await connection.query(
-        'SELECT ID FROM Pacientes WHERE CorreoElectronico = ? OR TelefonoCelular = ?',
-        [datosHistoria.paciente.correoElectronico, datosHistoria.paciente.telefonoCelular]
-    );
-
-    if (pacientesExistentes.length > 0) {
-        pacienteId = pacientesExistentes[0].ID;
-    } else {
         // Crear nuevo paciente
         const [resultPaciente] = await connection.query(
-        `INSERT INTO Pacientes (
-            Nombre, ApellidoPaterno, ApellidoMaterno, GeneroID, Edad,
-            EstadoCivilID, EscolaridadID, Ocupacion, DireccionLinea1, DireccionLinea2,
-            Ciudad, EstadoID, CodigoPostal, Pais, CorreoElectronico, TelefonoCelular, Telefono
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            datosHistoria.paciente.nombre,
-            datosHistoria.paciente.apellidoPaterno,
-            datosHistoria.paciente.apellidoMaterno,
-            datosHistoria.paciente.generoID,
-            datosHistoria.paciente.edad,
-            datosHistoria.paciente.estadoCivilID,
-            datosHistoria.paciente.escolaridadID,
-            datosHistoria.paciente.ocupacion,
-            datosHistoria.paciente.direccionLinea1,
-            datosHistoria.paciente.direccionLinea2,
-            datosHistoria.paciente.ciudad,
-            datosHistoria.paciente.estadoID ? parseInt(datosHistoria.paciente.estadoID) : null, // Conversión y manejo de nulos
-            datosHistoria.paciente.codigoPostal,
-            datosHistoria.paciente.pais || 'México',
-            datosHistoria.paciente.correoElectronico,
-            datosHistoria.paciente.telefonoCelular,
-            datosHistoria.paciente.telefono
-        ]
-        );
+          `INSERT INTO Pacientes (
+              Nombre, ApellidoPaterno, ApellidoMaterno, GeneroID, Edad,
+              EstadoCivilID, EscolaridadID, Ocupacion, DireccionLinea1, CURP,
+              Ciudad, EstadoID, CodigoPostal, Pais, CorreoElectronico, TelefonoCelular, Telefono, IDSiSeCO
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+              datosHistoria.paciente.nombre,
+              datosHistoria.paciente.apellidoPaterno,
+              datosHistoria.paciente.apellidoMaterno,
+              datosHistoria.paciente.generoID,
+              datosHistoria.paciente.edad,
+              datosHistoria.paciente.estadoCivilID || null,
+              datosHistoria.paciente.escolaridadID || null,
+              datosHistoria.paciente.ocupacion || null,
+              datosHistoria.paciente.direccionLinea1 || null,
+              datosHistoria.paciente.curp,  // ✅ NUEVO - OBLIGATORIO
+              datosHistoria.paciente.ciudad || null,
+              datosHistoria.paciente.estadoID || null,
+              datosHistoria.paciente.codigoPostal || null,
+              datosHistoria.paciente.pais || 'México',
+              datosHistoria.paciente.correoElectronico || null,
+              datosHistoria.paciente.telefonoCelular || null,
+              datosHistoria.paciente.telefono || null,
+              datosHistoria.paciente.idSiSeCO || null  // ✅ NUEVO - OPCIONAL
+          ]
+      );
 
         pacienteId = resultPaciente.insertId;
-    }
     }
 
 
@@ -2057,55 +2057,63 @@ case 'recomendaciones':
  * @param {string} respuesta - Texto de la respuesta
  * @returns {Promise<Object>} - Respuesta creada
  */
-async responderComentario(comentarioId, alumnoId, respuesta) {
-try {
-  // Verificar que el comentario exista
-  const [comentarios] = await db.query(
-  `SELECT cp.*, hc.Archivado, hc.AlumnoID
-      FROM ComentariosProfesor cp
-      JOIN HistorialesClinicos hc ON cp.HistorialID = hc.ID
-      WHERE cp.ID = ?`,
-  [comentarioId]
-  );
+responderComentario: async (historiaId, comentarioId, alumnoId, respuesta, usuarioId) => {
+  try {
+    // Verificar que el comentario pertenece a esta historia
+    const [comentarios] = await db.query(
+      `SELECT cp.*, hc.Archivado, hc.AlumnoID
+       FROM ComentariosProfesor cp
+       JOIN HistorialesClinicos hc ON cp.HistorialID = hc.ID
+       WHERE cp.ID = ? AND cp.HistorialID = ?`,
+      [comentarioId, historiaId]
+    );
 
-  if (comentarios.length === 0) {
-  throw new Error('El comentario no existe');
+    if (comentarios.length === 0) {
+      throw new Error('Comentario no encontrado');
+    }
+
+    const comentario = comentarios[0];
+
+    // Verificar que la historia no esté archivada
+    if (comentario.Archivado) {
+      throw new Error('No se puede responder a un comentario en una historia archivada');
+    }
+
+    // Verificar que el alumno sea el propietario de la historia
+    if (comentario.AlumnoID !== alumnoId) {
+      throw new Error('No tienes permiso para responder a este comentario');
+    }
+
+    // Crear la respuesta - USAR USUARIOID
+    const [resultado] = await db.query(
+      `INSERT INTO RespuestasComentarios (ComentarioID, UsuarioID, Respuesta)
+       VALUES (?, ?, ?)`,
+      [comentarioId, usuarioId, respuesta]
+    );
+
+    // Obtener la respuesta creada - JOIN CORRECTO
+    const [respuestas] = await db.query(
+      `SELECT
+         rc.*,
+         u.NombreUsuario,
+         CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) AS NombreCompleto,
+         CASE
+           WHEN pi.ID IS NOT NULL THEN TRUE
+           ELSE FALSE
+         END AS EsProfesor
+       FROM RespuestasComentarios rc
+       JOIN Usuarios u ON rc.UsuarioID = u.ID
+       LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+       LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+       WHERE rc.ID = ?`,
+      [resultado.insertId]
+    );
+
+    return respuestas[0];
+  } catch (error) {
+    console.error('Error al responder comentario:', error);
+    throw error;
   }
-
-  const comentario = comentarios[0];
-
-  // Verificar que la historia no esté archivada
-  if (comentario.Archivado) {
-  throw new Error('No se puede responder a un comentario en una historia archivada');
-  }
-
-  // Verificar que el alumno sea el propietario de la historia
-  if (comentario.AlumnoID !== alumnoId) {
-  throw new Error('No tienes permiso para responder a este comentario');
-  }
-
-  // Crear la respuesta
-  const [resultado] = await db.query(
-  `INSERT INTO RespuestasComentarios (ComentarioID, AlumnoID, Respuesta)
-      VALUES (?, ?, ?)`,
-  [comentarioId, alumnoId, respuesta]
-  );
-
-  // Obtener la respuesta creada
-  const [respuestas] = await db.query(
-  `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-      FROM RespuestasComentarios rc
-      JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-      JOIN Usuarios u ON a.UsuarioID = u.ID
-      WHERE rc.ID = ?`,
-  [resultado.insertId]
-  );
-
-  return respuestas[0];
-} catch (error) {
-  console.error('Error al responder comentario:', error);
-  throw error;
-}
 },
 
 /**
@@ -2201,7 +2209,10 @@ async obtenerHistoriasClinicasPorProfesor(profesorId) {
     const [historias] = await db.query(
       `SELECT hc.ID, hc.Fecha, hc.Archivado, hc.FechaArchivado, hc.EstadoID,
               p.ID AS PacienteID, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno,
-              p.CorreoElectronico, p.TelefonoCelular, p.Edad,
+              p.CorreoElectronico, p.TelefonoCelular,
+              p.CURP,          -- ⭐ AGREGAR ESTE CAMPO
+              p.IDSiSeCO,      -- ⭐ AGREGAR ESTE CAMPO
+              p.Edad,
               cg.Valor AS Estado, c.Nombre AS Consultorio, pe.Codigo AS PeriodoEscolar,
               mp.ProfesorInfoID AS ProfesorID,
               m.Nombre AS NombreMateria,
@@ -2325,7 +2336,8 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
         p.EscolaridadID,
         p.Ocupacion,
         p.DireccionLinea1,
-        p.DireccionLinea2,
+        p.CURP,
+        p.IDSiSeCO,
         p.Ciudad,
         p.EstadoID AS PacienteEstadoID,
         p.CodigoPostal,
@@ -2588,12 +2600,19 @@ await Promise.all([
       comentarios.map(async (comentario) => {
         try {
           const [respuestas] = await db.query(
-            `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-              FROM RespuestasComentarios rc
-              JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-              JOIN Usuarios u ON a.UsuarioID = u.ID
-              WHERE rc.ComentarioID = ?
-              ORDER BY rc.FechaRespuesta`,
+            `SELECT rc.*,
+            u.NombreUsuario,
+            CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreCompleto,
+            CASE
+              WHEN pi.ID IS NOT NULL THEN TRUE
+              ELSE FALSE
+            END AS EsProfesor
+      FROM RespuestasComentarios rc
+      JOIN Usuarios u ON rc.UsuarioID = u.ID
+      LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+      LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+      WHERE rc.ComentarioID = ?
+      ORDER BY rc.FechaRespuesta ASC`,
             [comentario.ID]
           );
           return { ...comentario, respuestas };

@@ -1,0 +1,652 @@
+<!-- ==================== 6. Frontend - admin-materias.component.html (COMPLETO) ==================== -->
+
+<div class="profesores-container">
+  <!-- Header para Materias -->
+  <header class="content-header">
+    <div class="header-title">
+      <h1>
+        <i class="fas fa-book"></i>
+        Gestión de Materias
+      </h1>
+    </div>
+  </header>
+
+  <!-- MENSAJES DE ERROR/ÉXITO GLOBALES -->
+  <div class="password-info" *ngIf="errorFormulario && !mostrarFormularioMateria && !mostrarFormularioAlumno">
+    <i class="material-icons info-icon">error</i>
+    <p>{{ errorFormulario }}</p>
+  </div>
+
+  <div class="password-info" *ngIf="successMessage && !mostrarFormularioMateria && !mostrarFormularioAlumno" style="background-color: rgba(76, 175, 80, 0.1); border-left-color: #4CAF50;">
+    <i class="material-icons info-icon" style="color: #4CAF50;">check_circle</i>
+    <p style="color: #4CAF50;">{{ successMessage }}</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-triangle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i>
+      Reintentar
+    </button>
+  </div>
+
+  <!-- Materias list -->
+  <div class="profesores-list" *ngIf="!loading && !error && materias.length > 0">
+    <div class="profesor-card" *ngFor="let materia of materias">
+      <!-- Botón de eliminar materia en esquina superior derecha -->
+      <button
+        class="btn-delete-alumno"
+        (click)="confirmarEliminarMateria(materia)"
+        title="Eliminar materia"
+        type="button">
+        <i class="material-icons">delete</i>
+      </button>
+
+      <div class="perfil-avatar">
+        <i class="material-icons" style="font-size: 60px;">book</i>
+      </div>
+      <div class="profesor-info">
+        <h3>{{ materia.NombreMateria }}</h3>
+        <p class="profesor-id">
+          <i class="fas fa-users"></i> <strong>Alumnos: {{ materia.CantidadAlumnos }}</strong>
+        </p>
+        <p class="profesor-contact" *ngIf="materia.Codigo">
+          <i class="fas fa-code"></i>
+          <span style="text-decoration: underline;">Código:</span>&nbsp;{{ materia.Codigo }}
+        </p>
+        <p class="profesor-contact">
+          <i class="fas fa-graduation-cap"></i>
+          <span style="text-decoration: underline;">Semestre:</span>&nbsp;{{ materia.Semestre }}
+        </p>
+        <p class="profesor-contact" *ngIf="materia.EjeFormativo">
+          <i class="fas fa-stream"></i>
+          <span style="text-decoration: underline;">Eje:</span>&nbsp;{{ materia.EjeFormativo }}
+        </p>
+        <p class="profesor-contact" *ngIf="materia.Grupo">
+          <i class="fas fa-layer-group"></i>
+          <span style="text-decoration: underline;">Sección:</span>&nbsp;{{ materia.Grupo }}
+        </p>
+        <p class="profesor-contact" *ngIf="materia.Turno">
+          <i class="fas fa-clock"></i>
+          <span style="text-decoration: underline;">Turno:</span>&nbsp;{{ materia.Turno }}
+        </p>
+        <p class="profesor-contact">
+          <i class="fas fa-chalkboard-teacher"></i>
+          <span style="text-decoration: underline;">Profesor:</span>&nbsp;{{ materia.NombreProfesor }}
+        </p>
+        <p class="profesor-contact">
+          <i class="fas fa-calendar-alt"></i>
+          <span style="text-decoration: underline;">Período:</span>&nbsp;{{ materia.PeriodoEscolar }}
+        </p>
+        <p class="profesor-since" *ngIf="materia.FechaAsignacion">
+          <i class="fas fa-calendar-check"></i> Asignada desde: {{ materia.FechaAsignacion | date:'dd/MM/yyyy' }}
+        </p>
+
+        <!-- Botón añadir alumno -->
+        <div class="profesor-actions">
+          <button class="btn-add-student" (click)="abrirFormularioAgregarAlumno(materia)">
+            <i class="fas fa-user-plus"></i>
+            Añadir Alumno
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state para materias -->
+  <div class="empty-container" *ngIf="!loading && !error && materias.length === 0">
+    <i class="fas fa-book-open"></i>
+    <p>No hay materias asignadas actualmente en el período escolar activo.</p>
+    <p class="secondary-text">Usa el botón "Añadir Materia" para crear nuevas asignaciones.</p>
+  </div>
+
+  <!-- Loading global -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando materias...</p>
+  </div>
+
+  <!-- BOTÓN AÑADIR MATERIA CENTRADO -->
+  <div class="boton-agregar-container" *ngIf="!loading && !error && !mostrarFormularioMateria && !mostrarFormularioAlumno">
+    <button class="btn-add-student" (click)="abrirFormularioAgregarMateria()">
+      <i class="fas fa-plus"></i>
+      Añadir Materia
+    </button>
+  </div>
+
+  <!-- FORMULARIO PARA AGREGAR NUEVA MATERIA -->
+  <div class="formulario-agregar-alumno perfil-form" *ngIf="mostrarFormularioMateria">
+    <div class="form-section">
+      <h3 class="section-title">
+        <i class="material-icons">school</i>
+        Agregar Nueva Materia
+      </h3>
+
+      <!-- MENSAJES DE ERROR/ÉXITO -->
+      <div class="password-info" *ngIf="errorFormulario">
+        <i class="material-icons info-icon">error</i>
+        <p>{{ errorFormulario }}</p>
+      </div>
+
+      <div class="password-info" *ngIf="successMessage" style="background-color: rgba(76, 175, 80, 0.1); border-left-color: #4CAF50;">
+        <i class="material-icons info-icon" style="color: #4CAF50;">check_circle</i>
+        <p style="color: #4CAF50;">{{ successMessage }}</p>
+      </div>
+
+      <!-- Barra de búsqueda de profesor -->
+      <div class="search-section">
+        <div class="form-group">
+          <label for="busquedaProfesor">Buscar profesor *</label>
+          <div class="search-container">
+            <input
+              type="text"
+              id="busquedaProfesor"
+              [formControl]="searchProfesorControl"
+              placeholder="Buscar por nombre, empleado o correo..."
+              class="search-input">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+        </div>
+
+        <!-- Resultados de búsqueda de profesores -->
+        <div class="search-results" *ngIf="resultadosBusquedaProfesor.length > 0">
+          <h4>Profesores encontrados:</h4>
+          <div class="student-result" *ngFor="let profesor of resultadosBusquedaProfesor" (click)="seleccionarProfesor(profesor)">
+            <div class="student-info">
+              <h5>{{ profesor.Nombre }} {{ profesor.ApellidoPaterno }} {{ profesor.ApellidoMaterno }}</h5>
+              <p><strong>Empleado:</strong> {{ profesor.NumeroEmpleado }}</p>
+              <p><strong>Correo:</strong> {{ profesor.CorreoElectronico }}</p>
+            </div>
+            <button class="btn-select" type="button">
+              <i class="fas fa-check"></i>
+              Seleccionar
+            </button>
+          </div>
+        </div>
+
+        <div class="no-results" *ngIf="searchProfesorControl.value && searchProfesorControl.value.length > 2 && resultadosBusquedaProfesor.length === 0 && !buscandoProfesor">
+          <p>No se encontraron profesores.</p>
+        </div>
+
+        <div class="loading-search" *ngIf="buscandoProfesor">
+          <div class="spinner-small"></div>
+          <p>Buscando...</p>
+        </div>
+
+        <!-- Profesor seleccionado -->
+        <div class="profesor-seleccionado" *ngIf="profesorSeleccionado">
+          <div class="selected-badge">
+            <i class="fas fa-user-check"></i>
+            <span>Profesor seleccionado: {{ profesorSeleccionado.Nombre }} {{ profesorSeleccionado.ApellidoPaterno }}</span>
+            <button type="button" class="btn-remove-selection" (click)="profesorSeleccionado = null; formularioMateria.patchValue({profesorInfoId: ''})">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN DE BÚSQUEDA/CREACIÓN DE MATERIA -->
+      <div class="search-section" style="border-top: 2px solid #7A003C; padding-top: 1.5rem; margin-top: 1.5rem;">
+        <!-- Botón toggle para crear nueva materia -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h4 style="margin: 0; color: #7A003C; font-size: 1.1rem; font-weight: 600;">
+            <i class="fas fa-book"></i>
+            {{ creandoMateriaNueva ? 'Crear Nueva Materia' : 'Buscar Materia Existente' }}
+          </h4>
+          <button
+            type="button"
+            class="btn-toggle-materia"
+            (click)="toggleCrearMateriaNueva()"
+            [ngClass]="{'active': creandoMateriaNueva}">
+            <i class="fas" [ngClass]="creandoMateriaNueva ? 'fa-search' : 'fa-plus'"></i>
+            {{ creandoMateriaNueva ? 'Buscar Existente' : 'Crear Nueva' }}
+          </button>
+        </div>
+
+        <!-- Búsqueda de materia existente -->
+        <div *ngIf="!creandoMateriaNueva">
+          <div class="form-group">
+            <label for="busquedaMateria">Buscar materia por código, nombre o semestre</label>
+            <div class="search-container">
+              <input
+                type="text"
+                id="busquedaMateria"
+                [formControl]="searchMateriaControl"
+                placeholder="Ej: Optometría, 5to semestre, OPT-101..."
+                class="search-input">
+              <i class="fas fa-search search-icon"></i>
+            </div>
+          </div>
+
+          <!-- Resultados de búsqueda de materias -->
+          <div class="search-results" *ngIf="resultadosBusquedaMateria.length > 0">
+            <h4>Materias encontradas:</h4>
+            <div class="student-result" *ngFor="let materia of resultadosBusquedaMateria" (click)="seleccionarMateriaExistente(materia)">
+              <div class="student-info">
+                <h5>{{ materia.Codigo }} - {{ materia.Nombre }}</h5>
+                <p><strong>Semestre:</strong> {{ materia.Semestre }}</p>
+                <p *ngIf="materia.EjeFormativo"><strong>Eje:</strong> {{ materia.EjeFormativo }}</p>
+                <p *ngIf="materia.Descripcion" class="descripcion-corta">{{ materia.Descripcion }}</p>
+              </div>
+              <button class="btn-select" type="button">
+                <i class="fas fa-check"></i>
+                Usar
+              </button>
+            </div>
+          </div>
+
+          <div class="no-results" *ngIf="searchMateriaControl.value && searchMateriaControl.value.length > 2 && resultadosBusquedaMateria.length === 0 && !buscandoMateria">
+            <p>No se encontraron materias. Puedes crear una nueva.</p>
+          </div>
+
+          <div class="loading-search" *ngIf="buscandoMateria">
+            <div class="spinner-small"></div>
+            <p>Buscando materias...</p>
+          </div>
+
+          <!-- Materia seleccionada -->
+          <div class="profesor-seleccionado" *ngIf="materiaSeleccionadaBusqueda" style="margin-top: 1rem;">
+            <div class="selected-badge" style="background-color: rgba(46, 204, 113, 0.1); border-color: #2ecc71;">
+              <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+              <span style="color: darken(#2ecc71, 20%);">
+                Materia seleccionada: {{ materiaSeleccionadaBusqueda.Codigo }} - {{ materiaSeleccionadaBusqueda.Nombre }}
+              </span>
+              <button type="button" class="btn-remove-selection" style="color: darken(#2ecc71, 20%);" (click)="materiaSeleccionadaBusqueda = null; formularioMateria.patchValue({materiaExistenteId: null}); formularioMateria.get('codigoMateria')?.enable(); formularioMateria.get('nombreMateria')?.enable(); formularioMateria.get('semestre')?.enable();">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario para materia -->
+      <form [formGroup]="formularioMateria" (ngSubmit)="onSubmitMateria()" class="student-form">
+
+        <!-- Información de la materia -->
+        <div class="password-form-horizontal">
+          <div class="form-group">
+            <label for="codigoMateria">Código de Materia *</label>
+            <input
+              type="text"
+              id="codigoMateria"
+              formControlName="codigoMateria"
+              placeholder="Ej: OPT-101"
+              [ngClass]="{'is-invalid': formularioMateria.get('codigoMateria')?.invalid && formularioMateria.get('codigoMateria')?.touched, 'readonly': !creandoMateriaNueva}">
+            <div class="invalid-feedback" *ngIf="formularioMateria.get('codigoMateria')?.invalid && formularioMateria.get('codigoMateria')?.touched">
+              <span *ngIf="formularioMateria.get('codigoMateria')?.errors?.['required']">El código es requerido</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="nombreMateria">Nombre de Materia *</label>
+            <input
+              type="text"
+              id="nombreMateria"
+              formControlName="nombreMateria"
+              placeholder="Ej: Optometría Básica"
+              [ngClass]="{'is-invalid': formularioMateria.get('nombreMateria')?.invalid && formularioMateria.get('nombreMateria')?.touched, 'readonly': !creandoMateriaNueva}">
+            <div class="invalid-feedback" *ngIf="formularioMateria.get('nombreMateria')?.invalid && formularioMateria.get('nombreMateria')?.touched">
+              <span *ngIf="formularioMateria.get('nombreMateria')?.errors?.['required']">El nombre es requerido</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="semestre">Semestre *</label>
+            <input
+              type="number"
+              id="semestre"
+              formControlName="semestre"
+              placeholder="Ej: 1, 2, 3..."
+              min="1"
+              max="10"
+              [ngClass]="{'is-invalid': formularioMateria.get('semestre')?.invalid && formularioMateria.get('semestre')?.touched, 'readonly': !creandoMateriaNueva}">
+            <div class="invalid-feedback" *ngIf="formularioMateria.get('semestre')?.invalid && formularioMateria.get('semestre')?.touched">
+              <span *ngIf="formularioMateria.get('semestre')?.errors?.['required']">El semestre es requerido</span>
+              <span *ngIf="formularioMateria.get('semestre')?.errors?.['min'] || formularioMateria.get('semestre')?.errors?.['max']">El semestre debe estar entre 1 y 10</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ejeFormativo">Eje Formativo</label>
+            <input
+              type="text"
+              id="ejeFormativo"
+              formControlName="ejeFormativo"
+              placeholder="Ej: Ciencias Clínicas"
+              [ngClass]="{'readonly': !creandoMateriaNueva}">
+          </div>
+
+          <div class="form-group" style="grid-column: 1 / -1;">
+            <label for="descripcion">Descripción</label>
+            <textarea
+              id="descripcion"
+              formControlName="descripcion"
+              rows="3"
+              placeholder="Descripción de la materia..."
+              [ngClass]="{'readonly': !creandoMateriaNueva}"
+              style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 4px; font-family: inherit; resize: vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- Campos de asignación (siempre editables) -->
+        <div class="password-form-horizontal" style="border-top: 1px solid #e0e0e0; padding-top: 1rem; margin-top: 1rem;">
+          <div class="form-group">
+            <label for="grupo">Sección *</label>
+            <input
+              type="text"
+              id="grupo"
+              formControlName="grupo"
+              placeholder="Ej: A, B, 1, 2"
+              [ngClass]="{'is-invalid': formularioMateria.get('grupo')?.invalid && formularioMateria.get('grupo')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioMateria.get('grupo')?.invalid && formularioMateria.get('grupo')?.touched">
+              <span *ngIf="formularioMateria.get('grupo')?.errors?.['required']">La sección es requerida</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="turno">Turno *</label>
+            <select id="turno" formControlName="turno"
+              [ngClass]="{'is-invalid': formularioMateria.get('turno')?.invalid && formularioMateria.get('turno')?.touched}">
+              <option value="Matutino">Matutino</option>
+              <option value="Vespertino">Vespertino</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="formularioMateria.get('turno')?.invalid && formularioMateria.get('turno')?.touched">
+              <span *ngIf="formularioMateria.get('turno')?.errors?.['required']">El turno es requerido</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelarFormularioMateria()">
+            <i class="fas fa-times"></i>
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="!formularioMateria.valid || guardandoMateria || !profesorSeleccionado || (!materiaSeleccionadaBusqueda && !creandoMateriaNueva)">
+            <i class="fas fa-save"></i>
+            <span *ngIf="!guardandoMateria">Crear Materia</span>
+            <span *ngIf="guardandoMateria">Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FORMULARIO PARA AGREGAR ALUMNO A MATERIA -->
+  <div class="formulario-agregar-alumno perfil-form" *ngIf="mostrarFormularioAlumno">
+    <div class="form-section">
+      <h3 class="section-title">
+        <i class="material-icons">person_add</i>
+        Agregar Alumno a {{ materiaSeleccionada?.NombreMateria }}
+      </h3>
+
+      <!-- MENSAJES DE ERROR/ÉXITO -->
+      <div class="password-info" *ngIf="errorFormulario">
+        <i class="material-icons info-icon">error</i>
+        <p>{{ errorFormulario }}</p>
+      </div>
+
+      <div class="password-info" *ngIf="successMessage" style="background-color: rgba(76, 175, 80, 0.1); border-left-color: #4CAF50;">
+        <i class="material-icons info-icon" style="color: #4CAF50;">check_circle</i>
+        <p style="color: #4CAF50;">{{ successMessage }}</p>
+      </div>
+
+      <!-- Barra de búsqueda de alumno -->
+      <div class="search-section" *ngIf="!alumnoEncontrado">
+        <div class="form-group">
+          <label for="busquedaAlumno">Buscar alumno existente</label>
+          <div class="search-container">
+            <input
+              type="text"
+              id="busquedaAlumno"
+              [formControl]="searchAlumnoControl"
+              placeholder="Buscar por nombre, boleta o correo..."
+              class="search-input">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+        </div>
+
+        <!-- Resultados de búsqueda de alumnos -->
+        <div class="search-results" *ngIf="resultadosBusquedaAlumno.length > 0">
+          <h4>Alumnos encontrados:</h4>
+          <div class="student-result" *ngFor="let alumno of resultadosBusquedaAlumno" (click)="seleccionarAlumnoExistente(alumno)">
+            <div class="student-info">
+              <h5>{{ alumno.Nombre }} {{ alumno.ApellidoPaterno }} {{ alumno.ApellidoMaterno }}</h5>
+              <p><strong>Boleta:</strong> {{ alumno.NumeroBoleta }}</p>
+              <p><strong>Correo:</strong> {{ alumno.CorreoElectronico }}</p>
+            </div>
+            <button class="btn-select" type="button">
+              <i class="fas fa-plus"></i>
+              Inscribir
+            </button>
+          </div>
+        </div>
+
+        <div class="no-results" *ngIf="searchAlumnoControl.value && searchAlumnoControl.value.length > 2 && resultadosBusquedaAlumno.length === 0 && !buscandoAlumno">
+          <p>No se encontraron alumnos. Puedes crear uno nuevo a continuación.</p>
+        </div>
+
+        <div class="loading-search" *ngIf="buscandoAlumno">
+          <div class="spinner-small"></div>
+          <p>Buscando...</p>
+        </div>
+      </div>
+
+      <!-- Formulario para alumno -->
+      <form [formGroup]="formularioAlumno" (ngSubmit)="onSubmitAlumno()" class="student-form">
+
+        <div class="password-form-horizontal">
+          <div class="form-group">
+            <label for="nombreCompleto">Nombre Completo</label>
+            <input
+              type="text"
+              id="nombreCompleto"
+              formControlName="nombreCompleto"
+              [readonly]="alumnoEncontrado"
+              placeholder="Ej: Juan Pérez García"
+              [ngClass]="{'is-invalid': formularioAlumno.get('nombreCompleto')?.invalid && formularioAlumno.get('nombreCompleto')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioAlumno.get('nombreCompleto')?.invalid && formularioAlumno.get('nombreCompleto')?.touched">
+              <span *ngIf="formularioAlumno.get('nombreCompleto')?.errors?.['required']">El nombre es requerido</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="numeroBoleta">Número de Boleta</label>
+            <input
+              type="text"
+              id="numeroBoleta"
+              formControlName="numeroBoleta"
+              [readonly]="alumnoEncontrado"
+              placeholder="Ej: 2021630001"
+              [ngClass]="{'is-invalid': formularioAlumno.get('numeroBoleta')?.invalid && formularioAlumno.get('numeroBoleta')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioAlumno.get('numeroBoleta')?.invalid && formularioAlumno.get('numeroBoleta')?.touched">
+              <span *ngIf="formularioAlumno.get('numeroBoleta')?.errors?.['required']">La boleta es requerida</span>
+              <span *ngIf="formularioAlumno.get('numeroBoleta')?.errors?.['pattern']">La boleta debe tener 10 dígitos</span>
+              <span *ngIf="formularioAlumno.get('numeroBoleta')?.errors?.['boletaExistente']">Esta boleta ya está registrada</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="correoElectronico">Correo Electrónico</label>
+            <input
+              type="email"
+              id="correoElectronico"
+              formControlName="correoElectronico"
+              [readonly]="alumnoEncontrado"
+              placeholder="Ej: juan.perez@alumno.ipn.mx"
+              [ngClass]="{'is-invalid': formularioAlumno.get('correoElectronico')?.invalid && formularioAlumno.get('correoElectronico')?.touched}">
+            <div class="invalid-feedback" *ngIf="formularioAlumno.get('correoElectronico')?.invalid && formularioAlumno.get('correoElectronico')?.touched">
+              <span *ngIf="formularioAlumno.get('correoElectronico')?.errors?.['required']">El correo es requerido</span>
+              <span *ngIf="formularioAlumno.get('correoElectronico')?.errors?.['email']">El correo no tiene un formato válido</span>
+              <span *ngIf="formularioAlumno.get('correoElectronico')?.errors?.['correoExistente']">Este correo ya está registrado</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="cancelarFormularioAlumno()">
+            <i class="fas fa-times"></i>
+            Cancelar
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="!formularioAlumno.valid || guardandoAlumno">
+            <i class="fas fa-save"></i>
+            <span *ngIf="!guardandoAlumno">{{ alumnoEncontrado ? 'Inscribir Alumno' : 'Crear e Inscribir' }}</span>
+            <span *ngIf="guardandoAlumno">Guardando...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SECCIÓN DE ALUMNOS POR MATERIA -->
+  <ng-container *ngFor="let materia of materias; let i = index">
+    <header class="content-header">
+      <div class="header-title">
+        <h1>
+          <i class="fas fa-user-graduate"></i>
+          <span class="titulo-completo">
+            Alumnos de {{ materia.NombreMateria }}<span *ngIf="materia.Grupo"> - Sección {{ materia.Grupo }}</span>
+          </span>
+        </h1>
+      </div>
+    </header>
+
+    <!-- Alumnos de esta materia -->
+    <div class="profesores-list" *ngIf="materia.Alumnos && materia.Alumnos.length > 0">
+      <div class="profesor-card alumno-card" *ngFor="let alumno of materia.Alumnos">
+        <button
+          class="btn-delete-alumno"
+          (click)="confirmarEliminarAlumno(alumno, materia)"
+          title="Eliminar alumno de esta materia"
+          type="button">
+          <i class="material-icons">delete</i>
+        </button>
+
+        <div class="perfil-avatar">
+          <i class="material-icons" style="font-size: 60px;">person</i>
+        </div>
+        <div class="profesor-info">
+          <h3>{{ alumno.Nombre }} {{ alumno.ApellidoPaterno }} {{ alumno.ApellidoMaterno }}</h3>
+          <p class="profesor-id">
+            <i class="fas fa-id-card"></i> <strong>Boleta: {{ alumno.NumeroBoleta }}</strong>
+          </p>
+          <p class="profesor-contact" *ngIf="alumno.CorreoElectronico">
+            <i class="fas fa-envelope"></i>
+            <span style="text-decoration: underline;">Correo:</span>&nbsp;{{ alumno.CorreoElectronico }}
+          </p>
+          <p class="profesor-contact" *ngIf="alumno.TelefonoCelular">
+            <i class="fas fa-phone"></i>
+            <span style="text-decoration: underline;">Teléfono:</span>&nbsp;{{ alumno.TelefonoCelular }}
+          </p>
+          <p class="profesor-since" *ngIf="alumno.FechaInscripcion">
+            <i class="fas fa-calendar-plus"></i> Inscrito desde: {{ alumno.FechaInscripcion | date:'dd/MM/yyyy' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state para materia sin alumnos -->
+    <div class="empty-container" *ngIf="materia.Alumnos && materia.Alumnos.length === 0">
+      <i class="fas fa-user-plus"></i>
+      <p>No hay alumnos inscritos en {{ materia.NombreMateria }}.</p>
+      <p class="secondary-text">Usa el botón "Añadir Alumno" para inscribir alumnos a esta materia.</p>
+    </div>
+  </ng-container>
+
+  <!-- Modal de confirmación para eliminar materia -->
+  <div class="modal-overlay" *ngIf="mostrarModalEliminarMateria" (click)="cancelarEliminarMateria()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <i class="material-icons modal-icon-warning">warning</i>
+        <h2>Confirmar eliminación</h2>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>¿Estás seguro de que deseas eliminar esta materia?</strong></p>
+
+        <div class="alumno-info-modal" *ngIf="materiaAEliminar">
+          <p><i class="material-icons">school</i> <strong>Materia:</strong> {{ materiaAEliminar.NombreMateria }}</p>
+          <p><i class="material-icons">group</i> <strong>Sección:</strong> {{ materiaAEliminar.Grupo }}</p>
+          <p><i class="material-icons">person</i> <strong>Profesor:</strong> {{ materiaAEliminar.NombreProfesor }}</p>
+        </div>
+
+        <div class="warning-message">
+          <i class="material-icons">info</i>
+          <p>Esta acción eliminará la materia y todas sus inscripciones de alumnos. Esta acción no se puede deshacer.</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cancelarEliminarMateria()"
+          [disabled]="eliminandoMateria">
+          <i class="material-icons">close</i>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn-delete"
+          (click)="eliminarMateria()"
+          [disabled]="eliminandoMateria">
+          <i class="material-icons">delete</i>
+          <span *ngIf="!eliminandoMateria">Eliminar</span>
+          <span *ngIf="eliminandoMateria">Eliminando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de confirmación para eliminar alumno de materia -->
+  <div class="modal-overlay" *ngIf="mostrarModalEliminarAlumno" (click)="cancelarEliminarAlumno()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <i class="material-icons modal-icon-warning">warning</i>
+        <h2>Confirmar eliminación</h2>
+      </div>
+
+      <div class="modal-body">
+        <p><strong>¿Estás seguro de que deseas eliminar a este alumno de la materia?</strong></p>
+
+        <div class="alumno-info-modal" *ngIf="alumnoAEliminar">
+          <p><i class="material-icons">person</i> <strong>Alumno:</strong> {{ alumnoAEliminar.Nombre }} {{ alumnoAEliminar.ApellidoPaterno }} {{ alumnoAEliminar.ApellidoMaterno }}</p>
+          <p><i class="material-icons">badge</i> <strong>Boleta:</strong> {{ alumnoAEliminar.NumeroBoleta }}</p>
+        </div>
+
+        <div class="materia-info-modal" *ngIf="materiaDelAlumno">
+          <p><i class="material-icons">school</i> <strong>Materia:</strong> {{ materiaDelAlumno.NombreMateria }}</p>
+          <p *ngIf="materiaDelAlumno.Grupo"><i class="material-icons">group</i> <strong>Sección:</strong> {{ materiaDelAlumno.Grupo }}</p>
+        </div>
+
+        <div class="warning-message">
+          <i class="material-icons">info</i>
+          <p>Esta acción solo eliminará al alumno de esta materia. El alumno seguirá existiendo en el sistema.</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          (click)="cancelarEliminarAlumno()"
+          [disabled]="eliminandoAlumno">
+          <i class="material-icons">close</i>
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn-delete"
+          (click)="eliminarAlumno()"
+          [disabled]="eliminandoAlumno">
+          <i class="material-icons">delete</i>
+          <span *ngIf="!eliminandoAlumno">Eliminar</span>
+          <span *ngIf="eliminandoAlumno">Eliminando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

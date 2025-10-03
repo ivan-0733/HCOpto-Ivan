@@ -42,6 +42,11 @@ export class HistoriaClinicaFormComponent implements OnInit {
   historiaForm!: FormGroup;
   pacienteForm!: FormGroup;
   historia: HistoriaClinicaDetalle | null = null;
+
+  // Eliminamos el uso de tabs internos ya que ahora todo es manejado por el contenedor
+  // currentTab = 'datos-generales';
+
+  // Datos para los selectores
   profesores: Profesor[] = [];
   consultorios: Consultorio[] = [];
   semestreActual: Semestre | null = null;
@@ -141,7 +146,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
       periodoEscolarID: ['', Validators.required],
       fecha: [new Date().toISOString().split('T')[0], Validators.required],
       paciente: this.formBuilder.group({
-        id: [''],
+        id: [null],
         nombre: ['', Validators.required],
         apellidoPaterno: ['', Validators.required],
         apellidoMaterno: [''],
@@ -151,14 +156,15 @@ export class HistoriaClinicaFormComponent implements OnInit {
         escolaridadID: [''],
         ocupacion: [''],
         direccionLinea1: [''],
-        direccionLinea2: [''],
+        curp: ['', [Validators.required, Validators.minLength(18), Validators.maxLength(18)]],  // ✅ NUEVO - OBLIGATORIO
         ciudad: [''],
         estadoID: [''],
         codigoPostal: [''],
         pais: ['México'],
-        correoElectronico: ['', [Validators.required, Validators.email]],
-        telefonoCelular: ['', Validators.required],
-        telefono: ['']
+        correoElectronico: ['', Validators.email],  // ✅ OPCIONAL - solo validar formato si se llena
+        telefonoCelular: [''],  // ✅ OPCIONAL
+        telefono: [''],
+        idSiSeCO: ['', [Validators.minLength(8), Validators.maxLength(8)]]  // ✅ NUEVO - OPCIONAL
       })
     });
 
@@ -205,14 +211,15 @@ export class HistoriaClinicaFormComponent implements OnInit {
             escolaridadID: historia.EscolaridadID,
             ocupacion: historia.Ocupacion,
             direccionLinea1: historia.DireccionLinea1,
-            direccionLinea2: historia.DireccionLinea2,
+            curp: historia.CURP,  // ✅ NUEVO
             ciudad: historia.Ciudad,
             estadoID: historia.PacienteEstadoID,
             codigoPostal: historia.CodigoPostal,
             pais: historia.Pais,
             correoElectronico: historia.CorreoElectronico,
             telefonoCelular: historia.TelefonoCelular,
-            telefono: historia.Telefono
+            telefono: historia.Telefono,
+            idSiSeCO: historia.IDSiSeCO  // ✅ NUEVO
           }
         });
 
@@ -231,14 +238,28 @@ export class HistoriaClinicaFormComponent implements OnInit {
   seleccionarPaciente(paciente: Paciente): void {
     this.pacienteSeleccionado = paciente;
     this.mostrarResultadosBusqueda = false;
+
+    // Llenar el formulario con TODOS los datos del paciente
     this.historiaForm.get('paciente')?.patchValue({
       id: paciente.ID,
       nombre: paciente.Nombre,
       apellidoPaterno: paciente.ApellidoPaterno,
-      apellidoMaterno: paciente.ApellidoMaterno,
-      edad: paciente.Edad,
-      correoElectronico: paciente.CorreoElectronico,
-      telefonoCelular: paciente.TelefonoCelular
+      apellidoMaterno: paciente.ApellidoMaterno || '',
+      generoID: paciente.GeneroID || '',
+      edad: paciente.Edad || '',
+      estadoCivilID: paciente.EstadoCivilID || '',
+      escolaridadID: paciente.EscolaridadID || '',
+      ocupacion: paciente.Ocupacion || '',
+      direccionLinea1: paciente.DireccionLinea1 || '',
+      curp: paciente.CURP || '',  // ✅ CARGAR CURP
+      ciudad: paciente.Ciudad || '',
+      estadoID: paciente.EstadoID || '',
+      codigoPostal: paciente.CodigoPostal || '',
+      pais: paciente.Pais || 'México',
+      correoElectronico: paciente.CorreoElectronico || '',
+      telefonoCelular: paciente.TelefonoCelular || '',
+      telefono: paciente.Telefono || '',
+      idSiSeCO: paciente.IDSiSeCO || ''  // ✅ CARGAR IDSiSeCO
     });
     this.pacienteForm.patchValue({ busqueda: '' });
   }
@@ -253,22 +274,34 @@ export class HistoriaClinicaFormComponent implements OnInit {
       this.markFormGroupTouched(this.historiaForm);
       return;
     }
+
     this.submitting = true;
     this.error = '';
     this.success = '';
+
+    // Get a copy of the form data to modify
     const historiaData = { ...this.historiaForm.value };
+
+    // Find the selected materia to add the NombreMateria field
     if (historiaData.materiaProfesorID) {
       const selectedMateria = this.materias.find(m => m.MateriaProfesorID == historiaData.materiaProfesorID);
       if (selectedMateria) {
         historiaData.NombreMateria = selectedMateria.NombreMateria;
       }
     }
+
+    // Ensure PeriodoEscolarID is set correctly
+    // Use the actual ID from the periodoEscolar object if it exists
     if (this.periodoEscolar && (!historiaData.periodoEscolarID || historiaData.periodoEscolarID === '')) {
       historiaData.PeriodoEscolarID = this.periodoEscolar.ID;
     } else if (historiaData.periodoEscolarID) {
       historiaData.PeriodoEscolarID = historiaData.periodoEscolarID;
     }
+
+    console.log('Sending data to server:', historiaData);
+
     let action: Observable<any>;
+
     if (this.isEditing && this.historiaId) {
       action = this.historiaClinicaService.actualizarSeccion(
         this.historiaId,
@@ -278,6 +311,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
     } else {
       action = this.historiaClinicaService.crearHistoriaClinica(historiaData);
     }
+
     action.pipe(
       finalize(() => {
         this.submitting = false;
@@ -287,6 +321,8 @@ export class HistoriaClinicaFormComponent implements OnInit {
         this.success = this.isEditing
           ? 'Historia clínica actualizada correctamente.'
           : 'Historia clínica creada correctamente.';
+
+        // Emit events to parent component
         if (this.isEditing) {
           this.completed.emit(true);
         } else {
@@ -294,6 +330,8 @@ export class HistoriaClinicaFormComponent implements OnInit {
           this.historiaCreated.emit(newHistoriaId);
           this.completed.emit(true);
         }
+
+        // After a brief delay, move to next section
         setTimeout(() => {
           this.nextSection.emit();
         }, 1500);
