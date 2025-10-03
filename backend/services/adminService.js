@@ -315,6 +315,18 @@ const adminService = {
     }
   },
 
+  // En backend/services/adminService.js - AGREGAR:
+  async obtenerHistoriaDetalle(historiaId) {
+    try {
+      // Reutilizar la query del servicio de historia clínica o crear una propia
+      const historiaClinicaService = require('./historiaClinicaService');
+      return await historiaClinicaService.obtenerHistoriaClinicaPorId(historiaId);
+    } catch (error) {
+      console.error('Error al obtener historia detalle (admin):', error);
+      throw new AppError('Error al obtener la historia clínica', 500);
+    }
+  },
+
   /**
    * Obtener comentarios de una historia
    */
@@ -343,12 +355,49 @@ const adminService = {
     }
   },
 
-  /**
-   * Agregar comentario a una historia
-   */
-  async agregarComentario(historiaId, usuarioId, comentario) {
-    try {
-      // Obtener el ProfesorID desde el usuarioId
+// REEMPLAZA el método agregarComentario en backend/services/adminService.js
+
+// REEMPLAZA COMPLETAMENTE el método agregarComentario en backend/services/adminService.js
+
+/**
+ * Agregar comentario a una historia
+ * Nota: El rol ya viene en el middleware auth, así que lo pasamos como parámetro
+ */
+async agregarComentario(historiaId, usuarioId, comentario, userRole) {
+  try {
+    let profesorId = null;
+
+    // Normalizar el rol a minúsculas para comparación
+    const rol = userRole ? userRole.toLowerCase() : '';
+
+    if (rol === 'admin') {
+      // Para admin: buscar si ya tiene un registro en ProfesoresInfo
+      const [profesorAdmin] = await db.query(
+        'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?',
+        [usuarioId]
+      );
+
+      if (profesorAdmin.length === 0) {
+        // Crear registro en ProfesoresInfo para el admin
+        console.log('Creando registro de profesor para admin con UsuarioID:', usuarioId);
+        const [resultInsert] = await db.query(
+          `INSERT INTO ProfesoresInfo (
+            UsuarioID,
+            Nombre,
+            ApellidoPaterno,
+            ApellidoMaterno,
+            NumeroEmpleado
+          ) VALUES (?, 'Administrador', 'Sistema', '', 'ADMIN')`,
+          [usuarioId]
+        );
+        profesorId = resultInsert.insertId;
+        console.log('Registro de profesor creado para admin con ID:', profesorId);
+      } else {
+        profesorId = profesorAdmin[0].ID;
+        console.log('Admin ya tiene registro de profesor con ID:', profesorId);
+      }
+    } else if (rol === 'profesor') {
+      // Para profesor: obtener su ID de ProfesoresInfo
       const [profesor] = await db.query(
         'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?',
         [usuarioId]
@@ -358,35 +407,39 @@ const adminService = {
         throw new AppError('Profesor no encontrado', 404);
       }
 
-      const profesorId = profesor[0].ID;
-
-      const [result] = await db.query(
-        'INSERT INTO ComentariosProfesor (HistorialID, ProfesorID, Comentario) VALUES (?, ?, ?)',
-        [historiaId, profesorId, comentario]
-      );
-
-      // Obtener el comentario recién creado
-      const [nuevoComentario] = await db.query(
-        `SELECT
-          c.ID,
-          c.Comentario,
-          c.FechaComentario as FechaCreacion,
-          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreUsuario,
-          r.NombreRol as Rol
-        FROM ComentariosProfesor c
-        INNER JOIN ProfesoresInfo pi ON c.ProfesorID = pi.ID
-        INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
-        INNER JOIN Roles r ON u.RolID = r.ID
-        WHERE c.ID = ?`,
-        [result.insertId]
-      );
-
-      return nuevoComentario[0];
-    } catch (error) {
-      console.error('Error al agregar comentario:', error);
-      throw new AppError('Error al agregar comentario', 500);
+      profesorId = profesor[0].ID;
+    } else {
+      throw new AppError('Solo profesores y administradores pueden agregar comentarios', 403);
     }
-  },
+
+    // Insertar el comentario
+    const [result] = await db.query(
+      'INSERT INTO ComentariosProfesor (HistorialID, ProfesorID, Comentario) VALUES (?, ?, ?)',
+      [historiaId, profesorId, comentario]
+    );
+
+    // Obtener el comentario recién creado
+    const [nuevoComentario] = await db.query(
+      `SELECT
+        c.ID,
+        c.Comentario,
+        c.FechaComentario as FechaCreacion,
+        CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreUsuario,
+        r.NombreRol as Rol
+      FROM ComentariosProfesor c
+      INNER JOIN ProfesoresInfo pi ON c.ProfesorID = pi.ID
+      INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
+      INNER JOIN Roles r ON u.RolID = r.ID
+      WHERE c.ID = ?`,
+      [result.insertId]
+    );
+
+    return nuevoComentario[0];
+  } catch (error) {
+    console.error('Error al agregar comentario:', error);
+    throw error.statusCode ? error : new AppError('Error al agregar comentario', 500);
+  }
+},
 
   /**
    * Obtener período escolar actual

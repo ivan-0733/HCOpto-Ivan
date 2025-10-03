@@ -27,4 +27,7 @@ router.get('/perfil', adminController.obtenerPerfil);
 // Después de las otras rutas existentes, agrega:
 router.get('/periodo-escolar', adminController.obtenerPeriodoEscolar);
 
+// En backend/routes/adminRoutes.js - AGREGAR:
+router.get('/historias/:id', adminController.obtenerHistoriaDetalle);
+
 module.exports = router;

@@ -88,6 +88,11 @@ export class AdminService {
     return this.http.get<{ status: string; data: { historias: HistoriaClinicaAdmin[] } }>(`${this.apiUrl}/historias`);
   }
 
+  // En src/app/services/admin.service.ts - AGREGAR:
+  obtenerHistoriaDetalle(historiaId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/historias/${historiaId}`);
+  }
+
   obtenerEstadisticasGlobales(): Observable<{ status: string; data: { estadisticas: EstadisticasAdmin } }> {
     return this.http.get<{ status: string; data: { estadisticas: EstadisticasAdmin } }>(`${this.apiUrl}/estadisticas`);
   }

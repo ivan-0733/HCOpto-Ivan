@@ -62,26 +62,83 @@ const checkRole = (roles) => {
   };
 };
 
+// REEMPLAZA el middleware checkHistoriaOwnership en backend/middleware/auth.js
+
 /**
- * Middleware para comprobar si se es alumno propietario de una historia clínica
+ * Middleware para comprobar si se tiene acceso a una historia clínica
+ * - ADMIN: Acceso a todas las historias
+ * - PROFESOR: Solo historias de sus alumnos asignados
+ * - ALUMNO: Solo sus propias historias
  */
 const checkHistoriaOwnership = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const alumnoId = req.usuario.AlumnoInfoID;
+    const userRole = req.role; // El rol viene del middleware verifyToken
 
-    // Verificar si la historia pertenece al alumno
-    const [historias] = await db.query(
-      'SELECT ID FROM HistorialesClinicos WHERE ID = ? AND AlumnoID = ?',
-      [id, alumnoId]
-    );
+    // Normalizar el rol a minúsculas
+    const rol = userRole ? userRole.toLowerCase() : '';
 
-    if (historias.length === 0) {
-      return next(new AppError('No tienes permiso para acceder a esta historia clínica', 403));
+    // ✅ ADMIN tiene acceso a TODAS las historias
+    if (rol === 'admin') {
+      console.log(`Acceso permitido a historia ${id} - Rol: ADMIN (acceso total)`);
+      return next();
     }
 
-    next();
+    // ✅ PROFESOR solo puede acceder a historias de SUS alumnos
+    if (rol === 'profesor') {
+      const profesorInfoId = req.usuario.ProfesorInfoID;
+
+      if (!profesorInfoId) {
+        return next(new AppError('No se pudo identificar al profesor', 400));
+      }
+
+      // Verificar si el profesor tiene acceso a esta historia
+      // (es decir, si el alumno de la historia está inscrito en alguna de sus materias)
+      const [historias] = await db.query(
+        `SELECT hc.ID
+         FROM HistorialesClinicos hc
+         INNER JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+         WHERE hc.ID = ? AND mp.ProfesorInfoID = ?`,
+        [id, profesorInfoId]
+      );
+
+      if (historias.length === 0) {
+        console.log(`Acceso denegado a historia ${id} - Profesor ${profesorInfoId} no tiene asignado este alumno`);
+        return next(new AppError('No tienes permiso para acceder a esta historia clínica', 403));
+      }
+
+      console.log(`Acceso permitido a historia ${id} - Profesor ${profesorInfoId} tiene asignado este alumno`);
+      return next();
+    }
+
+    // ✅ ALUMNO solo puede acceder a sus propias historias
+    if (rol === 'alumno') {
+      const alumnoId = req.usuario.AlumnoInfoID;
+
+      if (!alumnoId) {
+        return next(new AppError('No se pudo identificar al alumno', 400));
+      }
+
+      // Verificar si la historia pertenece al alumno
+      const [historias] = await db.query(
+        'SELECT ID FROM HistorialesClinicos WHERE ID = ? AND AlumnoID = ?',
+        [id, alumnoId]
+      );
+
+      if (historias.length === 0) {
+        console.log(`Acceso denegado a historia ${id} - No pertenece al alumno ${alumnoId}`);
+        return next(new AppError('No tienes permiso para acceder a esta historia clínica', 403));
+      }
+
+      console.log(`Acceso permitido a historia ${id} - Alumno ${alumnoId} es propietario`);
+      return next();
+    }
+
+    // Si el rol no es ninguno de los anteriores, denegar acceso
+    return next(new AppError('No tienes permiso para acceder a este recurso', 403));
+
   } catch (error) {
+    console.error('Error en checkHistoriaOwnership:', error);
     next(error);
   }
 };

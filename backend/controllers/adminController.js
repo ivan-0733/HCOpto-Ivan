@@ -103,8 +103,11 @@ const adminController = {
     const { id } = req.params;
     const { comentario } = req.body;
     const usuarioId = req.usuario.UsuarioID;
+    const userRole = req.role; // El rol viene del middleware auth
 
-    const nuevoComentario = await adminService.agregarComentario(id, usuarioId, comentario);
+    console.log('Agregando comentario - Usuario:', usuarioId, 'Rol:', userRole);
+
+    const nuevoComentario = await adminService.agregarComentario(id, usuarioId, comentario, userRole);
 
     res.status(201).json({
       status: 'success',
@@ -128,6 +131,18 @@ const adminController = {
     res.status(200).json({
       status: 'success',
       data: periodo
+    });
+  }),
+
+  // En backend/controllers/adminController.js - AGREGAR:
+  obtenerHistoriaDetalle: catchAsync(async (req, res) => {
+    const { id } = req.params;
+
+    const historia = await adminService.obtenerHistoriaDetalle(id);
+
+    res.status(200).json({
+      status: 'success',
+      data: { historia }
     });
   }),
 
