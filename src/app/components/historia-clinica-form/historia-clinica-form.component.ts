@@ -7,6 +7,17 @@ import { CommonModule } from '@angular/common';
 import { HistoriaClinicaService, HistoriaClinicaDetalle } from '../../services/historia-clinica.service';
 import { AlumnoService, Profesor, Semestre, Consultorio, CatalogoItem, Paciente, PeriodoEscolar, MateriaAlumno } from '../../services/alumno.service';
 
+// Interfaz para tipar la respuesta del forkJoin
+interface InitialData {
+  profesores: Profesor[];
+  materias: MateriaAlumno[];
+  consultorios: Consultorio[];
+  periodoEscolar: PeriodoEscolar;
+  generos: CatalogoItem[];
+  estadosCiviles: CatalogoItem[];
+  escolaridades: CatalogoItem[];
+}
+
 @Component({
   selector: 'app-historia-clinica-form',
   templateUrl: './historia-clinica-form.component.html',
@@ -18,27 +29,19 @@ import { AlumnoService, Profesor, Semestre, Consultorio, CatalogoItem, Paciente,
     RouterModule
   ]
 })
-
 export class HistoriaClinicaFormComponent implements OnInit {
-  // Inputs y Outputs para comunicación con el componente padre
+  // Entradas y Salidas (se mantienen igual)
   @Input() isEditing = false;
   @Input() historiaId: number | null = null;
-  @Input() hideHeaderAndButtons = false; // Nuevo input para controlar visibilidad
+  @Input() hideHeaderAndButtons = false;
   @Output() completed = new EventEmitter<boolean>();
   @Output() historiaCreated = new EventEmitter<number>();
   @Output() nextSection = new EventEmitter<void>();
-  @Output() formReady = new EventEmitter<FormGroup>(); // Nuevo output para compartir el formulario
+  @Output() formReady = new EventEmitter<FormGroup>();
 
   historiaForm!: FormGroup;
   pacienteForm!: FormGroup;
-
-  // Para la edición de historia clínica
   historia: HistoriaClinicaDetalle | null = null;
-  
-  // Eliminamos el uso de tabs internos ya que ahora todo es manejado por el contenedor
-  // currentTab = 'datos-generales';
-
-  // Datos para los selectores
   profesores: Profesor[] = [];
   consultorios: Consultorio[] = [];
   semestreActual: Semestre | null = null;
@@ -46,19 +49,14 @@ export class HistoriaClinicaFormComponent implements OnInit {
   estadosCiviles: CatalogoItem[] = [];
   escolaridades: CatalogoItem[] = [];
   materias: MateriaAlumno[] = [];
-
-  // Estado del formulario
   loading = false;
   submitting = false;
   error = '';
   success = '';
-
-  // Para la búsqueda de pacientes
   pacientesBusqueda: Paciente[] = [];
   buscandoPacientes = false;
   mostrarResultadosBusqueda = false;
   pacienteSeleccionado: Paciente | null = null;
-
   periodoEscolar: PeriodoEscolar | null = null;
 
   constructor(
@@ -71,52 +69,76 @@ export class HistoriaClinicaFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForms();
-    this.loadInitialData();
+    this.loading = true;
 
-    // Cargar historia clínica si estamos en modo edición
-    if (this.isEditing && this.historiaId) {
-      this.loadHistoriaClinica();
-    }
+    // 1. Llama a loadInitialData() para obtener los datos de los dropdowns
+    this.loadInitialData().pipe(
+      finalize(() => {
+        this.loading = false;
+      })
+    ).subscribe({
+      next: (result: InitialData) => {
+        // 2. Asigna los datos a las propiedades del componente para llenar los <select>
+        this.profesores = result.profesores;
+        this.materias = result.materias;
+        this.consultorios = result.consultorios;
+        this.periodoEscolar = result.periodoEscolar;
+        this.generos = result.generos;
+        this.estadosCiviles = result.estadosCiviles;
+        this.escolaridades = result.escolaridades;
 
-    // Configurar búsqueda de pacientes
+        // Establece valores por defecto para un formulario NUEVO
+        if (!this.isEditing) {
+            if (this.periodoEscolar) {
+              this.historiaForm.patchValue({ periodoEscolarID: this.periodoEscolar.ID });
+            }
+            if (this.profesores.length === 1) {
+              this.historiaForm.patchValue({ materiaProfesorID: this.profesores[0].MateriaProfesorID });
+            }
+        }
+
+        // 3. SOLO AHORA, si estamos editando, llama a loadHistoriaClinica()
+        if (this.isEditing && this.historiaId) {
+          this.loadHistoriaClinica();
+        }
+      },
+      error: (error) => {
+        this.error = 'Error al cargar los datos iniciales. Por favor, intenta nuevamente.';
+        console.error('Error cargando datos iniciales:', error);
+      }
+    });
+    
+    // El resto de la lógica se mantiene
     const busquedaControl = this.pacienteForm.get('busqueda');
     if (busquedaControl) {
-      busquedaControl.valueChanges
-        .pipe(
-          debounceTime(300),
-          switchMap(term => {
-            if (term.length < 3) {
-              this.pacientesBusqueda = [];
-              this.mostrarResultadosBusqueda = false;
-              return of([]);
-            }
-
-            this.buscandoPacientes = true;
-            this.mostrarResultadosBusqueda = true;
-
-            return this.alumnoService.buscarPacientes(term).pipe(
-              catchError(() => of([])),
-              finalize(() => {
-                this.buscandoPacientes = false;
-              })
-            );
-          })
-        )
-        .subscribe(pacientes => {
-          this.pacientesBusqueda = pacientes;
-        });
+      busquedaControl.valueChanges.pipe(
+        debounceTime(300),
+        switchMap(term => {
+          if (term.length < 3) {
+            this.pacientesBusqueda = [];
+            this.mostrarResultadosBusqueda = false;
+            return of([]);
+          }
+          this.buscandoPacientes = true;
+          this.mostrarResultadosBusqueda = true;
+          return this.alumnoService.buscarPacientes(term).pipe(
+            catchError(() => of([])),
+            finalize(() => { this.buscandoPacientes = false; })
+          );
+        })
+      ).subscribe(pacientes => {
+        this.pacientesBusqueda = pacientes;
+      });
     }
 
-    // Emitir el formulario después de inicializarlo
     this.formReady.emit(this.historiaForm);
   }
 
   initForms(): void {
-    // Formulario para la historia clínica
     this.historiaForm = this.formBuilder.group({
-      materiaProfesorID: ['', Validators.required], // Cambiar profesorID por materiaProfesorID
+      materiaProfesorID: ['', Validators.required],
       consultorioID: ['', Validators.required],
-      periodoEscolarID: ['', Validators.required], // Cambiar semestreID por periodoEscolarID
+      periodoEscolarID: ['', Validators.required],
       fecha: [new Date().toISOString().split('T')[0], Validators.required],
       paciente: this.formBuilder.group({
         id: [''],
@@ -140,70 +162,35 @@ export class HistoriaClinicaFormComponent implements OnInit {
       })
     });
 
-    // Formulario para la búsqueda de pacientes
     this.pacienteForm = this.formBuilder.group({
       busqueda: ['']
     });
   }
 
-  loadInitialData(): void {
-    this.loading = true;
-
-    // Cargar datos iniciales en paralelo
-    forkJoin({
+  // ✅ loadInitialData CORREGIDO para que devuelva el Observable
+  loadInitialData(): Observable<InitialData> {
+    return forkJoin({
       profesores: this.alumnoService.obtenerProfesoresAsignados(),
-      materias: this.alumnoService.obtenerMaterias(), 
+      materias: this.alumnoService.obtenerMaterias(),
       consultorios: this.alumnoService.obtenerConsultorios(),
       periodoEscolar: this.alumnoService.obtenerPeriodoEscolarActual(),
       generos: this.alumnoService.obtenerCatalogo('GENERO'),
       estadosCiviles: this.alumnoService.obtenerCatalogo('ESTADO_CIVIL'),
       escolaridades: this.alumnoService.obtenerCatalogo('ESCOLARIDAD')
-    }).pipe(
-      finalize(() => {
-        this.loading = false;
-      })
-    ).subscribe({
-      next: (result) => {
-        this.profesores = result.profesores;
-        this.materias = result.materias; // Add this line
-        this.consultorios = result.consultorios;
-        this.periodoEscolar = result.periodoEscolar;
-        this.generos = result.generos;
-        this.estadosCiviles = result.estadosCiviles;
-        this.escolaridades = result.escolaridades;
-
-        // Seleccionar valores por defecto
-        if (this.periodoEscolar) {
-          this.historiaForm.patchValue({ periodoEscolarID: this.periodoEscolar.ID });
-        }
-
-        if (this.profesores.length === 1) {
-          this.historiaForm.patchValue({ MateriaProfesorID: this.profesores[0].MateriaProfesorID });
-        }
-      },
-      error: (error) => {
-        this.error = 'Error al cargar los datos iniciales. Por favor, intenta nuevamente.';
-        console.error('Error cargando datos iniciales:', error);
-      }
-    });
+    }) as Observable<InitialData>;
   }
 
   loadHistoriaClinica(): void {
     if (!this.historiaId) return;
 
-    this.loading = true;
-
-    this.historiaClinicaService.obtenerHistoriaClinica(this.historiaId).pipe(
-      finalize(() => {
-        this.loading = false;
-      })
-    ).subscribe({
+    // No es necesario un nuevo spinner, ngOnInit ya lo gestiona
+    this.historiaClinicaService.obtenerHistoriaClinica(this.historiaId).subscribe({
       next: (historia) => {
         this.historia = historia;
 
-        // Llenar el formulario con los datos de la historia clínica
+        // Ahora patchValue funciona porque los dropdowns ya están llenos
         this.historiaForm.patchValue({
-          materiaProfesorID: historia.MateriaProfesorID, // Use MateriaProfesorID instead of ProfesorID
+          materiaProfesorID: historia.MateriaProfesorID,
           consultorioID: historia.ConsultorioID,
           periodoEscolarID: historia.PeriodoEscolarID,
           fecha: new Date(historia.Fecha).toISOString().split('T')[0],
@@ -229,7 +216,6 @@ export class HistoriaClinicaFormComponent implements OnInit {
           }
         });
 
-        // Deshabilitar la edición de ciertos campos
         if (historia.Archivado || historia.Estado === 'Finalizado') {
           this.historiaForm.disable();
         }
@@ -241,11 +227,10 @@ export class HistoriaClinicaFormComponent implements OnInit {
     });
   }
 
+  // El resto de los métodos (onSubmit, seleccionarPaciente, etc.) no necesitan cambios.
   seleccionarPaciente(paciente: Paciente): void {
     this.pacienteSeleccionado = paciente;
     this.mostrarResultadosBusqueda = false;
-
-    // Llenar el formulario con los datos del paciente
     this.historiaForm.get('paciente')?.patchValue({
       id: paciente.ID,
       nombre: paciente.Nombre,
@@ -255,70 +240,44 @@ export class HistoriaClinicaFormComponent implements OnInit {
       correoElectronico: paciente.CorreoElectronico,
       telefonoCelular: paciente.TelefonoCelular
     });
-
-    // Limpiar campo de búsqueda
     this.pacienteForm.patchValue({ busqueda: '' });
   }
 
   limpiarPacienteSeleccionado(): void {
     this.pacienteSeleccionado = null;
-
-    // Limpiar formulario de paciente
-    this.historiaForm.get('paciente')?.reset({
-      pais: 'México'
-    });
+    this.historiaForm.get('paciente')?.reset({ pais: 'México' });
   }
 
   onSubmit(): void {
     if (this.historiaForm.invalid) {
-      // Mark all fields as touched to show errors
       this.markFormGroupTouched(this.historiaForm);
       return;
     }
-  
     this.submitting = true;
     this.error = '';
     this.success = '';
-  
-    // Get a copy of the form data to modify
     const historiaData = { ...this.historiaForm.value };
-  
-    // Find the selected materia to add the NombreMateria field
     if (historiaData.materiaProfesorID) {
       const selectedMateria = this.materias.find(m => m.MateriaProfesorID == historiaData.materiaProfesorID);
       if (selectedMateria) {
-        // Add the required NombreMateria field
         historiaData.NombreMateria = selectedMateria.NombreMateria;
-        console.log('Adding NombreMateria:', historiaData.NombreMateria);
       }
     }
-  
-    // Ensure PeriodoEscolarID is set correctly
-    // Use the actual ID from the periodoEscolar object if it exists
     if (this.periodoEscolar && (!historiaData.periodoEscolarID || historiaData.periodoEscolarID === '')) {
       historiaData.PeriodoEscolarID = this.periodoEscolar.ID;
-      console.log('Setting PeriodoEscolarID to:', historiaData.PeriodoEscolarID);
     } else if (historiaData.periodoEscolarID) {
-      // If it's already set in lowercase, make sure it's also set in uppercase
       historiaData.PeriodoEscolarID = historiaData.periodoEscolarID;
     }
-  
-    console.log('Sending data to server:', historiaData);
-  
     let action: Observable<any>;
-  
     if (this.isEditing && this.historiaId) {
-      // Update existing history
       action = this.historiaClinicaService.actualizarSeccion(
         this.historiaId,
         'datos-generales',
         historiaData
       );
     } else {
-      // Create new history
       action = this.historiaClinicaService.crearHistoriaClinica(historiaData);
     }
-  
     action.pipe(
       finalize(() => {
         this.submitting = false;
@@ -328,35 +287,27 @@ export class HistoriaClinicaFormComponent implements OnInit {
         this.success = this.isEditing
           ? 'Historia clínica actualizada correctamente.'
           : 'Historia clínica creada correctamente.';
-  
-        // Emit events to parent component
         if (this.isEditing) {
           this.completed.emit(true);
         } else {
-          // Get ID of created history
           const newHistoriaId = response.data.ID;
           this.historiaCreated.emit(newHistoriaId);
           this.completed.emit(true);
         }
-  
-        // After a brief delay, move to next section
         setTimeout(() => {
           this.nextSection.emit();
         }, 1500);
       },
       error: (error) => {
-        this.error = error.error?.message || 'Error al guardar la historia clínica. Por favor, intenta nuevamente.';
-        console.error('Error al guardar historia clínica:', error);
+        this.error = error.error?.message || 'Error al guardar la historia clínica.';
         this.completed.emit(false);
       }
     });
   }
 
-  // Marcar todos los campos de un FormGroup como tocados
   markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
-
       if (control instanceof FormGroup) {
         this.markFormGroupTouched(control);
       }

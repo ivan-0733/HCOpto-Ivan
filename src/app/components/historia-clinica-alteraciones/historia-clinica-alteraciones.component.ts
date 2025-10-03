@@ -229,8 +229,22 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
 
           // Cargar datos de Tonometría
           if (historia.tonometria) {
-            this.tonometriaForm.patchValue(historia.tonometria);
-          }
+          const tonometriaData = historia.tonometria;
+
+          // Formateamos la fecha ANTES de pasarla al formulario
+          const fechaFormateada = tonometriaData.fecha
+                                ? new Date(tonometriaData.fecha).toISOString().split('T')[0]
+                                : null;
+
+          this.tonometriaForm.patchValue({
+            metodoAnestesico: tonometriaData.metodoAnestesico,
+            fecha: fechaFormateada, // Usamos la fecha ya formateada
+            hora: tonometriaData.hora,
+            ojoDerecho: tonometriaData.ojoDerecho,
+            ojoIzquierdo: tonometriaData.ojoIzquierdo,
+            tipoID: tonometriaData.tipoID
+          });
+        }
 
           // Cargar datos de Paquimetría
           if (historia.paquimetria) {

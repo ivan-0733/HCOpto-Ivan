@@ -14,10 +14,14 @@
         <i class="fas fa-times"></i>
         Cancelar
       </button>
-      <button class="btn-primary" (click)="guardarSeccionActual()" [disabled]="submitting || loading">
-        <i class="fas fa-save"></i>
-        Guardar
-      </button>
+      <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="submitting"
+          (click)="isNewHistoria ? crearNuevaHistoria() : guardarHistoriaEditada()">
+          <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+          {{ isNewHistoria ? 'Crear Historia Clínica' : 'Guardar Cambios' }}
+        </button>
     </div>
   </header>
 

@@ -1,6 +1,73 @@
 const db = require('../config/database.js');
 const { crearHistoriaClinicaCompleta } = require('../controllers/historiaClinicaController.js');
 
+
+/**
+ * Función auxiliar para realizar una operación "UPSERT" (UPDATE o INSERT) de forma segura.
+ * Verifica si un registro existe para actualizarlo; de lo contrario, lo inserta.
+ * También sanea los datos y FORMATEA LAS FECHAS para MySQL.
+ * @param {object} connection - La conexión activa a la base de datos.
+ * @param {string} tabla - El nombre de la tabla de la base de datos a modificar.
+ * @param {object} datos - El objeto con los datos a insertar o actualizar.
+ * @param {number} historialId - El ID de la historia clínica a la que pertenece la sección.
+ */
+const upsertSeccion = async (connection, tabla, datos, historialId) => {
+  if (!datos || Object.keys(datos).length === 0) return;
+
+  // 1. Sanitizar y filtrar datos en un solo paso
+  const [columnas] = await connection.query(`SHOW COLUMNS FROM ${tabla}`);
+  const mapaColumnas = columnas.reduce((mapa, col) => {
+    mapa[col.Field.toLowerCase()] = col.Field;
+    return mapa;
+  }, {});
+
+  const datosFiltrados = Object.entries(datos).reduce((obj, [key, value]) => {
+    const columnaReal = mapaColumnas[key.toLowerCase()];
+    // Si la columna existe en la BD, la añadimos al objeto final
+    if (columnaReal) {
+      // Tu lógica original para sanitizar el valor (convertir vacíos a null)
+      let finalValue = (value === '' || value === undefined || value === null) ? null : value;
+      if (typeof finalValue === 'string' && finalValue.includes('T') && finalValue.endsWith('Z')) {
+        try {
+          // Crea un objeto Date a partir de la cadena ISO
+          const fechaJS = new Date(finalValue);
+          // Formatea la fecha a 'YYYY-MM-DD HH:MM:SS'
+          finalValue = fechaJS.toISOString().slice(0, 19).replace('T', ' ');
+        } catch (e) {
+          // Si por alguna razón la fecha no es válida, la dejamos como null para no romper la BD.
+          console.error(`Error al parsear la fecha para la columna ${columnaReal}:`, finalValue);
+          finalValue = null;
+        }
+      }
+      
+      obj[columnaReal] = finalValue;
+    }
+    return obj;
+  }, {});
+
+  // Si después de filtrar no queda nada, no hacemos nada.
+  if (Object.keys(datosFiltrados).length === 0) return;
+
+  // 2. Verificar si el registro existe
+  const [existente] = await connection.query(
+    `SELECT ID FROM ${tabla} WHERE HistorialID = ?`,
+    [historialId]
+  );
+
+  // 3. Ejecutar UPDATE o INSERT
+  if (existente.length > 0) {
+    // UPDATE
+    await connection.query(
+      `UPDATE ${tabla} SET ? WHERE HistorialID = ?`,
+      [datosFiltrados, historialId]
+    );
+  } else {
+    // INSERT
+    datosFiltrados.HistorialID = historialId; // Añadimos el HistorialID para el nuevo registro
+    await connection.query(`INSERT INTO ${tabla} SET ?`, datosFiltrados);
+  }
+};
+
 /**
  * Servicio para gestionar historias clínicas en la base de datos
  */
@@ -63,7 +130,6 @@ async obtenerHistoriaClinicaPorId(id, alumnoId) {
 try {
   console.log(`Obteniendo historia ID=${id} para alumnoId=${alumnoId}`);
 
-    // Consulta única optimizada con todos los joins necesarios
     const [historias] = await db.query(
       `SELECT
         hc.ID,
@@ -71,6 +137,8 @@ try {
         hc.Archivado,
         hc.FechaArchivado,
         hc.EstadoID,
+        hc.ConsultorioID,     
+        hc.PeriodoEscolarID,   
 
         -- Datos del Paciente
         p.ID AS PacienteID,
@@ -172,7 +240,7 @@ const fetchRelatedData = async (table, fieldName, whereColumn = 'HistorialID') =
     else if (table === 'Tonometria' && results.length > 0) {
       historia[fieldName] = {
         metodoAnestesico: results[0].MetodoAnestesico,
-        fecha: results[0].Fecha,
+        fecha: results[0].Fecha ,
         hora: results[0].Hora,
         ojoDerecho: results[0].OjoDerecho,
         ojoIzquierdo: results[0].OjoIzquierdo,
@@ -300,9 +368,6 @@ else if (table === 'Recomendaciones' && results.length > 0) {
   }
 
 
-
-
-
 };
 
   // Obtener datos relacionados
@@ -329,6 +394,7 @@ else if (table === 'Recomendaciones' && results.length > 0) {
   fetchRelatedData('Diagnostico', 'diagnostico'),
   fetchRelatedData('PlanTratamiento', 'planTratamiento'),
   fetchRelatedData('Pronostico', 'pronostico'),
+  fetchRelatedData('Recomendaciones', 'recomendaciones'),
   fetchRelatedData('RecetaFinal', 'recetaFinal'),
 ]);
 
@@ -1119,6 +1185,69 @@ try {
 
   // Actualizar la sección correspondiente
   switch (seccion) {
+
+  case 'datos-generales':
+  // Actualizar HistorialesClinicos
+  await connection.query(
+    `UPDATE HistorialesClinicos SET
+      MateriaProfesorID = ?,
+      ConsultorioID = ?,
+      PeriodoEscolarID = ?,
+      Fecha = ?
+    WHERE ID = ?`,
+    [
+      datos.materiaProfesorID || datos.MateriaProfesorID,
+      datos.consultorioID || datos.ConsultorioID,
+      datos.periodoEscolarID || datos.PeriodoEscolarID,
+      datos.fecha,
+      historiaId
+    ]
+  );
+
+  // UPDATE del paciente - también siempre existe
+  await connection.query(
+    `UPDATE Pacientes SET
+      Nombre = ?,
+      ApellidoPaterno = ?,
+      ApellidoMaterno = ?,
+      GeneroID = ?,
+      Edad = ?,
+      EstadoCivilID = ?,
+      EscolaridadID = ?,
+      Ocupacion = ?,
+      DireccionLinea1 = ?,
+      DireccionLinea2 = ?,
+      Ciudad = ?,
+      EstadoID = ?,
+      CodigoPostal = ?,
+      Pais = ?,
+      CorreoElectronico = ?,
+      TelefonoCelular = ?,
+      Telefono = ?
+    WHERE ID = (SELECT PacienteID FROM HistorialesClinicos WHERE ID = ?)`,
+    [
+      datos.paciente.nombre,
+      datos.paciente.apellidoPaterno,
+      datos.paciente.apellidoMaterno,
+      datos.paciente.generoID,
+      datos.paciente.edad,
+      datos.paciente.estadoCivilID,
+      datos.paciente.escolaridadID,
+      datos.paciente.ocupacion,
+      datos.paciente.direccionLinea1,
+      datos.paciente.direccionLinea2,
+      datos.paciente.ciudad,
+      datos.paciente.estadoID ? parseInt(datos.paciente.estadoID) : null,
+      datos.paciente.codigoPostal,
+      datos.paciente.pais || 'México',
+      datos.paciente.correoElectronico,
+      datos.paciente.telefonoCelular,
+      datos.paciente.telefono,
+      historiaId
+    ]
+  );
+  break;
+    
   case 'interrogatorio':
       // Verificar si ya existe un interrogatorio para esta historia
       const [interrogatorios] = await connection.query(
@@ -2484,6 +2613,119 @@ await Promise.all([
   } catch (error) {
     console.error('Error al obtener historia cli­nica para profesor:', error);
     throw error;
+  }
+},
+
+/**
+ * [REFACTORIZADO] Actualiza una historia clínica completa con una sola llamada al guardar.
+ * Esta función utiliza una lógica UPSERT segura que previene el borrado accidental de datos
+ * si una sección no es enviada desde el frontend. Es el método recomendado para editar.
+ * @param {object} datosHistoriaCompleta - Objeto que contiene historiaId, datosGenerales y todas las secciones.
+ * @returns {Promise<Object>} - La historia clínica completamente actualizada.
+ */
+async actualizarHistoriaCompleta(datosHistoriaCompleta) {
+  const connection = await db.pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const { historiaId, datosGenerales, secciones } = datosHistoriaCompleta;
+
+    // 1. Verificamos que la historia clínica exista y obtenemos el ID del paciente.
+    const [historias] = await connection.query(
+      'SELECT Archivado, PacienteID FROM HistorialesClinicos WHERE ID = ?',
+      [historiaId]
+    );
+
+    if (historias.length === 0) throw new Error('La historia clínica no existe');
+    if (historias[0].Archivado) throw new Error('No se puede modificar una historia clínica archivada');
+    
+    const { PacienteID } = historias[0];
+    const AlumnoID = datosGenerales.alumnoID; // Suponiendo que el alumnoID viene en datosGenerales
+
+    if (datosGenerales) {
+        await connection.query(
+            `UPDATE HistorialesClinicos SET
+                MateriaProfesorID = ?,
+                ConsultorioID = ?,
+                PeriodoEscolarID = ?,
+                Fecha = ?
+            WHERE ID = ?`,
+            [
+                datosGenerales.materiaProfesorID,
+                datosGenerales.consultorioID,
+                datosGenerales.periodoEscolarID,
+                datosGenerales.fecha,
+                historiaId
+            ]
+        );
+    }
+
+    // 2. Actualizamos los datos del paciente en la tabla `Pacientes`.
+    if (datosGenerales && datosGenerales.paciente) {
+      const pacienteSaneado = { ...datosGenerales.paciente };
+      for (const key in pacienteSaneado) {
+        if (pacienteSaneado[key] === '' || pacienteSaneado[key] === undefined) {
+          pacienteSaneado[key] = null;
+        }
+      }
+      await connection.query('UPDATE Pacientes SET ? WHERE ID = ?', [pacienteSaneado, PacienteID]);
+    }
+    
+    // 3. Actualizamos cada sección de forma individual y segura usando nuestra función auxiliar.
+    // Si una sección no viene en el objeto `secciones`, simplemente no se ejecuta nada para esa tabla.
+    await upsertSeccion(connection, 'Interrogatorio', secciones.interrogatorio, historiaId);
+    await upsertSeccion(connection, 'Lensometria', secciones.lensometria, historiaId);
+    await upsertSeccion(connection, 'AlineacionOcular', secciones.alineacionOcular, historiaId);
+    await upsertSeccion(connection, 'Motilidad', secciones.motilidad, historiaId);
+    await upsertSeccion(connection, 'ExploracionFisica', secciones.exploracionFisica, historiaId);
+    await upsertSeccion(connection, 'ViaPupilar', secciones.viaPupilar, historiaId);
+    await upsertSeccion(connection, 'EstadoRefractivo', secciones.estadoRefractivo, historiaId);
+    await upsertSeccion(connection, 'SubjetivoCerca', secciones.subjetivoCerca, historiaId);
+    await upsertSeccion(connection, 'Binocularidad', secciones.binocularidad, historiaId);
+    await upsertSeccion(connection, 'Forias', secciones.forias, historiaId);
+    await upsertSeccion(connection, 'Vergencias', secciones.vergencias, historiaId);
+    await upsertSeccion(connection, 'MetodoGrafico', secciones.metodoGrafico, historiaId);
+    await upsertSeccion(connection, 'GridAmsler', secciones.gridAmsler, historiaId);
+    await upsertSeccion(connection, 'Tonometria', secciones.tonometria, historiaId);
+    await upsertSeccion(connection, 'Paquimetria', secciones.paquimetria, historiaId);
+    await upsertSeccion(connection, 'Campimetria', secciones.campimetria, historiaId);
+    await upsertSeccion(connection, 'Biomicroscopia', secciones.biomicroscopia, historiaId);
+    await upsertSeccion(connection, 'Oftalmoscopia', secciones.oftalmoscopia, historiaId);
+    await upsertSeccion(connection, 'Diagnostico', secciones.diagnostico, historiaId);
+    await upsertSeccion(connection, 'PlanTratamiento', secciones.planTratamiento, historiaId);
+    await upsertSeccion(connection, 'Pronostico', secciones.pronostico, historiaId);
+    await upsertSeccion(connection, 'Recomendaciones', secciones.recomendaciones, historiaId);
+    await upsertSeccion(connection, 'RecetaFinal', secciones.recetaFinal, historiaId);
+
+    // 4. Manejo especial para `AgudezaVisual`, que es un array.
+    // Aquí es correcto borrar y re-insertar porque el frontend siempre envía el array completo.
+    if (secciones.agudezaVisual && Array.isArray(secciones.agudezaVisual)) {
+      await connection.query('DELETE FROM AgudezaVisual WHERE HistorialID = ?', [historiaId]);
+
+      for (const agudeza of secciones.agudezaVisual) {
+        const agudezaSaneada = { ...agudeza, HistorialID: historiaId };
+        for (const key in agudezaSaneada) {
+          if (agudezaSaneada[key] === '' || agudezaSaneada[key] === undefined) {
+            agudezaSaneada[key] = null;
+          }
+        }
+        await connection.query('INSERT INTO AgudezaVisual SET ?', agudezaSaneada);
+      }
+    }
+
+    // 5. Finalizamos la transacción y actualizamos la fecha de modificación.
+    await connection.query('UPDATE HistorialesClinicos SET ActualizadoEn = NOW() WHERE ID = ?', [historiaId]);
+    await connection.commit();
+
+    // Devolvemos la historia clínica actualizada para confirmar los cambios.
+    return await this.obtenerHistoriaClinicaPorId(historiaId, AlumnoID);
+
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error al actualizar la historia clínica completa:', error);
+    throw error;
+  } finally {
+    connection.release();
   }
 },
 

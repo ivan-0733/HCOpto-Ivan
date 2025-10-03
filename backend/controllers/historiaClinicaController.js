@@ -133,6 +133,35 @@ crearHistoriaClinicaCompleta: catchAsync(async (req, res) => {
   }
 }),
 
+actualizarHistoriaCompleta: catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const { datosGenerales, secciones } = req.body;
+    const alumnoId = req.usuario.AlumnoInfoID; // Obtener alumnoId para la validación
+
+    if (!datosGenerales || !secciones) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Faltan los objetos datosGenerales o secciones en el cuerpo de la solicitud.'
+        });
+    }
+    
+    // Añadir IDs necesarios al payload para pasarlos al servicio
+    const datosHistoriaCompleta = {
+        historiaId: parseInt(id, 10),
+        datosGenerales: { ...datosGenerales, alumnoID: alumnoId }, // Asegurar que el alumnoID está presente
+        secciones
+    };
+
+    const historiaActualizada = await historiaClinicaService.actualizarHistoriaCompleta(datosHistoriaCompleta);
+
+    res.status(200).json({
+        status: 'success',
+        message: 'Historia clínica actualizada correctamente',
+        data: historiaActualizada
+    });
+  }),
+
+
 /**
  * Actualizar una sección específica de una historia clínica
  */
@@ -160,6 +189,7 @@ res.status(200).json({
     data: resultado
 });
 }),
+
 
 /**
  * Responder a un comentario de un profesor

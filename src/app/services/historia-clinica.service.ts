@@ -471,6 +471,23 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
   }
 
 
+actualizarHistoriaCompleta(datosHistoriaCompleta: any): Observable<any> {
+  // 1. Extraes el ID del objeto que recibes.
+  const historiaId = datosHistoriaCompleta.historiaId;
+
+  // 2. Construyes la URL dinámica, añadiendo el ID al final.
+  const url = `${this.apiUrl}/actualizar-completa/${historiaId}`;
+
+  // 3. Preparas el cuerpo de la petición con lo que el backend espera.
+  const body = {
+    datosGenerales: datosHistoriaCompleta.datosGenerales,
+    secciones: datosHistoriaCompleta.secciones
+  };
+
+  // 4. Haces la llamada PUT con la URL correcta y el cuerpo adecuado.
+  return this.http.put<any>(url, body);
+}
+
   // Responder a un comentario de un profesor
   responderComentario(historiaId: number, comentarioId: number, respuesta: string): Observable<any> {
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${historiaId}/comentarios/${comentarioId}/respuestas`, { respuesta })
@@ -515,7 +532,6 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
         map(response => response.data)
       );
   }
-
 
   subirMultiplesImagenes(
     historiaId: string,

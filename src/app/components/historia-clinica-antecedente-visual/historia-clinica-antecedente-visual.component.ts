@@ -31,7 +31,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
   success = '';
 
   tiposLente: any[] = [
-    { ID: 3, Valor: 'Monocal' },
+    { ID: 3, Valor: 'Monofocal' },
     { ID: 1, Valor: 'Bifocal' },
     { ID: 2, Valor: 'Multifocal' }
   ];

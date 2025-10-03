@@ -126,11 +126,16 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
 
           // Cargar datos de recomendaciones
           if (historia.recomendaciones) {
-            this.recomendacionesForm.patchValue({
-              descripcion: historia.recomendaciones.Descripcion || '',
-              proximaCita: historia.recomendaciones.ProximaCita || ''
-            });
-          }
+          const recomendacionesData = historia.recomendaciones;
+          
+          this.recomendacionesForm.patchValue({
+            descripcion: recomendacionesData.Descripcion || '',
+            // Si existe la fecha 'ProximaCita', la formateamos a YYYY-MM-DD. Si no, queda vacía.
+            proximaCita: recomendacionesData.ProximaCita
+                        ? new Date(recomendacionesData.ProximaCita).toISOString().split('T')[0]
+                        : ''
+          });
+        }
 
           // Emitir que los datos se han cargado correctamente
           this.completed.emit(true);

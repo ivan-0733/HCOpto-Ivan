@@ -1,5 +1,7 @@
 const express = require('express');
+const authController = require('../controllers/authController');
 const historiaClinicaController = require('../controllers/historiaClinicaController');
+const historiaClinicaService = require('../services/historiaClinicaService');
 const { verifyToken, checkRole, checkHistoriaOwnership } = require('../middleware/auth');
 const { 
 crearHistoriaClinicaRules, 
@@ -44,6 +46,25 @@ router.patch(
     checkHistoriaOwnership,
     historiaClinicaController.actualizarSeccion
 );
+
+// router.put('/actualizar-completa', async (req, res) => {
+//     try {
+//     const historiaActualizada = await historiaClinicaService.actualizarHistoriaCompleta(req.body);
+//     res.json({
+//     success: true,
+//     data: historiaActualizada,
+//     message: 'Historia clínica actualizada exitosamente'
+//     });
+//     } catch (error) {
+//     console.error('Error al actualizar historia completa:', error);
+//     res.status(500).json({
+//     success: false,
+//     message: error.message || 'Error interno del servidor'
+//     });
+//     }
+// });
+
+router.put('/actualizar-completa/:id', historiaClinicaController.actualizarHistoriaCompleta);
 
 // Cambiar el estado de una historia clínica
 router.patch(
