@@ -42,11 +42,13 @@ constructor(
 ) { }
 
 ngOnInit(): void {
-  const userRole = this.authService.getUserRole();
+  // Obtenemos el rol y lo preparamos para la comparación
+  const userRole = this.authService.getUserRole() || ''; // Usamos || '' para evitar errores si es nulo
   console.log('🔍 ROL DETECTADO:', userRole);
-  this.esProfesor = userRole === 'Profesor';
-  this.esAdmin = userRole === 'Admin';
-  this.esAlumno = userRole === 'Alumno';
+
+  this.esProfesor = userRole.toLowerCase() === 'profesor';
+  this.esAdmin = userRole.toLowerCase() === 'admin';
+  this.esAlumno = userRole.toLowerCase() === 'alumno';
 
   console.log('✅ esProfesor:', this.esProfesor);
   console.log('✅ esAlumno:', this.esAlumno);
@@ -59,7 +61,6 @@ ngOnInit(): void {
     }
   });
 
-  // ✅ NUEVO: Escuchar queryParams para abrir pestaña específica
   this.route.queryParams.subscribe(queryParams => {
     if (queryParams['tab']) {
       this.currentTab = queryParams['tab'];
