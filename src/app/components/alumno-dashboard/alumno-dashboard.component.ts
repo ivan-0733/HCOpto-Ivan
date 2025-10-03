@@ -1,6 +1,6 @@
 // AlumnoDashboardComponent.ts - Con estadísticas por materia y corrección de paginación
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { HistoriaClinicaService, HistoriaClinica } from '../../services/historia-clinica.service';
 import { AlumnoService, Profesor, Perfil, Semestre, Consultorio, CatalogoItem, Paciente, PeriodoEscolar, MateriaAlumno } from '../../services/alumno.service';
@@ -41,6 +41,8 @@ export class AlumnoDashboardComponent implements OnInit {
   filtroMateriaArchivada: number | null = null;
   loading = true;
   error = '';
+
+  menuAbiertoId: number | null = null;
 
   // Filtros
   filtroEstado: string = 'todos';
@@ -278,6 +280,77 @@ export class AlumnoDashboardComponent implements OnInit {
       }
     });
   }
+
+  /**
+   * Alterna el menú desplegable de una historia
+   */
+  toggleMenu(historiaId: number, event: Event): void {
+    event.stopPropagation();
+    if (this.menuAbiertoId === historiaId) {
+      this.menuAbiertoId = null;
+    } else {
+      this.menuAbiertoId = historiaId;
+    }
+  }
+
+  /**
+   * Cierra el menú al hacer clic fuera
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    this.menuAbiertoId = null;
+  }
+
+  /**
+   * Cierra el menú actual
+   */
+  cerrarMenu(): void {
+    this.menuAbiertoId = null;
+  }
+
+/**
+ * Cambia el estado de una historia clínica a "Corregido"
+ */
+cambiarEstado(historiaId: number, event?: Event): void {
+  if (event) event.stopPropagation();
+  this.cerrarMenu();
+
+  // Encontrar la historia
+  const historia = this.historiasClinicas.find(h => h.ID === historiaId);
+
+  if (!historia) {
+    alert('Historia no encontrada');
+    return;
+  }
+
+  // Validar que se pueda cambiar el estado
+  if (!this.puedeMarcarCorregido(historia)) {
+    alert('Solo puedes marcar como "Corregido" historias en estado "Nuevo" o "Corrección"');
+    return;
+  }
+
+  if (confirm('¿Estás seguro de cambiar el estado a "Corregido"?')) {
+    // Usar el ID correcto del estado "Corregido" (44)
+    const estadoCorregidoId = 44;
+
+    this.historiaClinicaService.cambiarEstado(historiaId, estadoCorregidoId).subscribe({
+      next: () => {
+        // Actualizar el estado localmente
+        historia.Estado = 'Corregido';
+
+        // Recalcular estadísticas
+        this.calcularEstadisticasPorMateria();
+        this.actualizarEstadisticas();
+
+        alert('Estado actualizado correctamente a "Corregido"');
+      },
+      error: (error: any) => {
+        console.error('Error al actualizar estado:', error);
+        alert('Error al actualizar el estado. Por favor, intenta nuevamente.');
+      }
+    });
+  }
+}
 
   /**
    * Normaliza un string removiendo acentos y convirtiendo a minúsculas
@@ -593,8 +666,8 @@ export class AlumnoDashboardComponent implements OnInit {
     this.router.navigate(['/alumno/historias', id]);
   }
 
-  editarHistoria(id: number): void {
-    // Save filters before navigating
+  editarHistoria(id: number, event?: Event): void {
+    if (event) event.stopPropagation();
     this.saveFilters();
     this.router.navigate(['/alumno/historias', id, 'editar']);
   }
@@ -802,6 +875,20 @@ export class AlumnoDashboardComponent implements OnInit {
     }
     // Return the sorted histories
     return historiasOrdenadas;
+  }
+
+  /**
+   * Verifica si una historia puede ser marcada como "Corregido"
+   * Solo se permite desde estados "Nuevo" o "Corrección"
+   */
+  puedeMarcarCorregido(historia: HistoriaClinica): boolean {
+    // No se puede marcar como corregido si está archivada o finalizada
+    if (historia.Archivado || historia.Estado === 'Finalizado') {
+      return false;
+    }
+
+    // Solo permitir desde "Nuevo" o "Corrección"
+    return historia.Estado === 'Nuevo' || historia.Estado === 'Corrección';
   }
 
   // And add this method to your component

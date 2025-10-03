@@ -28,6 +28,7 @@ export interface HistoriaClinica {
   NombreMateria: string;
   GrupoMateria: string;
   PeriodoEscolarID?: number;
+  TotalComentarios: number;  // ✅ AGREGAR ESTA LÍNEA
 
   // Información del alumno que creó la historia clínica
   AlumnoNombre: string;
@@ -547,6 +548,33 @@ subirImagen(historiaId: number, formData: FormData): Observable<any> {
       .pipe(
         map(response => response.data)
       );
+  }
+
+  /**
+   * Actualizar el estado de una historia clínica (para alumnos)
+   */
+  actualizarEstadoHistoria(historiaId: number, nuevoEstado: string): Observable<any> {
+    // Mapear el nombre del estado al ID correspondiente
+    const estadosMap: { [key: string]: number } = {
+      'Nuevo': 1,
+      'Corregido': 2,
+      'Revisión': 3,
+      'Corrección': 4,
+      'Finalizado': 5
+    };
+
+    const estadoId = estadosMap[nuevoEstado];
+
+    if (!estadoId) {
+      throw new Error(`Estado "${nuevoEstado}" no válido`);
+    }
+
+    return this.http.patch<ApiResponse<any>>(
+      `${this.apiUrl}/${historiaId}/estado`,
+      { estadoId }
+    ).pipe(
+      map(response => response.data)
+    );
   }
 
   subirMultiplesImagenes(

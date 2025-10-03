@@ -223,6 +223,14 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
     });
   }
 
+  archivarHistoria(historiaId: number, archivar: boolean): Observable<any> {
+    return this.http.put(`${this.apiUrl}/historias/${historiaId}/archivar`, { archivar });
+  }
+
+  actualizarEstadoHistoria(historiaId: number, nuevoEstado: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/historias/${historiaId}/estado`, { estado: nuevoEstado });
+  }
+
   // Obtener período escolar actual
   obtenerPeriodoEscolarActual(): Observable<any> {
     return this.http.get<ApiResponse<any>>(`${this.apiUrl}/periodo-actual`)

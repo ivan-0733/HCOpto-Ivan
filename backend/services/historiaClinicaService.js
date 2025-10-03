@@ -93,7 +93,7 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
         p.CorreoElectronico,
         p.TelefonoCelular,
         p.CURP,
-        p.IDSiSeCO,  -- ⭐ AGREGAR ESTE CAMPO
+        p.IDSiSeCO,
         p.Edad,
         cg.Valor AS Estado,
         c.Nombre AS Consultorio,
@@ -101,7 +101,11 @@ async obtenerHistoriasClinicasPorAlumno(alumnoId) {
         m.Nombre AS NombreMateria,
         mp.Grupo AS GrupoMateria,
         hc.MateriaProfesorID,
-        mp.ProfesorInfoID AS ProfesorID
+        mp.ProfesorInfoID AS ProfesorID,
+
+        -- ⭐ AGREGAR ESTA LÍNEA (conteo de comentarios)
+        (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
+
       FROM HistorialesClinicos hc
       JOIN Pacientes p ON hc.PacienteID = p.ID
       JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
@@ -178,6 +182,7 @@ try {
         a.Nombre AS AlumnoNombre,
         a.ApellidoPaterno AS AlumnoApellidoPaterno,
         a.ApellidoMaterno AS AlumnoApellidoMaterno,
+        a.NumeroBoleta AS AlumnoBoleta,
 
         -- Datos del Profesor desde ProfesoresInfo
         pr.Nombre AS ProfesorNombre,
@@ -2314,7 +2319,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
       return null;
     }
 
-    console.log(`✅ Verificación exitosa - Historia ID=${id} existe y profesor ${profesorId} tiene acceso`);
+    console.log(`Verificación exitosa - Historia ID=${id} existe y profesor ${profesorId} tiene acceso`);
 
     // Usar la misma lógica que obtenerHistoriaClinicaPorId pero con validación de profesor
     const [historias] = await db.query(
@@ -2362,12 +2367,16 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
         a.Nombre AS AlumnoNombre,
         a.ApellidoPaterno AS AlumnoApellidoPaterno,
         a.ApellidoMaterno AS AlumnoApellidoMaterno,
+        a.NumeroBoleta AS AlumnoBoleta,
 
         -- Datos del Profesor desde ProfesoresInfo
         pr.Nombre AS ProfesorNombre,
         pr.ApellidoPaterno AS ProfesorApellidoPaterno,
         pr.ApellidoMaterno AS ProfesorApellidoMaterno,
-        pr.ID AS ProfesorID
+        pr.ID AS ProfesorID,
+
+        -- Conteo de comentarios
+        (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
 
         FROM HistorialesClinicos hc
         JOIN Pacientes p ON hc.PacienteID = p.ID

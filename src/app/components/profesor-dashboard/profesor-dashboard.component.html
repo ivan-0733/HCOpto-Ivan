@@ -212,6 +212,7 @@
             <th>Estado</th>
             <th>Consultorio</th>
             <th>Semestre</th>
+            <th>N° Comentarios</th> <!-- NUEVA COLUMNA -->
             <th>Acciones</th>
           </tr>
         </thead>
@@ -260,15 +261,50 @@
             </td>
             <td>{{ historia.Consultorio }}</td>
             <td>{{ historia.PeriodoEscolar }}</td>
+            <td class="comentarios-cell">
+              <span *ngIf="historia.TotalComentarios > 0" class="comentarios-badge">
+                <i class="fas fa-comment"></i> {{ historia.TotalComentarios }}
+              </span>
+              <span *ngIf="historia.TotalComentarios === 0" class="no-comentarios">
+                <i class="fas fa-comment-slash"></i> 0
+              </span>
+            </td>
+            <!-- ACCIONES: Ver + Menú (3 puntos) -->
             <td class="acciones">
-              <button class="btn-icon btn-view" (click)="verHistoria(historia.ID)" title="Ver Historia Clínica Completa">
+              <button class="btn-icon btn-view"
+                      (click)="verHistoria(historia.ID)"
+                      title="Ver Historia Clínica Completa">
                 <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">visibility</i>
               </button>
-              <button class="btn-icon btn-edit" (click)="editarHistoria(historia.ID)"
-                      [disabled]="historia.Archivado || historia.Estado === 'Finalizado'"
-                      title="Revisar Historia Clínica">
-                <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">rate_review</i>
+              <button class="btn-icon btn-menu"
+                      (click)="toggleMenu(historia.ID, $event)"
+                      title="Más acciones">
+                <i class="material-icons" style="background-color: #fff; color: #800000; font-size: 32px; padding: 8px; border-radius: 50%;">more_vert</i>
               </button>
+
+              <!-- Menú desplegable -->
+              <div class="dropdown-menu" *ngIf="menuAbiertoId === historia.ID">
+                <button (click)="verComentarios(historia.ID, $event)">
+                  <i class="fas fa-comments"></i> Comentarios
+                </button>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-submenu">
+                  <span (click)="toggleSubmenu($event)">
+                    <i class="fas fa-flag"></i> Cambiar estado
+                  </span>
+                  <div class="submenu-content">
+                    <button (click)="cambiarEstado(historia.ID, 'Corrección', $event)">Corrección</button>
+                    <button (click)="cambiarEstado(historia.ID, 'Finalizado', $event)">Finalizado</button>
+                  </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <button (click)="archivarHistoria(historia.ID, $event)" *ngIf="!historia.Archivado">
+                  <i class="fas fa-archive"></i> Archivar
+                </button>
+                <button (click)="desarchivarHistoria(historia.ID, $event)" *ngIf="historia.Archivado">
+                  <i class="fas fa-archive"></i> Desarchivar
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>

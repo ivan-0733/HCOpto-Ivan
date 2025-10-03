@@ -42,7 +42,6 @@ constructor(
 ) { }
 
 ngOnInit(): void {
-  // Detectar el rol del usuario
   const userRole = this.authService.getUserRole();
   console.log('🔍 ROL DETECTADO:', userRole);
   this.esProfesor = userRole === 'Profesor';
@@ -59,8 +58,15 @@ ngOnInit(): void {
       this.loadHistoriaClinica();
     }
   });
-}
 
+  // ✅ NUEVO: Escuchar queryParams para abrir pestaña específica
+  this.route.queryParams.subscribe(queryParams => {
+    if (queryParams['tab']) {
+      this.currentTab = queryParams['tab'];
+      console.log('📂 Abriendo pestaña:', this.currentTab);
+    }
+  });
+}
 
 loadHistoriaClinica(): void {
   if (!this.historiaId) return;
@@ -129,9 +135,16 @@ cargarImagenMetodoGrafico(imagenID: number): void {
     });
 }
 
-
 changeTab(tab: string): void {
   this.currentTab = tab;
+}
+
+// ✅ NUEVO MÉTODO - Agrégalo después de changeTab
+verComentarios(): void {
+  if (!this.historiaId) return;
+
+  const baseRoute = this.esProfesor || this.esAdmin ? '/profesor' : '/alumno';
+  this.router.navigate([baseRoute, 'comentarios', this.historiaId]);
 }
 
 getButtonClass(tab: string): string {
@@ -156,11 +169,13 @@ obtenerClaseEstado(estado: string): string {
 }
 
 editarHistoria(): void {
-  this.router.navigate(['/alumno/historias', this.historiaId, 'editar']);
+  const baseRoute = this.esProfesor || this.esAdmin ? '/profesor' : '/alumno';
+  this.router.navigate([baseRoute, 'historias', this.historiaId, 'editar']);
 }
 
 volverAlDashboard(): void {
-  this.router.navigate(['/alumno/dashboard']);
+  const baseRoute = this.esProfesor || this.esAdmin ? '/profesor' : '/alumno';
+  this.router.navigate([baseRoute, 'dashboard']);
 }
 
 onComentarioAgregado(): void {
