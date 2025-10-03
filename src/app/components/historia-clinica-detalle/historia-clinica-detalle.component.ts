@@ -24,6 +24,7 @@ export class HistoriaClinicaDetalleComponent implements OnInit {
 historiaId: number | null = null;
 historia: HistoriaClinicaDetalle | null = null;
 currentTab = 'datos-generales';
+imprimiendo = false;
 
 loading = true;
 error = '';

@@ -771,8 +771,6 @@ checkIfNavigationButtonsNeeded(): void {
   this.checkScrollableStatus(); // Forzar actualización
 }
 
-// historia-clinica-container.component.ts
-
 loadHistoriaStatus(): void {
   if (!this.historiaId) return;
 
@@ -835,7 +833,6 @@ loadHistoriaStatus(): void {
             escolaridadID: historia.EscolaridadID,
             ocupacion: historia.Ocupacion,
             direccionLinea1: historia.DireccionLinea1,
-            direccionLinea2: historia.DireccionLinea2,
             ciudad: historia.Ciudad,
             estadoID: historia.PacienteEstadoID,
             codigoPostal: historia.CodigoPostal,
@@ -847,8 +844,16 @@ loadHistoriaStatus(): void {
         };
 
         if (historia.interrogatorio) {
-          this.formValues['interrogatorio'] = historia.interrogatorio;
-        }
+        this.formValues['interrogatorio'] = {
+          motivoConsulta: historia.interrogatorio.MotivoConsulta,
+          heredoFamiliares: historia.interrogatorio.HeredoFamiliares,
+          noPatologicos: historia.interrogatorio.NoPatologicos,
+          patologicos: historia.interrogatorio.Patologicos,
+          visualesOculares: historia.interrogatorio.VisualesOculares,
+          padecimientoActual: historia.interrogatorio.PadecimientoActual,
+          prediagnostico: historia.interrogatorio.Prediagnostico
+        };
+      }
 
         // Guardar datos de agudeza visual y lensometría
         if (historia.agudezaVisual) {

@@ -22,7 +22,7 @@ dotenv.config();
 // Crear aplicación Express
 const app = express();
 const PORT = config.server.port;
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Middleware
 app.use(cors(config.cors));

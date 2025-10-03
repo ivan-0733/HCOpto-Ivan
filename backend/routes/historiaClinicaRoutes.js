@@ -14,6 +14,10 @@ const uploadController = require('../controllers/uploadController');
 const multer = require('multer');
 const router = express.Router();
 
+
+//ruta para obtener una imagen por su ID
+router.get('/imagenes/:id', uploadController.getImageById);
+
 // Configuración básica de Multer para la ruta de prueba
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -47,23 +51,6 @@ router.patch(
     historiaClinicaController.actualizarSeccion
 );
 
-// router.put('/actualizar-completa', async (req, res) => {
-//     try {
-//     const historiaActualizada = await historiaClinicaService.actualizarHistoriaCompleta(req.body);
-//     res.json({
-//     success: true,
-//     data: historiaActualizada,
-//     message: 'Historia clínica actualizada exitosamente'
-//     });
-//     } catch (error) {
-//     console.error('Error al actualizar historia completa:', error);
-//     res.status(500).json({
-//     success: false,
-//     message: error.message || 'Error interno del servidor'
-//     });
-//     }
-// });
-
 router.put('/actualizar-completa/:id', historiaClinicaController.actualizarHistoriaCompleta);
 
 // Cambiar el estado de una historia clínica
@@ -90,9 +77,6 @@ router.post(
     uploadController.upload.single('file'), 
     uploadController.uploadHistoriaClinicaImage
 );
-
-//ruta para obtener una imagen por su ID
-router.get('/imagenes/:id', uploadController.getImageById);
 
 // Ruta de prueba para imágenes (con Multer configurado directamente)
 router.post(

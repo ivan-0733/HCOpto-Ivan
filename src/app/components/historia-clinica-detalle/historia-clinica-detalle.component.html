@@ -21,7 +21,7 @@
         <i class="fas fa-print"></i>
         Imprimir
       </button>
-      <button class="btn-primary" *ngIf="historia && !historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+      <button class="btn-primary" *ngIf="historia && !historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
         <i class="fas fa-edit"></i>
         Editar
       </button>
@@ -278,7 +278,7 @@
         <div class="no-data" *ngIf="!historia.interrogatorio">
           <i class="fas fa-clipboard-list"></i>
           <p>No se ha registrado información de interrogatorio para esta historia clínica.</p>
-          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
             <i class="fas fa-edit"></i>
             Agregar Interrogatorio
           </button>
@@ -429,7 +429,7 @@
         <div class="no-data" *ngIf="(!historia.agudezaVisual || historia.agudezaVisual.length === 0) && !historia.lensometria">
           <i class="fas fa-eye"></i>
           <p>No se ha registrado información de antecedente visual para esta historia clínica.</p>
-          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
             <i class="fas fa-edit"></i>
             Agregar Antecedente Visual
           </button>
@@ -593,7 +593,7 @@
   <div class="no-data" *ngIf="!historia.alineacionOcular && !historia.motilidad && !historia.exploracionFisica && !historia.viaPupilar">
     <i class="fas fa-search"></i>
     <p>No se ha registrado información del examen preliminar para esta historia clínica.</p>
-    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
       <i class="fas fa-edit"></i>
       Agregar Examen Preliminar
     </button>
@@ -808,7 +808,7 @@
   <div class="no-data" *ngIf="!historia.estadoRefractivo && !historia.subjetivoCerca">
     <i class="fas fa-glasses"></i>
     <p>No se ha registrado información de estado refractivo para esta historia clínica.</p>
-    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
       <i class="fas fa-edit"></i>
       Agregar Estado Refractivo
     </button>
@@ -1094,7 +1094,7 @@
   <div class="no-data" *ngIf="!historia.binocularidad && !historia.forias && !historia.vergencias && !historia.metodoGrafico">
     <i class="fas fa-binoculars"></i>
     <p>No se ha registrado información de binocularidad para esta historia clínica.</p>
-    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
       <i class="fas fa-edit"></i>
       Agregar Binocularidad
     </button>
@@ -1487,7 +1487,7 @@
   <div class="no-data" *ngIf="!historia.gridAmsler && !historia.tonometria && !historia.paquimetria && !historia.campimetria && !historia.biomicroscopia && !historia.oftalmoscopia">
     <i class="fas fa-exclamation-triangle"></i>
     <p>No se ha registrado información de detección de alteraciones para esta historia clínica.</p>
-    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
       <i class="fas fa-edit"></i>
       Agregar Detección de Alteraciones
     </button>
@@ -1572,7 +1572,7 @@
   <div class="no-data" *ngIf="!historia.diagnostico && !historia.planTratamiento && !historia.pronostico && !historia.recomendaciones">
     <i class="fas fa-stethoscope"></i>
     <p>No se ha registrado información de diagnóstico para esta historia clínica.</p>
-    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+    <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
       <i class="fas fa-edit"></i>
       Agregar Diagnóstico
     </button>
@@ -1662,7 +1662,7 @@
         <div class="no-data" *ngIf="!historia.recetaFinal">
           <i class="fas fa-prescription"></i>
           <p>No se ha registrado una receta final para esta historia clínica.</p>
-          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado'" (click)="editarHistoria()">
+          <button class="btn-primary" *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && esAlumno" (click)="editarHistoria()">
             <i class="fas fa-edit"></i>
             Agregar Receta Final
           </button>
@@ -1683,7 +1683,6 @@
         <section class="info-section">
           <h2>Comentarios del Profesor</h2>
 
-          <!-- ✅ NUEVO: Formulario para agregar comentarios (SOLO PROFESOR) -->
           <div *ngIf="esProfesor || esAdmin" class="add-comment-section">
             <h3>Agregar Nuevo Comentario</h3>
             <div class="add-comment-form">
