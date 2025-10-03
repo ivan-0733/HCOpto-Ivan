@@ -2,7 +2,7 @@ const profesorService = require('../services/profesorService');
 const historiaClinicaService = require('../services/historiaClinicaService');
 const { catchAsync } = require('../utils/errorHandler');
 const bcrypt = require('bcryptjs');
-const db = require('../config/database'); // ← AGREGAR ESTA LÍNEA
+const db = require('../config/database');
 
 /**
  * Controlador para manejar las operaciones de profesores
@@ -12,51 +12,37 @@ const profesorController = {
    * Obtener datos del perfil del profesor logueado
    */
   obtenerPerfil: catchAsync(async (req, res) => {
-    console.log('🔄 === INICIANDO obtenerPerfil ===');
-    console.log('req.usuario:', req.usuario);
-    console.log('req.role:', req.role);
-
+    console.log('📄 === INICIANDO obtenerPerfil ===');
     const profesorId = req.usuario.ProfesorInfoID;
-    console.log('profesorId extraído:', profesorId);
 
     if (!profesorId) {
-      console.log('❌ ProfesorInfoID no encontrado en req.usuario');
       return res.status(400).json({
         status: 'error',
         message: 'ID de profesor no encontrado'
       });
     }
 
-    console.log('🔄 Llamando a profesorService.obtenerProfesorPorId...');
     const perfil = await profesorService.obtenerProfesorPorId(profesorId);
-    console.log('Perfil obtenido del service:', perfil);
 
     if (!perfil) {
-      console.log('❌ Perfil no encontrado en la base de datos');
       return res.status(404).json({
         status: 'error',
         message: 'Profesor no encontrado'
       });
     }
 
-    // Asegurarse de no enviar información sensible
     if (perfil.ContraseñaHash) {
       delete perfil.ContraseñaHash;
     }
 
-    console.log('✅ Enviando respuesta exitosa del perfil');
     res.status(200).json({
       status: 'success',
       data: perfil
     });
   }),
 
-  /**
-   * Obtener historias clínicas de los alumnos del profesor
-   */
   obtenerHistoriasClinicas: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
-
     const historias = await historiaClinicaService.obtenerHistoriasClinicasPorProfesor(profesorId);
 
     res.status(200).json({
@@ -66,36 +52,27 @@ const profesorController = {
     });
   }),
 
-  /**
- * Obtener una historia clínica específica por ID (desde perspectiva del profesor)
- */
-obtenerHistoriaClinica: catchAsync(async (req, res) => {
-  const { id } = req.params;
-  const profesorId = req.usuario.ProfesorInfoID;
-
-  console.log(`Profesor Controller: Obteniendo historia clínica ID=${id} para profesorId=${profesorId}`);
-
-  const historia = await historiaClinicaService.obtenerHistoriaClinicaPorIdProfesor(id, profesorId);
-
-  if (!historia) {
-    return res.status(404).json({
-      status: 'error',
-      message: 'Historia clínica no encontrada o no tienes permiso para acceder a ella'
-    });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: historia
-  });
-}),
-
-  /**
-   * Obtener estadísticas de historias clínicas del profesor
-   */
-  obtenerEstadisticasHistorias: catchAsync(async (req, res) => {
+  obtenerHistoriaClinica: catchAsync(async (req, res) => {
+    const { id } = req.params;
     const profesorId = req.usuario.ProfesorInfoID;
 
+    const historia = await historiaClinicaService.obtenerHistoriaClinicaPorIdProfesor(id, profesorId);
+
+    if (!historia) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Historia clínica no encontrada o no tienes permiso para acceder a ella'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: historia
+    });
+  }),
+
+  obtenerEstadisticasHistorias: catchAsync(async (req, res) => {
+    const profesorId = req.usuario.ProfesorInfoID;
     const estadisticas = await historiaClinicaService.obtenerEstadisticasPorProfesor(profesorId);
 
     res.status(200).json({
@@ -104,12 +81,8 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Obtener alumnos asignados al profesor
-   */
   obtenerAlumnosAsignados: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
-
     const alumnos = await profesorService.obtenerAlumnosAsignados(profesorId);
 
     res.status(200).json({
@@ -119,12 +92,8 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Obtener materias del profesor
-   */
   obtenerMaterias: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
-
     const materias = await profesorService.obtenerMateriasProfesor(profesorId);
 
     res.status(200).json({
@@ -134,12 +103,8 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Obtener todas las materias del profesor (incluyendo históricas)
-   */
   obtenerTodasMaterias: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
-
     const materias = await profesorService.obtenerTodasMateriasProfesor(profesorId);
 
     res.status(200).json({
@@ -149,9 +114,6 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Obtener información del período escolar actual
-   */
   obtenerPeriodoEscolar: catchAsync(async (req, res) => {
     const periodo = await profesorService.obtenerPeriodoEscolarActual();
 
@@ -168,14 +130,10 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Obtener alumnos de una materia específica del profesor
-   */
   obtenerAlumnosPorMateria: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
     const materiaId = req.params.materiaId;
 
-    // Verificar que la materia pertenece al profesor
     const materiaProfesor = await profesorService.verificarMateriaProfesor(profesorId, materiaId);
 
     if (!materiaProfesor) {
@@ -194,12 +152,8 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Obtener materias con sus alumnos (método alternativo)
-   */
   obtenerMateriasConAlumnos: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
-
     const materiasConAlumnos = await profesorService.obtenerMateriasConAlumnos(profesorId);
 
     res.status(200).json({
@@ -209,13 +163,9 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     });
   }),
 
-  /**
-   * Actualizar datos del perfil
-   */
   actualizarPerfil: catchAsync(async (req, res) => {
     const profesorId = req.usuario.ProfesorInfoID;
     const usuarioId = req.usuario.UsuarioID;
-
     const { nombreUsuario, correoElectronico, telefonoCelular } = req.body;
 
     if (!nombreUsuario && !correoElectronico && !telefonoCelular) {
@@ -240,7 +190,6 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
 
-      // Manejar errores específicos
       if (error.message.includes('nombre de usuario ya existe') ||
           error.message.includes('correo electrónico ya existe') ||
           error.message.includes('número de teléfono ya existe')) {
@@ -250,34 +199,27 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
         });
       }
 
-      // Para errores de duplicación de MySQL
       if (error.code === 'ER_DUP_ENTRY') {
         let message = 'Ya existe un registro con esos datos.';
 
         if (error.sqlMessage.includes('idx_telefono')) {
-          message = 'El número de teléfono ya está registrado. Por favor, utiliza otro.';
+          message = 'El número de teléfono ya está registrado.';
         } else if (error.sqlMessage.includes('idx_correo')) {
-          message = 'El correo electrónico ya está registrado. Por favor, utiliza otro.';
+          message = 'El correo electrónico ya está registrado.';
         } else if (error.sqlMessage.includes('idx_nombre')) {
-          message = 'El nombre de usuario ya está en uso. Por favor, elige otro.';
+          message = 'El nombre de usuario ya está en uso.';
         }
 
         return res.status(400).json({
           status: 'error',
-          message: message,
-          sqlCode: error.code,
-          sqlMessage: error.sqlMessage
+          message: message
         });
       }
 
-      // Si es otro tipo de error, lo pasamos al manejador global
       throw error;
     }
   }),
 
-  /**
-   * Verificar contraseña actual
-   */
   verificarPassword: catchAsync(async (req, res) => {
     const { passwordActual } = req.body;
     const usuarioId = req.usuario.UsuarioID;
@@ -305,9 +247,6 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     }
   }),
 
-  /**
-   * Actualiza la contraseña del profesor
-   */
   actualizarPassword: catchAsync(async (req, res) => {
     const { passwordActual, nuevaPassword } = req.body;
     const usuarioId = req.usuario.UsuarioID;
@@ -329,7 +268,6 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
     } catch (error) {
       console.error('Error en actualizarPassword controller:', error);
 
-      // Manejar errores específicos
       if (error.message === 'Contraseña actual incorrecta') {
         return res.status(400).json({
           status: 'error',
@@ -337,16 +275,224 @@ obtenerHistoriaClinica: catchAsync(async (req, res) => {
         });
       }
 
-      // Para otros errores, dejamos que catchAsync los maneje
       throw error;
+    }
+  }),
+
+  // ==================== MÉTODOS DE COMENTARIOS ====================
+
+  agregarComentario: catchAsync(async (req, res) => {
+    const { historiaId, comentario, seccionId } = req.body;
+    const profesorId = req.usuario.ProfesorInfoID;
+
+    try {
+      const query = `
+        INSERT INTO ComentariosProfesor
+        (HistorialID, ProfesorID, Comentario, SeccionID)
+        VALUES (?, ?, ?, ?)
+      `;
+
+      await db.query(query, [historiaId, profesorId, comentario, seccionId || null]);
+
+      res.json({
+        success: true,
+        message: 'Comentario agregado exitosamente'
+      });
+    } catch (error) {
+      console.error('Error al agregar comentario:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al agregar comentario'
+      });
+    }
+  }),
+
+  obtenerComentariosConRespuestas: catchAsync(async (req, res) => {
+    const { historiaId } = req.params;
+
+    try {
+      const queryComentarios = `
+        SELECT
+          cp.ID,
+          cp.HistorialID,
+          cp.ProfesorID,
+          CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', IFNULL(p.ApellidoMaterno, '')) as NombreUsuario,
+          cp.Comentario,
+          cp.FechaComentario as FechaCreacion,
+          cp.SeccionID,
+          CASE
+            WHEN cp.SeccionID = 1 THEN 'Datos Generales'
+            WHEN cp.SeccionID = 2 THEN 'Interrogatorio'
+            WHEN cp.SeccionID = 3 THEN 'Antecedente Visual'
+            WHEN cp.SeccionID = 4 THEN 'Examen Preliminar'
+            WHEN cp.SeccionID = 8 THEN 'Estado Refractivo'
+            WHEN cp.SeccionID = 10 THEN 'Binocularidad'
+            WHEN cp.SeccionID = 14 THEN 'Detección de Alteraciones'
+            WHEN cp.SeccionID = 20 THEN 'Diagnóstico'
+            WHEN cp.SeccionID = 24 THEN 'Receta Final'
+            ELSE 'General'
+          END AS SeccionNombre
+        FROM ComentariosProfesor cp
+        JOIN ProfesoresInfo p ON cp.ProfesorID = p.ID
+        WHERE cp.HistorialID = ?
+        ORDER BY cp.FechaComentario DESC
+      `;
+
+      const [comentarios] = await db.query(queryComentarios, [historiaId]);
+
+      for (let comentario of comentarios) {
+        const queryRespuestas = `
+          SELECT
+            rc.ID,
+            rc.ComentarioID,
+            rc.UsuarioID,
+            CASE
+              WHEN p.ID IS NOT NULL THEN CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', IFNULL(p.ApellidoMaterno, ''))
+              WHEN a.ID IS NOT NULL THEN CONCAT(a.Nombre, ' ', a.ApellidoPaterno, ' ', IFNULL(a.ApellidoMaterno, ''))
+              ELSE 'Usuario Desconocido'
+            END as NombreUsuario,
+            rc.Respuesta,
+            rc.FechaRespuesta,
+            CASE
+              WHEN p.ID IS NOT NULL THEN TRUE
+              ELSE FALSE
+            END AS EsProfesor
+          FROM RespuestasComentarios rc
+          JOIN Usuarios u ON rc.UsuarioID = u.ID
+          LEFT JOIN ProfesoresInfo p ON u.ID = p.UsuarioID
+          LEFT JOIN AlumnosInfo a ON u.ID = a.UsuarioID
+          WHERE rc.ComentarioID = ?
+          ORDER BY rc.FechaRespuesta ASC
+        `;
+
+        const [respuestas] = await db.query(queryRespuestas, [comentario.ID]);
+        comentario.respuestas = respuestas;
+      }
+
+      res.json({
+        success: true,
+        data: { comentarios }
+      });
+    } catch (error) {
+      console.error('Error al obtener comentarios:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al obtener comentarios'
+      });
+    }
+  }),
+
+  agregarRespuesta: catchAsync(async (req, res) => {
+    const { comentarioId } = req.params;
+    const { respuesta } = req.body;
+    const usuarioId = req.usuario.UsuarioID;
+
+    try {
+      const query = `
+        INSERT INTO RespuestasComentarios
+        (ComentarioID, UsuarioID, Respuesta)
+        VALUES (?, ?, ?)
+      `;
+
+      await db.query(query, [comentarioId, usuarioId, respuesta]);
+
+      res.json({
+        success: true,
+        message: 'Respuesta agregada exitosamente'
+      });
+    } catch (error) {
+      console.error('Error al agregar respuesta:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al agregar respuesta'
+      });
+    }
+  }),
+
+  obtenerEstadoHistoria: catchAsync(async (req, res) => {
+    const { historiaId } = req.params;
+
+    try {
+      const query = `
+        SELECT Estado
+        FROM HistorialesClinicos
+        WHERE ID = ?
+      `;
+
+      const [result] = await db.query(query, [historiaId]);
+
+      if (result.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Historia no encontrada'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: { estado: result[0].Estado }
+      });
+    } catch (error) {
+      console.error('Error al obtener estado:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al obtener estado'
+      });
+    }
+  }),
+
+  cambiarEstadoHistoria: catchAsync(async (req, res) => {
+    const { historiaId } = req.params;
+    const { estado } = req.body;
+
+    const estadosPermitidos = ['Revisión', 'Corrección', 'Finalizado', 'Archivado'];
+    if (!estadosPermitidos.includes(estado)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Estado no válido'
+      });
+    }
+
+    try {
+      let query;
+      let params;
+
+      if (estado === 'Archivado') {
+        query = `
+          UPDATE HistorialesClinicos
+          SET Estado = 'Finalizado',
+              Archivado = TRUE,
+              FechaArchivado = NOW()
+          WHERE ID = ?
+        `;
+        params = [historiaId];
+      } else {
+        query = `
+          UPDATE HistorialesClinicos
+          SET Estado = ?
+          WHERE ID = ?
+        `;
+        params = [estado, historiaId];
+      }
+
+      await db.query(query, params);
+
+      res.json({
+        success: true,
+        message: 'Estado actualizado exitosamente'
+      });
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al cambiar estado'
+      });
     }
   })
 };
 
-// ==================== NUEVOS MÉTODOS PARA GESTIÓN DE ALUMNOS ====================
+// ==================== MÉTODOS PARA GESTIÓN DE ALUMNOS ====================
 
-// Buscar alumnos existentes
-// 1. CORREGIR buscarAlumnos - línea 386 aproximadamente
 const buscarAlumnos = async (req, res) => {
   try {
     const profesorID = req.usuario.ProfesorInfoID;
@@ -359,7 +505,6 @@ const buscarAlumnos = async (req, res) => {
       });
     }
 
-    // ✅ CORRECTO - Relación directa entre Usuarios y AlumnosInfo
     const query = `
       SELECT DISTINCT
         ai.ID as AlumnoInfoID,
@@ -370,7 +515,7 @@ const buscarAlumnos = async (req, res) => {
         u.CorreoElectronico,
         u.TelefonoCelular
       FROM Usuarios u
-      INNER JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID    -- ✅ Relación directa correcta
+      INNER JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
       WHERE u.EstaActivo = 1
         AND u.RolID = (SELECT ID FROM Roles WHERE NombreRol = 'Alumno')
         AND (ai.NumeroBoleta LIKE ?
@@ -384,7 +529,6 @@ const buscarAlumnos = async (req, res) => {
     `;
 
     const searchTerm = `%${termino}%`;
-    // CAMBIAR DE db.execute A db.query
     const [results] = await db.query(query, [
       searchTerm, searchTerm, searchTerm,
       searchTerm, searchTerm, searchTerm
@@ -404,7 +548,6 @@ const buscarAlumnos = async (req, res) => {
   }
 };
 
-// Verificar si una boleta ya existe
 const verificarBoletaExistente = async (req, res) => {
   try {
     const { numeroBoleta } = req.query;
@@ -422,7 +565,6 @@ const verificarBoletaExistente = async (req, res) => {
       WHERE NumeroBoleta = ?
     `;
 
-    // CAMBIAR DE db.execute A db.query
     const [results] = await db.query(query, [numeroBoleta]);
     const existe = results[0].count > 0;
 
@@ -440,7 +582,6 @@ const verificarBoletaExistente = async (req, res) => {
   }
 };
 
-// Verificar si un correo ya existe
 const verificarCorreoExistente = async (req, res) => {
   try {
     const { correoElectronico } = req.query;
@@ -458,7 +599,6 @@ const verificarCorreoExistente = async (req, res) => {
       WHERE CorreoElectronico = ?
     `;
 
-    // CAMBIAR DE db.execute A db.query
     const [results] = await db.query(query, [correoElectronico]);
     const existe = results[0].count > 0;
 
@@ -476,8 +616,6 @@ const verificarCorreoExistente = async (req, res) => {
   }
 };
 
-// Crear nuevo alumno e inscribirlo a una materia
-// Mejoras en la función inscribirAlumnoMateria
 const inscribirAlumnoMateria = async (req, res) => {
   const connection = await db.pool.getConnection();
 
@@ -487,7 +625,6 @@ const inscribirAlumnoMateria = async (req, res) => {
     const profesorID = req.usuario.ProfesorInfoID;
     const { alumnoInfoId, materiaProfesorId } = req.body;
 
-    // Validaciones básicas
     if (!alumnoInfoId || !materiaProfesorId) {
       await connection.rollback();
       return res.status(400).json({
@@ -496,7 +633,6 @@ const inscribirAlumnoMateria = async (req, res) => {
       });
     }
 
-    // Obtener información del alumno para mensaje más descriptivo
     const [alumnoInfo] = await connection.query(
       `SELECT ai.Nombre, ai.ApellidoPaterno, ai.ApellidoMaterno, ai.NumeroBoleta
        FROM AlumnosInfo ai
@@ -512,7 +648,6 @@ const inscribirAlumnoMateria = async (req, res) => {
       });
     }
 
-    // Obtener información de la materia y profesor para mensaje más descriptivo
     const [materiaProfesor] = await connection.query(
       `SELECT mp.ID, mp.PeriodoEscolarID, mp.Grupo,
               m.Nombre as NombreMateria, m.Codigo as CodigoMateria,
@@ -532,7 +667,6 @@ const inscribirAlumnoMateria = async (req, res) => {
       });
     }
 
-    // Verificar que el alumno no esté ya inscrito en esta materia CON MENSAJE MEJORADO
     const [yaInscrito] = await connection.query(
       `SELECT COUNT(*) as count
        FROM MateriasAlumno
@@ -549,25 +683,16 @@ const inscribirAlumnoMateria = async (req, res) => {
 
       return res.status(400).json({
         status: 'error',
-        message: `El alumno ${nombreCompleto} (${alumno.NumeroBoleta}) ya está inscrito en ${materia.CodigoMateria} - ${materia.NombreMateria}, Grupo ${materia.Grupo}`,
-        detalles: {
-          alumno: nombreCompleto,
-          numeroBoleta: alumno.NumeroBoleta,
-          materia: `${materia.CodigoMateria} - ${materia.NombreMateria}`,
-          grupo: materia.Grupo,
-          profesor: `${materia.NombreProfesor} ${materia.ApellidoProfesor}`
-        }
+        message: `El alumno ${nombreCompleto} (${alumno.NumeroBoleta}) ya está inscrito en ${materia.CodigoMateria} - ${materia.NombreMateria}, Grupo ${materia.Grupo}`
       });
     }
 
-    // Inscribir al alumno (la fecha se agrega automáticamente con NOW())
     await connection.query(
       `INSERT INTO MateriasAlumno (AlumnoInfoID, MateriaProfesorID, FechaInscripcion)
        VALUES (?, ?, NOW())`,
       [alumnoInfoId, materiaProfesorId]
     );
 
-    // Actualizar período escolar actual del alumno si es necesario
     const periodoEscolarID = materiaProfesor[0].PeriodoEscolarID;
     await connection.query(
       `UPDATE AlumnosInfo
@@ -584,16 +709,7 @@ const inscribirAlumnoMateria = async (req, res) => {
 
     res.status(200).json({
       status: 'success',
-      message: `${nombreCompleto} ha sido inscrito exitosamente en ${materia.CodigoMateria} - ${materia.NombreMateria}, Grupo ${materia.Grupo}`,
-      data: {
-        alumnoInfoId,
-        materiaProfesorId,
-        alumno: nombreCompleto,
-        numeroBoleta: alumno.NumeroBoleta,
-        materia: `${materia.CodigoMateria} - ${materia.NombreMateria}`,
-        grupo: materia.Grupo,
-        fechaInscripcion: new Date().toISOString().split('T')[0] // Fecha actual para mostrar en el frontend
-      }
+      message: `${nombreCompleto} ha sido inscrito exitosamente en ${materia.CodigoMateria} - ${materia.NombreMateria}, Grupo ${materia.Grupo}`
     });
 
   } catch (error) {
@@ -608,13 +724,11 @@ const inscribirAlumnoMateria = async (req, res) => {
   }
 };
 
-// Eliminar alumno de una materia (desinscripción)
 const eliminarAlumnoDeMateria = async (req, res) => {
   try {
     const profesorId = req.usuario.ProfesorInfoID;
     const { alumnoInfoId, materiaProfesorId } = req.body;
 
-    // Validaciones básicas
     if (!alumnoInfoId || !materiaProfesorId) {
       return res.status(400).json({
         status: 'error',
@@ -644,7 +758,6 @@ const eliminarAlumnoDeMateria = async (req, res) => {
   }
 };
 
-// También mejora la función crearAlumnoEInscribir para incluir validación de duplicados
 const crearAlumnoEInscribir = async (req, res) => {
   const connection = await db.pool.getConnection();
 
@@ -661,7 +774,6 @@ const crearAlumnoEInscribir = async (req, res) => {
       materiaProfesorId
     } = req.body;
 
-    // Validaciones básicas
     if (!numeroBoleta || !nombre || !apellidoPaterno || !correoElectronico || !materiaProfesorId) {
       await connection.rollback();
       return res.status(400).json({
@@ -670,7 +782,6 @@ const crearAlumnoEInscribir = async (req, res) => {
       });
     }
 
-    // Verificar que la boleta no exista
     const [boletaExists] = await connection.query(
       'SELECT COUNT(*) as count FROM AlumnosInfo WHERE NumeroBoleta = ?',
       [numeroBoleta]
@@ -684,7 +795,6 @@ const crearAlumnoEInscribir = async (req, res) => {
       });
     }
 
-    // Verificar que el correo no exista
     const [correoExists] = await connection.query(
       'SELECT COUNT(*) as count FROM Usuarios WHERE CorreoElectronico = ?',
       [correoElectronico]
@@ -698,7 +808,6 @@ const crearAlumnoEInscribir = async (req, res) => {
       });
     }
 
-    // Obtener información de la materia para mensaje más descriptivo
     const [materiaProfesor] = await connection.query(
       `SELECT mp.ID, mp.PeriodoEscolarID, mp.Grupo,
               m.ID as MateriaID, m.Nombre as NombreMateria, m.Codigo as CodigoMateria
@@ -717,16 +826,10 @@ const crearAlumnoEInscribir = async (req, res) => {
     }
 
     const periodoEscolarID = materiaProfesor[0].PeriodoEscolarID;
-    const materiaID = materiaProfesor[0].MateriaID;
-
-    // Generar nombre de usuario (número de boleta)
     const nombreUsuario = numeroBoleta;
-
-    // Generar contraseña temporal (el número de boleta completo)
     const passwordTemporal = numeroBoleta;
     const passwordHash = await bcrypt.hash(passwordTemporal, 12);
 
-    // 1. Crear usuario
     const [usuarioResult] = await connection.query(
       `INSERT INTO Usuarios (NombreUsuario, CorreoElectronico, ContraseñaHash, RolID, EstaActivo, FechaCreacion)
        VALUES (?, ?, ?, (SELECT ID FROM Roles WHERE NombreRol = 'Alumno'), 1, NOW())`,
@@ -735,7 +838,6 @@ const crearAlumnoEInscribir = async (req, res) => {
 
     const usuarioID = usuarioResult.insertId;
 
-    // 2. Crear AlumnosInfo
     const [alumnoInfoResult] = await connection.query(
       `INSERT INTO AlumnosInfo (UsuarioID, NumeroBoleta, Nombre, ApellidoPaterno, ApellidoMaterno, PeriodoEscolarActualID)
        VALUES (?, ?, ?, ?, ?, ?)`,
@@ -744,9 +846,7 @@ const crearAlumnoEInscribir = async (req, res) => {
 
     const alumnoInfoID = alumnoInfoResult.insertId;
 
-    // 3. Inscribir en la materia (la fecha se agrega automáticamente)
-    await connection.query(
-      `INSERT INTO MateriasAlumno (AlumnoInfoID, MateriaProfesorID, FechaInscripcion)
+    await connection.query(`INSERT INTO MateriasAlumno (AlumnoInfoID, MateriaProfesorID, FechaInscripcion)
        VALUES (?, ?, NOW())`,
       [alumnoInfoID, materiaProfesorId]
     );
@@ -764,10 +864,10 @@ const crearAlumnoEInscribir = async (req, res) => {
         numeroBoleta,
         nombreCompleto,
         correoElectronico,
-        passwordTemporal, // Solo para fines informativos
+        passwordTemporal,
         materia: `${materia.CodigoMateria} - ${materia.NombreMateria}`,
         grupo: materia.Grupo,
-        fechaInscripcion: new Date().toISOString().split('T')[0] // Fecha actual
+        fechaInscripcion: new Date().toISOString().split('T')[0]
       }
     });
 
@@ -783,9 +883,9 @@ const crearAlumnoEInscribir = async (req, res) => {
   }
 };
 
+// EXPORTAR TODO JUNTO
 module.exports = {
   ...profesorController,
-  // Nuevas exportaciones
   buscarAlumnos,
   verificarBoletaExistente,
   verificarCorreoExistente,

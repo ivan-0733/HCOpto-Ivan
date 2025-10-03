@@ -1,0 +1,161 @@
+<div class="comentarios-container">
+  <div class="comentarios-header">
+    <h1>
+      <i class="fas fa-comments"></i>
+      Comentarios de Historia Clínica
+    </h1>
+    <button class="btn-volver" (click)="volver()">
+      <i class="fas fa-arrow-left"></i>
+      Volver al Dashboard
+    </button>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div class="error-container" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+    <button class="btn-retry" (click)="cargarDatos()">
+      <i class="fas fa-sync-alt"></i> Reintentar
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando comentarios...</p>
+  </div>
+
+  <!-- Contenido principal -->
+  <div *ngIf="!loading && !error">
+
+    <!-- Componente reutilizable para agregar comentarios -->
+    <app-comentario-box
+      [historiaId]="historiaId"
+      (comentarioAgregado)="onComentarioAgregado()">
+    </app-comentario-box>
+
+    <!-- Lista de comentarios con respuestas (hilos) -->
+    <div class="comentarios-lista">
+      <h2>Comentarios ({{ comentarios.length }})</h2>
+
+      <div class="empty-comentarios" *ngIf="comentarios.length === 0">
+        <i class="fas fa-comment-slash"></i>
+        <p>No hay comentarios aún. ¡Sé el primero en comentar!</p>
+      </div>
+
+      <!-- Comentario principal + respuestas (thread) -->
+      <div class="comentario-thread" *ngFor="let comentario of comentarios">
+
+        <!-- Comentario principal -->
+        <div class="comentario-card principal">
+          <div class="comentario-header">
+            <div class="usuario-info">
+              <i class="fas fa-chalkboard-teacher"></i>
+              <strong>{{ comentario.NombreUsuario }}</strong>
+              <span class="rol-badge profesor">Profesor</span>
+              <span class="seccion-badge" *ngIf="comentario.SeccionNombre">
+                {{ comentario.SeccionNombre }}
+              </span>
+            </div>
+            <span class="comentario-fecha">
+              {{ formatearFecha(comentario.FechaCreacion) }}
+            </span>
+          </div>
+          <div class="comentario-contenido">
+            <p>{{ comentario.Comentario }}</p>
+          </div>
+          <div class="comentario-acciones">
+            <button
+              class="btn-responder"
+              (click)="toggleFormRespuesta(comentario.ID)">
+              <i class="fas fa-reply"></i>
+              Responder
+              <span *ngIf="comentario.respuestas && comentario.respuestas.length > 0">
+                ({{ comentario.respuestas.length }})
+              </span>
+            </button>
+          </div>
+
+          <!-- Formulario para responder -->
+          <div class="respuesta-form" *ngIf="mostrarFormRespuesta[comentario.ID]">
+            <textarea
+              [(ngModel)]="respuestaTexto[comentario.ID]"
+              placeholder="Escribe tu respuesta..."
+              rows="3"
+              [disabled]="enviandoRespuesta[comentario.ID]"
+            ></textarea>
+            <div class="form-acciones">
+              <button
+                class="btn-cancelar"
+                (click)="toggleFormRespuesta(comentario.ID)"
+                [disabled]="enviandoRespuesta[comentario.ID]">
+                Cancelar
+              </button>
+              <button
+                class="btn-enviar-respuesta"
+                (click)="agregarRespuesta(comentario.ID)"
+                [disabled]="enviandoRespuesta[comentario.ID] || !respuestaTexto[comentario.ID]?.trim()">
+                <i class="fas" [ngClass]="enviandoRespuesta[comentario.ID] ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+                {{ enviandoRespuesta[comentario.ID] ? 'Enviando...' : 'Enviar' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Respuestas al comentario (thread) -->
+        <div class="respuestas-thread" *ngIf="comentario.respuestas && comentario.respuestas.length > 0">
+          <div class="respuesta-card" *ngFor="let respuesta of comentario.respuestas">
+            <div class="respuesta-header">
+              <div class="usuario-info">
+                <i class="fas" [ngClass]="respuesta.EsProfesor ? 'fa-chalkboard-teacher' : 'fa-user-graduate'"></i>
+                <strong>{{ respuesta.NombreUsuario }}</strong>
+                <span class="rol-badge" [ngClass]="respuesta.EsProfesor ? 'profesor' : 'alumno'">
+                  {{ respuesta.EsProfesor ? 'Profesor' : 'Alumno' }}
+                </span>
+              </div>
+              <span class="respuesta-fecha">
+                {{ formatearFecha(respuesta.FechaRespuesta) }}
+              </span>
+            </div>
+            <div class="respuesta-contenido">
+              <p>{{ respuesta.Respuesta }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Selector de estado -->
+    <div class="estado-section">
+      <h2>Estado de la Historia Clínica</h2>
+      <div class="estado-actual">
+        <span>Estado actual:</span>
+        <span class="estado-badge" [ngClass]="estadoActual.toLowerCase()">
+          {{ estadoActual }}
+        </span>
+      </div>
+
+      <div class="estado-selector">
+        <label for="estado">Cambiar estado:</label>
+        <select
+          id="estado"
+          [(ngModel)]="estadoSeleccionado"
+          [disabled]="cambiandoEstado || estadoActual === 'Nuevo'">
+          <option
+            *ngFor="let estado of estadosDisponibles"
+            [value]="estado.valor"
+            [disabled]="estado.valor === 'Revisión' && estadoActual !== 'Nuevo'">
+            {{ estado.valor }} ({{ estado.descripcion }})
+          </option>
+        </select>
+        <button
+          class="btn-cambiar-estado"
+          (click)="cambiarEstado()"
+          [disabled]="cambiandoEstado || estadoSeleccionado === estadoActual">
+          <i class="fas" [ngClass]="cambiandoEstado ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+          {{ cambiandoEstado ? 'Actualizando...' : 'Confirmar Cambio' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

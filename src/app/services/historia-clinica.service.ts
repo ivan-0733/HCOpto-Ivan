@@ -483,6 +483,18 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
       );
   }
 
+  /**
+   * Agregar comentario a una historia clínica
+   */
+  agregarComentario(historiaId: number, datos: any): Observable<any> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.apiUrl}/${historiaId}/comentarios`,
+      datos
+    ).pipe(
+      map(response => response.data)
+    );
+  }
+
   // Obtener estadísticas de historias clínicas
   obtenerEstadisticas(): Observable<EstadisticasHistorias> {
     return this.http.get<ApiResponse<EstadisticasHistorias>>(`${this.apiUrl}/estadisticas`)

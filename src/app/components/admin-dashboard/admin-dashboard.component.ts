@@ -106,10 +106,10 @@ export class AdminDashboardComponent implements OnInit {
             // MODIFICACIÓN: Filtrar materias solo del periodo activo
             if (this.periodoEscolar) {
               this.materias = this.todasLasMaterias.filter(m =>
-                !m.Archivado && m.PeriodoEscolar === this.periodoEscolar.Codigo
+                m.PeriodoEscolar === this.periodoEscolar.Codigo
               );
             } else {
-              this.materias = this.todasLasMaterias.filter(m => !m.Archivado);
+              this.materias = this.todasLasMaterias;
             }
 
             this.contarHistoriasPorMateria();
@@ -137,7 +137,7 @@ export class AdminDashboardComponent implements OnInit {
           next: (response) => {
             this.historiasClinicas = response.data.historias;
             this.todasLasMaterias = this.extraerMaterias(this.historiasClinicas);
-            this.materias = this.todasLasMaterias.filter(m => !m.Archivado);
+            this.materias = this.todasLasMaterias;
 
             this.contarHistoriasPorMateria();
             this.calcularEstadisticasPorMateria();
@@ -494,14 +494,14 @@ export class AdminDashboardComponent implements OnInit {
       // MODIFICACIÓN: Filtrar por periodo activo
       if (this.periodoEscolar) {
         this.materias = this.todasLasMaterias.filter(m =>
-          !m.Archivado && m.PeriodoEscolar === this.periodoEscolar.Codigo
+          m.PeriodoEscolar === this.periodoEscolar.Codigo
         );
       } else {
-        this.materias = this.todasLasMaterias.filter(m => !m.Archivado);
+        this.materias = this.todasLasMaterias;
       }
 
       if (this.materiaSeleccionadaId) {
-        const materiaSeleccionada = this.materias.find(m => m.ID === this.materiaSeleccionadaId);
+        const materiaSeleccionada = this.materias.find(m => m.MateriaProfesorID === this.materiaSeleccionadaId);
         if (!materiaSeleccionada) {
           this.materiaSeleccionadaId = null;
           this.actualizarEstadisticas();
@@ -717,16 +717,23 @@ export class AdminDashboardComponent implements OnInit {
       if (!materiasMap.has(h.MateriaProfesorID)) {
         materiasMap.set(h.MateriaProfesorID, {
           MateriaProfesorID: h.MateriaProfesorID,
-          ID: h.MateriaProfesorID,
+          MateriaID: h.MateriaProfesorID, // Usar el mismo ID
+          Codigo: h.ClaveMateria,
           NombreMateria: h.NombreMateria,
-          Clave: h.ClaveMateria,
+          Semestre: h.SemestreActual || 0, // Usar SemestreActual del alumno
+          EjeFormativo: undefined,
+          Descripcion: undefined,
+          Grupo: h.GrupoMateria || 'N/A',
           PeriodoEscolar: h.PeriodoEscolar,
-          Archivado: h.MateriaArchivada,
-          NumeroEmpleado: h.NumeroEmpleado,
+          EsActual: true, // Por defecto true
+          Turno: 'Matutino', // Valor por defecto
           NombreProfesor: h.NombreProfesor,
-          Grupo: h.GrupoMateria || 'N/A', // <- CAMBIO AQUÍ
-          TotalAlumnos: 0,
-          TotalHistorias: 0
+          NumeroEmpleado: h.NumeroEmpleado,
+          ProfesorInfoID: 0, // No disponible en HistoriaClinicaAdmin
+          FechaAsignacion: h.FechaCreacion, // Usar fecha de creación como aproximación
+          CantidadAlumnos: 0,
+          CantidadHistorias: 0,
+          Alumnos: [] // Array vacío
         });
       }
     });

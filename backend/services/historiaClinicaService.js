@@ -350,12 +350,19 @@ else if (table === 'Recomendaciones' && results.length > 0) {
       comentarios.map(async (comentario) => {
         try {
           const [respuestas] = await db.query(
-            `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-              FROM RespuestasComentarios rc
-              JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-              JOIN Usuarios u ON a.UsuarioID = u.ID
-              WHERE rc.ComentarioID = ?
-              ORDER BY rc.FechaRespuesta`,
+            `SELECT rc.*,
+              u.NombreUsuario,
+              CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreCompleto,
+              CASE
+                WHEN pi.ID IS NOT NULL THEN TRUE
+                ELSE FALSE
+              END AS EsProfesor
+        FROM RespuestasComentarios rc
+        JOIN Usuarios u ON rc.UsuarioID = u.ID
+        LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+        LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+        WHERE rc.ComentarioID = ?
+        ORDER BY rc.FechaRespuesta ASC`,
             [comentario.ID]
           );
           return { ...comentario, respuestas };
@@ -1921,55 +1928,63 @@ case 'recomendaciones':
  * @param {string} respuesta - Texto de la respuesta
  * @returns {Promise<Object>} - Respuesta creada
  */
-async responderComentario(comentarioId, alumnoId, respuesta) {
-try {
-  // Verificar que el comentario exista
-  const [comentarios] = await db.query(
-  `SELECT cp.*, hc.Archivado, hc.AlumnoID
-      FROM ComentariosProfesor cp
-      JOIN HistorialesClinicos hc ON cp.HistorialID = hc.ID
-      WHERE cp.ID = ?`,
-  [comentarioId]
-  );
+responderComentario: async (historiaId, comentarioId, alumnoId, respuesta, usuarioId) => {
+  try {
+    // Verificar que el comentario pertenece a esta historia
+    const [comentarios] = await db.query(
+      `SELECT cp.*, hc.Archivado, hc.AlumnoID
+       FROM ComentariosProfesor cp
+       JOIN HistorialesClinicos hc ON cp.HistorialID = hc.ID
+       WHERE cp.ID = ? AND cp.HistorialID = ?`,
+      [comentarioId, historiaId]
+    );
 
-  if (comentarios.length === 0) {
-  throw new Error('El comentario no existe');
+    if (comentarios.length === 0) {
+      throw new Error('Comentario no encontrado');
+    }
+
+    const comentario = comentarios[0];
+
+    // Verificar que la historia no esté archivada
+    if (comentario.Archivado) {
+      throw new Error('No se puede responder a un comentario en una historia archivada');
+    }
+
+    // Verificar que el alumno sea el propietario de la historia
+    if (comentario.AlumnoID !== alumnoId) {
+      throw new Error('No tienes permiso para responder a este comentario');
+    }
+
+    // Crear la respuesta - USAR USUARIOID
+    const [resultado] = await db.query(
+      `INSERT INTO RespuestasComentarios (ComentarioID, UsuarioID, Respuesta)
+       VALUES (?, ?, ?)`,
+      [comentarioId, usuarioId, respuesta]
+    );
+
+    // Obtener la respuesta creada - JOIN CORRECTO
+    const [respuestas] = await db.query(
+      `SELECT
+         rc.*,
+         u.NombreUsuario,
+         CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) AS NombreCompleto,
+         CASE
+           WHEN pi.ID IS NOT NULL THEN TRUE
+           ELSE FALSE
+         END AS EsProfesor
+       FROM RespuestasComentarios rc
+       JOIN Usuarios u ON rc.UsuarioID = u.ID
+       LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+       LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+       WHERE rc.ID = ?`,
+      [resultado.insertId]
+    );
+
+    return respuestas[0];
+  } catch (error) {
+    console.error('Error al responder comentario:', error);
+    throw error;
   }
-
-  const comentario = comentarios[0];
-
-  // Verificar que la historia no esté archivada
-  if (comentario.Archivado) {
-  throw new Error('No se puede responder a un comentario en una historia archivada');
-  }
-
-  // Verificar que el alumno sea el propietario de la historia
-  if (comentario.AlumnoID !== alumnoId) {
-  throw new Error('No tienes permiso para responder a este comentario');
-  }
-
-  // Crear la respuesta
-  const [resultado] = await db.query(
-  `INSERT INTO RespuestasComentarios (ComentarioID, AlumnoID, Respuesta)
-      VALUES (?, ?, ?)`,
-  [comentarioId, alumnoId, respuesta]
-  );
-
-  // Obtener la respuesta creada
-  const [respuestas] = await db.query(
-  `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-      FROM RespuestasComentarios rc
-      JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-      JOIN Usuarios u ON a.UsuarioID = u.ID
-      WHERE rc.ID = ?`,
-  [resultado.insertId]
-  );
-
-  return respuestas[0];
-} catch (error) {
-  console.error('Error al responder comentario:', error);
-  throw error;
-}
 },
 
 /**
@@ -2456,12 +2471,19 @@ await Promise.all([
       comentarios.map(async (comentario) => {
         try {
           const [respuestas] = await db.query(
-            `SELECT rc.*, u.NombreUsuario AS AlumnoNombre
-              FROM RespuestasComentarios rc
-              JOIN AlumnosInfo a ON rc.AlumnoID = a.ID
-              JOIN Usuarios u ON a.UsuarioID = u.ID
-              WHERE rc.ComentarioID = ?
-              ORDER BY rc.FechaRespuesta`,
+            `SELECT rc.*,
+            u.NombreUsuario,
+            CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreCompleto,
+            CASE
+              WHEN pi.ID IS NOT NULL THEN TRUE
+              ELSE FALSE
+            END AS EsProfesor
+      FROM RespuestasComentarios rc
+      JOIN Usuarios u ON rc.UsuarioID = u.ID
+      LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+      LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+      WHERE rc.ComentarioID = ?
+      ORDER BY rc.FechaRespuesta ASC`,
             [comentario.ID]
           );
           return { ...comentario, respuestas };

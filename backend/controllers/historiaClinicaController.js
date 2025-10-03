@@ -168,6 +168,7 @@ responderComentario: catchAsync(async (req, res) => {
 const { id, comentarioId } = req.params;
 const { respuesta } = req.body;
 const alumnoId = req.usuario.AlumnoInfoID;
+const usuarioId = req.usuario.UsuarioID;
 
 if (!respuesta?.trim()) {
     return res.status(400).json({
@@ -177,9 +178,11 @@ if (!respuesta?.trim()) {
 }
 
 const respuestaCreada = await historiaClinicaService.responderComentario(
-    comentarioId,
-    alumnoId,
-    respuesta.trim()
+  id,              // ✅ historiaId
+  comentarioId,    // ✅ comentarioId
+  alumnoId,        // ✅ alumnoId
+  respuesta.trim(), // ✅ respuesta
+  usuarioId        // ✅ AGREGAR ESTE PARÁMETRO
 );
 
 res.status(201).json({

@@ -220,6 +220,16 @@
             </div>
           </div>
         </section>
+
+        <!-- Al final de CADA sección -->
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="1"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
       </div>
 
       <!-- Interrogatorio -->
@@ -273,6 +283,15 @@
             Agregar Interrogatorio
           </button>
         </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="2"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
       </div>
 
       <!-- Antecedente Visual -->
@@ -415,6 +434,15 @@
             Agregar Antecedente Visual
           </button>
         </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="3"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
       </div>
 
 <!-- Examen preliminar -->
@@ -570,6 +598,15 @@
       Agregar Examen Preliminar
     </button>
   </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="4"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
 </div>
 
     <!-- Estado Refractivo -->
@@ -776,6 +813,15 @@
       Agregar Estado Refractivo
     </button>
   </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="8"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
 </div>
 
 
@@ -1053,6 +1099,15 @@
       Agregar Binocularidad
     </button>
   </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="10"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
 </div>
 
   <!-- Detección de Alteraciones -->
@@ -1437,6 +1492,15 @@
       Agregar Detección de Alteraciones
     </button>
   </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="14"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
 </div>
 
 <!-- Sección de Diagnóstico en historia-clinica-detalle.component.html -->
@@ -1513,6 +1577,15 @@
       Agregar Diagnóstico
     </button>
   </div>
+
+<!-- Solo mostrar para Profesor y Admin -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="20"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
 </div>
 
       <!-- Receta Final -->
@@ -1594,6 +1667,15 @@
             Agregar Receta Final
           </button>
         </div>
+
+<!-- ✅ CORRECTO - con el *ngIf -->
+<div *ngIf="esProfesor || esAdmin">
+  <app-comentario-box
+    [historiaId]="historia.ID"
+    [seccionId]="24"
+    (comentarioAgregado)="onComentarioAgregado()">
+  </app-comentario-box>
+</div>
       </div>
 
       <!-- Comentarios del Profesor -->
@@ -1601,6 +1683,30 @@
         <section class="info-section">
           <h2>Comentarios del Profesor</h2>
 
+          <!-- ✅ NUEVO: Formulario para agregar comentarios (SOLO PROFESOR) -->
+          <div *ngIf="esProfesor || esAdmin" class="add-comment-section">
+            <h3>Agregar Nuevo Comentario</h3>
+            <div class="add-comment-form">
+              <label for="nuevoComentario">Comentario:</label>
+              <textarea
+                id="nuevoComentario"
+                [(ngModel)]="nuevoComentarioTexto"
+                placeholder="Escribe un comentario general sobre la historia clínica..."
+                rows="4"
+                class="form-control">
+              </textarea>
+
+              <button
+                class="btn-primary"
+                [disabled]="!nuevoComentarioTexto || nuevoComentarioTexto.trim().length === 0"
+                (click)="agregarComentarioGeneral()">
+                <i class="fas fa-comment-medical"></i>
+                Agregar Comentario General
+              </button>
+            </div>
+          </div>
+
+          <!-- Comentarios existentes -->
           <div *ngIf="!historia.comentarios || historia.comentarios.length === 0" class="no-comments">
             <i class="fas fa-comments"></i>
             <p>No hay comentarios del profesor para esta historia clínica.</p>
@@ -1608,27 +1714,38 @@
 
           <div *ngIf="historia.comentarios && historia.comentarios.length > 0" class="comments-list">
             <div *ngFor="let comentario of historia.comentarios" class="comment-item">
+              <!-- Header del comentario -->
               <div class="comment-header">
                 <div class="comment-author">
                   <i class="fas fa-chalkboard-teacher"></i>
                   <span>{{ comentario.ProfesorNombre }}</span>
+                  <span class="badge-rol">Profesor</span>
                 </div>
                 <div class="comment-date">
                   {{ comentario.FechaComentario | date:'dd/MM/yyyy HH:mm' }}
                 </div>
               </div>
 
+              <!-- Cuerpo del comentario -->
               <div class="comment-body">
                 <p>{{ comentario.Comentario }}</p>
               </div>
 
-              <!-- Respuestas -->
+              <!-- Sección del comentario -->
+              <div class="comment-section">
+                <span class="badge-seccion">{{ obtenerNombreSeccion(comentario.SeccionID) }}</span>
+              </div>
+
+              <!-- Respuestas existentes -->
               <div *ngIf="comentario.respuestas && comentario.respuestas.length > 0" class="comment-replies">
                 <div *ngFor="let respuesta of comentario.respuestas" class="reply-item">
                   <div class="reply-header">
                     <div class="reply-author">
-                      <i class="fas fa-user-graduate"></i>
-                      <span>{{ respuesta.AlumnoNombre }}</span>
+                      <i [class]="respuesta.EsProfesor ? 'fas fa-chalkboard-teacher' : 'fas fa-user-graduate'"></i>
+                      <span>{{ respuesta.NombreCompleto || respuesta.NombreUsuario }}</span>
+                      <span class="badge-rol" [class.profesor]="respuesta.EsProfesor">
+                        {{ respuesta.EsProfesor ? 'Profesor' : 'Alumno' }}
+                      </span>
                     </div>
                     <div class="reply-date">
                       {{ respuesta.FechaRespuesta | date:'dd/MM/yyyy HH:mm' }}
@@ -1641,10 +1758,19 @@
                 </div>
               </div>
 
-              <!-- Formulario de respuesta -->
-              <div *ngIf="!historia.Archivado && historia.Estado !== 'Finalizado' && (!comentario.respuestas || comentario.respuestas.length === 0)" class="reply-form">
-                <textarea placeholder="Escribe tu respuesta al comentario..." #respuesta></textarea>
-                <button class="btn-primary" (click)="responderComentario(comentario.ID, respuesta.value)">
+              <!-- Formulario de respuesta (SOLO para alumno) -->
+              <div *ngIf="esAlumno && !historia.Archivado && historia.Estado !== 'Finalizado'" class="reply-form">
+                <textarea
+                  [(ngModel)]="comentario.nuevaRespuesta"
+                  (input)="validarRespuesta(comentario)"
+                  placeholder="Escribe tu respuesta al comentario..."
+                  rows="3"
+                  class="form-control">
+                </textarea>
+                <button
+                  class="btn-primary"
+                  [disabled]="!comentario.respuestaValida"
+                  (click)="responderComentario(comentario)">
                   <i class="fas fa-reply"></i>
                   Responder
                 </button>

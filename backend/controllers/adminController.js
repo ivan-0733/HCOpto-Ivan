@@ -286,6 +286,108 @@ verificarAlumnoTieneHistorias: catchAsync(async (req, res) => {
   });
 }),
 
+// ==================== GESTIÓN DE MATERIAS ====================
+
+obtenerTodasMateriasAdmin: catchAsync(async (req, res) => {
+  const materias = await adminService.obtenerTodasMateriasAdmin();
+
+  res.status(200).json({
+    status: 'success',
+    data: { materias }
+  });
+}),
+
+crearMateriaProfesor: catchAsync(async (req, res) => {
+  const nuevaMateria = await adminService.crearMateriaProfesor(req.body);
+
+  res.status(201).json({
+    status: 'success',
+    data: { materia: nuevaMateria }
+  });
+}),
+
+verificarMateriaProfesorTieneHistorias: catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const resultado = await adminService.verificarMateriaProfesorTieneHistorias(id);
+
+  res.status(200).json({
+    status: 'success',
+    data: resultado
+  });
+}),
+
+eliminarMateriaProfesor: catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const resultado = await adminService.eliminarMateriaProfesor(id);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Materia eliminada correctamente',
+    data: resultado
+  });
+}),
+
+buscarProfesoresDisponibles: catchAsync(async (req, res) => {
+  const { termino } = req.query;
+  const profesores = await adminService.buscarProfesoresDisponibles(termino);
+
+  res.status(200).json({
+    status: 'success',
+    data: { profesores }
+  });
+}),
+
+obtenerCatalogoMaterias: catchAsync(async (req, res) => {
+  const materias = await adminService.obtenerCatalogoMaterias();
+
+  res.status(200).json({
+    status: 'success',
+    data: { materias }
+  });
+}),
+
+inscribirAlumnoAMateria: catchAsync(async (req, res) => {
+  const resultado = await adminService.inscribirAlumnoAMateria(req.body);
+
+  res.status(201).json({
+    status: 'success',
+    message: 'Alumno inscrito exitosamente',
+    data: resultado
+  });
+}),
+
+buscarMateriasDisponibles: catchAsync(async (req, res) => {
+  const { termino } = req.query;
+  const materias = await adminService.buscarMateriasDisponibles(termino);
+
+  res.status(200).json({
+    status: 'success',
+    data: { materias }
+  });
+}),
+
+// ==================== 9. Backend - adminController.js (AGREGAR este controlador) ====================
+
+buscarAlumnosDisponibles: catchAsync(async (req, res) => {
+  const { termino } = req.query;
+  const alumnos = await adminService.buscarAlumnosDisponibles(termino);
+
+  res.status(200).json({
+    status: 'success',
+    data: { alumnos }
+  });
+}),
+
+eliminarAlumnoDeMateriaAdmin: catchAsync(async (req, res) => {
+  const resultado = await adminService.eliminarAlumnoDeMateriaAdmin(req.body);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Alumno eliminado de la materia exitosamente',
+    data: resultado
+  });
+}),
+
   /**
    * Obtener perfil del admin
    */

@@ -34,6 +34,15 @@ export interface HistoriaClinicaAdmin {
   Consultorio?: string;
 }
 
+export interface MateriaDisponible {
+  ID: number;
+  Codigo: string;
+  Nombre: string;
+  Semestre: number;
+  EjeFormativo?: string;
+  Descripcion?: string;
+}
+
 export interface ProfesorAdmin {
   ID: number;
   NumeroEmpleado: string;
@@ -59,17 +68,23 @@ export interface EstadisticasAdmin {
 
 export interface MateriaAdmin {
   MateriaProfesorID: number;
-  ID: number;
+  MateriaID: number;
+  Codigo: string;
   NombreMateria: string;
-  Clave: string;
-  PeriodoEscolar: string;
-  EsActual?: boolean; // <<<<<<<<<<<<<<< ESTA ES LA LÍNEA CLAVE AÑADIDA
+  Semestre: number;
+  EjeFormativo?: string;
+  Descripcion?: string;
   Grupo: string;
-  Archivado: boolean;
-  NumeroEmpleado: string;
+  PeriodoEscolar: string;
+  EsActual: boolean;
+  Turno: string;
   NombreProfesor: string;
-  TotalAlumnos: number;
-  TotalHistorias: number;
+  NumeroEmpleado: string;
+  ProfesorInfoID: number;
+  FechaAsignacion: string;
+  CantidadAlumnos: number;
+  CantidadHistorias: number;
+  Alumnos?: AlumnoAsignado[];
 }
 
 export interface AlumnoAdmin {
@@ -102,6 +117,36 @@ export interface AdminPerfil {
   FechaCreacion: string;
   FechaUltimoAcceso: string;
   Rol: string;
+}
+
+export interface AlumnoAsignado {
+  AlumnoInfoID: number;
+  NumeroBoleta: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+  CorreoElectronico: string;
+  TelefonoCelular?: string;
+  FechaInscripcion: string;
+}
+
+export interface ProfesorDisponible {
+  ProfesorInfoID: number;
+  NumeroEmpleado: string;
+  Nombre: string;
+  ApellidoPaterno: string;
+  ApellidoMaterno: string;
+  CorreoElectronico: string;
+  TelefonoCelular?: string;
+}
+
+export interface CatalogoMateria {
+  ID: number;
+  Codigo: string;
+  Nombre: string;
+  Semestre: number;
+  EjeFormativo?: string;
+  Descripcion?: string;
 }
 
 @Injectable({
@@ -183,6 +228,14 @@ export class AdminService {
     );
   }
 
+  buscarMateriasDisponibles(termino: string): Observable<MateriaDisponible[]> {
+    return this.http.get<any>(`${this.apiUrl}/materias-disponibles`, {
+      params: { termino }
+    }).pipe(
+      map(response => response.data.materias || [])
+    );
+  }
+
   obtenerTodosAlumnos(): Observable<{ status: string; data: { alumnos: AlumnoAdmin[] } }> {
     return this.http.get<{ status: string; data: { alumnos: AlumnoAdmin[] } }>(`${this.apiUrl}/alumnos`);
   }
@@ -228,6 +281,54 @@ export class AdminService {
   eliminarAlumno(alumnoId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/alumnos/${alumnoId}`);
   }
+
+  // Gestión de Materias
+obtenerTodasMateriasAdmin(): Observable<{ status: string; data: { materias: MateriaAdmin[] } }> {
+  return this.http.get<{ status: string; data: { materias: MateriaAdmin[] } }>(`${this.apiUrl}/materias-admin`);
+}
+
+crearMateriaProfesor(nuevaMateria: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/materias-admin/crear`, nuevaMateria);
+}
+
+verificarMateriaProfesorTieneHistorias(materiaProfesorId: number): Observable<{ tieneHistorias: boolean; cantidad: number }> {
+  return this.http.get<any>(`${this.apiUrl}/materias-admin/${materiaProfesorId}/verificar-historias`);
+}
+
+eliminarMateriaProfesor(materiaProfesorId: number): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/materias-admin/${materiaProfesorId}`);
+}
+
+buscarProfesoresDisponibles(termino: string): Observable<ProfesorDisponible[]> {
+  return this.http.get<any>(`${this.apiUrl}/profesores-disponibles`, {
+    params: { termino }
+  }).pipe(
+    map(response => response.data.profesores || [])
+  );
+}
+
+obtenerCatalogoMaterias(): Observable<CatalogoMateria[]> {
+  return this.http.get<any>(`${this.apiUrl}/catalogo-materias`).pipe(
+    map(response => response.data.materias || [])
+  );
+}
+
+inscribirAlumnoAMateria(datos: any): Observable<any> {
+  return this.http.post(`${this.apiUrl}/materias-admin/inscribir-alumno`, datos);
+}
+
+eliminarAlumnoDeMateriaAdmin(datos: any): Observable<any> {
+  return this.http.delete(`${this.apiUrl}/materias-admin/eliminar-alumno`, { body: datos });
+}
+
+buscarAlumnosDisponibles(termino: string): Observable<any[]> {
+  return this.http.get<any>(`${this.apiUrl}/alumnos-disponibles`, {
+    params: { termino }
+  }).pipe(
+    map(response => response.data?.alumnos || []),
+    catchError(() => of([]))
+  );
+}
 
   verificarAlumnoTieneHistorias(alumnoId: number): Observable<{ tieneHistorias: boolean; cantidad: number }> {
     return this.http.get<any>(`${this.apiUrl}/alumnos/${alumnoId}/verificar-historias`);

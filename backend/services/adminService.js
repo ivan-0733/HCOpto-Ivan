@@ -831,6 +831,398 @@ async eliminarAlumno(alumnoId) {
   }
 },
 
+// ==================== GESTIÓN DE MATERIAS ====================
+
+async obtenerTodasMateriasAdmin() {
+  try {
+    const query = `
+      SELECT
+        mp.ID as MateriaProfesorID,
+        m.ID as MateriaID,
+        m.Codigo,
+        m.Nombre as NombreMateria,
+        m.Semestre,
+        m.EjeFormativo,
+        m.Descripcion,
+        mp.Grupo,
+        pe.Codigo as PeriodoEscolar,
+        pe.EsActual,
+        turno.Valor as Turno,
+        CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
+        pi.NumeroEmpleado,
+        pi.ID as ProfesorInfoID,
+        mp.FechaAsignacion,
+        COUNT(DISTINCT ma.AlumnoInfoID) as CantidadAlumnos,
+        COUNT(DISTINCT hc.ID) as CantidadHistorias
+      FROM MateriasProfesor mp
+      INNER JOIN Materias m ON mp.MateriaID = m.ID
+      INNER JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+      INNER JOIN PeriodosEscolares pe ON mp.PeriodoEscolarID = pe.ID
+      INNER JOIN CatalogosGenerales turno ON mp.TurnoID = turno.ID
+      LEFT JOIN MateriasAlumno ma ON mp.ID = ma.MateriaProfesorID
+      LEFT JOIN HistorialesClinicos hc ON mp.ID = hc.MateriaProfesorID
+      WHERE turno.TipoCatalogo = 'TURNO'
+        AND pe.EsActual = TRUE  -- Solo período activo
+      GROUP BY mp.ID
+      ORDER BY m.Nombre ASC
+    `;
+
+    const [materias] = await db.query(query);
+
+    // Para cada materia, obtener sus alumnos
+    for (let materia of materias) {
+      const [alumnos] = await db.query(`
+        SELECT
+          ai.ID as AlumnoInfoID,
+          ai.NumeroBoleta,
+          ai.Nombre,
+          ai.ApellidoPaterno,
+          ai.ApellidoMaterno,
+          u.CorreoElectronico,
+          u.TelefonoCelular,
+          ma.FechaInscripcion
+        FROM MateriasAlumno ma
+        INNER JOIN AlumnosInfo ai ON ma.AlumnoInfoID = ai.ID
+        INNER JOIN Usuarios u ON ai.UsuarioID = u.ID
+        WHERE ma.MateriaProfesorID = ?
+        ORDER BY ai.ApellidoPaterno, ai.ApellidoMaterno, ai.Nombre
+      `, [materia.MateriaProfesorID]);
+
+      materia.Alumnos = alumnos;
+    }
+
+    return materias;
+  } catch (error) {
+    console.error('Error al obtener materias admin:', error);
+    throw new AppError('Error al obtener materias', 500);
+  }
+},
+
+async crearMateriaProfesor(datos) {
+  try {
+    // 1. Verificar que el profesor existe
+    const [profesor] = await db.query(
+      'SELECT ID FROM ProfesoresInfo WHERE ID = ?',
+      [datos.profesorInfoId]
+    );
+
+    if (profesor.length === 0) {
+      throw new AppError('Profesor no encontrado', 404);
+    }
+
+    let materiaId;
+
+    // 2. Verificar si se está usando una materia existente o creando una nueva
+    if (datos.materiaExistenteId) {
+      // Usar materia existente
+      materiaId = datos.materiaExistenteId;
+
+      const [materiaExiste] = await db.query(
+        'SELECT ID FROM Materias WHERE ID = ?',
+        [materiaId]
+      );
+
+      if (materiaExiste.length === 0) {
+        throw new AppError('Materia no encontrada', 404);
+      }
+    } else {
+      // Crear nueva materia
+      if (!datos.codigoMateria || !datos.nombreMateria || !datos.semestre) {
+        throw new AppError('Faltan datos obligatorios para crear la materia', 400);
+      }
+
+      // Verificar que el código no exista
+      const [codigoExiste] = await db.query(
+        'SELECT ID FROM Materias WHERE Codigo = ?',
+        [datos.codigoMateria]
+      );
+
+      if (codigoExiste.length > 0) {
+        throw new AppError('Ya existe una materia con este código', 400);
+      }
+
+      const [resultMateria] = await db.query(
+        `INSERT INTO Materias (Codigo, Nombre, Semestre, EjeFormativo, Descripcion)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          datos.codigoMateria,
+          datos.nombreMateria,
+          datos.semestre,
+          datos.ejeFormativo || null,
+          datos.descripcion || null
+        ]
+      );
+
+      materiaId = resultMateria.insertId;
+    }
+
+    // 3. Obtener período escolar actual
+    const [periodoActual] = await db.query(
+      'SELECT ID FROM PeriodosEscolares WHERE EsActual = TRUE LIMIT 1'
+    );
+
+    if (periodoActual.length === 0) {
+      throw new AppError('No hay período escolar activo', 404);
+    }
+
+    const periodoEscolarId = periodoActual[0].ID;
+
+    // 4. Obtener ID del turno
+    const turnoFinal = datos.turno || 'Matutino';
+    const [turno] = await db.query(
+      "SELECT ID FROM CatalogosGenerales WHERE TipoCatalogo = 'TURNO' AND Valor = ?",
+      [turnoFinal]
+    );
+
+    if (turno.length === 0) {
+      throw new AppError('Turno no encontrado', 404);
+    }
+
+    const turnoId = turno[0].ID;
+
+    // 5. Verificar que no exista la misma combinación
+    const [existe] = await db.query(
+      `SELECT ID FROM MateriasProfesor
+       WHERE MateriaID = ? AND ProfesorInfoID = ?
+       AND PeriodoEscolarID = ? AND Grupo = ? AND TurnoID = ?`,
+      [materiaId, datos.profesorInfoId, periodoEscolarId, datos.grupo, turnoId]
+    );
+
+    if (existe.length > 0) {
+      throw new AppError('Esta combinación de materia-profesor-grupo-turno ya existe en este período', 400);
+    }
+
+    // 6. Crear MateriasProfesor
+    const [result] = await db.query(
+      `INSERT INTO MateriasProfesor
+       (MateriaID, ProfesorInfoID, PeriodoEscolarID, Grupo, TurnoID, FechaAsignacion)
+       VALUES (?, ?, ?, ?, ?, NOW())`,
+      [materiaId, datos.profesorInfoId, periodoEscolarId, datos.grupo, turnoId]
+    );
+
+    return {
+      ID: result.insertId,
+      MateriaID: materiaId,
+      ...datos
+    };
+  } catch (error) {
+    console.error('Error al crear materia-profesor:', error);
+
+    if (error.statusCode) {
+      throw error;
+    }
+
+    throw new AppError('Error al crear la asignación de materia', 500);
+  }
+},
+
+// AGREGAR este nuevo método:
+async buscarMateriasDisponibles(termino) {
+  try {
+    const query = `
+      SELECT
+        ID,
+        Codigo,
+        Nombre,
+        Semestre,
+        EjeFormativo,
+        Descripcion
+      FROM Materias
+      WHERE
+        Codigo LIKE ? OR
+        Nombre LIKE ? OR
+        Semestre LIKE ?
+      ORDER BY Semestre, Nombre
+      LIMIT 10
+    `;
+
+    const searchTerm = `%${termino}%`;
+    const [materias] = await db.query(query, [searchTerm, searchTerm, searchTerm]);
+
+    return materias;
+  } catch (error) {
+    console.error('Error al buscar materias:', error);
+    throw new AppError('Error al buscar materias', 500);
+  }
+},
+
+async verificarMateriaProfesorTieneHistorias(materiaProfesorId) {
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as cantidad FROM HistorialesClinicos WHERE MateriaProfesorID = ?',
+      [materiaProfesorId]
+    );
+
+    const cantidad = result[0].cantidad;
+    return {
+      tieneHistorias: cantidad > 0,
+      cantidad: cantidad
+    };
+  } catch (error) {
+    console.error('Error al verificar historias de materia:', error);
+    throw new AppError('Error al verificar historias', 500);
+  }
+},
+
+async eliminarMateriaProfesor(materiaProfesorId) {
+  try {
+    // 1. Verificar que no tenga historias
+    const verificacion = await this.verificarMateriaProfesorTieneHistorias(materiaProfesorId);
+    if (verificacion.tieneHistorias) {
+      throw new AppError('No se puede eliminar una materia con historias clínicas asociadas', 400);
+    }
+
+    // 2. Eliminar inscripciones de alumnos
+    await db.query('DELETE FROM MateriasAlumno WHERE MateriaProfesorID = ?', [materiaProfesorId]);
+
+    // 3. Eliminar la materia-profesor
+    const [result] = await db.query(
+      'DELETE FROM MateriasProfesor WHERE ID = ?',
+      [materiaProfesorId]
+    );
+
+    if (result.affectedRows === 0) {
+      throw new AppError('Materia no encontrada', 404);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error al eliminar materia-profesor:', error);
+    throw error;
+  }
+},
+
+async buscarProfesoresDisponibles(termino) {
+  try {
+    const query = `
+      SELECT
+        pi.ID as ProfesorInfoID,
+        pi.NumeroEmpleado,
+        pi.Nombre,
+        pi.ApellidoPaterno,
+        pi.ApellidoMaterno,
+        u.CorreoElectronico,
+        u.TelefonoCelular
+      FROM ProfesoresInfo pi
+      INNER JOIN Usuarios u ON pi.UsuarioID = u.ID
+      WHERE u.EstaActivo = TRUE
+      AND (
+        CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) LIKE ?
+        OR pi.NumeroEmpleado LIKE ?
+        OR u.CorreoElectronico LIKE ?
+      )
+      ORDER BY pi.ApellidoPaterno, pi.ApellidoMaterno, pi.Nombre
+      LIMIT 10
+    `;
+
+    const searchTerm = `%${termino}%`;
+    const [profesores] = await db.query(query, [searchTerm, searchTerm, searchTerm]);
+
+    return profesores;
+  } catch (error) {
+    console.error('Error al buscar profesores:', error);
+    throw new AppError('Error al buscar profesores', 500);
+  }
+},
+
+async obtenerCatalogoMaterias() {
+  try {
+    const [materias] = await db.query(`
+      SELECT
+        ID,
+        Codigo,
+        Nombre,
+        Semestre,
+        EjeFormativo,
+        Descripcion
+      FROM Materias
+      ORDER BY Semestre, Nombre
+    `);
+
+    return materias;
+  } catch (error) {
+    console.error('Error al obtener catálogo de materias:', error);
+    throw new AppError('Error al obtener catálogo de materias', 500);
+  }
+},
+
+// Agregar alumno a materia (reutilizar del profesor service)
+async inscribirAlumnoAMateria(datos) {
+  try {
+    // Verificar que el alumno no esté ya inscrito
+    const [yaInscrito] = await db.query(
+      'SELECT ID FROM MateriasAlumno WHERE AlumnoInfoID = ? AND MateriaProfesorID = ?',
+      [datos.alumnoInfoId, datos.materiaProfesorId]
+    );
+
+    if (yaInscrito.length > 0) {
+      throw new AppError('El alumno ya está inscrito en esta materia', 400);
+    }
+
+    // Inscribir al alumno
+    const [result] = await db.query(
+      'INSERT INTO MateriasAlumno (AlumnoInfoID, MateriaProfesorID, FechaInscripcion) VALUES (?, ?, NOW())',
+      [datos.alumnoInfoId, datos.materiaProfesorId]
+    );
+
+    return { success: true, inscripcionId: result.insertId };
+  } catch (error) {
+    console.error('Error al inscribir alumno:', error);
+    throw error.statusCode ? error : new AppError('Error al inscribir alumno', 500);
+  }
+},
+
+async eliminarAlumnoDeMateriaAdmin(datos) {
+  try {
+    const [result] = await db.query(
+      'DELETE FROM MateriasAlumno WHERE AlumnoInfoID = ? AND MateriaProfesorID = ?',
+      [datos.alumnoInfoId, datos.materiaProfesorId]
+    );
+
+    if (result.affectedRows === 0) {
+      throw new AppError('No se encontró la inscripción', 404);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error al eliminar alumno de materia:', error);
+    throw error.statusCode ? error : new AppError('Error al eliminar alumno de materia', 500);
+  }
+},
+
+async buscarAlumnosDisponibles(termino) {
+  try {
+    const query = `
+      SELECT
+        ai.ID as AlumnoInfoID,
+        ai.NumeroBoleta,
+        ai.Nombre,
+        ai.ApellidoPaterno,
+        ai.ApellidoMaterno,
+        u.CorreoElectronico,
+        u.TelefonoCelular
+      FROM AlumnosInfo ai
+      INNER JOIN Usuarios u ON ai.UsuarioID = u.ID
+      WHERE u.EstaActivo = TRUE
+      AND (
+        CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) LIKE ?
+        OR ai.NumeroBoleta LIKE ?
+        OR u.CorreoElectronico LIKE ?
+      )
+      ORDER BY ai.ApellidoPaterno, ai.ApellidoMaterno, ai.Nombre
+      LIMIT 10
+    `;
+
+    const searchTerm = `%${termino}%`;
+    const [alumnos] = await db.query(query, [searchTerm, searchTerm, searchTerm]);
+
+    return alumnos;
+  } catch (error) {
+    console.error('Error al buscar alumnos:', error);
+    throw new AppError('Error al buscar alumnos', 500);
+  }
+},
+
   /**
    * Obtener perfil del administrador
    */

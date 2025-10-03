@@ -1,0 +1,25 @@
+<div class="comentario-box">
+  <h3>Agregar Comentario</h3>
+
+  <!-- Mensaje de éxito -->
+  <div class="mensaje-exito" *ngIf="mensajeExito">
+    <i class="fas fa-check-circle"></i>
+    ¡Comentario agregado exitosamente!
+  </div>
+
+  <div class="comentario-form">
+    <textarea
+      [(ngModel)]="nuevoComentario"
+      placeholder="Escribe tu comentario aquí..."
+      rows="4"
+      [disabled]="enviandoComentario"
+    ></textarea>
+    <button
+      class="btn-enviar"
+      (click)="agregarComentario()"
+      [disabled]="enviandoComentario || !nuevoComentario.trim()">
+      <i class="fas" [ngClass]="enviandoComentario ? 'fa-spinner fa-spin' : 'fa-paper-plane'"></i>
+      {{ enviandoComentario ? 'Enviando...' : 'Enviar Comentario' }}
+    </button>
+  </div>
+</div>

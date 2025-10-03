@@ -51,6 +51,28 @@ export interface AlumnoAsignado {
   TelefonoCelular?: string;
 }
 
+export interface ComentarioConRespuestas {
+  ID: number;
+  HistorialID: number;
+  ProfesorID: number;
+  NombreUsuario: string;
+  Comentario: string;
+  FechaCreacion: string;
+  SeccionID: number | null;
+  SeccionNombre: string | null;
+  respuestas?: RespuestaComentario[];
+}
+
+export interface RespuestaComentario {
+  ID: number;
+  ComentarioID: number;
+  UsuarioID: number;
+  NombreUsuario: string;
+  Respuesta: string;
+  FechaRespuesta: string;
+  EsProfesor: boolean;
+}
+
 export interface MateriaProfesorConAlumnos extends MateriaProfesor {
   Alumnos?: AlumnoAsignado[]; // Usar tu interface existente
   FechaAsignacion?: string;
@@ -171,6 +193,34 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinica> {
       .pipe(
         map(response => response.data || [])
       );
+  }
+
+  agregarComentario(historiaId: number, comentario: string, seccionId?: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/comentarios`, {
+      historiaId,
+      comentario,
+      seccionId
+    });
+  }
+
+  obtenerComentariosConRespuestas(historiaId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/comentarios/${historiaId}/con-respuestas`);
+  }
+
+  agregarRespuesta(comentarioId: number, respuesta: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/comentarios/${comentarioId}/responder`, {
+      respuesta
+    });
+  }
+
+  obtenerEstadoHistoria(historiaId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/historias/${historiaId}/estado`);
+  }
+
+  cambiarEstadoHistoria(historiaId: number, nuevoEstado: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/historias/${historiaId}/estado`, {
+      estado: nuevoEstado
+    });
   }
 
   // Obtener período escolar actual

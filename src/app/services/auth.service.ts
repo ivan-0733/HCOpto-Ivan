@@ -141,20 +141,48 @@ export class AuthService {
   }
 
   // Nuevo método para actualizar los datos del usuario en memoria y localStorage
-  updateUserData(userData: Partial<Usuario>): void {
-    if (!this.isBrowser || !this.currentUserValue) {
-      return;
-    }
-
-    const updatedUser = {
-      ...this.currentUserValue,
-      ...userData
-    };
-
-    // Actualizar en localStorage
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-
-    // Actualizar el BehaviorSubject para notificar a todos los componentes suscritos
-    this.currentUserSubject.next(updatedUser);
+// Método existente
+updateUserData(userData: Partial<Usuario>): void {
+  if (!this.isBrowser || !this.currentUserValue) {
+    return;
   }
+
+  const updatedUser = {
+    ...this.currentUserValue,
+    ...userData
+  };
+
+  // Actualizar en localStorage
+  localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+  // Actualizar el BehaviorSubject para notificar a todos los componentes suscritos
+  this.currentUserSubject.next(updatedUser);
+}
+
+// ✅ NUEVOS MÉTODOS
+/**
+ * Obtiene el rol del usuario actual
+ */
+getUserRole(): string {
+  const user = this.currentUserValue;
+
+  if (!user) {
+    return '';
+  }
+
+  // El rol está almacenado en la propiedad 'rol' del usuario
+  return user.rol || '';
+}
+
+/**
+ * Obtiene el usuario actual desde localStorage
+ */
+getUsuarioActual(): Usuario | null {
+  if (!this.isBrowser) {
+    return null;
+  }
+
+  const userStr = localStorage.getItem('currentUser');
+  return userStr ? JSON.parse(userStr) : null;
+}
 }
