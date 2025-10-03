@@ -110,6 +110,7 @@ try {
         a.Nombre AS AlumnoNombre,
         a.ApellidoPaterno AS AlumnoApellidoPaterno,
         a.ApellidoMaterno AS AlumnoApellidoMaterno,
+        a.NumeroBoleta AS AlumnoBoleta,
 
         -- Datos del Profesor desde ProfesoresInfo
         pr.Nombre AS ProfesorNombre,
@@ -2233,6 +2234,7 @@ async obtenerHistoriaClinicaPorIdProfesor(id, profesorId) {
         a.Nombre AS AlumnoNombre,
         a.ApellidoPaterno AS AlumnoApellidoPaterno,
         a.ApellidoMaterno AS AlumnoApellidoMaterno,
+        a.NumeroBoleta AS AlumnoBoleta,
 
         -- Datos del Profesor desde ProfesoresInfo
         pr.Nombre AS ProfesorNombre,
