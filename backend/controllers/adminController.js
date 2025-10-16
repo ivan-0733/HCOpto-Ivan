@@ -388,6 +388,29 @@ eliminarAlumnoDeMateriaAdmin: catchAsync(async (req, res) => {
   });
 }),
 
+/**
+ * Actualizar historia completa (para admin)
+ */
+actualizarHistoriaCompleta: catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const datosHistoriaCompleta = {
+    historiaId: parseInt(id),
+    datosGenerales: req.body.datosGenerales,
+    secciones: req.body.secciones
+  };
+
+  console.log('📝 Admin actualizando historia completa:', id);
+
+  const historiaClinicaService = require('../services/historiaClinicaService');
+  const historiaActualizada = await historiaClinicaService.actualizarHistoriaCompleta(datosHistoriaCompleta);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Historia clínica actualizada correctamente',
+    data: historiaActualizada
+  });
+}),
+
   /**
    * Obtener perfil del admin
    */

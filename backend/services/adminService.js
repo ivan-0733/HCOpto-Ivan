@@ -316,17 +316,195 @@ const adminService = {
     }
   },
 
-  // En backend/services/adminService.js - AGREGAR:
-  async obtenerHistoriaDetalle(historiaId) {
-    try {
-      // Reutilizar la query del servicio de historia clínica o crear una propia
-      const historiaClinicaService = require('./historiaClinicaService');
-      return await historiaClinicaService.obtenerHistoriaClinicaPorId(historiaId);
-    } catch (error) {
-      console.error('Error al obtener historia detalle (admin):', error);
-      throw new AppError('Error al obtener la historia clínica', 500);
+/**
+ * Obtener detalle completo de una historia clínica (para admin)
+ */
+async obtenerHistoriaDetalle(historiaId) {
+  try {
+    // El admin puede ver cualquier historia, así que llamamos sin alumnoId
+    const historiaClinicaService = require('./historiaClinicaService');
+
+    // Llamar al método sin el parámetro alumnoId (segunda versión del método)
+    const historia = await historiaClinicaService.obtenerHistoriaClinicaPorIdSinValidacion(historiaId);
+
+    return historia;
+  } catch (error) {
+    console.error('Error al obtener historia detalle (admin):', error);
+    throw new AppError('Error al obtener la historia clínica', 500);
+  }
+},
+
+/**
+ * Obtener historia clínica por ID SIN validar alumnoId (para admin y profesor)
+ */
+async obtenerHistoriaClinicaPorIdSinValidacion(historiaId) {
+  try {
+    console.log(`📋 SERVICE - Obteniendo historia ID=${historiaId} SIN validación de alumno`);
+
+    const query = `
+      SELECT
+        hc.ID,
+        hc.Fecha,
+        hc.Archivado,
+        hc.FechaArchivado,
+        hc.CreadoEn as FechaCreacion,
+        hc.ActualizadoEn as FechaUltimaModificacion,
+        hc.EstadoID,
+        hc.AlumnoID,
+        hc.MateriaProfesorID,
+        hc.ConsultorioID,
+        hc.PeriodoEscolarID,
+
+        -- Paciente
+        p.ID AS PacienteID,
+        p.Nombre,
+        p.ApellidoPaterno,
+        p.ApellidoMaterno,
+        p.CorreoElectronico,
+        p.TelefonoCelular,
+        p.Telefono,
+        p.CURP,
+        p.IDSiSeCO,
+        p.Edad,
+        p.GeneroID,
+        p.EstadoCivilID,
+        p.EscolaridadID,
+        p.Ocupacion,
+        p.DireccionLinea1,
+        p.DireccionLinea2,
+        p.Ciudad,
+        p.EstadoID,
+        p.CodigoPostal,
+        p.Pais,
+
+        -- Alumno
+        CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as AlumnoNombreCompleto,
+        ai.Nombre AS AlumnoNombre,
+        ai.ApellidoPaterno AS AlumnoApellidoPaterno,
+        ai.ApellidoMaterno AS AlumnoApellidoMaterno,
+        ai.NumeroBoleta,
+
+        -- Estado
+        cg.Valor AS Estado,
+
+        -- Consultorio
+        c.Nombre AS Consultorio,
+
+        -- Periodo
+        pe.Codigo AS PeriodoEscolar,
+
+        -- Materia
+        m.Nombre AS NombreMateria,
+        m.Codigo AS CodigoMateria,
+        mp.Grupo AS GrupoMateria,
+
+        -- Profesor
+        pi.ID AS ProfesorID,
+        CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as ProfesorNombreCompleto,
+        pi.Nombre AS ProfesorNombre,
+        pi.ApellidoPaterno AS ProfesorApellidoPaterno,
+        pi.ApellidoMaterno AS ProfesorApellidoMaterno,
+        pi.NumeroEmpleado AS ProfesorNumeroEmpleado
+
+      FROM HistorialesClinicos hc
+      JOIN Pacientes p ON hc.PacienteID = p.ID
+      JOIN CatalogosGenerales cg ON hc.EstadoID = cg.ID
+      JOIN Consultorios c ON hc.ConsultorioID = c.ID
+      JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+      JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+      JOIN Materias m ON mp.MateriaID = m.ID
+      JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+      JOIN AlumnosInfo ai ON hc.AlumnoID = ai.ID
+      WHERE hc.ID = ?
+    `;
+
+    const [historias] = await db.query(query, [historiaId]);
+
+    if (historias.length === 0) {
+      console.log(`❌ Historia ${historiaId} no encontrada`);
+      return null;
     }
-  },
+
+    const historia = historias[0];
+    console.log(`✅ Historia encontrada:`, historia.ID);
+
+    // Obtener todas las secciones (igual que en el método original)
+    const [interrogatorio] = await db.query('SELECT * FROM Interrogatorio WHERE HistorialID = ?', [historiaId]);
+    const [exploracion] = await db.query('SELECT * FROM ExploracionFisica WHERE HistorialID = ?', [historiaId]);
+    const [agudeza] = await db.query('SELECT * FROM AgudezaVisual WHERE HistorialID = ?', [historiaId]);
+    const [pruebas] = await db.query('SELECT * FROM PruebasVisomotoras WHERE HistorialID = ?', [historiaId]);
+    const [evaluacion] = await db.query('SELECT * FROM EvaluacionColorVision WHERE HistorialID = ?', [historiaId]);
+    const [queratometria] = await db.query('SELECT * FROM Queratometria WHERE HistorialID = ?', [historiaId]);
+    const [oftalmoscopia] = await db.query('SELECT * FROM Oftalmoscopia WHERE HistorialID = ?', [historiaId]);
+    const [oftalmometria] = await db.query('SELECT * FROM Oftalmometria WHERE HistorialID = ?', [historiaId]);
+    const [subjetivo] = await db.query('SELECT * FROM ExamenSubjetivo WHERE HistorialID = ?', [historiaId]);
+    const [tonometria] = await db.query('SELECT * FROM Tonometria WHERE HistorialID = ?', [historiaId]);
+    const [receta] = await db.query('SELECT * FROM RecetaFinal WHERE HistorialID = ?', [historiaId]);
+
+    historia.interrogatorio = interrogatorio[0] || null;
+    historia.exploracionFisica = exploracion[0] || null;
+    historia.agudezaVisual = agudeza[0] || null;
+    historia.pruebasVisomotoras = pruebas[0] || null;
+    historia.evaluacionColorVision = evaluacion[0] || null;
+    historia.queratometria = queratometria[0] || null;
+    historia.oftalmoscopia = oftalmoscopia[0] || null;
+    historia.oftalmometria = oftalmometria[0] || null;
+    historia.examenSubjetivo = subjetivo[0] || null;
+    historia.tonometria = tonometria[0] || null;
+    historia.recetaFinal = receta[0] || null;
+
+    // Obtener comentarios con respuestas
+    try {
+      const [comentarios] = await db.query(
+        `SELECT
+          c.*,
+          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
+          pi.NumeroEmpleado
+        FROM ComentariosProfesor c
+        JOIN ProfesoresInfo pi ON c.ProfesorID = pi.ID
+        WHERE c.HistorialID = ?
+        ORDER BY c.FechaComentario DESC`,
+        [historiaId]
+      );
+
+      historia.comentarios = await Promise.all(
+        comentarios.map(async (comentario) => {
+          try {
+            const [respuestas] = await db.query(
+              `SELECT
+                rc.*,
+                u.NombreUsuario,
+                CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreCompleto,
+                CASE
+                  WHEN pi.ID IS NOT NULL THEN TRUE
+                  ELSE FALSE
+                END AS EsProfesor
+              FROM RespuestasComentarios rc
+              JOIN Usuarios u ON rc.UsuarioID = u.ID
+              LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+              LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+              WHERE rc.ComentarioID = ?
+              ORDER BY rc.FechaRespuesta ASC`,
+              [comentario.ID]
+            );
+            return { ...comentario, respuestas };
+          } catch (err) {
+            console.error('Error obteniendo respuestas:', err.message);
+            return { ...comentario, respuestas: [] };
+          }
+        })
+      );
+    } catch (err) {
+      console.error('Error obteniendo comentarios:', err.message);
+      historia.comentarios = [];
+    }
+
+    return historia;
+  } catch (error) {
+    console.error('Error al obtener historia clínica sin validación:', error);
+    throw error;
+  }
+},
 
   /**
    * Obtener comentarios de una historia
@@ -364,6 +542,9 @@ const adminService = {
  * Agregar comentario a una historia
  * Nota: El rol ya viene en el middleware auth, así que lo pasamos como parámetro
  */
+/**
+ * Agregar comentario a una historia
+ */
 async agregarComentario(historiaId, usuarioId, comentario, userRole) {
   try {
     let profesorId = null;
@@ -371,55 +552,69 @@ async agregarComentario(historiaId, usuarioId, comentario, userRole) {
     // Normalizar el rol a minúsculas para comparación
     const rol = userRole ? userRole.toLowerCase() : '';
 
+    console.log('📝 Agregando comentario - Rol:', rol, 'UsuarioID:', usuarioId);
+
     if (rol === 'admin') {
-      // Para admin: buscar si ya tiene un registro en ProfesoresInfo
-      const [profesorAdmin] = await db.query(
+      // Si es admin, buscar si tiene un registro en ProfesoresInfo
+      const [adminProfesor] = await db.query(
         'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?',
         [usuarioId]
       );
 
-      if (profesorAdmin.length === 0) {
-        // Crear registro en ProfesoresInfo para el admin
-        console.log('Creando registro de profesor para admin con UsuarioID:', usuarioId);
-        const [resultInsert] = await db.query(
-          `INSERT INTO ProfesoresInfo (
-            UsuarioID,
-            Nombre,
-            ApellidoPaterno,
-            ApellidoMaterno,
-            NumeroEmpleado
-          ) VALUES (?, 'Administrador', 'Sistema', '', 'ADMIN')`,
+      if (adminProfesor.length > 0) {
+        profesorId = adminProfesor[0].ID;
+        console.log('✅ Admin tiene ProfesorID:', profesorId);
+      } else {
+        // Si el admin no tiene registro de profesor, crear uno temporal
+        const [adminInfo] = await db.query(
+          `SELECT u.NombreUsuario, u.CorreoElectronico
+           FROM Usuarios u
+           WHERE u.ID = ?`,
           [usuarioId]
         );
-        profesorId = resultInsert.insertId;
-        console.log('Registro de profesor creado para admin con ID:', profesorId);
-      } else {
-        profesorId = profesorAdmin[0].ID;
-        console.log('Admin ya tiene registro de profesor con ID:', profesorId);
+
+        if (adminInfo.length > 0) {
+          const [result] = await db.query(
+            `INSERT INTO ProfesoresInfo (UsuarioID, NumeroEmpleado, Nombre, ApellidoPaterno, ApellidoMaterno)
+             VALUES (?, ?, ?, ?, ?)`,
+            [
+              usuarioId,
+              'ADMIN-' + usuarioId,
+              'Administrador',
+              'Sistema',
+              ''
+            ]
+          );
+          profesorId = result.insertId;
+          console.log('✅ Creado ProfesorID temporal para admin:', profesorId);
+        }
       }
     } else if (rol === 'profesor') {
-      // Para profesor: obtener su ID de ProfesoresInfo
+      // Si es profesor, obtener su ProfesorID
       const [profesor] = await db.query(
         'SELECT ID FROM ProfesoresInfo WHERE UsuarioID = ?',
         [usuarioId]
       );
 
-      if (profesor.length === 0) {
-        throw new AppError('Profesor no encontrado', 404);
+      if (profesor.length > 0) {
+        profesorId = profesor[0].ID;
+      } else {
+        throw new AppError('No se encontró el registro de profesor', 404);
       }
+    }
 
-      profesorId = profesor[0].ID;
-    } else {
-      throw new AppError('Solo profesores y administradores pueden agregar comentarios', 403);
+    if (!profesorId) {
+      throw new AppError('No se pudo determinar el ProfesorID', 400);
     }
 
     // Insertar el comentario
     const [result] = await db.query(
-      'INSERT INTO ComentariosProfesor (HistorialID, ProfesorID, Comentario) VALUES (?, ?, ?)',
+      `INSERT INTO ComentariosProfesor (HistorialID, ProfesorID, Comentario, FechaComentario)
+       VALUES (?, ?, ?, NOW())`,
       [historiaId, profesorId, comentario]
     );
 
-    // Obtener el comentario recién creado
+    // Obtener el comentario recién creado con información completa
     const [nuevoComentario] = await db.query(
       `SELECT
         c.ID,
@@ -438,7 +633,7 @@ async agregarComentario(historiaId, usuarioId, comentario, userRole) {
     return nuevoComentario[0];
   } catch (error) {
     console.error('Error al agregar comentario:', error);
-    throw error.statusCode ? error : new AppError('Error al agregar comentario', 500);
+    throw new AppError('Error al agregar el comentario', 500);
   }
 },
 

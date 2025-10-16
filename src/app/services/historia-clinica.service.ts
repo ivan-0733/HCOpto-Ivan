@@ -4,6 +4,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { map, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
 
 export interface HistoriaClinica {
   ID: number;
@@ -391,7 +392,7 @@ export interface ApiResponse<T> {
 export class HistoriaClinicaService {
   private apiUrl = `${environment.apiUrl}/historias-clinicas`;
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) { }
 
   // Obtener todas las historias clínicas del alumno
   obtenerHistoriasClinicas(): Observable<HistoriaClinica[]> {
@@ -476,22 +477,30 @@ obtenerHistoriaClinica(id: number): Observable<HistoriaClinicaDetalle> {
   }
 
 
-actualizarHistoriaCompleta(datosHistoriaCompleta: any): Observable<any> {
-  // 1. Extraes el ID del objeto que recibes.
-  const historiaId = datosHistoriaCompleta.historiaId;
+  actualizarHistoriaCompleta(datosHistoriaCompleta: any): Observable<any> {
+    const historiaId = datosHistoriaCompleta.historiaId;
+    const body = {
+      datosGenerales: datosHistoriaCompleta.datosGenerales,
+      secciones: datosHistoriaCompleta.secciones
+    };
 
-  // 2. Construyes la URL dinámica, añadiendo el ID al final.
-  const url = `${this.apiUrl}/actualizar-completa/${historiaId}`;
+    // Detectar el rol del usuario
+    const userRole = this.authService.getUserRole()?.toLowerCase();
 
-  // 3. Preparas el cuerpo de la petición con lo que el backend espera.
-  const body = {
-    datosGenerales: datosHistoriaCompleta.datosGenerales,
-    secciones: datosHistoriaCompleta.secciones
-  };
+    let url: string;
 
-  // 4. Haces la llamada PUT con la URL correcta y el cuerpo adecuado.
-  return this.http.put<any>(url, body);
-}
+    if (userRole === 'admin') {
+      // Si es admin, usar el endpoint de admin
+      url = `${environment.apiUrl}/admin/historias/${historiaId}/actualizar-completa`;
+    } else {
+      // Si es alumno, usar el endpoint normal
+      url = `${this.apiUrl}/actualizar-completa/${historiaId}`;
+    }
+
+    console.log(`🔧 Actualizando historia ${historiaId} con URL: ${url}`);
+
+    return this.http.put<any>(url, body);
+  }
 
   // Responder a un comentario de un profesor
   responderComentario(historiaId: number, comentarioId: number, respuesta: string): Observable<any> {
