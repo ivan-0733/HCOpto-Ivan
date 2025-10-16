@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit, OnDestroy { // Añadir OnDestroy
   }
 
   ngOnInit() {
-    this.themeService.setTemporaryTheme('system'); // Aplicar tema del sistema
+    this.themeService.setTemporaryTheme('light'); // Aplicar tema del sistema
     this.updateFormFields();
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }

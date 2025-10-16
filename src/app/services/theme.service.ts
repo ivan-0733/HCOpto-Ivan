@@ -8,7 +8,8 @@ export type ThemeMode = 'light' | 'dark' | 'system';
   providedIn: 'root'
 })
 export class ThemeService {
-  private themeSubject = new BehaviorSubject<ThemeMode>('system');
+  // private themeSubject = new BehaviorSubject<ThemeMode>('system');
+  private themeSubject = new BehaviorSubject<ThemeMode>('light');
   public theme$: Observable<ThemeMode> = this.themeSubject.asObservable();
   private temporaryTheme: ThemeMode | null = null;
 
@@ -20,7 +21,8 @@ export class ThemeService {
     this.isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
     if (this.isBrowser) {
-      const storedTheme = localStorage.getItem('theme') as ThemeMode || 'system';
+      // const storedTheme = localStorage.getItem('theme') as ThemeMode || 'system';
+      const storedTheme = 'light';
       this.themeSubject.next(storedTheme);
       this.setupMediaQuery();
       this.applyTheme();
@@ -65,6 +67,7 @@ export class ThemeService {
   }
 
   private applyTheme(): void {
+
     if (!this.isBrowser) return;
 
     const theme = this.temporaryTheme ?? this.themeSubject.value;
