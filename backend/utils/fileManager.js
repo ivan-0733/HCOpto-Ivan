@@ -3,9 +3,13 @@ const path = require('path');
 const sharp = require('sharp');
 const crypto = require('crypto');
 
-// Configuración básica
-const UPLOAD_DIR = path.resolve(__dirname, '..', '..', 'uploads'); 
-console.log('UPLOAD_DIR RESUELTO:', UPLOAD_DIR);
+// Configuración básica - Leer ruta desde .env
+const UPLOAD_DIR = process.env.IMAGE_UPLOAD_PATH 
+    ? path.resolve(process.env.IMAGE_UPLOAD_PATH)
+    : path.resolve(__dirname, '..', '..', 'uploads'); // Fallback si no existe la variable
+
+console.log('UPLOAD_DIR CONFIGURADO:', UPLOAD_DIR);
+console.log('Usando variable de entorno:', !!process.env.IMAGE_UPLOAD_PATH);
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png']; // Solo JPG/PNG
 

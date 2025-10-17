@@ -44,3 +44,6 @@ Thumbs.db
 #Excluir las carpetas
 uploads/
 backend/uploads/
+
+#Archivos de configuración
+/backend/.env
