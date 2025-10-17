@@ -313,6 +313,21 @@ obtenerCatalogoMaterias(): Observable<CatalogoMateria[]> {
   );
 }
 
+/**
+ * Actualizar historia completa (para admin)
+ */
+actualizarHistoriaCompleta(datosHistoriaCompleta: any): Observable<any> {
+  const historiaId = datosHistoriaCompleta.historiaId;
+  const url = `${this.apiUrl}/historias/${historiaId}/actualizar-completa`;
+
+  const body = {
+    datosGenerales: datosHistoriaCompleta.datosGenerales,
+    secciones: datosHistoriaCompleta.secciones
+  };
+
+  return this.http.put<any>(url, body);
+}
+
 inscribirAlumnoAMateria(datos: any): Observable<any> {
   return this.http.post(`${this.apiUrl}/materias-admin/inscribir-alumno`, datos);
 }

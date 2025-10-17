@@ -39,7 +39,7 @@ const upsertSeccion = async (connection, tabla, datos, historialId) => {
           finalValue = null;
         }
       }
-      
+
       obj[columnaReal] = finalValue;
     }
     return obj;
@@ -142,8 +142,8 @@ try {
         hc.Archivado,
         hc.FechaArchivado,
         hc.EstadoID,
-        hc.ConsultorioID,     
-        hc.PeriodoEscolarID,   
+        hc.ConsultorioID,
+        hc.PeriodoEscolarID,
 
         -- Datos del Paciente
         p.ID AS PacienteID,
@@ -1161,6 +1161,388 @@ async crearHistoriaClinicaCompleta(datosHistoria, secciones) {
 },
 
 /**
+ * Obtener historia clínica por ID SIN validar alumnoId (para admin y profesor)
+ * ✅ INCLUYE NumeroBoleta del alumno
+ */
+async obtenerHistoriaClinicaPorIdSinValidacion(historiaId) {
+  try {
+    console.log(`📋 SERVICE - Obteniendo historia ID=${historiaId} SIN validación de alumno`);
+
+    const query = `
+    SELECT
+      -- =========== DATOS BÁSICOS DE LA HISTORIA ===========
+      hc.ID,
+      hc.Fecha,
+      hc.Archivado,
+      hc.FechaArchivado,
+      hc.CreadoEn as FechaCreacion,
+      hc.ActualizadoEn as FechaUltimaModificacion,
+      hc.EstadoID,
+      hc.AlumnoID,
+      hc.MateriaProfesorID,
+      hc.ConsultorioID,
+      hc.PeriodoEscolarID,
+
+      -- =========== DATOS DEL PACIENTE ===========
+      p.ID AS PacienteID,
+      p.Nombre,
+      p.ApellidoPaterno,
+      p.ApellidoMaterno,
+      p.CorreoElectronico,
+      p.TelefonoCelular,
+      p.Telefono,
+      p.CURP,
+      p.IDSiSeCO,
+      p.Edad,
+      p.GeneroID,
+
+      -- ✅ Estado Civil y Escolaridad (aunque sean opcionales, los traemos)
+      p.EstadoCivilID,
+      cg_estado_civil.Valor AS EstadoCivilNombre,
+      p.EscolaridadID,
+      cg_escolaridad.Valor AS EscolaridadNombre,
+
+      -- ✅ Otros datos del paciente
+      p.Ocupacion,
+      p.DireccionLinea1,
+      p.Ciudad,
+
+      -- ✅ CORRECCIÓN: Estado del paciente - traer tanto ID como nombre
+      p.EstadoID AS PacienteEstadoID,
+      cg_estado_paciente.Valor AS PacienteEstado,
+
+      p.CodigoPostal,
+      p.Pais,
+
+      -- =========== DATOS DEL ALUMNO ===========
+      CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as AlumnoNombreCompleto,
+      ai.Nombre AS AlumnoNombre,
+      ai.ApellidoPaterno AS AlumnoApellidoPaterno,
+      ai.ApellidoMaterno AS AlumnoApellidoMaterno,
+      ai.NumeroBoleta AS AlumnoBoleta,
+
+      -- =========== ESTADO DE LA HISTORIA ===========
+      cg_estado_historia.Valor AS Estado,
+
+      -- =========== DATOS DEL CONSULTORIO Y PERIODO ===========
+      c.Nombre AS Consultorio,
+      pe.Codigo AS PeriodoEscolar,
+
+      -- =========== DATOS DE LA MATERIA ===========
+      m.Nombre AS NombreMateria,
+      m.Codigo AS CodigoMateria,
+      mp.Grupo AS GrupoMateria,
+
+      -- =========== DATOS DEL PROFESOR ===========
+      pi.ID AS ProfesorID,
+      CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as ProfesorNombreCompleto,
+      pi.Nombre AS ProfesorNombre,
+      pi.ApellidoPaterno AS ProfesorApellidoPaterno,
+      pi.ApellidoMaterno AS ProfesorApellidoMaterno,
+      pi.NumeroEmpleado AS ProfesorNumeroEmpleado,
+
+      -- =========== ESTADÍSTICAS ===========
+      (SELECT COUNT(*) FROM ComentariosProfesor WHERE HistorialID = hc.ID) as TotalComentarios
+
+    FROM HistorialesClinicos hc
+
+    -- ✅ JOINS PRINCIPALES (obligatorios)
+    JOIN Pacientes p ON hc.PacienteID = p.ID
+    JOIN CatalogosGenerales cg_estado_historia ON hc.EstadoID = cg_estado_historia.ID
+    JOIN Consultorios c ON hc.ConsultorioID = c.ID
+    JOIN PeriodosEscolares pe ON hc.PeriodoEscolarID = pe.ID
+    JOIN MateriasProfesor mp ON hc.MateriaProfesorID = mp.ID
+    JOIN Materias m ON mp.MateriaID = m.ID
+    JOIN ProfesoresInfo pi ON mp.ProfesorInfoID = pi.ID
+    JOIN AlumnosInfo ai ON hc.AlumnoID = ai.ID
+
+    -- ✅ LEFT JOINS para datos opcionales del paciente
+    LEFT JOIN CatalogosGenerales cg_estado_paciente ON p.EstadoID = cg_estado_paciente.ID
+    LEFT JOIN CatalogosGenerales cg_estado_civil ON p.EstadoCivilID = cg_estado_civil.ID AND cg_estado_civil.TipoCatalogo = 'ESTADO_CIVIL'
+    LEFT JOIN CatalogosGenerales cg_escolaridad ON p.EscolaridadID = cg_escolaridad.ID AND cg_escolaridad.TipoCatalogo = 'ESCOLARIDAD'
+
+    WHERE hc.ID = ?
+    `;
+
+    const [historias] = await db.query(query, [historiaId]);
+
+    if (historias.length === 0) {
+      console.log(`❌ Historia ${historiaId} no encontrada`);
+      return null;
+    }
+
+    const historia = historias[0];
+    console.log(`✅ Historia encontrada:`, historia.ID);
+
+    // Obtener todas las secciones - REUTILIZAR LA LÓGICA EXISTENTE
+    const [interrogatorio] = await db.query('SELECT * FROM Interrogatorio WHERE HistorialID = ?', [historiaId]);
+    const [exploracion] = await db.query('SELECT * FROM ExploracionFisica WHERE HistorialID = ?', [historiaId]);
+    const [agudeza] = await db.query('SELECT * FROM AgudezaVisual WHERE HistorialID = ?', [historiaId]);
+    const [lensometria] = await db.query('SELECT * FROM Lensometria WHERE HistorialID = ?', [historiaId]);
+    const [alineacion] = await db.query('SELECT * FROM AlineacionOcular WHERE HistorialID = ?', [historiaId]);
+    const [motilidad] = await db.query('SELECT * FROM Motilidad WHERE HistorialID = ?', [historiaId]);
+    const [viaPupilar] = await db.query('SELECT * FROM ViaPupilar WHERE HistorialID = ?', [historiaId]);
+    const [estadoRefractivo] = await db.query('SELECT * FROM EstadoRefractivo WHERE HistorialID = ?', [historiaId]);
+    const [subjetivoCerca] = await db.query('SELECT * FROM SubjetivoCerca WHERE HistorialID = ?', [historiaId]);
+    const [binocularidad] = await db.query('SELECT * FROM Binocularidad WHERE HistorialID = ?', [historiaId]);
+    const [forias] = await db.query('SELECT * FROM Forias WHERE HistorialID = ?', [historiaId]);
+    const [vergencias] = await db.query('SELECT * FROM Vergencias WHERE HistorialID = ?', [historiaId]);
+    const [metodoGrafico] = await db.query('SELECT * FROM MetodoGrafico WHERE HistorialID = ?', [historiaId]);
+    const [gridAmsler] = await db.query('SELECT * FROM GridAmsler WHERE HistorialID = ?', [historiaId]);
+    const [tonometria] = await db.query('SELECT * FROM Tonometria WHERE HistorialID = ?', [historiaId]);
+    const [paquimetria] = await db.query('SELECT * FROM Paquimetria WHERE HistorialID = ?', [historiaId]);
+    const [campimetria] = await db.query('SELECT * FROM Campimetria WHERE HistorialID = ?', [historiaId]);
+    const [biomicroscopia] = await db.query('SELECT * FROM Biomicroscopia WHERE HistorialID = ?', [historiaId]);
+    const [oftalmoscopia] = await db.query('SELECT * FROM Oftalmoscopia WHERE HistorialID = ?', [historiaId]);
+    const [diagnostico] = await db.query('SELECT * FROM Diagnostico WHERE HistorialID = ?', [historiaId]);
+    const [planTratamiento] = await db.query('SELECT * FROM PlanTratamiento WHERE HistorialID = ?', [historiaId]);
+    const [pronostico] = await db.query('SELECT * FROM Pronostico WHERE HistorialID = ?', [historiaId]);
+    const [recomendaciones] = await db.query('SELECT * FROM Recomendaciones WHERE HistorialID = ?', [historiaId]);
+    const [receta] = await db.query('SELECT * FROM RecetaFinal WHERE HistorialID = ?', [historiaId]);
+
+    historia.interrogatorio = interrogatorio[0] || null;
+    historia.exploracionFisica = exploracion[0] || null;
+    historia.agudezaVisual = agudeza || [];
+    historia.lensometria = lensometria[0] || null;
+    historia.alineacionOcular = alineacion[0] || null;
+    historia.motilidad = motilidad[0] || null;
+    historia.viaPupilar = viaPupilar[0] || null;
+    historia.estadoRefractivo = estadoRefractivo[0] || null;
+    historia.subjetivoCerca = subjetivoCerca[0] || null;
+    historia.binocularidad = binocularidad[0] || null;
+    historia.forias = forias[0] || null;
+    historia.vergencias = vergencias[0] || null;
+
+    // ✅ Normalizar MetodoGrafico
+    if (metodoGrafico[0]) {
+      historia.metodoGrafico = {
+        integracionBinocular: metodoGrafico[0].IntegracionBinocular,
+        tipoID: metodoGrafico[0].TipoID,
+        visionEstereoscopica: metodoGrafico[0].VisionEstereoscopica,
+        tipoVisionID: metodoGrafico[0].TipoVisionID,
+        imagenID: metodoGrafico[0].ImagenID
+      };
+    } else {
+      historia.metodoGrafico = null;
+    }
+
+    // ✅ Normalizar GridAmsler
+    if (gridAmsler[0]) {
+      historia.gridAmsler = {
+        numeroCartilla: gridAmsler[0].NumeroCartilla,
+        ojoDerechoSensibilidadContraste: gridAmsler[0].OjoDerechoSensibilidadContraste,
+        ojoIzquierdoSensibilidadContraste: gridAmsler[0].OjoIzquierdoSensibilidadContraste,
+        ojoDerechoVisionCromatica: gridAmsler[0].OjoDerechoVisionCromatica,
+        ojoIzquierdoVisionCromatica: gridAmsler[0].OjoIzquierdoVisionCromatica
+      };
+    } else {
+      historia.gridAmsler = null;
+    }
+
+    // ✅ Normalizar Tonometria
+    if (tonometria[0]) {
+      historia.tonometria = {
+        metodoAnestesico: tonometria[0].MetodoAnestesico,
+        fecha: tonometria[0].Fecha,
+        hora: tonometria[0].Hora,
+        ojoDerecho: tonometria[0].OjoDerecho,
+        ojoIzquierdo: tonometria[0].OjoIzquierdo,
+        tipoID: tonometria[0].TipoID
+      };
+    } else {
+      historia.tonometria = null;
+    }
+
+    // ✅ Normalizar Paquimetria
+    if (paquimetria[0]) {
+      historia.paquimetria = {
+        ojoDerechoCCT: paquimetria[0].OjoDerechoCCT,
+        ojoIzquierdoCCT: paquimetria[0].OjoIzquierdoCCT,
+        ojoDerechoPIOCorregida: paquimetria[0].OjoDerechoPIOCorregida,
+        ojoIzquierdoPIOCorregida: paquimetria[0].OjoIzquierdoPIOCorregida
+      };
+    } else {
+      historia.paquimetria = null;
+    }
+
+    // ✅ Normalizar Campimetria
+    if (campimetria[0]) {
+      historia.campimetria = {
+        distancia: campimetria[0].Distancia,
+        tamanoColorIndice: campimetria[0].TamanoColorIndice,
+        tamanoColorPuntoFijacion: campimetria[0].TamanoColorPuntoFijacion,
+        imagenID: campimetria[0].ImagenID
+      };
+    } else {
+      historia.campimetria = null;
+    }
+
+    // ✅ Normalizar Biomicroscopia
+    if (biomicroscopia[0]) {
+      historia.biomicroscopia = {
+        ojoDerechoPestanas: biomicroscopia[0].OjoDerechoPestanas,
+        ojoIzquierdoPestanas: biomicroscopia[0].OjoIzquierdoPestanas,
+        ojoDerechoParpadosIndice: biomicroscopia[0].OjoDerechoParpadosIndice,
+        ojoIzquierdoParpadosIndice: biomicroscopia[0].OjoIzquierdoParpadosIndice,
+        ojoDerechoBordePalpebral: biomicroscopia[0].OjoDerechoBordePalpebral,
+        ojoIzquierdoBordePalpebral: biomicroscopia[0].OjoIzquierdoBordePalpebral,
+        ojoDerechoLineaGris: biomicroscopia[0].OjoDerechoLineaGris,
+        ojoIzquierdoLineaGris: biomicroscopia[0].OjoIzquierdoLineaGris,
+        ojoDerechoCantoExterno: biomicroscopia[0].OjoDerechoCantoExterno,
+        ojoIzquierdoCantoExterno: biomicroscopia[0].OjoIzquierdoCantoExterno,
+        ojoDerechoCantoInterno: biomicroscopia[0].OjoDerechoCantoInterno,
+        ojoIzquierdoCantoInterno: biomicroscopia[0].OjoIzquierdoCantoInterno,
+        ojoDerechoPuntosLagrimales: biomicroscopia[0].OjoDerechoPuntosLagrimales,
+        ojoIzquierdoPuntosLagrimales: biomicroscopia[0].OjoIzquierdoPuntosLagrimales,
+        ojoDerechoConjuntivaTarsal: biomicroscopia[0].OjoDerechoConjuntivaTarsal,
+        ojoIzquierdoConjuntivaTarsal: biomicroscopia[0].OjoIzquierdoConjuntivaTarsal,
+        ojoDerechoConjuntivaBulbar: biomicroscopia[0].OjoDerechoConjuntivaBulbar,
+        ojoIzquierdoConjuntivaBulbar: biomicroscopia[0].OjoIzquierdoConjuntivaBulbar,
+        ojoDerechoFondoSaco: biomicroscopia[0].OjoDerechoFondoSaco,
+        ojoIzquierdoFondoSaco: biomicroscopia[0].OjoIzquierdoFondoSaco,
+        ojoDerechoLimbo: biomicroscopia[0].OjoDerechoLimbo,
+        ojoIzquierdoLimbo: biomicroscopia[0].OjoIzquierdoLimbo,
+        ojoDerechoCorneaBiomicroscopia: biomicroscopia[0].OjoDerechoCorneaBiomicroscopia,
+        ojoIzquierdoCorneaBiomicroscopia: biomicroscopia[0].OjoIzquierdoCorneaBiomicroscopia,
+        ojoDerechoCamaraAnterior: biomicroscopia[0].OjoDerechoCamaraAnterior,
+        ojoIzquierdoCamaraAnterior: biomicroscopia[0].OjoIzquierdoCamaraAnterior,
+        ojoDerechoIris: biomicroscopia[0].OjoDerechoIris,
+        ojoIzquierdoIris: biomicroscopia[0].OjoIzquierdoIris,
+        ojoDerechoCristalino: biomicroscopia[0].OjoDerechoCristalino,
+        ojoIzquierdoCristalino: biomicroscopia[0].OjoIzquierdoCristalino
+      };
+    } else {
+      historia.biomicroscopia = null;
+    }
+
+    // ✅ Normalizar Oftalmoscopia
+    if (oftalmoscopia[0]) {
+      historia.oftalmoscopia = {
+        ojoDerechoPapila: oftalmoscopia[0].OjoDerechoPapila,
+        ojoIzquierdoPapila: oftalmoscopia[0].OjoIzquierdoPapila,
+        ojoDerechoExcavacion: oftalmoscopia[0].OjoDerechoExcavacion,
+        ojoIzquierdoExcavacion: oftalmoscopia[0].OjoIzquierdoExcavacion,
+        ojoDerechoRadio: oftalmoscopia[0].OjoDerechoRadio,
+        ojoIzquierdoRadio: oftalmoscopia[0].OjoIzquierdoRadio,
+        ojoDerechoProfundidad: oftalmoscopia[0].OjoDerechoProfundidad,
+        ojoIzquierdoProfundidad: oftalmoscopia[0].OjoIzquierdoProfundidad,
+        ojoDerechoVasos: oftalmoscopia[0].OjoDerechoVasos,
+        ojoIzquierdoVasos: oftalmoscopia[0].OjoIzquierdoVasos,
+        ojoDerechoRELAV: oftalmoscopia[0].OjoDerechoRELAV,
+        ojoIzquierdoRELAV: oftalmoscopia[0].OjoIzquierdoRELAV,
+        ojoDerechoMacula: oftalmoscopia[0].OjoDerechoMacula,
+        ojoIzquierdoMacula: oftalmoscopia[0].OjoIzquierdoMacula,
+        ojoDerechoReflejo: oftalmoscopia[0].OjoDerechoReflejo,
+        ojoIzquierdoReflejo: oftalmoscopia[0].OjoIzquierdoReflejo,
+        ojoDerechoRetinaPeriferica: oftalmoscopia[0].OjoDerechoRetinaPeriferica,
+        ojoIzquierdoRetinaPeriferica: oftalmoscopia[0].OjoIzquierdoRetinaPeriferica,
+        ojoDerechoISNT: oftalmoscopia[0].OjoDerechoISNT,
+        ojoIzquierdoISNT: oftalmoscopia[0].OjoIzquierdoISNT,
+        ojoDerechoImagenID: oftalmoscopia[0].OjoDerechoImagenID,
+        ojoIzquierdoImagenID: oftalmoscopia[0].OjoIzquierdoImagenID
+      };
+    } else {
+      historia.oftalmoscopia = null;
+    }
+
+    // ✅ Normalizar Diagnostico
+    if (diagnostico[0]) {
+      historia.diagnostico = {
+        OjoDerechoRefractivo: diagnostico[0].OjoDerechoRefractivo,
+        OjoIzquierdoRefractivo: diagnostico[0].OjoIzquierdoRefractivo,
+        OjoDerechoPatologico: diagnostico[0].OjoDerechoPatologico,
+        OjoIzquierdoPatologico: diagnostico[0].OjoIzquierdoPatologico,
+        Binocular: diagnostico[0].Binocular,
+        Sensorial: diagnostico[0].Sensorial
+      };
+    } else {
+      historia.diagnostico = null;
+    }
+
+    // ✅ Normalizar PlanTratamiento
+    if (planTratamiento[0]) {
+      historia.planTratamiento = {
+        Descripcion: planTratamiento[0].Descripcion
+      };
+    } else {
+      historia.planTratamiento = null;
+    }
+
+    // ✅ Normalizar Pronostico
+    if (pronostico[0]) {
+      historia.pronostico = {
+        Descripcion: pronostico[0].Descripcion
+      };
+    } else {
+      historia.pronostico = null;
+    }
+
+    // ✅ Normalizar Recomendaciones
+    if (recomendaciones[0]) {
+      historia.recomendaciones = {
+        Descripcion: recomendaciones[0].Descripcion,
+        ProximaCita: recomendaciones[0].ProximaCita
+      };
+    } else {
+      historia.recomendaciones = null;
+    }
+
+    historia.recetaFinal = receta[0] || null;
+
+    // Obtener comentarios con respuestas
+    try {
+      const [comentarios] = await db.query(
+        `SELECT
+          c.*,
+          CONCAT(pi.Nombre, ' ', pi.ApellidoPaterno, ' ', IFNULL(pi.ApellidoMaterno, '')) as NombreProfesor,
+          pi.NumeroEmpleado
+        FROM ComentariosProfesor c
+        JOIN ProfesoresInfo pi ON c.ProfesorID = pi.ID
+        WHERE c.HistorialID = ?
+        ORDER BY c.FechaComentario DESC`,
+        [historiaId]
+      );
+
+      historia.comentarios = await Promise.all(
+        comentarios.map(async (comentario) => {
+          try {
+            const [respuestas] = await db.query(
+              `SELECT
+                rc.*,
+                u.NombreUsuario,
+                CONCAT(ai.Nombre, ' ', ai.ApellidoPaterno, ' ', IFNULL(ai.ApellidoMaterno, '')) as NombreCompleto,
+                CASE
+                  WHEN pi.ID IS NOT NULL THEN TRUE
+                  ELSE FALSE
+                END AS EsProfesor
+              FROM RespuestasComentarios rc
+              JOIN Usuarios u ON rc.UsuarioID = u.ID
+              LEFT JOIN AlumnosInfo ai ON u.ID = ai.UsuarioID
+              LEFT JOIN ProfesoresInfo pi ON u.ID = pi.UsuarioID
+              WHERE rc.ComentarioID = ?
+              ORDER BY rc.FechaRespuesta ASC`,
+              [comentario.ID]
+            );
+            return { ...comentario, respuestas };
+          } catch (err) {
+            console.error('Error obteniendo respuestas:', err.message);
+            return { ...comentario, respuestas: [] };
+          }
+        })
+      );
+    } catch (err) {
+      console.error('Error obteniendo comentarios:', err.message);
+      historia.comentarios = [];
+    }
+
+    return historia;
+  } catch (error) {
+    console.error('Error al obtener historia clínica sin validación:', error);
+    throw error;
+  }
+},
+
+/**
  * Actualiza una sección específica de la historia clínica
  * @param {number} historiaId - ID de la historia clínica
  * @param {string} seccion - Nombre de la sección a actualizar
@@ -1252,7 +1634,7 @@ try {
     ]
   );
   break;
-    
+
   case 'interrogatorio':
       // Verificar si ya existe un interrogatorio para esta historia
       const [interrogatorios] = await connection.query(
@@ -2666,7 +3048,7 @@ async actualizarHistoriaCompleta(datosHistoriaCompleta) {
 
     if (historias.length === 0) throw new Error('La historia clínica no existe');
     if (historias[0].Archivado) throw new Error('No se puede modificar una historia clínica archivada');
-    
+
     const { PacienteID } = historias[0];
     const AlumnoID = datosGenerales.alumnoID; // Suponiendo que el alumnoID viene en datosGenerales
 
@@ -2698,7 +3080,7 @@ async actualizarHistoriaCompleta(datosHistoriaCompleta) {
       }
       await connection.query('UPDATE Pacientes SET ? WHERE ID = ?', [pacienteSaneado, PacienteID]);
     }
-    
+
     // 3. Actualizamos cada sección de forma individual y segura usando nuestra función auxiliar.
     // Si una sección no viene en el objeto `secciones`, simplemente no se ejecuta nada para esa tabla.
     await upsertSeccion(connection, 'Interrogatorio', secciones.interrogatorio, historiaId);

@@ -46,6 +46,9 @@ router.get('/alumnos/verificar-correo', adminController.verificarCorreoAlumnoExi
 router.delete('/alumnos/:id', adminController.eliminarAlumno);
 router.get('/alumnos/:id/verificar-historias', adminController.verificarAlumnoTieneHistorias);
 
+// Actualizar historia completa (para edición)
+router.put('/historias/:id/actualizar-completa', adminController.actualizarHistoriaCompleta);
+
 // Rutas de materias
 router.get('/materias-admin', adminController.obtenerTodasMateriasAdmin);
 router.post('/materias-admin/crear', adminController.crearMateriaProfesor);
