@@ -820,7 +820,7 @@ loadHistoriaStatus(): void {
           // Aquí faltaba formatear la fecha, lo añado para que todo sea consistente
           fecha: new Date(historia.Fecha).toISOString().split('T')[0],
           materiaProfesorID: historia.MateriaProfesorID,
-          consultorioID: historia.ConsultorioID, 
+          consultorioID: historia.ConsultorioID,
           periodoEscolarID: historia.PeriodoEscolarID,
           paciente: { // Anidamos el paciente como lo habíamos corregido antes
             id: historia.PacienteID,
@@ -884,7 +884,7 @@ loadHistoriaStatus(): void {
         if (historia.subjetivoCerca) {
           this.formValues['subjetivo-cerca'] = historia.subjetivoCerca;
         }
-        
+
         // Carga de datos de binocularidad (SE QUEDA IGUAL)
         if (historia.binocularidad) {
           this.formValues['binocularidad'] = historia.binocularidad;
@@ -902,7 +902,7 @@ loadHistoriaStatus(): void {
         if (historia.gridAmsler) {
           this.formValues['grid-amsler'] = historia.gridAmsler;
         }
-        
+
         if (historia.tonometria) {
           const tonometriaData = { ...historia.tonometria };
           if (tonometriaData.fecha) {
@@ -943,14 +943,14 @@ loadHistoriaStatus(): void {
           }
           this.formValues['recomendaciones'] = recomendacionesData;
         }
-        
+
         // Guardar receta final
         if (historia.recetaFinal) {
           this.formValues['receta'] = historia.recetaFinal;
         }
 
         console.log('Historia cargada para edición - FormValues actualizados:', this.formValues);
-        
+
         const statusKey = `historia_${this.historiaId}_status`;
         localStorage.setItem(statusKey, JSON.stringify(this.sectionStatus));
       },
@@ -2255,7 +2255,7 @@ guardarHistoriaEditada(): void {
   // ✅ ESTRUCTURA CORREGIDA - IGUAL A crearNuevaHistoria()
   const secciones = {
     interrogatorio: this.formValues['interrogatorio'],
-    
+
     // ✅ Estructurar agudeza visual correctamente
     agudezaVisual: this.formValues['agudeza-visual'] ?
       this.convertirFormDataAAgudezaVisual(this.formValues['agudeza-visual']) : [],
@@ -2321,7 +2321,7 @@ guardarHistoriaEditada(): void {
     .subscribe({
       next: (response) => {
         this.success = 'Historia clínica actualizada exitosamente';
-        
+
         // Marcar todas las secciones enviadas como completadas
         for (const seccionKey in secciones) {
           if (
@@ -2337,7 +2337,7 @@ guardarHistoriaEditada(): void {
             }
           }
         }
-        
+
         // Limpiar localStorage después del guardado exitoso
         const statusKey = `historia_${this.historiaId}_status`;
         localStorage.removeItem(statusKey);
@@ -2346,7 +2346,7 @@ guardarHistoriaEditada(): void {
         if (this.historiaId) {
           this.procesarImagenesEnEdicion(this.historiaId, imagenesBase64);
         }
-        
+
         console.log('Historia actualizada:', response);
       },
       error: (error) => {
@@ -2593,10 +2593,23 @@ getCurrentSectionIndex(): number {
 return this.sections.indexOf(this.currentSection);
 }
 
-// Método para calcular el progreso general
+// Método para calcular el progreso general basado en la sección más avanzada
 calculateProgress(): number {
-const completedSections = Object.values(this.sectionStatus).filter(Boolean).length;
-return (completedSections / this.sections.length) * 100;
+  // Encontrar el índice de la sección actual
+  const currentIndex = this.sections.indexOf(this.currentSection);
+
+  // Si no encontramos la sección, retornar 0
+  if (currentIndex === -1) {
+    return 0;
+  }
+
+  // Calcular el progreso basado en la posición actual
+  // Se suma 1 porque los índices empiezan en 0
+  const progress = ((currentIndex + 1) / this.sections.length) * 100;
+
+  console.log(`📊 Progreso calculado: Sección ${currentIndex + 1} de ${this.sections.length} = ${progress.toFixed(0)}%`);
+
+  return progress;
 }
 
 // Método para obtener la clase CSS de un botón de sección
@@ -2606,7 +2619,14 @@ return this.currentSection === section ? 'section-button active' : 'section-butt
 
 // Cambiar a otra sección manteniendo datos
 changeSection(section: string): void {
-  // Guardar los valores actuales del formulario antes de cambiar
+  // ✨ PASO 1: MARCAR LA SECCIÓN ACTUAL COMO VISITADA
+  // Esto mantiene un registro de qué secciones se han visitado
+  if (this.currentSection) {
+    this.sectionStatus[this.currentSection] = true;
+    console.log(`✅ Sección "${this.currentSection}" marcada como visitada`);
+  }
+
+  // PASO 2: Guardar los valores actuales del formulario antes de cambiar
   switch (this.currentSection) {
 
     case 'datos-generales':
@@ -2655,7 +2675,7 @@ changeSection(section: string): void {
       }
       break;
 
-      case 'binocularidad':
+    case 'binocularidad':
       if (this.binocularidadForm) {
         this.formValues['binocularidad'] = this.binocularidadForm.value;
       }
@@ -2666,62 +2686,79 @@ changeSection(section: string): void {
         this.formValues['vergencias'] = this.vergenciasForm.value;
       }
       if (this.metodoGraficoForm) {
-        this.formValues['metodo-grafico'] = {
-          ...this.metodoGraficoForm.value,
-          imagenBase64: this.imgPreview
-        };
+        this.formValues['metodo-grafico'] = this.metodoGraficoForm.value;
       }
       break;
 
-      case 'deteccion-alteraciones':
-        if (this.gridAmslerForm) {
-          this.formValues['grid-amsler'] = this.gridAmslerForm.value;
-        }
-        if (this.tonometriaForm) {
-          this.formValues['tonometria'] = this.tonometriaForm.value;
-        }
-        if (this.paquimetriaForm) {
-          this.formValues['paquimetria'] = this.paquimetriaForm.value;
-        }
-        if (this.campimetriaForm) {
-          this.formValues['campimetria'] = this.campimetriaForm.value;
-        }
-        if (this.biomicroscopiaForm) {
-          this.formValues['biomicroscopia'] = this.biomicroscopiaForm.value;
-        }
-        if (this.oftalmoscopiaForm) {
-          this.formValues['oftalmoscopia'] = this.oftalmoscopiaForm.value;
-        }
-        // Guardar el estado actual de las imágenes
-        this.formValues['imagen-previews-deteccion'] = { ...this.imagenPreviewsDeteccion };
-        break;
-
-      case 'diagnostico':
-        if (this.diagnosticoForm) {
-          this.formValues['diagnostico'] = this.diagnosticoForm.value;
-        }
-        if (this.planTratamientoForm) {
-          this.formValues['plan-tratamiento'] = this.planTratamientoForm.value;
-        }
-        if (this.pronosticoForm) {
-          this.formValues['pronostico'] = this.pronosticoForm.value;
-        }
-        if (this.recomendacionesForm) {
-          this.formValues['recomendaciones'] = this.recomendacionesForm.value;
-        }
-        break;
-
+    case 'deteccion-alteraciones':
+      if (this.gridAmslerForm) {
+        this.formValues['grid-amsler'] = this.gridAmslerForm.value;
       }
+      if (this.tonometriaForm) {
+        this.formValues['tonometria'] = this.tonometriaForm.value;
+      }
+      if (this.paquimetriaForm) {
+        this.formValues['paquimetria'] = this.paquimetriaForm.value;
+      }
+      if (this.campimetriaForm) {
+        this.formValues['campimetria'] = this.campimetriaForm.value;
+      }
+      if (this.biomicroscopiaForm) {
+        this.formValues['biomicroscopia'] = this.biomicroscopiaForm.value;
+      }
+      if (this.oftalmoscopiaForm) {
+        this.formValues['oftalmoscopia'] = this.oftalmoscopiaForm.value;
+      }
+      break;
 
-  // Cambiar a la nueva sección
+    case 'diagnostico':
+      if (this.diagnosticoForm) {
+        this.formValues['diagnostico'] = this.diagnosticoForm.value;
+      }
+      if (this.planTratamientoForm) {
+        this.formValues['plan-tratamiento'] = this.planTratamientoForm.value;
+      }
+      if (this.pronosticoForm) {
+        this.formValues['pronostico'] = this.pronosticoForm.value;
+      }
+      if (this.recomendacionesForm) {
+        this.formValues['recomendaciones'] = this.recomendacionesForm.value;
+      }
+      break;
+
+    case 'receta':
+      if (this.recetaFinalForm) {
+        this.formValues['receta'] = this.recetaFinalForm.value;
+      }
+      break;
+  }
+
+  // PASO 3: Cambiar a la nueva sección
   this.currentSection = section;
-  this.error = '';
-  this.success = '';
+  console.log(`📍 Cambiando a sección: ${section}`);
+  console.log(`📊 Progreso actual: ${this.calculateProgress()}%`);
 
-  // Hacer visible la pestaña activa (AGREGAR ESTA LÍNEA)
-  this.makeActiveTabVisible();
+  // Guardar el estado en localStorage para persistencia
+  if (this.historiaId) {
+    const statusKey = `historia_${this.historiaId}_status`;
+    localStorage.setItem(statusKey, JSON.stringify(this.sectionStatus));
+  }
 
-  console.log('Datos temporales guardados:', this.formValues);
+  // Forzar actualización de la vista
+  this.changeDetectorRef.detectChanges();
+
+  // PASO 4: Scroll al inicio del contenedor de tabs
+  if (this.tabsContainer) {
+    setTimeout(() => {
+      const activeButton = this.tabsContainer.nativeElement.querySelector('button.active');
+      if (activeButton) {
+        activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }, 100);
+  }
+
+  // PASO 5: Verificar estado de scroll para los botones de navegación
+  this.checkScrollableStatus();
 }
 
 

@@ -617,7 +617,6 @@ cambiarEstado(historiaId: number, event?: Event): void {
         console.log('Cargando filtros guardados:', filters);
 
         // Cargar todos los filtros
-        this.filtroEstado = filters.filtroEstado || 'todos';
         this.filtroPaciente = filters.filtroPaciente || '';
         this.ordenamiento = filters.ordenamiento || 'recientes';
         this.materiaSeleccionadaId = filters.materiaSeleccionadaId;
@@ -645,7 +644,6 @@ cambiarEstado(historiaId: number, event?: Event): void {
     console.log('Limpiando filtros guardados');
     localStorage.removeItem('dashboard-filters');
     // Reiniciar valores por defecto
-    this.filtroEstado = 'todos';
     this.filtroPaciente = '';
     this.ordenamiento = 'recientes';
     this.materiaSeleccionadaId = null;
@@ -739,22 +737,23 @@ cambiarEstado(historiaId: number, event?: Event): void {
   aplicarFiltroMateria(materiaId: number | null): void {
     console.log(`Aplicando filtro de materia: ${materiaId}`);
     this.materiaSeleccionadaId = materiaId;
-
-    // Always reset to show all histories ("todos") when changing materia
-    this.filtroEstado = 'todos';
-
-    // For historical subjects, we no longer change to "Archivado" automatically
-    // We still update statistics based on selected materia
+    // ELIMINADO: this.filtroEstado = 'todos';
     this.actualizarEstadisticas();
-
-    // Reset pagination when changing materia
     this.resetearPaginacion();
-
-    // Reset patient filter for a better user experience
     this.filtroPaciente = '';
-
-    // Save filters to localStorage
     this.saveFilters();
+  }
+
+  aplicarFiltroEstado(estado: string): void {
+    this.filtroEstado = estado;
+
+    if (estado !== 'archivadas') {
+      this.filtroMateriaArchivada = null;
+    }
+
+    // ELIMINADO: this.materiaSeleccionadaId = null;
+    this.actualizarEstadisticas();
+    this.resetearPaginacion();
   }
 
   // Método para obtener número de historias por materia
@@ -1018,40 +1017,31 @@ cambiarEstado(historiaId: number, event?: Event): void {
   }
 
   aplicarFiltroCard(estado: string): void {
-    // Verificar si el estado tiene valores antes de aplicar el filtro
     if (estado === 'todos' && this.obtenerHistoriasNoArchivadas() === 0) {
-      return; // No hacer nada si no hay historias no archivadas
+      return;
     }
 
     if (estado === 'Archivado' && (!this.estadisticas || this.estadisticas.archivadas === 0)) {
-      return; // No hacer nada si no hay historias archivadas
+      return;
     }
 
     if (estado !== 'todos' && estado !== 'Archivado') {
-      // Para estados específicos (En proceso, Revisión, etc.)
       const estadoEncontrado = this.estadisticas?.porEstado?.find(e => e.estado === estado);
       const cantidadEstado = estado === 'Finalizado'
         ? this.obtenerFinalizadasNoArchivadas()
         : estadoEncontrado?.cantidad || 0;
 
       if (cantidadEstado === 0) {
-        return; // No hacer nada si no hay historias en este estado
+        return;
       }
     }
 
-    // Si llegamos aquí, podemos aplicar el filtro
     this.filtroEstado = estado;
-
-    // Reset pagination
+    // NO resetear materiaSeleccionadaId aquí
     this.resetearPaginacion();
-
-    // Reset the patient filter
     this.filtroPaciente = '';
-
-    // Save filters to localStorage
     this.saveFilters();
 
-    // Optional: scroll to the table for the user to see the results
     setTimeout(() => {
       const tablaElement = document.querySelector('.tabla-container');
       if (tablaElement) {
