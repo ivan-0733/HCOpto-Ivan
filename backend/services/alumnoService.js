@@ -61,7 +61,7 @@ async actualizarPassword(usuarioId, passwordActual, nuevaPassword) {
     const usuario = usuarios[0];
 
     // Aquí asumimos que estás usando bcrypt para hash de contraseñas
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const isMatch = await bcrypt.compare(passwordActual, usuario.ContraseñaHash);
 
     if (!isMatch) {
@@ -110,7 +110,7 @@ async verificarPassword(usuarioId, passwordActual) {
     const usuario = usuarios[0];
 
     // Verificar la contraseña
-    const bcrypt = require('bcrypt');
+    const bcrypt = require('bcryptjs');
     const isMatch = await bcrypt.compare(passwordActual, usuario.ContraseñaHash);
 
     return isMatch;
