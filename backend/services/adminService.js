@@ -1,6 +1,6 @@
 const db = require('../config/database');
 const { AppError } = require('../utils/errorHandler');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const adminService = {
   /**
