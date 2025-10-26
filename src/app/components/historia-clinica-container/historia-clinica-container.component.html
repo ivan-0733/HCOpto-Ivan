@@ -20,7 +20,7 @@
           [disabled]="submitting"
           (click)="isNewHistoria ? crearNuevaHistoria() : guardarHistoriaEditada()">
           <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
-          {{ isNewHistoria ? 'Crear Historia Clínica' : 'Guardar Cambios' }}
+          {{ isNewHistoria ? 'Guardar Historia Clínica' : 'Guardar Cambios' }}
         </button>
     </div>
   </header>

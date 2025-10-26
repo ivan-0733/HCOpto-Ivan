@@ -14,9 +14,10 @@ import { BinocularidadComponent } from '../historia-clinica-binocularidad/histor
 import { DeteccionAlteracionesComponent } from '../historia-clinica-alteraciones/historia-clinica-alteraciones.component';
 import { DiagnosticoComponent } from '../historia-clinica-diagnostico/historia-clinica-diagnostico.component';
 import { RecetaFinalComponent } from '../historia-clinica-receta-final/historia-clinica-receta-final.component';
-import { forkJoin } from 'rxjs';
 import { TitleCaseSectionPipe } from '../../pipes/title-case-section.pipe';
 import { fromEvent, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
 selector: 'app-historia-clinica-container',
@@ -61,8 +62,10 @@ success = '';
 title = 'Nueva Historia Clínica';
 allSectionsRequired = false;
 
-// Añade esta propiedad a la clase
 showNavButtons = true;
+
+private destroy$ = new Subject<void>();
+ultimoGuardadoLocal: Date | null = null;
 
 // Lista ordenada de secciones con los nuevos nombres
 sections = [
@@ -180,27 +183,21 @@ ngOnInit(): void {
       this.isNewHistoria = false;
       this.title = `Editar Historia Clínica #${this.historiaId}`;
 
-      // Intentar recuperar estado guardado localmente primero
-      const statusKey = `historia_${this.historiaId}_status`;
-      const savedStatus = localStorage.getItem(statusKey);
+      // Cargar del servidor PRIMERO
+      this.loadHistoriaStatus(); // Esto poblará this.formValues desde la BD
 
-      if (savedStatus) {
-        try {
-          this.sectionStatus = JSON.parse(savedStatus);
-          console.log('Estado recuperado de localStorage:', this.sectionStatus);
-        } catch (e) {
-          console.error('Error al recuperar estado guardado:', e);
-        }
-      }
+      // La lógica de carga del borrador local se movió DENTRO de loadHistoriaStatus
+      // para asegurar que se ejecute DESPUÉS de cargar los datos del servidor.
 
-      // Luego cargar del servidor para actualizar
-      this.loadHistoriaStatus();
     } else {
       // Caso de nueva historia
       this.isNewHistoria = true;
       this.currentSection = 'datos-generales';
       // Inicializar el estado de las secciones para nueva historia
       this.initializeNewHistoriaStatus();
+
+      // ⭐ NUEVO: Cargar borrador local para NUEVA historia
+      this.cargarBorradorLocal();
     }
   });
 }
@@ -363,11 +360,9 @@ onAntecedenteVisualFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['agudeza-visual']);
     }
 
-    // Suscribirse a cambios en el formulario para guardar
-    form.valueChanges.subscribe(values => {
-      this.formValues['agudeza-visual'] = values;
-      console.log('Valores de agudeza visual actualizados:', values);
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('agudeza-visual', form);
+
   }
   else if (form.contains('ojoDerechoEsfera') || form.contains('tipoBifocalMultifocalID')) {
     this.lensometriaForm = form;
@@ -378,11 +373,8 @@ onAntecedenteVisualFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['lensometria']);
     }
 
-    // Suscribirse a cambios en el formulario para guardar
-    form.valueChanges.subscribe(values => {
-      this.formValues['lensometria'] = values;
-      console.log('Valores de lensometría actualizados:', values);
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('lensometria', form);
   }
 }
 
@@ -416,10 +408,8 @@ if (form.contains('lejosHorizontal')) {
     form.patchValue(this.formValues['alineacion-ocular']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['alineacion-ocular'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('alineacion-ocular', form);
 }
 else if (form.contains('versiones')) {
   this.motilidadForm = form;
@@ -430,10 +420,8 @@ else if (form.contains('versiones')) {
     form.patchValue(this.formValues['motilidad']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['motilidad'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('motilidad', form);
 }
 else if (form.contains('ojoDerechoAnexos')) {
   this.exploracionForm = form;
@@ -444,10 +432,8 @@ else if (form.contains('ojoDerechoAnexos')) {
     form.patchValue(this.formValues['exploracion-fisica']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['exploracion-fisica'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('exploracion-fisica', form);
 }
 else if (form.contains('ojoDerechoDiametro')) {
   this.viaPupilarForm = form;
@@ -458,10 +444,8 @@ else if (form.contains('ojoDerechoDiametro')) {
     form.patchValue(this.formValues['via-pupilar']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['via-pupilar'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('via-pupilar', form);
 }
 }
 
@@ -477,10 +461,8 @@ if (form.contains('ojoDerechoQueratometria')) {
     form.patchValue(this.formValues['estado-refractivo']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['estado-refractivo'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('estado-refractivo', form);
 }
 else if (form.contains('valorADD')) {
   this.subjetivoCercaForm = form;
@@ -491,14 +473,16 @@ else if (form.contains('valorADD')) {
     form.patchValue(this.formValues['subjetivo-cerca']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['subjetivo-cerca'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('subjetivo-cerca', form);
 }
 }
 
 ngOnDestroy(): void {
+  // ⭐ MODIFICADO: Disparar limpieza de suscripciones
+  this.destroy$.next();
+  this.destroy$.complete();
+
   // Limpiar suscripciones
   if (this.scrollSub) {
     this.scrollSub.unsubscribe();
@@ -528,10 +512,8 @@ onBinocularidadFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['binocularidad']);
     }
 
-    // Suscribirse a cambios en el formulario para guardar
-    form.valueChanges.subscribe(values => {
-      this.formValues['binocularidad'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('binocularidad', form);
   }
   else if (form.contains('horizontalesLejos')) {
     this.foriasForm = form;
@@ -541,9 +523,8 @@ onBinocularidadFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['forias']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['forias'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('forias', form);
   }
   else if (form.contains('positivasLejosBorroso')) {
     this.vergenciasForm = form;
@@ -553,9 +534,8 @@ onBinocularidadFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['vergencias']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['vergencias'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('vergencias', form);
   }
   else if (form.contains('integracionBinocular')) {
     this.metodoGraficoForm = form;
@@ -579,13 +559,8 @@ onBinocularidadFormReady(form: FormGroup): void {
       }, 100);
     }
 
-    // Suscribirse a cambios en el formulario para guardar, incluyendo la imagen base64
-    form.valueChanges.subscribe(values => {
-      this.formValues['metodo-grafico'] = {
-        ...values,
-        imagenBase64: this.imgPreview || (this.formValues['metodo-grafico'] ? this.formValues['metodo-grafico'].imagenBase64 : null)
-      };
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('metodo-grafico', form);
   }
 }
 
@@ -602,6 +577,7 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['grid-amsler']);
     }
 
+    // Corrección para tonometría (esto estaba en el original, parece un bug pero lo respeto)
     if (this.formValues['tonometria']) {
       // 1. Crea una copia de los datos para no modificar el original.
       const datosTonometria = { ...this.formValues['tonometria'] };
@@ -616,10 +592,8 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(datosTonometria);
     }
 
-    // Suscribirse a cambios en el formulario para guardar
-    form.valueChanges.subscribe(values => {
-      this.formValues['grid-amsler'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('grid-amsler', form);
   }
   else if (form.contains('metodoAnestesico')) {
     this.tonometriaForm = form;
@@ -629,9 +603,8 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['tonometria']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['tonometria'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('tonometria', form);
   }
   else if (form.contains('ojoDerechoCCT')) {
     this.paquimetriaForm = form;
@@ -641,9 +614,8 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['paquimetria']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['paquimetria'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('paquimetria', form);
   }
   else if (form.contains('tamanoColorIndice')) {
     this.campimetriaForm = form;
@@ -653,9 +625,8 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['campimetria']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['campimetria'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('campimetria', form);
   }
   else if (form.contains('ojoDerechoPestanas')) {
     this.biomicroscopiaForm = form;
@@ -665,9 +636,8 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['biomicroscopia']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['biomicroscopia'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('biomicroscopia', form);
   }
   else if (form.contains('ojoDerechoPapila')) {
     this.oftalmoscopiaForm = form;
@@ -677,9 +647,8 @@ onDeteccionAlteracionesFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['oftalmoscopia']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['oftalmoscopia'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('oftalmoscopia', form);
   }
 }
 
@@ -693,9 +662,8 @@ onDiagnosticoFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['diagnostico']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['diagnostico'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('diagnostico', form);
   }
   // 2. Identificar Plan de Tratamiento (es el único con Validators.required)
   else if (form.contains('descripcion') && form.get('descripcion')?.hasValidator(Validators.required)) {
@@ -706,9 +674,8 @@ onDiagnosticoFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['plan-tratamiento']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['plan-tratamiento'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('plan-tratamiento', form);
   }
   // 3. Identificar Pronóstico (sin validadores requeridos)
   else if (form.contains('descripcion') && !this.pronosticoForm) {
@@ -719,9 +686,8 @@ onDiagnosticoFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['pronostico']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['pronostico'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('pronostico', form);
   }
   // 4. Identificar Recomendaciones (último formulario restante)
   else if (form.contains('descripcion')) {
@@ -732,9 +698,8 @@ onDiagnosticoFormReady(form: FormGroup): void {
       form.patchValue(this.formValues['recomendaciones']);
     }
 
-    form.valueChanges.subscribe(values => {
-      this.formValues['recomendaciones'] = values;
-    });
+    // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+    this.subscribeToFormChanges('recomendaciones', form);
   }
 }
 
@@ -747,18 +712,211 @@ onRecetaFinalFormReady(form: FormGroup): void {
     form.patchValue(this.formValues['receta']);
   }
 
-  // Suscribirse a cambios en el formulario para guardar
-  form.valueChanges.subscribe(values => {
-    this.formValues['receta'] = values;
-  });
+  // ⭐ MODIFICADO: Suscribirse a cambios en el formulario para guardar
+  this.subscribeToFormChanges('receta', form);
 }
 
-// Suscribirse a cambios en el formulario para guardar los valores mientras se editan
-private subscribeToFormChanges(sectionName: string, form: FormGroup): void {
-form.valueChanges.subscribe(values => {
-  this.formValues[sectionName] = values;
-});
+// ⭐ INICIO: MÉTODOS AÑADIDOS/MODIFICADOS PARA AUTOGUARDADO
+
+/**
+ * Carga el borrador guardado desde localStorage, si existe,
+ * y lo aplica a this.formValues.
+ */
+private cargarBorradorLocal(): void {
+  const storageKey = this.historiaId
+    ? `historia_${this.historiaId}_borradores`
+    : 'historia_nueva_borradores';
+  
+  const timestampKey = this.historiaId
+    ? `historia_${this.historiaId}_timestamp_local`
+    : 'historia_nueva_timestamp_local';
+
+  const borradorJSON = localStorage.getItem(storageKey);
+  const timestampJSON = localStorage.getItem(timestampKey);
+
+  if (borradorJSON && timestampJSON) {
+    try {
+      this.formValues = JSON.parse(borradorJSON);
+      this.ultimoGuardadoLocal = new Date(timestampJSON);
+      console.warn(`BORRADOR LOCAL CARGADO: Se han restaurado los cambios no guardados de ${this.ultimoGuardadoLocal.toLocaleString()}`);
+      
+      // Forzar la actualización de los formularios que ya estén listos
+      this.actualizarFormulariosDesdeFormValues();
+
+    } catch (e) {
+      console.error('Error al parsear borrador de localStorage', e);
+      localStorage.removeItem(storageKey);
+      localStorage.removeItem(timestampKey);
+    }
+  }
 }
+
+/**
+ * Fuerza la actualización de todos los formularios existentes con los datos
+ * de this.formValues. Útil después de cargar un borrador local.
+ */
+private actualizarFormulariosDesdeFormValues(): void {
+  console.log('Forzando actualización de formularios desde formValues cargados');
+  
+  // Iterar sobre todos los formularios que el componente conoce
+  // y aplicar patchValue si existen tanto el form como los datos.
+  // { emitEvent: false } es crucial para evitar un bucle de autoguardado al cargar.
+
+  if (this.sectionForms['datos-generales'] && this.formValues['datos-generales']) {
+    this.sectionForms['datos-generales'].patchValue(this.formValues['datos-generales'], { emitEvent: false });
+  }
+  if (this.sectionForms['interrogatorio'] && this.formValues['interrogatorio']) {
+    this.sectionForms['interrogatorio'].patchValue(this.formValues['interrogatorio'], { emitEvent: false });
+  }
+  if (this.agudezaVisualForm && this.formValues['agudeza-visual']) {
+    this.agudezaVisualForm.patchValue(this.formValues['agudeza-visual'], { emitEvent: false });
+  }
+  if (this.lensometriaForm && this.formValues['lensometria']) {
+    this.lensometriaForm.patchValue(this.formValues['lensometria'], { emitEvent: false });
+  }
+  // ... Examen Preliminar
+  if (this.alineacionForm && this.formValues['alineacion-ocular']) {
+    this.alineacionForm.patchValue(this.formValues['alineacion-ocular'], { emitEvent: false });
+  }
+  if (this.motilidadForm && this.formValues['motilidad']) {
+    this.motilidadForm.patchValue(this.formValues['motilidad'], { emitEvent: false });
+  }
+  if (this.exploracionForm && this.formValues['exploracion-fisica']) {
+    this.exploracionForm.patchValue(this.formValues['exploracion-fisica'], { emitEvent: false });
+  }
+  if (this.viaPupilarForm && this.formValues['via-pupilar']) {
+    this.viaPupilarForm.patchValue(this.formValues['via-pupilar'], { emitEvent: false });
+  }
+  // ... Estado Refractivo
+  if (this.refraccionForm && this.formValues['estado-refractivo']) {
+    this.refraccionForm.patchValue(this.formValues['estado-refractivo'], { emitEvent: false });
+  }
+  if (this.subjetivoCercaForm && this.formValues['subjetivo-cerca']) {
+    this.subjetivoCercaForm.patchValue(this.formValues['subjetivo-cerca'], { emitEvent: false });
+  }
+  // ... Binocularidad
+  if (this.binocularidadForm && this.formValues['binocularidad']) {
+    this.binocularidadForm.patchValue(this.formValues['binocularidad'], { emitEvent: false });
+  }
+  if (this.foriasForm && this.formValues['forias']) {
+    this.foriasForm.patchValue(this.formValues['forias'], { emitEvent: false });
+  }
+  if (this.vergenciasForm && this.formValues['vergencias']) {
+    this.vergenciasForm.patchValue(this.formValues['vergencias'], { emitEvent: false });
+  }
+  if (this.metodoGraficoForm && this.formValues['metodo-grafico']) {
+    this.metodoGraficoForm.patchValue(this.formValues['metodo-grafico'], { emitEvent: false });
+  }
+  // ... Detección Alteraciones
+  if (this.gridAmslerForm && this.formValues['grid-amsler']) {
+    this.gridAmslerForm.patchValue(this.formValues['grid-amsler'], { emitEvent: false });
+  }
+  if (this.tonometriaForm && this.formValues['tonometria']) {
+    this.tonometriaForm.patchValue(this.formValues['tonometria'], { emitEvent: false });
+  }
+  if (this.paquimetriaForm && this.formValues['paquimetria']) {
+    this.paquimetriaForm.patchValue(this.formValues['paquimetria'], { emitEvent: false });
+  }
+  if (this.campimetriaForm && this.formValues['campimetria']) {
+    this.campimetriaForm.patchValue(this.formValues['campimetria'], { emitEvent: false });
+  }
+  if (this.biomicroscopiaForm && this.formValues['biomicroscopia']) {
+    this.biomicroscopiaForm.patchValue(this.formValues['biomicroscopia'], { emitEvent: false });
+  }
+  if (this.oftalmoscopiaForm && this.formValues['oftalmoscopia']) {
+    this.oftalmoscopiaForm.patchValue(this.formValues['oftalmoscopia'], { emitEvent: false });
+  }
+  // ... Diagnóstico
+  if (this.diagnosticoForm && this.formValues['diagnostico']) {
+    this.diagnosticoForm.patchValue(this.formValues['diagnostico'], { emitEvent: false });
+  }
+  if (this.planTratamientoForm && this.formValues['plan-tratamiento']) {
+    this.planTratamientoForm.patchValue(this.formValues['plan-tratamiento'], { emitEvent: false });
+  }
+  if (this.pronosticoForm && this.formValues['pronostico']) {
+    this.pronosticoForm.patchValue(this.formValues['pronostico'], { emitEvent: false });
+  }
+  if (this.recomendacionesForm && this.formValues['recomendaciones']) {
+    this.recomendacionesForm.patchValue(this.formValues['recomendaciones'], { emitEvent: false });
+  }
+  // ... Receta
+  if (this.recetaFinalForm && this.formValues['receta']) {
+    this.recetaFinalForm.patchValue(this.formValues['receta'], { emitEvent: false });
+  }
+}
+
+/**
+ * Guarda todos los datos del formulario en localStorage
+ * Se ejecuta con cada cambio del usuario (con debounce de 1 segundo)
+ */
+private guardarBorradorLocal(): void {
+  // Determinar la clave según si es nueva historia o edición
+  const storageKey = this.historiaId
+    ? `historia_${this.historiaId}_borradores`
+    : 'historia_nueva_borradores';
+  
+  const timestampKey = this.historiaId
+    ? `historia_${this.historiaId}_timestamp_local`
+    : 'historia_nueva_timestamp_local';
+  
+  // Guardar todos los datos del formulario en localStorage
+  localStorage.setItem(storageKey, JSON.stringify(this.formValues));
+  localStorage.setItem(timestampKey, new Date().toISOString());
+  
+  this.ultimoGuardadoLocal = new Date();
+  
+  console.log('💾 Borrador guardado en localStorage');
+}
+
+/**
+ * Limpia el borrador de localStorage después de un guardado exitoso.
+ */
+private limpiarBorradorLocal(): void {
+  const storageKey = this.historiaId
+    ? `historia_${this.historiaId}_borradores`
+    : 'historia_nueva_borradores';
+  
+  const timestampKey = this.historiaId
+    ? `historia_${this.historiaId}_timestamp_local`
+    : 'historia_nueva_timestamp_local';
+  
+  localStorage.removeItem(storageKey);
+  localStorage.removeItem(timestampKey);
+  
+  this.ultimoGuardadoLocal = null;
+  console.log('Borrador local limpiado después de guardar en servidor.');
+}
+
+
+// ⭐ REEMPLAZADO: Este es el método que proporcionaste, con debounce y guardado local
+private subscribeToFormChanges(sectionKey: string, form: FormGroup): void {
+  form.valueChanges
+    .pipe(
+      debounceTime(1000), // Espera 1 segundo después del último cambio
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)), // Solo si los valores realmente cambiaron (comparación profunda)
+      takeUntil(this.destroy$) // Limpiar al destruir componente
+    )
+    .subscribe(values => {
+      // Actualizar formValues
+      // Manejar caso especial de imagen para metodo-grafico
+      if (sectionKey === 'metodo-grafico') {
+        this.formValues['metodo-grafico'] = {
+          ...values,
+          imagenBase64: this.imgPreview || (this.formValues['metodo-grafico'] ? this.formValues['metodo-grafico'].imagenBase64 : null)
+        };
+      } else {
+        this.formValues[sectionKey] = values;
+      }
+      
+      // ⭐ GUARDAR EN LOCALSTORAGE CON CADA CAMBIO
+      this.guardarBorradorLocal();
+      
+      console.log(`💾 Sección "${sectionKey}" autoguardada en localStorage`);
+    });
+}
+
+// ⭐ FIN: MÉTODOS AÑADIDOS/MODIFICADOS PARA AUTOGUARDADO
+
 
 checkIfNavigationButtonsNeeded(): void {
   if (!this.tabsContainer) return;
@@ -950,6 +1108,10 @@ loadHistoriaStatus(): void {
         }
 
         console.log('Historia cargada para edición - FormValues actualizados:', this.formValues);
+
+        // ⭐ NUEVO: Después de cargar del servidor, verificar si hay un borrador local
+        // que deba sobrescribir estos datos.
+        this.cargarBorradorLocal();
 
         const statusKey = `historia_${this.historiaId}_status`;
         localStorage.setItem(statusKey, JSON.stringify(this.sectionStatus));
@@ -1214,6 +1376,9 @@ crearNuevaHistoria(): void {
           this.onHistoriaCreated(newHistoriaId);
           this.success = 'Historia clínica creada correctamente.';
 
+          // ⭐ NUEVO: Limpiar borrador local después de crear exitosamente
+          this.limpiarBorradorLocal();
+
           // Marcar todas las secciones enviadas como completadas
           for (const seccionKey in secciones) {
             if (
@@ -1477,6 +1642,10 @@ this.historiaClinicaService.actualizarSeccion(this.historiaId, 'datos-generales'
         this.actualizarSeccionesAdicionales(this.historiaId)
           .then(() => {
             this.success = 'Historia clínica actualizada correctamente.';
+            
+            // ⭐ NUEVO: Limpiar borrador local después de actualizar exitosamente
+            this.limpiarBorradorLocal();
+
             this.sectionStatus['datos-generales'] = true;
 
             setTimeout(() => {
@@ -1992,6 +2161,9 @@ onImageSelected(event: Event): void {
       if (this.metodoGraficoForm) {
         this.metodoGraficoForm.patchValue({ imagenBase64: this.imgPreview });
       }
+      
+      // ⭐ NUEVO: Guardar borrador local al seleccionar imagen
+      this.guardarBorradorLocal();
     };
     reader.readAsDataURL(file);
   }
@@ -2040,6 +2212,9 @@ onImageBase64Change(event: any): void {
       this.metodoGraficoForm.patchValue({ imagenBase64: event });
     }
   }
+
+  // ⭐ NUEVO: Guardar borrador local CADA vez que una imagen cambia
+  this.guardarBorradorLocal();
 }
 
 private uploadBase64Image(historiaId: number, base64String: string, seccionID: string, tipoImagenID: string, esOjoDerecho?: boolean): Promise<number | null> {
@@ -2321,6 +2496,9 @@ guardarHistoriaEditada(): void {
     .subscribe({
       next: (response) => {
         this.success = 'Historia clínica actualizada exitosamente';
+
+        // ⭐ NUEVO: Limpiar borrador local después de editar exitosamente
+        this.limpiarBorradorLocal();
 
         // Marcar todas las secciones enviadas como completadas
         for (const seccionKey in secciones) {
@@ -2627,6 +2805,8 @@ changeSection(section: string): void {
   }
 
   // PASO 2: Guardar los valores actuales del formulario antes de cambiar
+  // (Nota: con el autoguardado, esto es menos crítico, pero sigue siendo
+  // bueno para la consistencia de this.formValues si no se usa el debounce)
   switch (this.currentSection) {
 
     case 'datos-generales':
