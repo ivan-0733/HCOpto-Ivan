@@ -17,6 +17,7 @@ expiresIn: process.env.JWT_EXPIRES_IN || '7d'
 },
 cors: {
 origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
-methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+credentials: true  // ← CRÍTICO para que envíe cookies/headers de auth
 }
 };

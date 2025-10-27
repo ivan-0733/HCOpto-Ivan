@@ -1,8 +1,10 @@
 // config/database.js
-const mysql = require('mysql2/promise'); // ¡Usa la versión promisificada directamente!
-const dotenv = require('dotenv');
+const mysql = require('mysql2/promise');
+// const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+//const envPath = path.join(__dirname, '..', '.env');
+// dotenv.config({ path: envPath });
 
 // Crear conexión pool
 const pool = mysql.createPool({

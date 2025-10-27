@@ -44,3 +44,22 @@ Thumbs.db
 #Excluir las carpetas
 uploads/
 backend/uploads/
+
+# Variables de entorno locales
+.env
+
+# Logs
+logs/
+
+# Archivos de PM2
+.pm2/
+
+# Dependencias
+node_modules/
+
+# Build de Angular
+dist/
+www/
+
+# Carpeta de subidas local
+uploads/

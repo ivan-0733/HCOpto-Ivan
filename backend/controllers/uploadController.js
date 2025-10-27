@@ -9,16 +9,6 @@ const { UPLOAD_DIR } = require('../utils/fileManager');
 // Configuración de Multer
 const multer = require('multer');
 
-// Asegurarse de que la carpeta de destino exista
-const uploadDir = './uploads';
-try {
-    fs.access(uploadDir).catch(async () => {
-        await fs.mkdir(uploadDir, { recursive: true });
-    });
-} catch (error) {
-    console.log('Creando directorio de uploads:', error);
-}
-
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
