@@ -733,10 +733,11 @@ aceptarBorrador(): void {
   this.ultimoGuardadoLocal = this.borradorPendiente.timestamp;
   
   this.actualizarFormulariosDesdeFormValues(); 
-  // ------------------------------------
-
+  
+  this.guardarBorradorLocal();
+  
   this.cerrarModalBorrador();
-  console.log('Borrador de nueva historia ACEPTADO y cargado.');
+  console.log('Borrador de nueva historia ACEPTADO y RE-GUARDADO.');
 }
 
 /**
@@ -931,23 +932,22 @@ private cargarBorradorLocalPorId(): void {
   // Guard clause: Solo para historias con ID
   if (!this.historiaId) return;
 
-  const storageKey = `historia_${this.historiaId}_borrador`; // Clave actualizada
+  const storageKey = `historia_${this.historiaId}_borrador`;
   const borradorJSON = localStorage.getItem(storageKey);
 
   if (borradorJSON) {
     try {
-      // Parsear el objeto completo
       const draft = JSON.parse(borradorJSON);
-      
-      // Aquí podrías comparar draft.timestamp con los datos del servidor
-      // pero por ahora, el borrador local sobreescribe
       
       this.formValues = draft.values;
       this.ultimoGuardadoLocal = new Date(draft.timestamp);
-      console.warn(`BORRADOR LOCAL (ID: ${this.historiaId}) CARGADO: Se han restaurado los cambios de ${this.ultimoGuardadoLocal.toLocaleString()}`);
+      console.warn(`BORRADOR LOCAL (ID: ${this.historiaId}) CARGADO: ...`);
       
       // Forzar la actualización de los formularios que ya estén listos
       this.actualizarFormulariosDesdeFormValues();
+
+      this.guardarBorradorLocal();
+      console.log(`Borrador (ID: ${this.historiaId}) RE-GUARDADO.`);
 
     } catch (e) {
       console.error(`Error al parsear borrador de localStorage (ID: ${this.historiaId})`, e);
