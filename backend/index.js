@@ -1,3 +1,6 @@
+// ✅ Cargar .env PRIMERO (el symlink apuntará a /shared/.env)
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -11,13 +14,15 @@ const { errorHandler } = require('./utils/errorHandler');
 const multer = require('multer');
 const path = require('path');
 
+console.log('*** CWD DE LA APP:', process.cwd());
+
 // ✅ AGREGAR: Importar rutas de admin
 console.log('🔄 Cargando rutas de admin...');
 const adminRoutes = require('./routes/adminRoutes');
 console.log('✅ Rutas de admin cargadas correctamente');
 
 // Cargar variables de entorno
-dotenv.config();
+// dotenv.config(); // ❌ COMENTADO: PM2 carga las variables desde ecosystem.config.js
 
 // Crear aplicación Express
 const app = express();

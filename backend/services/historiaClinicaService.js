@@ -1,5 +1,4 @@
 const db = require('../config/database.js');
-const { crearHistoriaClinicaCompleta } = require('../controllers/historiaClinicaController.js');
 
 
 /**
