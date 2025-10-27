@@ -51,9 +51,12 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   ngOnInit(): void {
-    if (this.historiaId) {
-      this.cargarDatosExistentes();
-    }
+    // --- CORRECCIÓN ---
+    // Se elimina la llamada a cargarDatosExistentes()
+    // if (this.historiaId) {
+    //   this.cargarDatosExistentes();
+    // }
+    // --- FIN CORRECCIÓN ---
 
     // Emitir los formularios para que el componente padre pueda acceder a ellos
     this.formReady.emit(this.alineacionForm);
@@ -78,11 +81,14 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges, AfterViewIn
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['historiaId'] && !changes['historiaId'].firstChange) {
-      if (this.historiaId) {
-        this.cargarDatosExistentes();
-      }
-    }
+    // --- CORRECCIÓN ---
+    // Se elimina la lógica de este método
+    // if (changes['historiaId'] && !changes['historiaId'].firstChange) {
+    //   if (this.historiaId) {
+    //     this.cargarDatosExistentes();
+    //   }
+    // }
+    // --- FIN CORRECCIÓN ---
   }
 
   /**
@@ -187,92 +193,9 @@ export class ExamenPreliminarComponent implements OnInit, OnChanges, AfterViewIn
     });
   }
 
-  cargarDatosExistentes(): void {
-    if (!this.historiaId) return;
-
-    this.loading = true;
-
-    this.historiaService.obtenerHistoriaClinica(this.historiaId)
-      .pipe(finalize(() => {
-        this.loading = false;
-      }))
-      .subscribe({
-        next: (historia) => {
-          // Cargar datos de alineación ocular
-          if (historia.alineacionOcular) {
-            this.alineacionForm.patchValue({
-              lejosHorizontal: historia.alineacionOcular.LejosHorizontal || '',
-              lejosVertical: historia.alineacionOcular.LejosVertical || '',
-              cercaHorizontal: historia.alineacionOcular.CercaHorizontal || '',
-              cercaVertical: historia.alineacionOcular.CercaVertical || '',
-              metodoID: historia.alineacionOcular.MetodoID || ''
-            });
-          }
-
-          // Cargar datos de motilidad
-          if (historia.motilidad) {
-            this.motilidadForm.patchValue({
-              versiones: historia.motilidad.Versiones || '',
-              ducciones: historia.motilidad.Ducciones || '',
-              sacadicos: historia.motilidad.Sacadicos || '',
-              persecucion: historia.motilidad.Persecucion || '',
-              fijacion: historia.motilidad.Fijacion || ''
-            });
-          }
-
-          // Cargar datos de exploración física
-          if (historia.exploracionFisica) {
-            this.exploracionForm.patchValue({
-              ojoDerechoAnexos: historia.exploracionFisica.OjoDerechoAnexos || '',
-              ojoIzquierdoAnexos: historia.exploracionFisica.OjoIzquierdoAnexos || '',
-              ojoDerechoSegmentoAnterior: historia.exploracionFisica.OjoDerechoSegmentoAnterior || '',
-              ojoIzquierdoSegmentoAnterior: historia.exploracionFisica.OjoIzquierdoSegmentoAnterior || ''
-            });
-
-            // Aplicar auto-resize después de cargar datos
-            setTimeout(() => {
-              this.autoResizeAllTextareas();
-            }, 100);
-          }
-
-          // Cargar datos de vía pupilar
-          if (historia.viaPupilar) {
-            this.viaPupilarForm.patchValue({
-              ojoDerechoDiametro: historia.viaPupilar.OjoDerechoDiametro || '',
-              ojoIzquierdoDiametro: historia.viaPupilar.OjoIzquierdoDiametro || '',
-              ojoDerechoFotomotorPresente: historia.viaPupilar.OjoDerechoFotomotorPresente || false,
-              ojoDerechoConsensualPresente: historia.viaPupilar.OjoDerechoConsensualPresente || false,
-              ojoDerechoAcomodativoPresente: historia.viaPupilar.OjoDerechoAcomodativoPresente || false,
-              ojoIzquierdoFotomotorPresente: historia.viaPupilar.OjoIzquierdoFotomotorPresente || false,
-              ojoIzquierdoConsensualPresente: historia.viaPupilar.OjoIzquierdoConsensualPresente || false,
-              ojoIzquierdoAcomodativoPresente: historia.viaPupilar.OjoIzquierdoAcomodativoPresente || false,
-              ojoDerechoFotomotorAusente: historia.viaPupilar.OjoDerechoFotomotorAusente || false,
-              ojoDerechoConsensualAusente: historia.viaPupilar.OjoDerechoConsensualAusente || false,
-              ojoDerechoAcomodativoAusente: historia.viaPupilar.OjoDerechoAcomodativoAusente || false,
-              ojoIzquierdoFotomotorAusente: historia.viaPupilar.OjoIzquierdoFotomotorAusente || false,
-              ojoIzquierdoConsensualAusente: historia.viaPupilar.OjoIzquierdoConsensualAusente || false,
-              ojoIzquierdoAcomodativoAusente: historia.viaPupilar.OjoIzquierdoAcomodativoAusente || false,
-              esIsocoria: historia.viaPupilar.EsIsocoria || false,
-              esAnisocoria: historia.viaPupilar.EsAnisocoria || false,
-              respuestaAcomodacion: historia.viaPupilar.RespuestaAcomodacion || false,
-              pupilasIguales: historia.viaPupilar.PupilasIguales || false,
-              pupilasRedondas: historia.viaPupilar.PupilasRedondas || false,
-              respuestaLuz: historia.viaPupilar.RespuestaLuz || false,
-              dip: historia.viaPupilar.DIP || '',
-              dominanciaOcularID: historia.viaPupilar.DominanciaOcularID || ''
-            });
-          }
-
-          // Emitir que los datos se han cargado correctamente
-          this.completed.emit(true);
-        },
-        error: (err) => {
-          console.error('Error al cargar datos de examen preliminar:', err);
-          this.error = 'Error al cargar datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
-        }
-      });
-  }
+  // --- CORRECCIÓN ---
+  // Se elimina todo el método cargarDatosExistentes()
+  // --- FIN CORRECCIÓN ---
 
   guardarExamenPreliminar(): void {
     if (!this.historiaId) {

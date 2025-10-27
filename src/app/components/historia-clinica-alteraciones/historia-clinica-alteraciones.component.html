@@ -18,7 +18,7 @@
     <div class="spinner"></div>
     <p>Cargando datos...</p>
   </div>
-  
+
   <div *ngIf="!loading" class="form-content">
     <!-- Sección de Grid de Amsler -->
     <div class="form-section">
@@ -160,13 +160,13 @@
             </tbody>
           </table>
         </div>
-        
+
         <div class="form-row">
           <div class="form-group col-md-12">
             <label>Imagen de Campimetría</label>
             <div class="custom-file">
               <input type="file" (change)="onImageSelected($event, 'campimetria')">
-              
+
               <div class="image-preview mt-2" *ngIf="imagenPreviews['campimetria']">
                 <img [src]="imagenPreviews['campimetria']" alt="Previsualización Campimetría" class="img-thumbnail">
                 <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('campimetria')">
@@ -200,7 +200,7 @@
                 <td><input type="text" formControlName="ojoIzquierdoPestanas" class="form-control"></td>
               </tr>
               <tr>
-                <td><strong>Párpados/Índice</strong></td>
+                <td><strong>Párpados</strong></td>
                 <td><input type="text" formControlName="ojoDerechoParpadosIndice" class="form-control"></td>
                 <td><input type="text" formControlName="ojoIzquierdoParpadosIndice" class="form-control"></td>
               </tr>
@@ -335,7 +335,7 @@
             <td><input type="text" formControlName="ojoDerechoRadio" class="form-control"></td>
             <td><input type="text" formControlName="ojoIzquierdoRadio" class="form-control"></td>
           </tr>
-          
+
           <!-- Campos adicionales -->
           <tr>
             <td><strong>Profundidad</strong></td>
@@ -381,12 +381,12 @@
         <div class="form-group">
           <label>Imagen Ojo Derecho</label>
           <div class="custom-file">
-            <input type="file" id="oftalmoscopiaODImage" 
+            <input type="file" id="oftalmoscopiaODImage"
                   (change)="onImageSelected($event, 'oftalmoscopiaOD')">
-            
+
             <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOD']">
               <img [src]="imagenPreviews['oftalmoscopiaOD']" alt="Ojo Derecho" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-              
+
               <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOD')">
                 <i class="fas fa-trash"></i> Eliminar
               </button>
@@ -398,12 +398,12 @@
         <div class="form-group">
           <label>Imagen Ojo Izquierdo</label>
           <div class="custom-file">
-            <input type="file" id="oftalmoscopiaOIImage" 
+            <input type="file" id="oftalmoscopiaOIImage"
                   (change)="onImageSelected($event, 'oftalmoscopiaOI')">
-            
+
             <div class="image-preview mt-2" *ngIf="imagenPreviews['oftalmoscopiaOI']">
               <img [src]="imagenPreviews['oftalmoscopiaOI']" alt="Ojo Izquierdo" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
-              
+
               <button type="button" class="btn btn-sm btn-danger mt-1" (click)="eliminarImagen('oftalmoscopiaOI')">
                 <i class="fas fa-trash"></i> Eliminar
               </button>

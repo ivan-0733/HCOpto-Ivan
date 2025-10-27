@@ -18,6 +18,7 @@ import { finalize } from 'rxjs/operators';
 export class EstadoRefractivoComponent implements OnInit, OnChanges {
   @Input() historiaId: number | null = null;
   @Input() hideButtons = false;
+  // **REVERSIÓN:** Volver al nombre original del Output
   @Output() completed = new EventEmitter<boolean>();
   @Output() nextSection = new EventEmitter<void>();
   @Output() formReady = new EventEmitter<FormGroup>();
@@ -33,27 +34,25 @@ export class EstadoRefractivoComponent implements OnInit, OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private historiaService: HistoriaClinicaService
+    private historiaService: HistoriaClinicaService // Aunque no se use aquí, se deja por si se necesita en el futuro
   ) {
     this.initForms();
   }
 
   ngOnInit(): void {
-    if (this.historiaId) {
-      this.cargarDatosExistentes();
-    }
-    
-    // Emitir los formularios para que el componente padre pueda acceder a ellos
     this.formReady.emit(this.refraccionForm);
     this.formReady.emit(this.subjetivoCercaForm);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['historiaId'] && !changes['historiaId'].firstChange) {
-      if (this.historiaId) {
-        this.cargarDatosExistentes();
-      }
-    }
+    // --- CORRECCIÓN ---
+    // Ya no necesitamos reaccionar a cambios del ID aquí para cargar datos.
+    // Si el ID cambia, el contenedor se reinicializará o cargará nuevos datos
+    // y aplicará patchValue a los nuevos formularios que emitamos.
+    // --- FIN CORRECCIÓN ---
+    // if (changes['historiaId'] && !changes['historiaId'].firstChange) {
+    //   // El contenedor manejará la recarga y actualización
+    // }
   }
 
   private initForms(): void {
@@ -66,15 +65,15 @@ export class EstadoRefractivoComponent implements OnInit, OnChanges {
       ojoIzquierdoAstigmatismoCorneal: [''],
       ojoDerechoAstigmatismoJaval: [''],
       ojoIzquierdoAstigmatismoJaval: [''],
-      
+
       // Retinoscopía
       ojoDerechoRetinoscopiaEsfera: [''],
-      ojoDerechoRetinosciopiaCilindro: [''],
+      ojoDerechoRetinosciopiaCilindro: [''], // Typo mantenido si así está en BD/modelo
       ojoDerechoRetinoscopiaEje: [''],
       ojoIzquierdoRetinoscopiaEsfera: [''],
-      ojoIzquierdoRetinosciopiaCilindro: [''],
+      ojoIzquierdoRetinosciopiaCilindro: [''], // Typo mantenido si así está en BD/modelo
       ojoIzquierdoRetinoscopiaEje: [''],
-      
+
       // Subjetivo
       ojoDerechoSubjetivoEsfera: [''],
       ojoDerechoSubjetivoCilindro: [''],
@@ -82,7 +81,7 @@ export class EstadoRefractivoComponent implements OnInit, OnChanges {
       ojoIzquierdoSubjetivoEsfera: [''],
       ojoIzquierdoSubjetivoCilindro: [''],
       ojoIzquierdoSubjetivoEje: [''],
-      
+
       // Balance Binoculares
       ojoDerechoBalanceBinocularesEsfera: [''],
       ojoDerechoBalanceBinocularesCilindro: [''],
@@ -99,9 +98,9 @@ export class EstadoRefractivoComponent implements OnInit, OnChanges {
       ojoDerechoM: [''],
       ojoIzquierdoM: [''],
       ambosOjosM: [''],
-      ojoDerechoJacger: [''],
-      ojoIzquierdoJacger: [''],
-      ambosOjosJacger: [''],
+      ojoDerechoJacger: [''], // Typo mantenido si así está en BD/modelo
+      ojoIzquierdoJacger: [''], // Typo mantenido si así está en BD/modelo
+      ambosOjosJacger: [''], // Typo mantenido si así está en BD/modelo
       ojoDerechoPuntos: [''],
       ojoIzquierdoPuntos: [''],
       ambosOjosPuntos: [''],
@@ -115,94 +114,32 @@ export class EstadoRefractivoComponent implements OnInit, OnChanges {
     });
   }
 
+  // --- CORRECCIÓN ---
+  // Eliminamos completamente el método cargarDatosExistentes.
+  // La responsabilidad de cargar y aplicar los datos iniciales recae
+  // completamente en el componente contenedor a través del patchValue
+  // que hace en onEstadoRefractivoFormReady.
+  // --- FIN CORRECCIÓN ---
+  /*
   cargarDatosExistentes(): void {
-    if (!this.historiaId) return;
-    
-    this.loading = true;
-    
-    this.historiaService.obtenerHistoriaClinica(this.historiaId)
-      .pipe(finalize(() => {
-        this.loading = false;
-      }))
-      .subscribe({
-        next: (historia) => {
-          // Cargar datos de estado refractivo
-          if (historia.estadoRefractivo) {
-            this.refraccionForm.patchValue({
-              // Queratometría
-              ojoDerechoQueratometria: historia.estadoRefractivo.OjoDerechoQueratometria || '',
-              ojoIzquierdoQueratometria: historia.estadoRefractivo.OjoIzquierdoQueratometria || '',
-              ojoDerechoAstigmatismoCorneal: historia.estadoRefractivo.OjoDerechoAstigmatismoCorneal || '',
-              ojoIzquierdoAstigmatismoCorneal: historia.estadoRefractivo.OjoIzquierdoAstigmatismoCorneal || '',
-              ojoDerechoAstigmatismoJaval: historia.estadoRefractivo.OjoDerechoAstigmatismoJaval || '',
-              ojoIzquierdoAstigmatismoJaval: historia.estadoRefractivo.OjoIzquierdoAstigmatismoJaval || '',
-              
-              // Retinoscopía
-              ojoDerechoRetinoscopiaEsfera: historia.estadoRefractivo.OjoDerechoRetinoscopiaEsfera || '',
-              ojoDerechoRetinosciopiaCilindro: historia.estadoRefractivo.OjoDerechoRetinosciopiaCilindro || '',
-              ojoDerechoRetinoscopiaEje: historia.estadoRefractivo.OjoDerechoRetinoscopiaEje || '',
-              ojoIzquierdoRetinoscopiaEsfera: historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEsfera || '',
-              ojoIzquierdoRetinosciopiaCilindro: historia.estadoRefractivo.OjoIzquierdoRetinosciopiaCilindro || '',
-              ojoIzquierdoRetinoscopiaEje: historia.estadoRefractivo.OjoIzquierdoRetinoscopiaEje || '',
-              
-              // Subjetivo
-              ojoDerechoSubjetivoEsfera: historia.estadoRefractivo.OjoDerechoSubjetivoEsfera || '',
-              ojoDerechoSubjetivoCilindro: historia.estadoRefractivo.OjoDerechoSubjetivoCilindro || '',
-              ojoDerechoSubjetivoEje: historia.estadoRefractivo.OjoDerechoSubjetivoEje || '',
-              ojoIzquierdoSubjetivoEsfera: historia.estadoRefractivo.OjoIzquierdoSubjetivoEsfera || '',
-              ojoIzquierdoSubjetivoCilindro: historia.estadoRefractivo.OjoIzquierdoSubjetivoCilindro || '',
-              ojoIzquierdoSubjetivoEje: historia.estadoRefractivo.OjoIzquierdoSubjetivoEje || '',
-              
-              // Balance Binoculares
-              ojoDerechoBalanceBinocularesEsfera: historia.estadoRefractivo.OjoDerechoBalanceBinocularesEsfera || '',
-              ojoDerechoBalanceBinocularesCilindro: historia.estadoRefractivo.OjoDerechoBalanceBinocularesCilindro || '',
-              ojoDerechoBalanceBinocularesEje: historia.estadoRefractivo.OjoDerechoBalanceBinocularesEje || '',
-              ojoIzquierdoBalanceBinocularesEsfera: historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEsfera || '',
-              ojoIzquierdoBalanceBinocularesCilindro: historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesCilindro || '',
-              ojoIzquierdoBalanceBinocularesEje: historia.estadoRefractivo.OjoIzquierdoBalanceBinocularesEje || '',
-              ojoDerechoAVLejana: historia.estadoRefractivo.OjoDerechoAVLejana || '',
-              ojoIzquierdoAVLejana: historia.estadoRefractivo.OjoIzquierdoAVLejana || ''
-            });
-          }
-          
-          // Cargar datos de subjetivo de cerca
-          if (historia.subjetivoCerca) {
-            this.subjetivoCercaForm.patchValue({
-              ojoDerechoM: historia.subjetivoCerca.OjoDerechoM || '',
-              ojoIzquierdoM: historia.subjetivoCerca.OjoIzquierdoM || '',
-              ambosOjosM: historia.subjetivoCerca.AmbosOjosM || '',
-              ojoDerechoJaeger: historia.subjetivoCerca.OjoDerechoJacger || '', // Nota: hay un typo en el modelo (Jacger en lugar de Jaeger)
-              ojoIzquierdoJaeger: historia.subjetivoCerca.OjoIzquierdoJacger || '',
-              ambosOjosJaeger: historia.subjetivoCerca.AmbosOjosJacger || '',
-              ojoDerechoPuntos: historia.subjetivoCerca.OjoDerechoPuntos || '',
-              ojoIzquierdoPuntos: historia.subjetivoCerca.OjoIzquierdoPuntos || '',
-              ambosOjosPuntos: historia.subjetivoCerca.AmbosOjosPuntos || '',
-              ojoDerechoSnellen: historia.subjetivoCerca.OjoDerechoSnellen || '',
-              ojoIzquierdoSnellen: historia.subjetivoCerca.OjoIzquierdoSnellen || '',
-              ambosOjosSnellen: historia.subjetivoCerca.AmbosOjosSnellen || '',
-              valorADD: historia.subjetivoCerca.ValorADD || '',
-              av: historia.subjetivoCerca.AV || '',
-              distancia: historia.subjetivoCerca.Distancia || '',
-              rango: historia.subjetivoCerca.Rango || ''
-            });
-          }
-          
-          // Emitir que los datos se han cargado correctamente
-          this.completed.emit(true);
-        },
-        error: (err) => {
-          console.error('Error al cargar datos de estado refractivo:', err);
-          this.error = 'Error al cargar datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
-        }
-      });
+    // ... Código eliminado ...
   }
+  */
 
+  // --- REVERSIÓN ---
+  // Volvemos al nombre original del método que el template HTML espera.
   guardarEstadoRefractivo(): void {
     if (!this.historiaId) {
-      this.error = 'No se ha podido identificar la historia clínica.';  
+      this.error = 'No se ha podido identificar la historia clínica.';
       return;
     }
+
+    // Validación simple (opcional, el contenedor puede hacer validación más robusta)
+    // if (this.refraccionForm.invalid || this.subjetivoCercaForm.invalid) {
+    //   this.error = 'Por favor complete los campos requeridos.';
+    //   // Marcar campos como tocados si es necesario
+    //   return;
+    // }
 
     this.submitting = true;
     this.error = '';
@@ -212,41 +149,44 @@ export class EstadoRefractivoComponent implements OnInit, OnChanges {
     const refraccionData = this.refraccionForm.value;
     const subjetivoCercaData = this.subjetivoCercaForm.value;
 
-    const payload = {
-      estadoRefractivo: {
-        ...refraccionData
-      },
-      subjetivoCerca: {
-        ...subjetivoCercaData
-      }
-    };
+    // Aunque no hacemos la llamada API aquí, podríamos emitir los datos
+    // o simplemente confiar en que el contenedor ya los tiene actualizados
+    // a través de la suscripción a valueChanges (implementada en el contenedor).
+    // Por simplicidad y consistencia con el flujo, podemos asumir que el contenedor
+    // ya tiene los datos más recientes.
 
-    this.historiaService.actualizarSeccion(this.historiaId, 'estado-refractivo', payload)
-      .pipe(finalize(() => {
-        this.submitting = false;
-      }))
-      .subscribe({
-        next: () => {
-          this.success = 'Estado refractivo guardado correctamente.';
-          this.completed.emit(true);
-        },
-        error: (err) => {
-          console.error('Error al guardar estado refractivo:', err);
-          this.error = 'Error al guardar los datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
-        }
-      });
+    console.log("Datos de Estado Refractivo listos (guardados por el contenedor):", refraccionData);
+    console.log("Datos de Subjetivo Cerca listos (guardados por el contenedor):", subjetivoCercaData);
+
+    // Simular éxito y emitir evento 'completed' si se considera la sección completa
+    this.success = 'Cambios de Estado Refractivo listos para guardar.'; // Mensaje informativo
+    this.completed.emit(true); // Indicar que la sección está 'completa' o lista.
+    this.submitting = false; // Terminar estado de submitting
+
+    // Si no se esconden los botones, emitir para avanzar (comportamiento original)
+    if (!this.hideButtons) {
+        setTimeout(() => {
+            this.nextSection.emit();
+            this.success = ''; // Limpiar mensaje después de avanzar
+        }, 1500);
+    }
+
+    // Ya no se hace la llamada a actualizarSeccion desde aquí.
   }
 
   cancelar(): void {
-    this.completed.emit(false);
+    // Podríamos añadir lógica para resetear si fuera necesario,
+    // pero usualmente el contenedor maneja el estado.
+    console.log("Cancelando edición de Estado Refractivo.");
+    this.completed.emit(false); // Indicar que no se completó/guardó
+    // Podríamos navegar hacia atrás o dejar que el contenedor lo haga.
   }
-  
-  // Métodos para acceder a los datos de cada formulario
+
+  // Métodos para acceder a los datos de cada formulario (se mantienen por si son útiles)
   getRefraccionData(): any {
     return this.refraccionForm.value;
   }
-  
+
   getSubjetivoCercaData(): any {
     return this.subjetivoCercaForm.value;
   }
