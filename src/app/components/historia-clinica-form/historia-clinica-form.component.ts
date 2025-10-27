@@ -74,16 +74,16 @@ export class HistoriaClinicaFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForms();
-    this.loading = true;
+    this.loading = true; // El loading es solo para los dropdowns
 
-    // 1. Llama a loadInitialData() para obtener los datos de los dropdowns
+    // 1. Cargar datos de dropdowns (esto está bien)
     this.loadInitialData().pipe(
       finalize(() => {
         this.loading = false;
       })
     ).subscribe({
       next: (result: InitialData) => {
-        // 2. Asigna los datos a las propiedades del componente para llenar los <select>
+        // 2. Asigna los datos a las propiedades para llenar los <select>
         this.profesores = result.profesores;
         this.materias = result.materias;
         this.consultorios = result.consultorios;
@@ -92,7 +92,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
         this.estadosCiviles = result.estadosCiviles;
         this.escolaridades = result.escolaridades;
 
-        // Establece valores por defecto para un formulario NUEVO
+        // 3. Establece valores por defecto para un formulario NUEVO
         if (!this.isEditing) {
             if (this.periodoEscolar) {
               this.historiaForm.patchValue({ periodoEscolarID: this.periodoEscolar.ID });
@@ -102,18 +102,16 @@ export class HistoriaClinicaFormComponent implements OnInit {
             }
         }
 
-        // 3. SOLO AHORA, si estamos editando, llama a loadHistoriaClinica()
-        if (this.isEditing && this.historiaId) {
-          this.loadHistoriaClinica();
-        }
+        // 4. NO LLAMAMOS a loadHistoriaClinica(). El contenedor se encarga.
+
       },
       error: (error) => {
         this.error = 'Error al cargar los datos iniciales. Por favor, intenta nuevamente.';
         console.error('Error cargando datos iniciales:', error);
       }
     });
-    
-    // El resto de la lógica se mantiene
+
+    // 5. La lógica de búsqueda se mantiene
     const busquedaControl = this.pacienteForm.get('busqueda');
     if (busquedaControl) {
       busquedaControl.valueChanges.pipe(
@@ -136,6 +134,7 @@ export class HistoriaClinicaFormComponent implements OnInit {
       });
     }
 
+    // 6. Emitir el formulario para que el contenedor lo reciba
     this.formReady.emit(this.historiaForm);
   }
 

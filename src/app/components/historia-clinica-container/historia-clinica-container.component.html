@@ -25,6 +25,46 @@
     </div>
   </header>
 
+   <div class="modal-overlay" *ngIf="mostrarModalBorrador">
+    <div class="modal-content">
+      <h3>Borrador Encontrado</h3>
+      <p>
+        Hemos encontrado un borrador no guardado para una nueva historia clínica creado el
+        <!-- Asegúrate de tener el DatePipe de CommonModule funcionando (y no un pipe custom con el mismo nombre) -->
+        <strong>{{ borradorPendiente?.timestamp | date:'dd/MM/yyyy h:mm a' }}</strong>.
+      </p>
+      <p>¿Deseas cargar este borrador?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-reject" (click)="rechazarBorrador()">
+          <i class="fas fa-times"></i> Rechazar
+        </button>
+        <button type="button" class="btn-accept" (click)="aceptarBorrador()">
+          <i class="fas fa-check"></i> Aceptar y Cargar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarModalDescartar">
+    <div class="modal-content">
+      <h3>Descartar Borrador</h3>
+      <p>
+        ¿Estás seguro de que quieres descartar todos los cambios no guardados en el borrador actual?
+        <span *ngIf="!isNewHistoria">Se restaurarán los últimos datos guardados en el servidor.</span>
+        <span *ngIf="isNewHistoria">Se limpiará el formulario.</span>
+        Esta acción no se puede deshacer.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" (click)="cerrarModalDescartar()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-reject" (click)="confirmarDescartarBorrador()">
+          <i class="fas fa-trash-alt"></i> Sí, Descartar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Mensajes de error -->
   <div *ngIf="error" class="error-message">
     <i class="fas fa-exclamation-triangle"></i>

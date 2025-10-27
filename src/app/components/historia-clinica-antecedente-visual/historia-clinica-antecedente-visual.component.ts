@@ -44,8 +44,7 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    // --- CORRECCIÓN ---
-    // Se elimina la llamada a cargarDatosExistentes()
+
     // if (this.historiaId) {
     //   this.cargarDatosExistentes();
     // }
@@ -225,9 +224,110 @@ export class AntecedenteVisualComponent implements OnInit, OnChanges {
     ];
   }
 
-  // --- CORRECCIÓN ---
-  // Se elimina todo el método cargarDatosExistentes()
-  // --- FIN CORRECCIÓN ---
+cargarDatosExistentes(): void {
+  if (!this.historiaId) return;
+
+  this.loading = true;
+
+  this.historiaService.obtenerHistoriaClinica(this.historiaId)
+    .pipe(finalize(() => {
+      this.loading = false;
+      this.datosCargados = true;
+    }))
+    .subscribe({
+      next: (historia) => {
+        // Cargar Agudeza Visual
+        if (historia.agudezaVisual && historia.agudezaVisual.length > 0) {
+          historia.agudezaVisual.forEach((agudeza: any) => {
+            const tipoMedicion = agudeza.TipoMedicion || agudeza.tipoMedicion;
+
+            if (tipoMedicion === 'SIN_RX_LEJOS') {
+              this.agudezaVisual.patchValue({
+                sinRxLejosODSnellen: agudeza.OjoDerechoSnellen || '',
+                sinRxLejosOISnellen: agudeza.OjoIzquierdoSnellen || '',
+                sinRxLejosAOSnellen: agudeza.AmbosOjosSnellen || '',
+                sinRxLejosODMetros: agudeza.OjoDerechoMetros || '',
+                sinRxLejosOIMetros: agudeza.OjoIzquierdoMetros || '',
+                sinRxLejosAOMetros: agudeza.AmbosOjosMetros || '',
+                sinRxLejosODDecimal: agudeza.OjoDerechoDecimal || '',
+                sinRxLejosOIDecimal: agudeza.OjoIzquierdoDecimal || '',
+                sinRxLejosAODecimal: agudeza.AmbosOjosDecimal || '',
+                sinRxLejosODMAR: agudeza.OjoDerechoMAR || '',
+                sinRxLejosOIMAR: agudeza.OjoIzquierdoMAR || '',
+                sinRxLejosAOMAR: agudeza.AmbosOjosMAR || ''
+              });
+            } else if (tipoMedicion === 'CON_RX_ANTERIOR_LEJOS') {
+              this.agudezaVisual.patchValue({
+                conRxLejosODSnellen: agudeza.OjoDerechoSnellen || '',
+                conRxLejosOISnellen: agudeza.OjoIzquierdoSnellen || '',
+                conRxLejosAOSnellen: agudeza.AmbosOjosSnellen || '',
+                conRxLejosODMetros: agudeza.OjoDerechoMetros || '',
+                conRxLejosOIMetros: agudeza.OjoIzquierdoMetros || '',
+                conRxLejosAOMetros: agudeza.AmbosOjosMetros || '',
+                conRxLejosODDecimal: agudeza.OjoDerechoDecimal || '',
+                conRxLejosOIDecimal: agudeza.OjoIzquierdoDecimal || '',
+                conRxLejosAODecimal: agudeza.AmbosOjosDecimal || '',
+                conRxLejosODMAR: agudeza.OjoDerechoMAR || '',
+                conRxLejosOIMAR: agudeza.OjoIzquierdoMAR || '',
+                conRxLejosAOMAR: agudeza.AmbosOjosMAR || ''
+              });
+            } else if (tipoMedicion === 'SIN_RX_CERCA') {
+              this.agudezaVisual.patchValue({
+                sinRxCercaODM: agudeza.OjoDerechoM || '',
+                sinRxCercaOIM: agudeza.OjoIzquierdoM || '',
+                sinRxCercaAOM: agudeza.AmbosOjosM || '',
+                sinRxCercaODJeager: agudeza.OjoDerechoJeager || '',
+                sinRxCercaOIJeager: agudeza.OjoIzquierdoJeager || '',
+                sinRxCercaAOJeager: agudeza.AmbosOjosJeager || '',
+                sinRxCercaODPuntos: agudeza.OjoDerechoPuntos || '',
+                sinRxCercaOIPuntos: agudeza.OjoIzquierdoPuntos || '',
+                sinRxCercaAOPuntos: agudeza.AmbosOjosPuntos || ''
+              });
+            } else if (tipoMedicion === 'CON_RX_ANTERIOR_CERCA') {
+              this.agudezaVisual.patchValue({
+                conRxCercaODM: agudeza.OjoDerechoM || '',
+                conRxCercaOIM: agudeza.OjoIzquierdoM || '',
+                conRxCercaAOM: agudeza.AmbosOjosM || '',
+                conRxCercaODJeager: agudeza.OjoDerechoJeager || '',
+                conRxCercaOIJeager: agudeza.OjoIzquierdoJeager || '',
+                conRxCercaAOJeager: agudeza.AmbosOjosJeager || '',
+                conRxCercaODPuntos: agudeza.OjoDerechoPuntos || '',
+                conRxCercaOIPuntos: agudeza.OjoIzquierdoPuntos || '',
+                conRxCercaAOPuntos: agudeza.AmbosOjosPuntos || ''
+              });
+            } else if (tipoMedicion === 'CAP_VISUAL') {
+              this.agudezaVisual.patchValue({
+                capacidadVisualOD: agudeza.CapacidadVisualOD || '',
+                capacidadVisualOI: agudeza.CapacidadVisualOI || '',
+                capacidadVisualAO: agudeza.CapacidadVisualAO || '',
+                diametroMM: agudeza.DiametroMM || ''
+              });
+            }
+          });
+        }
+
+        // Cargar Lensometría
+        if (historia.lensometria) {
+          this.lensometria.patchValue({
+            ojoDerechoEsfera: historia.lensometria.OjoDerechoEsfera || '',
+            ojoDerechoCilindro: historia.lensometria.OjoDerechoCilindro || '',
+            ojoDerechoEje: historia.lensometria.OjoDerechoEje || '',
+            ojoIzquierdoEsfera: historia.lensometria.OjoIzquierdoEsfera || '',
+            ojoIzquierdoCilindro: historia.lensometria.OjoIzquierdoCilindro || '',
+            ojoIzquierdoEje: historia.lensometria.OjoIzquierdoEje || '',
+            tipoBifocalMultifocalID: historia.lensometria.TipoBifocalMultifocalID || null,
+            valorADD: historia.lensometria.ValorADD || '',
+            distanciaRango: historia.lensometria.DistanciaRango || '',
+            centroOptico: historia.lensometria.CentroOptico || ''
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error al cargar datos existentes:', error);
+        this.error = 'Error al cargar los datos. Por favor, intenta nuevamente.';
+      }
+    });
+}
 
   guardarAntecedenteVisual(): void {
     if (!this.historiaId) {

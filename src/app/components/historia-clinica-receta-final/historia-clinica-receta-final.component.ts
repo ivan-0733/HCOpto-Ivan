@@ -42,20 +42,19 @@ export class RecetaFinalComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    if (this.historiaId) {
-      this.cargarDatosExistentes();
-    }
+    // [CORREGIDO] Se elimina la llamada a cargarDatosExistentes()
     
     // Emitir el formulario para que el componente padre pueda acceder a él
     this.formReady.emit(this.recetaForm);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['historiaId'] && !changes['historiaId'].firstChange) {
-      if (this.historiaId) {
-        this.cargarDatosExistentes();
-      }
-    }
+    // [CORREGIDO] Se elimina la lógica de este método
+    // if (changes['historiaId'] && !changes['historiaId'].firstChange) {
+    //   if (this.historiaId) {
+    //     this.cargarDatosExistentes();
+    //   }
+    // }
   }
 
   private initForm(): void {
@@ -79,49 +78,7 @@ export class RecetaFinalComponent implements OnInit, OnChanges {
     });
   }
 
-  cargarDatosExistentes(): void {
-    if (!this.historiaId) return;
-    
-    this.loading = true;
-    
-    this.historiaService.obtenerHistoriaClinica(this.historiaId)
-      .pipe(finalize(() => {
-        this.loading = false;
-      }))
-      .subscribe({
-        next: (historia) => {
-          // Cargar datos de receta final
-          if (historia.recetaFinal) {
-            this.recetaForm.patchValue({
-              ojoDerechoEsfera: historia.recetaFinal.OjoDerechoEsfera || '',
-              ojoDerechoCilindro: historia.recetaFinal.OjoDerechoCilindro || '',
-              ojoDerechoEje: historia.recetaFinal.OjoDerechoEje || '',
-              ojoDerechoPrisma: historia.recetaFinal.OjoDerechoPrisma || '',
-              ojoDerechoEjePrisma: historia.recetaFinal.OjoDerechoEjePrisma || '',
-              ojoIzquierdoEsfera: historia.recetaFinal.OjoIzquierdoEsfera || '',
-              ojoIzquierdoCilindro: historia.recetaFinal.OjoIzquierdoCilindro || '',
-              ojoIzquierdoEje: historia.recetaFinal.OjoIzquierdoEje || '',
-              ojoIzquierdoPrisma: historia.recetaFinal.OjoIzquierdoPrisma || '',
-              ojoIzquierdoEjePrisma: historia.recetaFinal.OjoIzquierdoEjePrisma || '',
-              tratamiento: historia.recetaFinal.Tratamiento || '',
-              tipoID: historia.recetaFinal.TipoID || null,
-              dip: historia.recetaFinal.DIP || '',
-              valorADD: historia.recetaFinal.ValorADD || '',
-              material: historia.recetaFinal.Material || '',
-              observaciones: historia.recetaFinal.Observaciones || ''
-            });
-          }
-          
-          // Emitir que los datos se han cargado correctamente
-          this.completed.emit(true);
-        },
-        error: (err) => {
-          console.error('Error al cargar datos de receta final:', err);
-          this.error = 'Error al cargar datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
-        }
-      });
-  }
+  // [CORREGIDO] Se elimina el método cargarDatosExistentes() completo
 
   guardarRecetaFinal(): void {
     if (!this.historiaId) {

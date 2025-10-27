@@ -40,10 +40,8 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    if (this.historiaId) {
-      this.cargarDatosExistentes();
-    }
-
+    // [CORREGIDO] Se elimina la llamada a cargarDatosExistentes()
+    
     // Emitir los formularios para que el componente padre pueda acceder a ellos
     this.formReady.emit(this.diagnosticoForm);
     this.formReady.emit(this.planTratamientoForm);
@@ -52,11 +50,12 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['historiaId'] && !changes['historiaId'].firstChange) {
-      if (this.historiaId) {
-        this.cargarDatosExistentes();
-      }
-    }
+    // [CORREGIDO] Se elimina la lógica de este método
+    // if (changes['historiaId'] && !changes['historiaId'].firstChange) {
+    //   if (this.historiaId) {
+    //     this.cargarDatosExistentes();
+    //   }
+    // }
   }
 
   private initForms(): void {
@@ -87,66 +86,7 @@ export class DiagnosticoComponent implements OnInit, OnChanges {
     });
   }
 
-  cargarDatosExistentes(): void {
-    if (!this.historiaId) return;
-
-    this.loading = true;
-
-    this.historiaService.obtenerHistoriaClinica(this.historiaId)
-      .pipe(finalize(() => {
-        this.loading = false;
-      }))
-      .subscribe({
-        next: (historia) => {
-          // Cargar datos de diagnóstico
-          if (historia.diagnostico) {
-            this.diagnosticoForm.patchValue({
-              ojoDerechoRefractivo: historia.diagnostico.OjoDerechoRefractivo || '',
-              ojoIzquierdoRefractivo: historia.diagnostico.OjoIzquierdoRefractivo || '',
-              ojoDerechoPatologico: historia.diagnostico.OjoDerechoPatologico || '',
-              ojoIzquierdoPatologico: historia.diagnostico.OjoIzquierdoPatologico || '',
-              binocular: historia.diagnostico.Binocular || '',
-              sensorial: historia.diagnostico.Sensorial || ''
-            });
-          }
-
-          // Cargar datos de plan de tratamiento
-          if (historia.planTratamiento) {
-            this.planTratamientoForm.patchValue({
-              descripcion: historia.planTratamiento.Descripcion || ''
-            });
-          }
-
-          // Cargar datos de pronóstico
-          if (historia.pronostico) {
-            this.pronosticoForm.patchValue({
-              descripcion: historia.pronostico.Descripcion || ''
-            });
-          }
-
-          // Cargar datos de recomendaciones
-          if (historia.recomendaciones) {
-          const recomendacionesData = historia.recomendaciones;
-          
-          this.recomendacionesForm.patchValue({
-            descripcion: recomendacionesData.Descripcion || '',
-            // Si existe la fecha 'ProximaCita', la formateamos a YYYY-MM-DD. Si no, queda vacía.
-            proximaCita: recomendacionesData.ProximaCita
-                        ? new Date(recomendacionesData.ProximaCita).toISOString().split('T')[0]
-                        : ''
-          });
-        }
-
-          // Emitir que los datos se han cargado correctamente
-          this.completed.emit(true);
-        },
-        error: (err) => {
-          console.error('Error al cargar datos de diagnóstico:', err);
-          this.error = 'Error al cargar datos. Por favor, intente nuevamente.';
-          this.completed.emit(false);
-        }
-      });
-  }
+  // [CORREGIDO] Se elimina el método cargarDatosExistentes() completo
 
   guardarDiagnostico(): void {
     if (!this.historiaId) {
