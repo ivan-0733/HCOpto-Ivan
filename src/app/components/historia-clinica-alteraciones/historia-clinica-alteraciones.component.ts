@@ -217,7 +217,12 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
       .pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (historia) => {
+          // -----------------------------------------------------------------
+          // BORRAR O COMENTAR LA CARGA DE TEXTO
+          // -----------------------------------------------------------------
+
           // Cargar datos de Grid de Amsler (sin imágenes)
+          /* ELIMINAR ESTO
           if (historia.gridAmsler) {
             this.gridAmslerForm.patchValue({
               numeroCartilla: historia.gridAmsler.numeroCartilla,
@@ -227,59 +232,64 @@ export class DeteccionAlteracionesComponent implements OnInit, OnChanges {
               ojoIzquierdoVisionCromatica: historia.gridAmsler.ojoIzquierdoVisionCromatica
             });
           }
+          */
 
           // Cargar datos de Tonometría
+          /* ELIMINAR ESTO
           if (historia.tonometria) {
-          const tonometriaData = historia.tonometria;
-
-          // Formateamos la fecha ANTES de pasarla al formulario
-          const fechaFormateada = tonometriaData.fecha
-                                ? new Date(tonometriaData.fecha).toISOString().split('T')[0]
-                                : null;
-
-          this.tonometriaForm.patchValue({
-            metodoAnestesico: tonometriaData.metodoAnestesico,
-            fecha: fechaFormateada, // Usamos la fecha ya formateada
-            hora: tonometriaData.hora,
-            ojoDerecho: tonometriaData.ojoDerecho,
-            ojoIzquierdo: tonometriaData.ojoIzquierdo,
-            tipoID: tonometriaData.tipoID
-          });
-        }
+            // ... (toda la lógica de patchValue de tonometria)
+          }
+          */
 
           // Cargar datos de Paquimetría
+          /* ELIMINAR ESTO
           if (historia.paquimetria) {
             this.paquimetriaForm.patchValue(historia.paquimetria);
           }
+          */
 
-          // Cargar datos de Campimetría (con imagen)
+         // Cargar datos de Biomicroscopía (sin imágenes)
+         /* ELIMINAR ESTO
+        if (historia.biomicroscopia) {
+          this.biomicroscopiaForm.patchValue(historia.biomicroscopia);
+        }
+        */
+
+
+          // -----------------------------------------------------------------
+          // MANTENER SOLAMENTE LA LÓGICA DE CARGA DE IMÁGENES
+          // -----------------------------------------------------------------
+
+          // Cargar datos de Campimetría (solo imagen)
           if (historia.campimetria) {
+            
+            // ELIMINAR EL PATCH DE TEXTO
+            /*
             this.campimetriaForm.patchValue({
               distancia: historia.campimetria.distancia,
               tamanoColorIndice: historia.campimetria.tamanoColorIndice,
               tamanoColorPuntoFijacion: historia.campimetria.tamanoColorPuntoFijacion,
               imagenID: historia.campimetria.imagenID
             });
+            */
             
-            // Si hay base64, actualizar la previsualización
+            // CONSERVAR ESTO
             if (historia.campimetria.imagenBase64) {
               this.imagenPreviews['campimetria'] = historia.campimetria.imagenBase64;
             }
-            // Si hay ID de imagen pero no base64, intentar cargar la imagen
             else if (historia.campimetria.imagenID) {
               this.cargarImagenDesdeServidor(historia.campimetria.imagenID, 'campimetria');
             }
           }
 
-         // Cargar datos de Biomicroscopía (sin imágenes)
-        if (historia.biomicroscopia) {
-          this.biomicroscopiaForm.patchValue(historia.biomicroscopia);
-        }
 
-          // Cargar datos de Oftalmoscopía (con imágenes)
+          // Cargar datos de Oftalmoscopía (solo imágenes)
           if (historia.oftalmoscopia) {
-            this.oftalmoscopiaForm.patchValue(historia.oftalmoscopia);
             
+            // ELIMINAR EL PATCH DE TEXTO
+            // this.oftalmoscopiaForm.patchValue(historia.oftalmoscopia);
+            
+            // CONSERVAR ESTO
             if (historia.oftalmoscopia.ojoDerechoImagenBase64) {
               this.imagenPreviews['oftalmoscopiaOD'] = historia.oftalmoscopia.ojoDerechoImagenBase64;
             } 
